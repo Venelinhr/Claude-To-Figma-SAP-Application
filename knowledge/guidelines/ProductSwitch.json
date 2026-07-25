@@ -1,7 +1,7 @@
 {
   "componentName": "ProductSwitch",
   "slug": "product-switch",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/product-switch/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/product-switch",
   "purpose": "A tile grid popover anchored to the ShellBar that lets users jump to other SAP products or apps. Shows product logos + names in a compact grid. Distinct from UserMenu (personal) and Notifications (alerts).",
   "whenToUse": [
     "As the app-switcher in ShellBar for SAP products (Cloud ERP, SuccessFactors, Ariba, etc.)",
@@ -36,7 +36,9 @@
   "contentGuidance": {
     "labelLength": "Product name ≤ 30 chars",
     "contentRules": "Standardized product names; icons match brand marks",
-    "examples": ["SAP S/4HANA · SuccessFactors · Ariba · Concur"]
+    "examples": [
+      "SAP S/4HANA · SuccessFactors · Ariba · Concur"
+    ]
   },
   "responsiveBehavior": {
     "XL": "3–4 column grid",
@@ -45,7 +47,10 @@
     "S": "Full-height slide-in with 1-column list"
   },
   "accessibilityGuidance": {
-    "wcagCriteria": ["WCAG 2.1 · 2.1.1 Keyboard (Level A)", "WCAG 2.1 · 1.1.1 Non-text Content (Level A)"],
+    "wcagCriteria": [
+      "WCAG 2.1 · 2.1.1 Keyboard (Level A)",
+      "WCAG 2.1 · 1.1.1 Non-text Content (Level A)"
+    ],
     "requirements": [
       "Trigger has aria-label='Switch products'",
       "Each tile has aria-label='Open [Product Name]'",
@@ -53,12 +58,20 @@
       "Keyboard: Arrow keys navigate grid; Enter selects; Escape closes"
     ]
   },
-  "patterns": ["Multi-product SAP landscape", "Fiori Launchpad app switcher"],
+  "patterns": [
+    "Multi-product SAP landscape",
+    "Fiori Launchpad app switcher"
+  ],
   "compatibility": {
-    "allowedWith": ["ShellBar (as anchor)"],
-    "forbiddenWith": ["Standalone", "Inside other components"]
+    "allowedWith": [
+      "ShellBar (as anchor)"
+    ],
+    "forbiddenWith": [
+      "Standalone",
+      "Inside other components"
+    ]
   },
   "exceptions": [],
   "version": "1.149.0",
-  "lastChecked": "2026-07-08"
+  "lastChecked": "2026-07-25"
 }

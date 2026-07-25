@@ -107,7 +107,7 @@
     "Show current value via tooltip on handle"
   ],
   "dontRules": [
-    "Do not use Slider when exact value entry is required \u2014 use Input",
+    "Do not use Slider when exact value entry is required — use Input",
     "Do not use without clear min/max"
   ],
   "compatibleComponents": [
@@ -117,7 +117,7 @@
   "incompatiblePatterns": [
     "Without bounds"
   ],
-  "guidelineUrl": "https://experience.sap.com/fiori-design-web/slider/",
+  "guidelineUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/slider",
   "demoKitUrl": "https://sapui5.hana.ondemand.com/#/entity/sap.m.Slider",
   "apiUrl": "https://sapui5.hana.ondemand.com/#/api/sap.m.Slider",
   "sampleUrls": [],

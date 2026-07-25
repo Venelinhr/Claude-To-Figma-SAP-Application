@@ -1,7 +1,7 @@
 {
   "componentName": "AITextArea",
   "slug": "joule-text-area",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/joule/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/joule",
   "purpose": "A multi-line text input with AI-assisted content generation, correction, or expansion. Distinguished from plain TextArea by the Joule accent border and inline AI suggestion capability.",
   "whenToUse": [
     "Long-form text fields where AI can draft or improve content (emails, descriptions, notes)",
@@ -36,7 +36,9 @@
   "contentGuidance": {
     "labelLength": "Placeholder ≤ 60 chars",
     "contentRules": "Free-form text; AI can suggest completions or improvements",
-    "examples": ["\"Draft your response — Joule can help\""]
+    "examples": [
+      "\"Draft your response — Joule can help\""
+    ]
   },
   "responsiveBehavior": {
     "XL": "Full width",
@@ -45,7 +47,10 @@
     "S": "Full width"
   },
   "accessibilityGuidance": {
-    "wcagCriteria": ["WCAG 2.1 · 4.1.2 Name, Role, Value (Level A)", "WCAG 2.1 · 3.3.2 Labels or Instructions (Level A)"],
+    "wcagCriteria": [
+      "WCAG 2.1 · 4.1.2 Name, Role, Value (Level A)",
+      "WCAG 2.1 · 3.3.2 Labels or Instructions (Level A)"
+    ],
     "requirements": [
       "AI actions have aria-labels ('Rephrase with Joule')",
       "Suggested changes announced via aria-live='polite'",
@@ -53,9 +58,25 @@
       "AI badge is announced as 'AI-assisted' on focus"
     ]
   },
-  "patterns": ["AI-assisted content drafting", "Feedback field with tone check", "Email composer with Joule"],
-  "compatibility": {"allowedWith": ["Form", "FormElement", "Card", "Panel", "Dialog"], "forbiddenWith": ["Table cells", "ShellBar"]},
+  "patterns": [
+    "AI-assisted content drafting",
+    "Feedback field with tone check",
+    "Email composer with Joule"
+  ],
+  "compatibility": {
+    "allowedWith": [
+      "Form",
+      "FormElement",
+      "Card",
+      "Panel",
+      "Dialog"
+    ],
+    "forbiddenWith": [
+      "Table cells",
+      "ShellBar"
+    ]
+  },
   "exceptions": [],
   "version": "1.149.0",
-  "lastChecked": "2026-07-08"
+  "lastChecked": "2026-07-25"
 }

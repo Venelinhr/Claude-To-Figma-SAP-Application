@@ -1,7 +1,7 @@
 {
   "componentName": "IconMenuButton",
   "slug": "menu-button",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/menu-button/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/menu-button",
   "purpose": "An icon-only button that opens a Menu when clicked. Space-efficient way to expose a menu of actions when a label would take too much space (toolbars, table row actions, dense list items).",
   "whenToUse": [
     "Row actions in a Table where each row has 3+ actions",
@@ -36,7 +36,11 @@
   "contentGuidance": {
     "labelLength": "n/a — icon only",
     "contentRules": "Icon must be well-known or heavily used across the app",
-    "examples": ["⋮ (More actions)", "⚙ (Settings)", "▽ (Filter)"]
+    "examples": [
+      "⋮ (More actions)",
+      "⚙ (Settings)",
+      "▽ (Filter)"
+    ]
   },
   "responsiveBehavior": {
     "XL": "Icon only",
@@ -45,7 +49,10 @@
     "S": "Icon only"
   },
   "accessibilityGuidance": {
-    "wcagCriteria": ["WCAG 2.1 · 4.1.2 Name, Role, Value (Level A)", "WCAG 2.1 · 2.5.5 Target Size (AAA)"],
+    "wcagCriteria": [
+      "WCAG 2.1 · 4.1.2 Name, Role, Value (Level A)",
+      "WCAG 2.1 · 2.5.5 Target Size (AAA)"
+    ],
     "requirements": [
       "aria-label describing the menu contents ('Row actions')",
       "aria-haspopup='menu' and aria-expanded reflect menu state",
@@ -53,12 +60,24 @@
       "Keyboard: Enter opens; Down opens with focus in menu; Escape closes"
     ]
   },
-  "patterns": ["Table row actions", "Toolbar overflow", "Card header more menu"],
+  "patterns": [
+    "Table row actions",
+    "Toolbar overflow",
+    "Card header more menu"
+  ],
   "compatibility": {
-    "allowedWith": ["Toolbar", "OverflowToolbar", "Table (cell)", "Card (header)"],
-    "forbiddenWith": ["As primary action", "Standalone without container"]
+    "allowedWith": [
+      "Toolbar",
+      "OverflowToolbar",
+      "Table (cell)",
+      "Card (header)"
+    ],
+    "forbiddenWith": [
+      "As primary action",
+      "Standalone without container"
+    ]
   },
   "exceptions": [],
   "version": "1.149.0",
-  "lastChecked": "2026-07-08"
+  "lastChecked": "2026-07-25"
 }

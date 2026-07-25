@@ -1,7 +1,7 @@
 {
   "componentName": "Panel",
   "slug": "panel",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/panel/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/panel",
   "purpose": "A container with a header that groups related content. Can be expandable to show/hide content.",
   "whenToUse": [
     "To group related content with a visible header",
@@ -11,8 +11,8 @@
   ],
   "whenNotToUse": [
     "As primary navigation",
-    "For full-page content \u2014 use DynamicPage",
-    "For modal content \u2014 use Dialog"
+    "For full-page content — use DynamicPage",
+    "For modal content — use Dialog"
   ],
   "doRules": [
     "Use Panel to group related content with a header",
@@ -32,7 +32,7 @@
     "alignment": "Header top, content below."
   },
   "contentGuidance": {
-    "labelLength": "Header text 1\u20135 words.",
+    "labelLength": "Header text 1–5 words.",
     "contentRules": [
       "Use Bold 16px for header",
       "Nest Form, Table, or List as content"
@@ -81,5 +81,5 @@
     "Use Card for elevated panel-like containers with shadow"
   ],
   "version": "2026.Q2",
-  "lastChecked": "2026-06-25"
+  "lastChecked": "2026-07-25"
 }

@@ -1,7 +1,7 @@
 {
   "componentName": "ListItem",
   "slug": "list",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/list/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/list",
   "purpose": "The base class for all List row types (StandardListItem, ObjectListItem, ColumnListItem, ActionListItem, etc.). Rarely used directly — most consumers pick a specific subclass. Provides shared behavior (selection, actions, type=Active/Detail/Navigation).",
   "whenToUse": [
     "As a base for custom list-item variants that need shared List behavior",
@@ -36,7 +36,9 @@
   "contentGuidance": {
     "labelLength": "Depends on subclass",
     "contentRules": "Content and layout provided by subclasses",
-    "examples": ["Base row: text + navigation chevron"]
+    "examples": [
+      "Base row: text + navigation chevron"
+    ]
   },
   "responsiveBehavior": {
     "XL": "Full row",
@@ -45,7 +47,10 @@
     "S": "Full row; may drop secondary content"
   },
   "accessibilityGuidance": {
-    "wcagCriteria": ["WCAG 2.1 · 4.1.2 Name, Role, Value (Level A)", "WCAG 2.1 · 2.5.5 Target Size (AAA)"],
+    "wcagCriteria": [
+      "WCAG 2.1 · 4.1.2 Name, Role, Value (Level A)",
+      "WCAG 2.1 · 2.5.5 Target Size (AAA)"
+    ],
     "requirements": [
       "role='listitem' (implicit)",
       "aria-selected when list has selection",
@@ -53,9 +58,22 @@
       "Minimum 32px compact / 44px cozy tap target"
     ]
   },
-  "patterns": ["Custom list variants", "Base for ObjectListItem etc.", "Placeholder rows"],
-  "compatibility": {"allowedWith": ["List (parent only)"], "forbiddenWith": ["Toolbar", "Table body", "Standalone"]},
+  "patterns": [
+    "Custom list variants",
+    "Base for ObjectListItem etc.",
+    "Placeholder rows"
+  ],
+  "compatibility": {
+    "allowedWith": [
+      "List (parent only)"
+    ],
+    "forbiddenWith": [
+      "Toolbar",
+      "Table body",
+      "Standalone"
+    ]
+  },
   "exceptions": [],
   "version": "1.149.0",
-  "lastChecked": "2026-07-08"
+  "lastChecked": "2026-07-25"
 }

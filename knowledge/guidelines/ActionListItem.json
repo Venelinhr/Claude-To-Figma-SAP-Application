@@ -1,7 +1,7 @@
 {
   "componentName": "ActionListItem",
   "slug": "action-list-item",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/action-list-item/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/action-list-item",
   "purpose": "List row that triggers an action when tapped, instead of navigating to a detail page. Used in setting menus, command palettes, action lists.",
   "whenToUse": [
     "Settings menus that toggle modes or run actions",
@@ -9,9 +9,9 @@
     "Sub-menu rows that fire an event rather than navigate"
   ],
   "whenNotToUse": [
-    "Navigation \u2014 use StandardListItem with arrow",
-    "Object summary \u2014 use ObjectListItem",
-    "Selection \u2014 use CheckBox list"
+    "Navigation — use StandardListItem with arrow",
+    "Object summary — use ObjectListItem",
+    "Selection — use CheckBox list"
   ],
   "doRules": [
     "Use verb-first labels (Action-oriented)",
@@ -40,13 +40,13 @@
   "responsiveBehavior": {
     "XL": "Full size and visibility.",
     "L": "Full size and visibility.",
-    "M": "May condense \u2014 see Fiori responsive design guidelines.",
+    "M": "May condense — see Fiori responsive design guidelines.",
     "S": "May convert to alternative pattern on narrow viewports."
   },
   "accessibilityGuidance": {
     "ariaPattern": "Maps to ARIA pattern appropriate for list item.",
-    "contrast": "\u2265 4.5:1 for text, \u2265 3:1 for borders (WCAG AA).",
-    "keyboard": "Full keyboard support \u2014 Tab to focus, Enter/Space to activate.",
+    "contrast": "≥ 4.5:1 for text, ≥ 3:1 for borders (WCAG AA).",
+    "keyboard": "Full keyboard support — Tab to focus, Enter/Space to activate.",
     "screenReader": "Announced with role and state."
   },
   "patterns": [
@@ -61,5 +61,5 @@
     "See pluginNotes for plugin-specific rendering caveats."
   ],
   "version": "2025.06",
-  "lastChecked": "2026-06-26"
+  "lastChecked": "2026-07-25"
 }

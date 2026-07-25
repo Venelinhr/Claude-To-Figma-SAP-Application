@@ -1,7 +1,7 @@
 {
   "componentName": "IllustratedMessage",
   "slug": "illustrated-message",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/illustratedmessage/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/illustratedmessage",
   "purpose": "Empty-state placeholder with an illustration, title, description, and optional action. Used when a list/table is empty or a search returns no results.",
   "whenToUse": [
     "Empty state for lists, tables, or search results",
@@ -10,10 +10,10 @@
     "After dismissing all items in a queue"
   ],
   "whenNotToUse": [
-    "As decorative content \u2014 IllustratedMessage signals state",
-    "For loading states \u2014 use BusyIndicator",
-    "For inline form validation \u2014 use MessageStrip",
-    "When data IS present \u2014 only show when empty"
+    "As decorative content — IllustratedMessage signals state",
+    "For loading states — use BusyIndicator",
+    "For inline form validation — use MessageStrip",
+    "When data IS present — only show when empty"
   ],
   "doRules": [
     "Pick an illustration matching the context (NoData / NoTasks / NoFilter / NoActivities)",
@@ -45,13 +45,13 @@
   "responsiveBehavior": {
     "XL": "Full size and visibility.",
     "L": "Full size and visibility.",
-    "M": "May condense or collapse \u2014 see Fiori responsive design guidelines.",
+    "M": "May condense or collapse — see Fiori responsive design guidelines.",
     "S": "May convert to alternative pattern (Popover, Dialog) on narrow viewports."
   },
   "accessibilityGuidance": {
-    "ariaPattern": "Maps to ARIA pattern appropriate for feedback \u2014 see SAP Fiori a11y docs.",
-    "contrast": "\u2265 4.5:1 for text, \u2265 3:1 for borders (WCAG AA).",
-    "keyboard": "Full keyboard support \u2014 Tab to focus, Enter/Space to activate.",
+    "ariaPattern": "Maps to ARIA pattern appropriate for feedback — see SAP Fiori a11y docs.",
+    "contrast": "≥ 4.5:1 for text, ≥ 3:1 for borders (WCAG AA).",
+    "keyboard": "Full keyboard support — Tab to focus, Enter/Space to activate.",
     "screenReader": "Announced with role and state."
   },
   "patterns": [
@@ -70,5 +70,5 @@
     "See pluginNotes for plugin-specific rendering caveats."
   ],
   "version": "2025.06",
-  "lastChecked": "2026-06-26"
+  "lastChecked": "2026-07-25"
 }

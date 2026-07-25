@@ -1,7 +1,7 @@
 {
   "componentName": "ObjectAttribute",
   "slug": "object-attribute",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/object-attribute/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/object-attribute",
   "purpose": "Key-value pair for object metadata. The title is the label (e.g. 'Vendor:'), the text is the value (e.g. 'SAP'). Used in DynamicPageHeader and ObjectPageLayout headers to show object descriptors.",
   "whenToUse": [
     "Object header metadata pairs (Vendor: SAP, Version: 1.0.0, Status: Active)",
@@ -50,9 +50,9 @@
   },
   "responsiveBehavior": {
     "XL": "All ObjectAttributes inline.",
-    "L":  "All ObjectAttributes inline.",
-    "M":  "May wrap to multiple rows; preserve title-value pairing.",
-    "S":  "Stack vertically; each pair occupies a full row."
+    "L": "All ObjectAttributes inline.",
+    "M": "May wrap to multiple rows; preserve title-value pairing.",
+    "S": "Stack vertically; each pair occupies a full row."
   },
   "accessibilityGuidance": {
     "ariaPattern": "Title acts as label; value acts as value. Pair as <dl><dt>title</dt><dd>value</dd></dl> semantically.",
@@ -66,10 +66,17 @@
     "Card body — labeled facts",
     "List row metadata"
   ],
-  "compatibility": ["DynamicPageHeader", "DynamicPageTitle", "ObjectPageLayout", "Panel", "ColumnListItem", "List"],
+  "compatibility": [
+    "DynamicPageHeader",
+    "DynamicPageTitle",
+    "ObjectPageLayout",
+    "Panel",
+    "ColumnListItem",
+    "List"
+  ],
   "exceptions": [
     "Inside DynamicPageHeader.props.headerContent.meta the plugin auto-generates ObjectAttribute-style pairs from { key, value } tuples — no need to emit ObjectAttribute explicitly in that slot."
   ],
   "version": "2025.06",
-  "lastChecked": "2026-06-26"
+  "lastChecked": "2026-07-25"
 }

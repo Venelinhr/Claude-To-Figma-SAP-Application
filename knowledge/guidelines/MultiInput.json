@@ -1,7 +1,7 @@
 {
   "componentName": "MultiInput",
   "slug": "multi-input",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/multi-input/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/multiinput",
   "purpose": "A free-text input that creates tokens. User types and presses Enter (or comma) to create a removable token. Used for tags, email lists, comma-separated free entry.",
   "whenToUse": [
     "Free-text multi-value entry (tags, emails)",
@@ -9,9 +9,9 @@
     "For input where order matters and items are user-defined"
   ],
   "whenNotToUse": [
-    "When values come from a fixed list \u2014 use MultiComboBox",
-    "For single-value entry \u2014 use Input",
-    "For paragraph text \u2014 use TextArea"
+    "When values come from a fixed list — use MultiComboBox",
+    "For single-value entry — use Input",
+    "For paragraph text — use TextArea"
   ],
   "doRules": [
     "Show clear hint that Enter or comma creates a token",
@@ -82,5 +82,5 @@
     "enableMultiLineMode=true allows tokens to wrap multiple lines"
   ],
   "version": "2026.Q2",
-  "lastChecked": "2026-06-25"
+  "lastChecked": "2026-07-25"
 }

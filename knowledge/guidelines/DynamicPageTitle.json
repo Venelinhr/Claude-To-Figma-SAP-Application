@@ -1,7 +1,7 @@
 {
   "componentName": "DynamicPageTitle",
   "slug": "dynamic-page-layout",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/dynamic-page-layout/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/dynamicpagetitle",
   "purpose": "The sticky title bar of a DynamicPage. Contains breadcrumbs, page title, action buttons, and optionally an avatar/icon.",
   "whenToUse": [
     "As child of DynamicPage or ObjectPageLayout",
@@ -29,7 +29,7 @@
     "alignment": "Title left, actions right."
   },
   "contentGuidance": {
-    "labelLength": "Title 1\u20135 words preferred.",
+    "labelLength": "Title 1–5 words preferred.",
     "contentRules": [
       "Title in Black 24px",
       "Use sentence case"
@@ -53,7 +53,7 @@
     },
     {
       "category": "contrast",
-      "requirement": "Title contrast \u2265 4.5:1",
+      "requirement": "Title contrast ≥ 4.5:1",
       "wcag": "1.4.3 (AA)"
     }
   ],
@@ -74,5 +74,5 @@
     "Snapped state hides description/metadata for scroll efficiency"
   ],
   "version": "2026.Q2",
-  "lastChecked": "2026-06-25"
+  "lastChecked": "2026-07-25"
 }

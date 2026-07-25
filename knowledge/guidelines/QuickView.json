@@ -1,7 +1,7 @@
 {
   "componentName": "QuickView",
   "slug": "quick-view",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/quick-view/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/quick-view",
   "purpose": "Object summary preview shown in a Popover anchored to a list row or link. Avatar + title + key facts + actions, without leaving the current page.",
   "whenToUse": [
     "Hover-preview of a user, customer, or object from a table row",
@@ -9,9 +9,9 @@
     "Right-click context summaries"
   ],
   "whenNotToUse": [
-    "Full editing \u2014 open Object Page",
-    "Static text \u2014 use Popover with text",
-    "Critical decisions \u2014 use Dialog"
+    "Full editing — open Object Page",
+    "Static text — use Popover with text",
+    "Critical decisions — use Dialog"
   ],
   "doRules": [
     "Include Avatar + title + 3-5 key attributes",
@@ -41,13 +41,13 @@
   "responsiveBehavior": {
     "XL": "Full size and visibility.",
     "L": "Full size and visibility.",
-    "M": "May condense \u2014 see Fiori responsive design guidelines.",
+    "M": "May condense — see Fiori responsive design guidelines.",
     "S": "May convert to alternative pattern on narrow viewports."
   },
   "accessibilityGuidance": {
     "ariaPattern": "Maps to ARIA pattern appropriate for overlay.",
-    "contrast": "\u2265 4.5:1 for text, \u2265 3:1 for borders (WCAG AA).",
-    "keyboard": "Full keyboard support \u2014 Tab to focus, Enter/Space to activate.",
+    "contrast": "≥ 4.5:1 for text, ≥ 3:1 for borders (WCAG AA).",
+    "keyboard": "Full keyboard support — Tab to focus, Enter/Space to activate.",
     "screenReader": "Announced with role and state."
   },
   "patterns": [
@@ -60,5 +60,5 @@
     "See pluginNotes for plugin-specific rendering caveats."
   ],
   "version": "2025.06",
-  "lastChecked": "2026-06-26"
+  "lastChecked": "2026-07-25"
 }

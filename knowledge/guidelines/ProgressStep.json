@@ -1,7 +1,7 @@
 {
   "componentName": "ProgressStep",
-  "slug": "progress-step",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/progress-step/",
+  "slug": "wizard",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/wizard",
   "purpose": "Single visual progress step in a horizontal sequence. Used to show position in a multi-step flow without the full Wizard layout.",
   "whenToUse": [
     "Top-of-page progress for a multi-step flow",
@@ -63,5 +63,5 @@
     "See pluginNotes for plugin-specific rendering caveats."
   ],
   "version": "2025.06",
-  "lastChecked": "2026-06-26"
+  "lastChecked": "2026-07-25"
 }

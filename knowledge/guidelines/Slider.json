@@ -1,7 +1,7 @@
 {
   "componentName": "Slider",
   "slug": "slider",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/slider/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/slider",
   "purpose": "A single-value selection along a numeric range. Visual representation of value relative to min/max.",
   "whenToUse": [
     "Continuous numeric input where precision is less important",
@@ -9,9 +9,9 @@
     "When the relationship to min/max matters visually"
   ],
   "whenNotToUse": [
-    "When precise value entry required \u2014 use Input or StepInput",
+    "When precise value entry required — use Input or StepInput",
     "For values without clear min/max",
-    "For multi-select \u2014 use RangeSlider"
+    "For multi-select — use RangeSlider"
   ],
   "doRules": [
     "Use for continuous numeric input where precision is less important",
@@ -20,7 +20,7 @@
     "Allow keyboard adjustment via arrow keys"
   ],
   "dontRules": [
-    "Do not use Slider when exact value entry is required \u2014 use Input",
+    "Do not use Slider when exact value entry is required — use Input",
     "Do not use without clear min/max",
     "Do not exceed 7 visible labels on the scale"
   ],
@@ -82,5 +82,5 @@
     "enableTickmarks shows tick marks at step intervals"
   ],
   "version": "2026.Q2",
-  "lastChecked": "2026-06-25"
+  "lastChecked": "2026-07-25"
 }

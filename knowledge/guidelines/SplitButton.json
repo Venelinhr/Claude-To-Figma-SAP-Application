@@ -1,7 +1,7 @@
 {
   "componentName": "SplitButton",
   "slug": "split-button",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/split-button/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/split-button",
   "purpose": "A two-part button: main action on the left, dropdown arrow on the right that opens a Menu of related actions. Combines fast access to the primary action with easy access to variants.",
   "whenToUse": [
     "One primary action with 2-6 close variants (Save / Save as / Save & Close)",
@@ -36,7 +36,9 @@
   "contentGuidance": {
     "labelLength": "Main action ≤ 20 chars",
     "contentRules": "Main label is verb-first; menu items are verb-first variants",
-    "examples": ["Save ▼  (menu: Save · Save as · Save & Close)"]
+    "examples": [
+      "Save ▼  (menu: Save · Save as · Save & Close)"
+    ]
   },
   "responsiveBehavior": {
     "XL": "Full label + arrow",
@@ -45,7 +47,10 @@
     "S": "May collapse to icon + arrow"
   },
   "accessibilityGuidance": {
-    "wcagCriteria": ["WCAG 2.1 · 2.1.1 Keyboard (Level A)", "WCAG 2.1 · 4.1.2 Name, Role, Value (Level A)"],
+    "wcagCriteria": [
+      "WCAG 2.1 · 2.1.1 Keyboard (Level A)",
+      "WCAG 2.1 · 4.1.2 Name, Role, Value (Level A)"
+    ],
     "requirements": [
       "Main button and arrow are separate focusable elements",
       "Arrow has aria-haspopup and aria-expanded",
@@ -53,12 +58,25 @@
       "Screen reader announces both parts distinctly"
     ]
   },
-  "patterns": ["Toolbar with primary action", "Dialog footer with variants", "Object header actions"],
+  "patterns": [
+    "Toolbar with primary action",
+    "Dialog footer with variants",
+    "Object header actions"
+  ],
   "compatibility": {
-    "allowedWith": ["Toolbar", "OverflowToolbar", "Bar", "DynamicPageTitle", "ObjectHeader"],
-    "forbiddenWith": ["Table cells", "Dense List rows"]
+    "allowedWith": [
+      "Toolbar",
+      "OverflowToolbar",
+      "Bar",
+      "DynamicPageTitle",
+      "ObjectHeader"
+    ],
+    "forbiddenWith": [
+      "Table cells",
+      "Dense List rows"
+    ]
   },
   "exceptions": [],
   "version": "1.149.0",
-  "lastChecked": "2026-07-08"
+  "lastChecked": "2026-07-25"
 }

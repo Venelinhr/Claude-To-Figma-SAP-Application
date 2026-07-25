@@ -121,7 +121,7 @@
   "incompatiblePatterns": [
     "Without unit when unit matters"
   ],
-  "guidelineUrl": "https://experience.sap.com/fiori-design-web/objectnumber/",
+  "guidelineUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/objectnumber",
   "demoKitUrl": "https://sapui5.hana.ondemand.com/#/entity/sap.m.ObjectNumber",
   "apiUrl": "https://sapui5.hana.ondemand.com/#/api/sap.m.ObjectNumber",
   "sampleUrls": [],

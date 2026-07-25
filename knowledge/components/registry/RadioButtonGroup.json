@@ -73,12 +73,12 @@
   "accessibilityRules": [
     {
       "category": "contrast",
-      "requirement": "Text contrast \u2265 4.5:1 against bg (WCAG AA)",
+      "requirement": "Text contrast ≥ 4.5:1 against bg (WCAG AA)",
       "wcag": "1.4.3"
     },
     {
       "category": "tap-target",
-      "requirement": "Min 32\u00d732 Compact / 44\u00d744 Cozy"
+      "requirement": "Min 32×32 Compact / 44×44 Cozy"
     },
     {
       "category": "keyboard",
@@ -109,7 +109,7 @@
   "incompatiblePatterns": [
     "See doRules and dontRules for context-specific rules."
   ],
-  "guidelineUrl": "https://experience.sap.com/fiori-design-web/radio-button-group/",
+  "guidelineUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/radio-button-group",
   "demoKitUrl": "https://sdk.openui5.org/entity/sap.m.RadioButtonGroup",
   "apiUrl": "https://sdk.openui5.org/api/sap.m.RadioButtonGroup",
   "sampleUrls": [

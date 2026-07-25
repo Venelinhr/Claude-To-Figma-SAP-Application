@@ -1,15 +1,15 @@
 {
   "componentName": "DateTimePicker",
   "slug": "date-time-picker",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/date-time-picker/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/datetimepicker",
   "purpose": "A single date + time input combining calendar and time picker.",
   "whenToUse": [
     "When both date and time-of-day are required",
     "Meeting time entry, deadline with time, scheduled tasks"
   ],
   "whenNotToUse": [
-    "When only date is needed \u2014 use DatePicker",
-    "When only time is needed \u2014 use TimePicker"
+    "When only date is needed — use DatePicker",
+    "When only time is needed — use TimePicker"
   ],
   "doRules": [
     "Use when both date AND time are required",
@@ -72,5 +72,5 @@
     "displayFormat for fine control"
   ],
   "version": "2026.Q2",
-  "lastChecked": "2026-06-25"
+  "lastChecked": "2026-07-25"
 }

@@ -1,7 +1,7 @@
 {
   "componentName": "AIPromptInput",
   "slug": "joule-prompt-input",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/joule/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/joule",
   "purpose": "A prominent multi-line input for prompting Joule with a question, instruction, or context. Includes a Send action, character counter, and optional attach/upload controls. The primary entry point to Joule conversations.",
   "whenToUse": [
     "As the main input in a Joule conversation panel",
@@ -36,7 +36,9 @@
   "contentGuidance": {
     "labelLength": "Placeholder ≤ 60 chars",
     "contentRules": "Prompt is any user text; system may add context before sending",
-    "examples": ["\"Ask Joule anything about your data...\""]
+    "examples": [
+      "\"Ask Joule anything about your data...\""
+    ]
   },
   "responsiveBehavior": {
     "XL": "Full width of panel",
@@ -45,7 +47,10 @@
     "S": "Full width, may fill viewport height"
   },
   "accessibilityGuidance": {
-    "wcagCriteria": ["WCAG 2.1 · 3.3.2 Labels or Instructions (Level A)", "WCAG 2.1 · 4.1.3 Status Messages (Level AA)"],
+    "wcagCriteria": [
+      "WCAG 2.1 · 3.3.2 Labels or Instructions (Level A)",
+      "WCAG 2.1 · 4.1.3 Status Messages (Level AA)"
+    ],
     "requirements": [
       "aria-label='Message Joule'",
       "Send button has aria-label='Send prompt'",
@@ -53,9 +58,23 @@
       "Response streaming announced via aria-live='polite'"
     ]
   },
-  "patterns": ["Joule conversation input", "AI generation prompt", "Ask AI panel"],
-  "compatibility": {"allowedWith": ["Joule panel", "Popover", "Dialog"], "forbiddenWith": ["Table cells", "Inline form field"]},
+  "patterns": [
+    "Joule conversation input",
+    "AI generation prompt",
+    "Ask AI panel"
+  ],
+  "compatibility": {
+    "allowedWith": [
+      "Joule panel",
+      "Popover",
+      "Dialog"
+    ],
+    "forbiddenWith": [
+      "Table cells",
+      "Inline form field"
+    ]
+  },
   "exceptions": [],
   "version": "1.149.0",
-  "lastChecked": "2026-07-08"
+  "lastChecked": "2026-07-25"
 }

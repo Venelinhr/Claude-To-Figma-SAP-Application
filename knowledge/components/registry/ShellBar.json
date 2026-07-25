@@ -131,7 +131,7 @@
     "Inside a page-level container — must be top-level",
     "Stacked with another shell-like header"
   ],
-  "guidelineUrl": "https://experience.sap.com/fiori-design-web/shell-bar/",
+  "guidelineUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/shell-bar",
   "demoKitUrl": "https://sapui5.hana.ondemand.com/#/entity/sap.f.ShellBar",
   "apiUrl": "https://sapui5.hana.ondemand.com/#/api/sap.f.ShellBar",
   "sampleUrls": [

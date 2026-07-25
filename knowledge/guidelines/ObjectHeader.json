@@ -1,7 +1,7 @@
 {
   "componentName": "ObjectHeader",
   "slug": "object-header",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/object-header/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/object-header",
   "purpose": "The header region of an Object Page that identifies and summarizes the object. Contains the title, subtitle, key attributes, statuses, and primary actions. Sits at the top of Object Page layouts.",
   "whenToUse": [
     "As the header of an Object Page (via ObjectPageDynamicHeaderTitle)",
@@ -36,7 +36,9 @@
   "contentGuidance": {
     "labelLength": "Title up to 100 chars; subtitle up to 200 chars; attributes ≤ 40 chars each",
     "contentRules": "Title is a name or ID; subtitle is descriptive; attributes are key-value or numeric",
-    "examples": ["Purchase Order PO-48865 · Supplier ABC Corp · Status: Pending"]
+    "examples": [
+      "Purchase Order PO-48865 · Supplier ABC Corp · Status: Pending"
+    ]
   },
   "responsiveBehavior": {
     "XL": "All attributes visible horizontally",
@@ -45,7 +47,10 @@
     "S": "Snapped state by default; expand on tap"
   },
   "accessibilityGuidance": {
-    "wcagCriteria": ["WCAG 2.1 · 1.3.1 Info and Relationships (Level A)", "WCAG 2.1 · 1.4.3 Contrast (Level AA)"],
+    "wcagCriteria": [
+      "WCAG 2.1 · 1.3.1 Info and Relationships (Level A)",
+      "WCAG 2.1 · 1.4.3 Contrast (Level AA)"
+    ],
     "requirements": [
       "Title as H1 (or semantic heading role)",
       "Actions have accessible names (aria-label if icon-only)",
@@ -53,12 +58,25 @@
       "Focus order: title → attributes → actions"
     ]
   },
-  "patterns": ["Object Page", "Fullscreen Dialog for objects", "Card summary header"],
+  "patterns": [
+    "Object Page",
+    "Fullscreen Dialog for objects",
+    "Card summary header"
+  ],
   "compatibility": {
-    "allowedWith": ["ObjectPageLayout", "DynamicPage", "Dialog", "Card"],
-    "forbiddenWith": ["List (as list item)", "Table cells", "Toolbar"]
+    "allowedWith": [
+      "ObjectPageLayout",
+      "DynamicPage",
+      "Dialog",
+      "Card"
+    ],
+    "forbiddenWith": [
+      "List (as list item)",
+      "Table cells",
+      "Toolbar"
+    ]
   },
   "exceptions": [],
   "version": "1.149.0",
-  "lastChecked": "2026-07-08"
+  "lastChecked": "2026-07-25"
 }

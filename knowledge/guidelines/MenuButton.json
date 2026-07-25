@@ -1,7 +1,7 @@
 {
   "componentName": "MenuButton",
   "slug": "menu-button",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/menu-button/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/menubutton",
   "purpose": "A button that opens a menu of related actions when clicked. Supports Regular mode (entire button opens menu) or Split mode (text fires default action, arrow opens menu).",
   "whenToUse": [
     "When 2+ related actions can be grouped under one trigger",
@@ -10,14 +10,14 @@
     "In Split mode when one action is more common than others"
   ],
   "whenNotToUse": [
-    "When fewer than 2 menu items exist \u2014 use Button",
-    "For navigation \u2014 use Link",
+    "When fewer than 2 menu items exist — use Button",
+    "For navigation — use Link",
     "When actions are unrelated"
   ],
   "doRules": [
     "Use Split mode when default action is common (e.g. \"Save\" + \"Save and Close\")",
     "Use Regular mode for \"Add\", \"Actions\", \"More\" menus",
-    "Show \u25be arrow to indicate menu",
+    "Show ▾ arrow to indicate menu",
     "Group related menu items together"
   ],
   "dontRules": [
@@ -32,15 +32,15 @@
     "alignment": "Menu opens below or above based on viewport space."
   },
   "contentGuidance": {
-    "labelLength": "1\u20132 words on the button; menu items max 30 chars.",
+    "labelLength": "1–2 words on the button; menu items max 30 chars.",
     "contentRules": [
       "Button text describes menu purpose",
       "Menu items are specific actions"
     ],
     "examples": [
-      "Add \u25be",
-      "Actions \u25be",
-      "More \u25be"
+      "Add ▾",
+      "Actions ▾",
+      "More ▾"
     ]
   },
   "responsiveBehavior": {
@@ -90,5 +90,5 @@
     "Use SplitButton component (not MenuButton) when default action and dropdown share the same icon"
   ],
   "version": "2026.Q2",
-  "lastChecked": "2026-06-25"
+  "lastChecked": "2026-07-25"
 }

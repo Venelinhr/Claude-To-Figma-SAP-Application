@@ -136,12 +136,12 @@
   "accessibilityRules": [
     {
       "category": "contrast",
-      "requirement": "Title text contrast \u2265 4.5:1 normal (\u2265 3:1 large text \u2265 18.67px bold)",
+      "requirement": "Title text contrast ≥ 4.5:1 normal (≥ 3:1 large text ≥ 18.67px bold)",
       "wcag": "1.4.3"
     },
     {
       "category": "hierarchy",
-      "requirement": "Heading levels must descend without skipping (H1\u2192H2\u2192H3, not H1\u2192H3)",
+      "requirement": "Heading levels must descend without skipping (H1→H2→H3, not H1→H3)",
       "wcag": "1.3.1, 2.4.6"
     },
     {
@@ -157,13 +157,13 @@
   "doRules": [
     "Use exactly one H1 per page (the page title in DynamicPageTitle)",
     "Use H2 for major sections, H3 for subsections; do not skip levels",
-    "Keep titles short \u2014 1 line where possible, max 2 lines on wrap",
+    "Keep titles short — 1 line where possible, max 2 lines on wrap",
     "Bind text color to sapTitleColor (page/section) or sapList_TextColor (toolbar context)"
   ],
   "dontRules": [
-    "Do not use Title as a body paragraph or label \u2014 use Text or Label instead",
-    "Do not skip heading levels (H1\u2192H3 breaks screen reader navigation)",
-    "Do not hardcode the font size \u2014 use the Level/TitleStyle variant",
+    "Do not use Title as a body paragraph or label — use Text or Label instead",
+    "Do not skip heading levels (H1→H3 breaks screen reader navigation)",
+    "Do not hardcode the font size — use the Level/TitleStyle variant",
     "Do not use Title for status messages, hints, or interactive labels"
   ],
   "compatibleComponents": [
@@ -176,11 +176,11 @@
     "Dialog"
   ],
   "incompatiblePatterns": [
-    "Inside table cells \u2014 use plain Text node bound to a SAP text style",
-    "As tooltip content \u2014 Title is a heading; use plain text",
+    "Inside table cells — use plain Text node bound to a SAP text style",
+    "As tooltip content — Title is a heading; use plain text",
     "Repeated multiple times at the same level in a single section"
   ],
-  "guidelineUrl": "https://experience.sap.com/fiori-design-web/title/",
+  "guidelineUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/title",
   "demoKitUrl": "https://sdk.openui5.org/entity/sap.m.Title",
   "apiUrl": "https://sdk.openui5.org/api/sap.m.Title",
   "sampleUrls": [
@@ -188,7 +188,7 @@
   ],
   "libraryVersion": "2025.06",
   "lastValidated": "2026-06-27",
-  "pluginNotes": "The SAP Figma library does NOT ship a standalone Title instance \u2014 sap.m.Title is an aliased reference. The plugin's SAP_KEYS maps Title \u2192 'Label' (i.e. the SAP Label instance is reused with bold+larger font). For native renderers (toolbar title, sub-section header), the plugin uses figma.createText() with: t.fontName = { family: '72', style: 'Bold' }; t.fontSize = 16; with fill bound to sapTitleColor or sapList_TextColor. See plugin code.js handler at comp === 'Title' (~line 4629). This intentional gap means: AI specs MAY emit { component: 'Title', label: '...' } anywhere; the plugin will resolve it to a native bold text node with the correct SAP variable binding.",
+  "pluginNotes": "The SAP Figma library does NOT ship a standalone Title instance — sap.m.Title is an aliased reference. The plugin's SAP_KEYS maps Title → 'Label' (i.e. the SAP Label instance is reused with bold+larger font). For native renderers (toolbar title, sub-section header), the plugin uses figma.createText() with: t.fontName = { family: '72', style: 'Bold' }; t.fontSize = 16; with fill bound to sapTitleColor or sapList_TextColor. See plugin code.js handler at comp === 'Title' (~line 4629). This intentional gap means: AI specs MAY emit { component: 'Title', label: '...' } anywhere; the plugin will resolve it to a native bold text node with the correct SAP variable binding.",
   "composition": {
     "validParents": [
       "DynamicPage",

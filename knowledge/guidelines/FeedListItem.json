@@ -1,17 +1,17 @@
 {
   "componentName": "FeedListItem",
   "slug": "feed-list-item",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/feed-list-item/",
-  "purpose": "Activity feed entry \u2014 author avatar + name + timestamp + message body + optional actions (Like / Reply).",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/feed-list-item",
+  "purpose": "Activity feed entry — author avatar + name + timestamp + message body + optional actions (Like / Reply).",
   "whenToUse": [
     "Social feed in an app",
     "Comment threads on an object",
     "Activity / audit log with rich content"
   ],
   "whenNotToUse": [
-    "Tabular data \u2014 use Table",
-    "Hierarchical \u2014 use Tree",
-    "Simple list \u2014 use StandardListItem"
+    "Tabular data — use Table",
+    "Hierarchical — use Tree",
+    "Simple list — use StandardListItem"
   ],
   "doRules": [
     "Include Avatar + author + timestamp + body",
@@ -20,7 +20,7 @@
   ],
   "dontRules": [
     "Do not omit timestamps",
-    "Do not embed forms in FeedListItem \u2014 link out",
+    "Do not embed forms in FeedListItem — link out",
     "Do not use for tabular data"
   ],
   "layoutGuidance": {
@@ -41,13 +41,13 @@
   "responsiveBehavior": {
     "XL": "Full size and visibility.",
     "L": "Full size and visibility.",
-    "M": "May condense \u2014 see Fiori responsive design guidelines.",
+    "M": "May condense — see Fiori responsive design guidelines.",
     "S": "May convert to alternative pattern on narrow viewports."
   },
   "accessibilityGuidance": {
     "ariaPattern": "Maps to ARIA pattern appropriate for list item.",
-    "contrast": "\u2265 4.5:1 for text, \u2265 3:1 for borders (WCAG AA).",
-    "keyboard": "Full keyboard support \u2014 Tab to focus, Enter/Space to activate.",
+    "contrast": "≥ 4.5:1 for text, ≥ 3:1 for borders (WCAG AA).",
+    "keyboard": "Full keyboard support — Tab to focus, Enter/Space to activate.",
     "screenReader": "Announced with role and state."
   },
   "patterns": [
@@ -60,5 +60,5 @@
     "See pluginNotes for plugin-specific rendering caveats."
   ],
   "version": "2025.06",
-  "lastChecked": "2026-06-26"
+  "lastChecked": "2026-07-25"
 }

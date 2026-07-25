@@ -1,7 +1,7 @@
 {
   "componentName": "UserMenu",
   "slug": "user-menu",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/user-menu/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/menu",
   "purpose": "A popover anchored to the user avatar in the ShellBar, containing profile info, preferences, and account actions. Provides consistent access to user-scoped functions (Settings, Sign Out, Help) across all SAP apps.",
   "whenToUse": [
     "Standard ShellBar user avatar dropdown",
@@ -36,7 +36,9 @@
   "contentGuidance": {
     "labelLength": "Item labels ≤ 30 chars; user name ≤ 40",
     "contentRules": "User info + grouped preference actions + sign-out",
-    "examples": ["Nadia Fischer / nadia@example.com · [Profile] [Settings] [Help] [Sign out]"]
+    "examples": [
+      "Nadia Fischer / nadia@example.com · [Profile] [Settings] [Help] [Sign out]"
+    ]
   },
   "responsiveBehavior": {
     "XL": "Popover from ShellBar avatar",
@@ -45,7 +47,10 @@
     "S": "May become full-height slide-in from right"
   },
   "accessibilityGuidance": {
-    "wcagCriteria": ["WCAG 2.1 · 2.1.1 Keyboard (Level A)", "WCAG 2.1 · 4.1.2 Name, Role, Value (Level A)"],
+    "wcagCriteria": [
+      "WCAG 2.1 · 2.1.1 Keyboard (Level A)",
+      "WCAG 2.1 · 4.1.2 Name, Role, Value (Level A)"
+    ],
     "requirements": [
       "Popover has role='dialog' with aria-label='User menu'",
       "Avatar trigger has aria-label with user name",
@@ -53,12 +58,21 @@
       "Focus returns to trigger on close"
     ]
   },
-  "patterns": ["ShellBar user avatar dropdown", "User profile access", "Sign-out flow"],
+  "patterns": [
+    "ShellBar user avatar dropdown",
+    "User profile access",
+    "Sign-out flow"
+  ],
   "compatibility": {
-    "allowedWith": ["ShellBar (as anchor)"],
-    "forbiddenWith": ["Standalone (must be anchored)", "Inside any other component"]
+    "allowedWith": [
+      "ShellBar (as anchor)"
+    ],
+    "forbiddenWith": [
+      "Standalone (must be anchored)",
+      "Inside any other component"
+    ]
   },
   "exceptions": [],
   "version": "1.149.0",
-  "lastChecked": "2026-07-08"
+  "lastChecked": "2026-07-25"
 }

@@ -111,7 +111,7 @@
     "Inside table cells",
     "As a navigation menu (use SideNavigation)"
   ],
-  "guidelineUrl": "https://experience.sap.com/fiori-design-web/tree/",
+  "guidelineUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/tree",
   "demoKitUrl": "https://sdk.openui5.org/entity/sap.m.Tree",
   "apiUrl": "https://sdk.openui5.org/api/sap.m.Tree",
   "sampleUrls": [

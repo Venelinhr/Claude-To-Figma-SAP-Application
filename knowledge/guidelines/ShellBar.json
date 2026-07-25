@@ -1,8 +1,8 @@
 {
   "componentName": "ShellBar",
   "slug": "shell-bar",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/shell-bar/",
-  "purpose": "The top-level application header bar that displays product branding, primary navigation, search, notifications, and user account. Fixed across all viewports.",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/shell-bar",
+  "purpose": "Universal header at the top of all screens. Offers global functions (search, notifications, user profile, Joule AI) and product-specific elements. Required on every SAP Fiori screen per UXC-016.",
   "whenToUse": [
     "As the topmost element of every SAP Fiori application",
     "To provide consistent product identity and global navigation",
@@ -12,19 +12,22 @@
   "whenNotToUse": [
     "Inside dialogs or popovers",
     "On printed views or PDFs",
-    "For embedded UI inside another application"
+    "For embedded UI inside another application",
+    "Avoid a Back button in the shell bar — use the browser Back button instead; only add it if browser Back is unavailable for technical reasons"
   ],
   "doRules": [
-    "Place ShellBar as the first node in screen hierarchy",
-    "Use Branding Button slot for product name (max 2 lines)",
-    "Show only icons users need \u2014 hide others via boolean variants",
-    "Keep ShellBar height fixed at 52px regardless of variant",
-    "Use ShellSearch for global search; Shell icon buttons for global actions"
+    "Place ShellBar as the first node in screen hierarchy (mandatory on every screen)",
+    "SAP logo (mandatory) + product identifier (mandatory) form the branding element — selecting it navigates to the product home page",
+    "Help button (mandatory) and Profile button (mandatory) must always be present",
+    "Only add actions to the shell bar if users need them frequently — don't replicate shell bar actions in user menu or side navigation",
+    "Use color scheme 7 (set 2) tag for trial systems; color scheme 10 (set 2) for multiple productive systems",
+    "Recommend expanding the search field by default",
+    "Show only the Back button if back navigation is possible — hide it on initial launch or when deep linking"
   ],
   "dontRules": [
     "Do not place ShellBar inside another container with padding",
     "Do not add custom buttons outside the supported slots",
-    "Do not change ShellBar background color \u2014 it is locked to sapShellColor",
+    "Do not change ShellBar background color — it is locked to sapShellColor",
     "Do not duplicate ShellBar across nested views"
   ],
   "layoutGuidance": {
@@ -34,7 +37,7 @@
     "alignment": "Branding left, navigation center, actions+avatar right."
   },
   "contentGuidance": {
-    "labelLength": "Brand text \u2264 2 lines. Avatar shows initials or photo.",
+    "labelLength": "Brand text ≤ 2 lines. Avatar shows initials or photo.",
     "contentRules": [
       "Product name in Semibold Duplex 16px",
       "Use the SAP logo only when authorized",
@@ -46,15 +49,15 @@
     ]
   },
   "responsiveBehavior": {
-    "XL": "Size=XL variant \u2014 full layout with all slots visible",
-    "L": "Size=L variant \u2014 full layout",
-    "M": "Size=M variant \u2014 middle slots may collapse to overflow",
-    "S": "Size=S variant \u2014 minimal: hamburger + brand + avatar; rest in overflow"
+    "XL": "All elements visible, search field expanded.",
+    "L": "Search field collapsed, all other elements still visible.",
+    "M": "Additional shell actions move to overflow menu. Lowest-priority context area elements hidden.",
+    "S": "Product identifier hidden. Only top-priority context area element remains. User menu and product switch stay in place."
   },
   "accessibilityGuidance": [
     {
       "category": "contrast",
-      "requirement": "Brand text contrast \u2265 4.5:1 against shell background",
+      "requirement": "Brand text contrast ≥ 4.5:1 against shell background",
       "wcag": "1.4.3 (AA)"
     },
     {
@@ -64,7 +67,7 @@
     },
     {
       "category": "keyboard",
-      "requirement": "Tab order: hamburger \u2192 brand \u2192 middle \u2192 right \u2192 avatar",
+      "requirement": "Tab order: hamburger → brand → middle → right → avatar",
       "wcag": "2.4.3 (A)"
     },
     {
@@ -98,8 +101,12 @@
   },
   "exceptions": [
     "Hamburger variant=False when SideNavigation is permanently visible",
-    "Joule (AI Copilot) button available only when AI features enabled"
+    "Joule (AI Copilot) launches SAP AI assistant — available only when AI features enabled",
+    "Badge overflow: single action with badge in overflow shows counter on overflow button; multiple badges show attention indicator only",
+    "Additional context area elements don't auto-overflow — listen for hide events to show minified version"
   ],
-  "version": "2026.Q2",
-  "lastChecked": "2026-06-25"
+  "productStandards": ["UXC-016 Shell Bar", "UXC-025 Shell Search", "UXC-020 User Menu", "UXC-024 Notifications"],
+  "ui5Api": "https://ui5.sap.com/#/api/sap.f.ShellBar",
+  "version": "v1-148",
+  "lastChecked": "2026-07-25"
 }

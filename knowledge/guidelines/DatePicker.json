@@ -1,7 +1,7 @@
 {
   "componentName": "DatePicker",
   "slug": "date-picker",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/date-picker/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/datepicker",
   "purpose": "A single-date input with calendar popup. Type or click the calendar icon to choose a date. Respects locale formatting.",
   "whenToUse": [
     "Single-date input in forms",
@@ -9,9 +9,9 @@
     "Birthdate, due-date, expiration entry"
   ],
   "whenNotToUse": [
-    "For date range \u2014 use DateRangePicker",
-    "For date + time \u2014 use DateTimePicker",
-    "For time only \u2014 use TimePicker"
+    "For date range — use DateRangePicker",
+    "For date + time — use DateTimePicker",
+    "For time only — use TimePicker"
   ],
   "doRules": [
     "Use locale-aware date format",
@@ -82,5 +82,5 @@
     "displayFormat overrides locale default"
   ],
   "version": "2026.Q2",
-  "lastChecked": "2026-06-25"
+  "lastChecked": "2026-07-25"
 }

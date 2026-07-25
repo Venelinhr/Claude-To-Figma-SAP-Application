@@ -1,7 +1,7 @@
 {
   "componentName": "Calendar",
   "slug": "calendar",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/calendar/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/calendar",
   "purpose": "Full month-view calendar for date selection and event display. Used in scheduling apps, date-range pickers, and event browsers. Supports single date, multiple dates, and date-range selection.",
   "whenToUse": [
     "Select a date from a visible month view (vs typing in DatePicker)",
@@ -36,7 +36,10 @@
   "contentGuidance": {
     "labelLength": "n/a — dates",
     "contentRules": "Days as numbers 1-31; weekday header as 2-3 letter abbreviations",
-    "examples": ["Mo Tu We Th Fr Sa Su", "1 2 3 4 5 6 7"]
+    "examples": [
+      "Mo Tu We Th Fr Sa Su",
+      "1 2 3 4 5 6 7"
+    ]
   },
   "responsiveBehavior": {
     "XL": "Full month grid",
@@ -45,7 +48,10 @@
     "S": "May switch to list view or DatePicker fallback"
   },
   "accessibilityGuidance": {
-    "wcagCriteria": ["WCAG 2.1 · 2.1.1 Keyboard (Level A)", "WCAG 2.1 · 1.4.3 Contrast (Level AA)"],
+    "wcagCriteria": [
+      "WCAG 2.1 · 2.1.1 Keyboard (Level A)",
+      "WCAG 2.1 · 1.4.3 Contrast (Level AA)"
+    ],
     "requirements": [
       "aria-label on every day cell ('Monday, 8 July 2026')",
       "Selected date has 3:1 contrast against unselected cells",
@@ -53,12 +59,25 @@
       "Today marker is visible without relying on color alone"
     ]
   },
-  "patterns": ["Date pickers (in Popover)", "Booking flows", "Event browsers", "Planning views"],
+  "patterns": [
+    "Date pickers (in Popover)",
+    "Booking flows",
+    "Event browsers",
+    "Planning views"
+  ],
   "compatibility": {
-    "allowedWith": ["Popover", "Page", "Panel", "Card"],
-    "forbiddenWith": ["Inline in Table cells", "Inside Dialog title bar"]
+    "allowedWith": [
+      "Popover",
+      "Page",
+      "Panel",
+      "Card"
+    ],
+    "forbiddenWith": [
+      "Inline in Table cells",
+      "Inside Dialog title bar"
+    ]
   },
   "exceptions": [],
   "version": "1.149.0",
-  "lastChecked": "2026-07-08"
+  "lastChecked": "2026-07-25"
 }

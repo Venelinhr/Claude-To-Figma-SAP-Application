@@ -93,7 +93,7 @@
   "incompatiblePatterns": [
     "See doRules and dontRules for context-specific rules."
   ],
-  "guidelineUrl": "https://experience.sap.com/fiori-design-web/form-element/",
+  "guidelineUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/form-element",
   "demoKitUrl": "https://sdk.openui5.org/entity/sap.m.FormElement",
   "apiUrl": "https://sdk.openui5.org/api/sap.m.FormElement",
   "sampleUrls": [

@@ -110,7 +110,7 @@
     },
     {
       "category": "contrast",
-      "requirement": "Border \u2265 3:1 with surrounding bg (WCAG AA non-text)",
+      "requirement": "Border ≥ 3:1 with surrounding bg (WCAG AA non-text)",
       "wcag": "1.4.11"
     },
     {
@@ -125,10 +125,10 @@
     "Bind fill to sapShellColor (Solid) or sapBackgroundColor (Transparent)"
   ],
   "dontRules": [
-    "Do not use Toolbar when OverflowToolbar is needed (most cases \u2014 when in doubt, use OverflowToolbar)",
-    "Do not stack toolbars vertically \u2014 use a single combined toolbar",
-    "Do not put a primary CTA on the left of the toolbar \u2014 convention is right-aligned",
-    "Do not mix Toolbar and Footer for the same purpose \u2014 pick one"
+    "Do not use Toolbar when OverflowToolbar is needed (most cases — when in doubt, use OverflowToolbar)",
+    "Do not stack toolbars vertically — use a single combined toolbar",
+    "Do not put a primary CTA on the left of the toolbar — convention is right-aligned",
+    "Do not mix Toolbar and Footer for the same purpose — pick one"
   ],
   "compatibleComponents": [
     "Button",
@@ -143,10 +143,10 @@
   ],
   "incompatiblePatterns": [
     "Inside a table cell",
-    "Inside a Dialog body \u2014 use Dialog action buttons instead",
-    "When overflow management is needed \u2014 use OverflowToolbar"
+    "Inside a Dialog body — use Dialog action buttons instead",
+    "When overflow management is needed — use OverflowToolbar"
   ],
-  "guidelineUrl": "https://experience.sap.com/fiori-design-web/toolbar/",
+  "guidelineUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/toolbar",
   "demoKitUrl": "https://sdk.openui5.org/entity/sap.m.Toolbar",
   "apiUrl": "https://sdk.openui5.org/api/sap.m.Toolbar",
   "sampleUrls": [
@@ -154,7 +154,7 @@
   ],
   "libraryVersion": "2025.06",
   "lastValidated": "2026-06-27",
-  "pluginNotes": "Toolbar is a real SAP component (id 58a258bf...) but the plugin's HORIZ_CONTAINERS handler treats Toolbar and OverflowToolbar identically \u2014 both render as a native HORIZONTAL Auto Layout frame with sapShellColor fill and sapShell_BorderColor stroke. The SAP Toolbar instance ships with hardcoded 'Create Copy Paste' demo content that the Plugin API can't override per-instance, so the native frame is the canonical workflow. Status: AI specs SHOULD prefer OverflowToolbar unless they specifically need a non-overflowing toolbar; Toolbar exists in registry for completeness.",
+  "pluginNotes": "Toolbar is a real SAP component (id 58a258bf...) but the plugin's HORIZ_CONTAINERS handler treats Toolbar and OverflowToolbar identically — both render as a native HORIZONTAL Auto Layout frame with sapShellColor fill and sapShell_BorderColor stroke. The SAP Toolbar instance ships with hardcoded 'Create Copy Paste' demo content that the Plugin API can't override per-instance, so the native frame is the canonical workflow. Status: AI specs SHOULD prefer OverflowToolbar unless they specifically need a non-overflowing toolbar; Toolbar exists in registry for completeness.",
   "composition": {
     "validParents": [
       "DynamicPage",

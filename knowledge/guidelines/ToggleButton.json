@@ -1,17 +1,17 @@
 {
   "componentName": "ToggleButton",
   "slug": "toggle-button",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/toggle-button/",
-  "purpose": "Stateful Button \u2014 visually shows pressed/unpressed state. Used for binary toggles that aren't pure switches (e.g. format toolbar bold/italic, filter chip on/off).",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/toggle-button",
+  "purpose": "Stateful Button — visually shows pressed/unpressed state. Used for binary toggles that aren't pure switches (e.g. format toolbar bold/italic, filter chip on/off).",
   "whenToUse": [
     "Toolbar format toggles (Bold / Italic / Underline)",
     "Filter mode toggle in a toolbar",
     "When state must be visually distinct from disabled"
   ],
   "whenNotToUse": [
-    "Single-action triggers \u2014 use Button",
-    "Multiple mutually-exclusive options \u2014 use SegmentedButton",
-    "Enable/disable a value \u2014 use Switch"
+    "Single-action triggers — use Button",
+    "Multiple mutually-exclusive options — use SegmentedButton",
+    "Enable/disable a value — use Switch"
   ],
   "doRules": [
     "Show pressed state via fill, not just text",
@@ -20,7 +20,7 @@
   ],
   "dontRules": [
     "Do not use without a clear pressed/unpressed visual distinction",
-    "Do not stack multiple ToggleButtons that are actually mutually exclusive \u2014 use SegmentedButton"
+    "Do not stack multiple ToggleButtons that are actually mutually exclusive — use SegmentedButton"
   ],
   "layoutGuidance": {
     "placement": "Place ToggleButton inside a compatible container (OverflowToolbar, Toolbar, Form).",
@@ -40,13 +40,13 @@
   "responsiveBehavior": {
     "XL": "Full size and visibility.",
     "L": "Full size and visibility.",
-    "M": "May condense \u2014 see Fiori responsive design guidelines.",
+    "M": "May condense — see Fiori responsive design guidelines.",
     "S": "May convert to alternative pattern on narrow viewports."
   },
   "accessibilityGuidance": {
     "ariaPattern": "Maps to ARIA pattern appropriate for button.",
-    "contrast": "\u2265 4.5:1 for text, \u2265 3:1 for borders (WCAG AA).",
-    "keyboard": "Full keyboard support \u2014 Tab to focus, Enter/Space to activate.",
+    "contrast": "≥ 4.5:1 for text, ≥ 3:1 for borders (WCAG AA).",
+    "keyboard": "Full keyboard support — Tab to focus, Enter/Space to activate.",
     "screenReader": "Announced with role and state."
   },
   "patterns": [
@@ -63,5 +63,5 @@
     "See pluginNotes for plugin-specific rendering caveats."
   ],
   "version": "2025.06",
-  "lastChecked": "2026-06-26"
+  "lastChecked": "2026-07-25"
 }

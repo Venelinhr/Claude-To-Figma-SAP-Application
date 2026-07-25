@@ -1,7 +1,7 @@
 {
   "componentName": "Tree",
   "slug": "tree",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/tree/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/tree",
   "purpose": "Hierarchical list of nested items. Displays parent-child relationships through indentation and expand/collapse affordances.",
   "whenToUse": [
     "Hierarchical data with arbitrary depth (file trees, org charts, category hierarchies)",
@@ -9,22 +9,22 @@
     "When list of items has parent-child relationships users need to expand/collapse"
   ],
   "whenNotToUse": [
-    "Flat lists \u2014 use List",
-    "Tabular data \u2014 use Table",
-    "Two-level hierarchy only \u2014 use grouped List with section headers",
-    "When user needs to compare attributes across items \u2014 use Table"
+    "Flat lists — use List",
+    "Tabular data — use Table",
+    "Two-level hierarchy only — use grouped List with section headers",
+    "When user needs to compare attributes across items — use Table"
   ],
   "doRules": [
     "Bind row text to sapList_TextColor",
-    "Limit indent to 4 levels max \u2014 beyond that, redesign as filtered list",
+    "Limit indent to 4 levels max — beyond that, redesign as filtered list",
     "Use a chevron icon for expandable nodes (rotates on expand)",
     "Show expand/collapse state in the icon orientation"
   ],
   "dontRules": [
     "Do not use Tree for non-hierarchical data",
     "Do not nest Tree inside another Tree",
-    "Do not omit the expand/collapse affordance \u2014 users cannot discover nesting otherwise",
-    "Do not show more than ~200 visible nodes at once \u2014 virtualize or filter"
+    "Do not omit the expand/collapse affordance — users cannot discover nesting otherwise",
+    "Do not show more than ~200 visible nodes at once — virtualize or filter"
   ],
   "layoutGuidance": {
     "placement": "Place Tree inside a compatible container (Panel, Dialog, DynamicPage).",
@@ -44,13 +44,13 @@
   "responsiveBehavior": {
     "XL": "Full size and visibility.",
     "L": "Full size and visibility.",
-    "M": "May condense or collapse \u2014 see Fiori responsive design guidelines.",
+    "M": "May condense or collapse — see Fiori responsive design guidelines.",
     "S": "May convert to alternative pattern (Popover, Dialog) on narrow viewports."
   },
   "accessibilityGuidance": {
-    "ariaPattern": "Maps to ARIA pattern appropriate for data display \u2014 see SAP Fiori a11y docs.",
-    "contrast": "\u2265 4.5:1 for text, \u2265 3:1 for borders (WCAG AA).",
-    "keyboard": "Full keyboard support \u2014 Tab to focus, Enter/Space to activate.",
+    "ariaPattern": "Maps to ARIA pattern appropriate for data display — see SAP Fiori a11y docs.",
+    "contrast": "≥ 4.5:1 for text, ≥ 3:1 for borders (WCAG AA).",
+    "keyboard": "Full keyboard support — Tab to focus, Enter/Space to activate.",
     "screenReader": "Announced with role and state."
   },
   "patterns": [
@@ -68,5 +68,5 @@
     "See pluginNotes for plugin-specific rendering caveats."
   ],
   "version": "2025.06",
-  "lastChecked": "2026-06-26"
+  "lastChecked": "2026-07-25"
 }

@@ -1,7 +1,7 @@
 {
   "componentName": "InfoLabel",
   "slug": "info-label",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/info-label/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/info-label",
   "purpose": "A compact categorical label used to tag items by category, priority, or type. Non-semantic (no state colors) — purely for classification. Common in inbox lists, message centers, and search results.",
   "whenToUse": [
     "Categorize list items by type (e.g. 'Invoice', 'Purchase Order', 'RFP')",
@@ -36,7 +36,12 @@
   "contentGuidance": {
     "labelLength": "1-15 characters",
     "contentRules": "Noun or noun phrase; capitalized",
-    "examples": ["Invoice", "PO", "Rejected", "Tenant A"]
+    "examples": [
+      "Invoice",
+      "PO",
+      "Rejected",
+      "Tenant A"
+    ]
   },
   "responsiveBehavior": {
     "XL": "Inline",
@@ -45,19 +50,34 @@
     "S": "May wrap below primary text"
   },
   "accessibilityGuidance": {
-    "wcagCriteria": ["WCAG 2.1 · 1.4.3 Contrast (Level AA)", "WCAG 2.1 · 1.3.1 Info and Relationships (Level A)"],
+    "wcagCriteria": [
+      "WCAG 2.1 · 1.4.3 Contrast (Level AA)",
+      "WCAG 2.1 · 1.3.1 Info and Relationships (Level A)"
+    ],
     "requirements": [
       "Label text has 4.5:1 contrast against InfoLabel background",
       "Provides aria-label describing the category",
       "Color coding is decorative — semantic meaning always in text"
     ]
   },
-  "patterns": ["Inbox list", "Message center", "Search results", "Message popover items"],
+  "patterns": [
+    "Inbox list",
+    "Message center",
+    "Search results",
+    "Message popover items"
+  ],
   "compatibility": {
-    "allowedWith": ["StandardListItem", "ObjectListItem", "MessagePopoverItem", "NotificationListItem"],
-    "forbiddenWith": ["Standalone (always paired with content)"]
+    "allowedWith": [
+      "StandardListItem",
+      "ObjectListItem",
+      "MessagePopoverItem",
+      "NotificationListItem"
+    ],
+    "forbiddenWith": [
+      "Standalone (always paired with content)"
+    ]
   },
   "exceptions": [],
   "version": "1.149.0",
-  "lastChecked": "2026-07-08"
+  "lastChecked": "2026-07-25"
 }

@@ -1,22 +1,22 @@
 {
   "componentName": "IconTabHeader",
   "slug": "icon-tab-header",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/icon-tab-header/",
-  "purpose": "Header zone of IconTabBar \u2014 the strip that holds the tab filters. Used as a standalone navigation strip when the content panel is rendered separately.",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/icon-tab-header",
+  "purpose": "Header zone of IconTabBar — the strip that holds the tab filters. Used as a standalone navigation strip when the content panel is rendered separately.",
   "whenToUse": [
     "Standalone tab strip without IconTabBar content panel",
     "Detached tab navigation in a custom layout"
   ],
   "whenNotToUse": [
-    "Normal use \u2014 IconTabBar already includes its IconTabHeader",
-    "For top tabs without filters \u2014 use Tabs"
+    "Normal use — IconTabBar already includes its IconTabHeader",
+    "For top tabs without filters — use Tabs"
   ],
   "doRules": [
     "Inherit visual styling from IconTabBar",
     "Manage selected state same as IconTabBar"
   ],
   "dontRules": [
-    "Do not use IconTabHeader if IconTabBar is sufficient \u2014 duplication risk",
+    "Do not use IconTabHeader if IconTabBar is sufficient — duplication risk",
     "Do not nest IconTabHeader"
   ],
   "layoutGuidance": {
@@ -37,13 +37,13 @@
   "responsiveBehavior": {
     "XL": "Full size and visibility.",
     "L": "Full size and visibility.",
-    "M": "May condense \u2014 see Fiori responsive design guidelines.",
+    "M": "May condense — see Fiori responsive design guidelines.",
     "S": "May convert to alternative pattern on narrow viewports."
   },
   "accessibilityGuidance": {
     "ariaPattern": "Maps to ARIA pattern appropriate for navigation.",
-    "contrast": "\u2265 4.5:1 for text, \u2265 3:1 for borders (WCAG AA).",
-    "keyboard": "Full keyboard support \u2014 Tab to focus, Enter/Space to activate.",
+    "contrast": "≥ 4.5:1 for text, ≥ 3:1 for borders (WCAG AA).",
+    "keyboard": "Full keyboard support — Tab to focus, Enter/Space to activate.",
     "screenReader": "Announced with role and state."
   },
   "patterns": [
@@ -58,5 +58,5 @@
     "See pluginNotes for plugin-specific rendering caveats."
   ],
   "version": "2025.06",
-  "lastChecked": "2026-06-26"
+  "lastChecked": "2026-07-25"
 }

@@ -1,7 +1,7 @@
 {
   "componentName": "TableCell",
-  "slug": "table",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/table/",
+  "slug": "responsive-table",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/responsive-table",
   "purpose": "The individual cell of a Table row. Holds display content (Text, Link, ObjectStatus, GenericTag, Avatar) or interactive controls (Input, Select, IconButton) depending on the column type. Aligns to its Column's alignment rule.",
   "whenToUse": [
     "As the atomic unit of a Table row's data",
@@ -10,10 +10,10 @@
     "For row-level action buttons (Edit / Delete / More)"
   ],
   "whenNotToUse": [
-    "For complex composed layouts — restructure into ObjectListItem instead",
-    "For nested tables — tables inside tables are usually the wrong pattern",
-    "For long text — use ObjectListItem or a Card view",
-    "For a table used as a layout grid — use Grid or Auto Layout"
+    "For complex composed layouts \u2014 restructure into ObjectListItem instead",
+    "For nested tables \u2014 tables inside tables are usually the wrong pattern",
+    "For long text \u2014 use ObjectListItem or a Card view",
+    "For a table used as a layout grid \u2014 use Grid or Auto Layout"
   ],
   "doRules": [
     "Align text-cells to the left, numeric cells to the right",
@@ -24,7 +24,7 @@
   "dontRules": [
     "Do not use color alone for state (fails WCAG 1.4.1)",
     "Do not put more than 2 pieces of content in one cell without visual grouping",
-    "Do not use for large text — cells should be scannable at a glance",
+    "Do not use for large text \u2014 cells should be scannable at a glance",
     "Do not omit column alignment (defaults may not match content type)"
   ],
   "layoutGuidance": {
@@ -34,9 +34,13 @@
     "alignment": "Follows the parent Column's hAlign property"
   },
   "contentGuidance": {
-    "labelLength": "Depends on Column type; typically ≤ 40 chars visible",
+    "labelLength": "Depends on Column type; typically \u2264 40 chars visible",
     "contentRules": "Type-appropriate content: string, number, status, action",
-    "examples": ["PO-48865", "$12,340.00", "ObjectStatus 'Pending'"]
+    "examples": [
+      "PO-48865",
+      "$12,340.00",
+      "ObjectStatus 'Pending'"
+    ]
   },
   "responsiveBehavior": {
     "XL": "All cells visible",
@@ -45,7 +49,10 @@
     "S": "Only 2-3 highest-priority columns; row expands to show rest"
   },
   "accessibilityGuidance": {
-    "wcagCriteria": ["WCAG 2.1 · 1.3.1 Info and Relationships (Level A)", "WCAG 2.1 · 1.4.1 Use of Color (Level A)"],
+    "wcagCriteria": [
+      "WCAG 2.1 \u00b7 1.3.1 Info and Relationships (Level A)",
+      "WCAG 2.1 \u00b7 1.4.1 Use of Color (Level A)"
+    ],
     "requirements": [
       "role='cell' or 'gridcell' (implicit from <td>)",
       "Complex cell content has accessible name (aria-label if pure icons)",
@@ -53,12 +60,29 @@
       "Interactive cells have visible focus indicator"
     ]
   },
-  "patterns": ["Data table row", "Editable grid", "Row actions column"],
+  "patterns": [
+    "Data table row",
+    "Editable grid",
+    "Row actions column"
+  ],
   "compatibility": {
-    "allowedWith": ["Table (as parent only)", "Text", "Link", "ObjectStatus", "GenericTag", "Avatar", "IconButton", "Input (edit mode)"],
-    "forbiddenWith": ["Standalone", "Inside Dialog", "Inside Panel directly"]
+    "allowedWith": [
+      "Table (as parent only)",
+      "Text",
+      "Link",
+      "ObjectStatus",
+      "GenericTag",
+      "Avatar",
+      "IconButton",
+      "Input (edit mode)"
+    ],
+    "forbiddenWith": [
+      "Standalone",
+      "Inside Dialog",
+      "Inside Panel directly"
+    ]
   },
   "exceptions": [],
   "version": "1.149.0",
-  "lastChecked": "2026-07-08"
+  "lastChecked": "2026-07-25"
 }

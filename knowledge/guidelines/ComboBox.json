@@ -1,7 +1,7 @@
 {
   "componentName": "ComboBox",
   "slug": "combo-box",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/combo-box/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/combo-box",
   "purpose": "A dropdown selector that combines typing with a scrollable list — user can type to filter or click to choose. Handles known finite lists (10-100 items) better than Select.",
   "whenToUse": [
     "10-100 items in a known list (countries, categories, sizes)",
@@ -36,7 +36,10 @@
   "contentGuidance": {
     "labelLength": "Placeholder up to 40 chars",
     "contentRules": "Item labels are noun phrases; consistent format across items",
-    "examples": ["Country: [Germany|]", "Priority: [High     ▼]"]
+    "examples": [
+      "Country: [Germany|]",
+      "Priority: [High     ▼]"
+    ]
   },
   "responsiveBehavior": {
     "XL": "Full field width",
@@ -45,7 +48,10 @@
     "S": "May become full-screen picker on tap"
   },
   "accessibilityGuidance": {
-    "wcagCriteria": ["WCAG 2.1 · 4.1.2 Name, Role, Value (Level A)", "WCAG 2.1 · 3.3.2 Labels or Instructions (Level A)"],
+    "wcagCriteria": [
+      "WCAG 2.1 · 4.1.2 Name, Role, Value (Level A)",
+      "WCAG 2.1 · 3.3.2 Labels or Instructions (Level A)"
+    ],
     "requirements": [
       "role='combobox' with aria-expanded reflecting dropdown state",
       "Associated Label element (visible or aria-labelledby)",
@@ -53,12 +59,25 @@
       "Keyboard: Down opens dropdown; Arrow keys navigate; Enter selects; Escape closes"
     ]
   },
-  "patterns": ["Form field", "FilterBar item", "Dialog input"],
+  "patterns": [
+    "Form field",
+    "FilterBar item",
+    "Dialog input"
+  ],
   "compatibility": {
-    "allowedWith": ["Form", "FormElement", "FilterBar", "Dialog", "Panel"],
-    "forbiddenWith": ["Table cells (too dense)", "Toolbar"]
+    "allowedWith": [
+      "Form",
+      "FormElement",
+      "FilterBar",
+      "Dialog",
+      "Panel"
+    ],
+    "forbiddenWith": [
+      "Table cells (too dense)",
+      "Toolbar"
+    ]
   },
   "exceptions": [],
   "version": "1.149.0",
-  "lastChecked": "2026-07-08"
+  "lastChecked": "2026-07-25"
 }

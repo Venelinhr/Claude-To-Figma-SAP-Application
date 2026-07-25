@@ -105,7 +105,7 @@
     "Enter or comma creates a token"
   ],
   "dontRules": [
-    "Do not use when values come from a fixed list \u2014 use MultiComboBox",
+    "Do not use when values come from a fixed list — use MultiComboBox",
     "Do not allow duplicates if uniqueness matters"
   ],
   "compatibleComponents": [
@@ -117,7 +117,7 @@
   "incompatiblePatterns": [
     "Without Label"
   ],
-  "guidelineUrl": "https://experience.sap.com/fiori-design-web/multiinput/",
+  "guidelineUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/multiinput",
   "demoKitUrl": "https://sapui5.hana.ondemand.com/#/entity/sap.m.MultiInput",
   "apiUrl": "https://sapui5.hana.ondemand.com/#/api/sap.m.MultiInput",
   "sampleUrls": [],

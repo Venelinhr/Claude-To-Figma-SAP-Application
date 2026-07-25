@@ -75,12 +75,12 @@
   "accessibilityRules": [
     {
       "category": "contrast",
-      "requirement": "Text contrast \u2265 4.5:1 against tag background",
+      "requirement": "Text contrast ≥ 4.5:1 against tag background",
       "wcag": "1.4.3 (AA)"
     },
     {
       "category": "labeling",
-      "requirement": "Tag text alone provides meaning \u2014 do not rely on color"
+      "requirement": "Tag text alone provides meaning — do not rely on color"
     }
   ],
   "doRules": [
@@ -88,7 +88,7 @@
     "Use consistent colorScheme for the same category"
   ],
   "dontRules": [
-    "Do not communicate status by color alone \u2014 use ObjectStatus",
+    "Do not communicate status by color alone — use ObjectStatus",
     "Do not use long tag text"
   ],
   "compatibleComponents": [
@@ -99,7 +99,7 @@
   "incompatiblePatterns": [
     "As primary CTA"
   ],
-  "guidelineUrl": "https://experience.sap.com/fiori-design-web/tag/",
+  "guidelineUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/tag",
   "demoKitUrl": "https://sapui5.hana.ondemand.com/#/entity/sap.m.Tag",
   "apiUrl": "https://sapui5.hana.ondemand.com/#/api/sap.m.Tag",
   "sampleUrls": [],

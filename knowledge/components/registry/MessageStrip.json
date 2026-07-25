@@ -90,7 +90,7 @@
   "accessibilityRules": [
     {
       "category": "status",
-      "requirement": "Type communicated by icon AND text \u2014 not color alone",
+      "requirement": "Type communicated by icon AND text — not color alone",
       "wcag": "1.4.1 (A)"
     },
     {
@@ -111,7 +111,7 @@
     "Always show icon alongside text"
   ],
   "dontRules": [
-    "Do not use MessageStrip for transient toasts \u2014 use MessageToast",
+    "Do not use MessageStrip for transient toasts — use MessageToast",
     "Do not use as primary CTA container",
     "Do not stack multiple MessageStrips of same type"
   ],
@@ -125,7 +125,7 @@
     "Inside Table cell",
     "As toolbar item"
   ],
-  "guidelineUrl": "https://experience.sap.com/fiori-design-web/messagestrip/",
+  "guidelineUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/messagestrip",
   "demoKitUrl": "https://sapui5.hana.ondemand.com/#/entity/sap.m.MessageStrip",
   "apiUrl": "https://sapui5.hana.ondemand.com/#/api/sap.m.MessageStrip",
   "sampleUrls": [],

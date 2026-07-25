@@ -1,7 +1,7 @@
 {
   "componentName": "Breadcrumb",
   "slug": "breadcrumb",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/breadcrumb/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/breadcrumb",
   "purpose": "Shows the user's current location within a hierarchy and lets them navigate back to ancestor pages. Appears above the page title and provides one-click traversal upward through the app structure.",
   "whenToUse": [
     "App has deep hierarchy (depth > 1) and user navigation comes from above",
@@ -50,9 +50,9 @@
   },
   "responsiveBehavior": {
     "XL": "Show full path at all levels.",
-    "L":  "Show full path at all levels.",
-    "M":  "If path > 4 items, collapse middle items with '…' button.",
-    "S":  "Show only current + immediate parent; offer '…' menu for deeper ancestors."
+    "L": "Show full path at all levels.",
+    "M": "If path > 4 items, collapse middle items with '…' button.",
+    "S": "Show only current + immediate parent; offer '…' menu for deeper ancestors."
   },
   "accessibilityGuidance": {
     "ariaPattern": "Wrap in <nav aria-label='Breadcrumb'>. Final item gets aria-current='page'.",
@@ -65,11 +65,16 @@
     "List Report — include when accessed from a parent section",
     "Drill-down detail — required to make 'back to list' obvious"
   ],
-  "compatibility": ["DynamicPageTitle", "DynamicPage", "ObjectPageLayout", "ShellBar"],
+  "compatibility": [
+    "DynamicPageTitle",
+    "DynamicPage",
+    "ObjectPageLayout",
+    "ShellBar"
+  ],
   "exceptions": [
     "Single-level apps (no hierarchy) — omit Breadcrumb entirely",
     "Mobile / narrow viewport — use a back button + page title, no breadcrumb trail"
   ],
   "version": "2025.06",
-  "lastChecked": "2026-06-26"
+  "lastChecked": "2026-07-25"
 }

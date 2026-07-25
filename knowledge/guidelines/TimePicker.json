@@ -1,15 +1,15 @@
 {
   "componentName": "TimePicker",
   "slug": "time-picker",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/time-picker/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/timepicker",
   "purpose": "A single time-of-day input. User can type or use up/down spinners for hours, minutes, optional seconds.",
   "whenToUse": [
     "Time-only entry (alarm, business hours, meeting start)",
     "When time without date is meaningful"
   ],
   "whenNotToUse": [
-    "When date is also required \u2014 use DateTimePicker",
-    "For durations \u2014 use Input type=Number"
+    "When date is also required — use DateTimePicker",
+    "For durations — use Input type=Number"
   ],
   "doRules": [
     "Use when only time-of-day is needed",
@@ -17,7 +17,7 @@
     "Show AM/PM toggle when applicable"
   ],
   "dontRules": [
-    "Do not use for date+time \u2014 use DateTimePicker",
+    "Do not use for date+time — use DateTimePicker",
     "Do not allow seconds when minute precision suffices"
   ],
   "layoutGuidance": {
@@ -73,5 +73,5 @@
     "Step value (e.g. 15-min intervals)"
   ],
   "version": "2026.Q2",
-  "lastChecked": "2026-06-25"
+  "lastChecked": "2026-07-25"
 }

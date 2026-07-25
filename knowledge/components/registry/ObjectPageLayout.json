@@ -87,8 +87,8 @@
     "Show object header with key facts at top"
   ],
   "dontRules": [
-    "Do not use for simple single-section pages \u2014 use DynamicPage",
-    "Do not put a Table as the only content \u2014 use List Report"
+    "Do not use for simple single-section pages — use DynamicPage",
+    "Do not put a Table as the only content — use List Report"
   ],
   "compatibleComponents": [
     "DynamicPageTitle",
@@ -99,7 +99,7 @@
   "incompatiblePatterns": [
     "Inside Dialog"
   ],
-  "guidelineUrl": "https://experience.sap.com/fiori-design-web/objectpagelayout/",
+  "guidelineUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/objectpagelayout",
   "demoKitUrl": "https://sapui5.hana.ondemand.com/#/entity/sap.m.ObjectPageLayout",
   "apiUrl": "https://sapui5.hana.ondemand.com/#/api/sap.m.ObjectPageLayout",
   "sampleUrls": [],
@@ -109,7 +109,7 @@
     "textInjectionMethod": "not-injectable",
     "sizingConstraints": "Full viewport.",
     "knownIssues": [
-      "Plugin uses SKIP_SELF \u2014 recurses into sections."
+      "Plugin uses SKIP_SELF — recurses into sections."
     ]
   },
   "composition": {

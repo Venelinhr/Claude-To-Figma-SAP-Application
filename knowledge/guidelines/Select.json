@@ -1,28 +1,28 @@
 {
   "componentName": "Select",
   "slug": "select",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/select/",
-  "purpose": "A dropdown control allowing the user to choose one option from a list of 4\u201312 mutually exclusive items. Compact alternative to RadioButton group.",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/select",
+  "purpose": "A dropdown control allowing the user to choose one option from a list of 4–12 mutually exclusive items. Compact alternative to RadioButton group.",
   "whenToUse": [
-    "4\u201312 mutually exclusive options",
+    "4–12 mutually exclusive options",
     "When all options should be visible on demand",
     "When the choice does not need search/filter",
     "In forms and filter bars"
   ],
   "whenNotToUse": [
-    "Use RadioButton when \u22643 options",
+    "Use RadioButton when ≤3 options",
     "Use ComboBox when >12 options or search is needed",
     "Use MultiComboBox for multi-select"
   ],
   "doRules": [
-    "Use Select when 4\u201312 mutually exclusive options exist",
+    "Use Select when 4–12 mutually exclusive options exist",
     "Use a clear default value when applicable",
     "Pair every Select with a Label",
     "Order options logically (frequency, alphabetical, recency)"
   ],
   "dontRules": [
-    "Do not use Select with fewer than 3 options \u2014 use RadioButton",
-    "Do not use Select with more than 12 options \u2014 use ComboBox with search",
+    "Do not use Select with fewer than 3 options — use RadioButton",
+    "Do not use Select with more than 12 options — use ComboBox with search",
     "Do not nest Select inside Select"
   ],
   "layoutGuidance": {
@@ -32,7 +32,7 @@
     "alignment": "Left-aligned with Label above or to the left."
   },
   "contentGuidance": {
-    "labelLength": "Option text \u2264 30 chars preferred.",
+    "labelLength": "Option text ≤ 30 chars preferred.",
     "contentRules": [
       "Use sentence case",
       "Avoid repetitive words across options"
@@ -89,5 +89,5 @@
     "When options have icons, use Select with icon+text variant"
   ],
   "version": "2026.Q2",
-  "lastChecked": "2026-06-25"
+  "lastChecked": "2026-07-25"
 }

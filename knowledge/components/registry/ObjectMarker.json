@@ -79,12 +79,12 @@
   "accessibilityRules": [
     {
       "category": "contrast",
-      "requirement": "Text contrast \u2265 4.5:1 against bg (WCAG AA)",
+      "requirement": "Text contrast ≥ 4.5:1 against bg (WCAG AA)",
       "wcag": "1.4.3"
     },
     {
       "category": "tap-target",
-      "requirement": "Min 32\u00d732 Compact / 44\u00d744 Cozy"
+      "requirement": "Min 32×32 Compact / 44×44 Cozy"
     },
     {
       "category": "keyboard",
@@ -102,7 +102,7 @@
   ],
   "dontRules": [
     "Do not invent new marker types",
-    "Do not use ObjectMarker for action-required state \u2014 use MessageStrip"
+    "Do not use ObjectMarker for action-required state — use MessageStrip"
   ],
   "compatibleComponents": [
     "ColumnListItem",
@@ -113,7 +113,7 @@
   "incompatiblePatterns": [
     "See doRules and dontRules for context-specific rules."
   ],
-  "guidelineUrl": "https://experience.sap.com/fiori-design-web/object-marker/",
+  "guidelineUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/object-marker",
   "demoKitUrl": "https://sdk.openui5.org/entity/sap.m.ObjectMarker",
   "apiUrl": "https://sdk.openui5.org/api/sap.m.ObjectMarker",
   "sampleUrls": [
@@ -121,7 +121,7 @@
   ],
   "libraryVersion": "2025.06",
   "lastValidated": "2026-06-27",
-  "pluginNotes": "ObjectMarker is sap.m.ObjectMarker. Plugin renders type variant via setProperties. Native fallback uses an icon + text combo with bound fills. Recipe corrected 2026-06-27 from \"composed:Alert+Icon\" to \"composed:MessageStrip-styled\" \u2014 referenced parts must exist in SAP_KEYS / KEY_MAP / NATIVE_RENDERERS (enforced by build/check-component-consistency.py).",
+  "pluginNotes": "ObjectMarker is sap.m.ObjectMarker. Plugin renders type variant via setProperties. Native fallback uses an icon + text combo with bound fills. Recipe corrected 2026-06-27 from \"composed:Alert+Icon\" to \"composed:MessageStrip-styled\" — referenced parts must exist in SAP_KEYS / KEY_MAP / NATIVE_RENDERERS (enforced by build/check-component-consistency.py).",
   "composition": {
     "validParents": [
       "ColumnListItem",

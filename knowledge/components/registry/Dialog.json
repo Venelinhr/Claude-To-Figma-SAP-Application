@@ -148,7 +148,7 @@
     "Inside another Dialog",
     "Inside Toolbar"
   ],
-  "guidelineUrl": "https://experience.sap.com/fiori-design-web/dialog/",
+  "guidelineUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/dialog",
   "demoKitUrl": "https://sapui5.hana.ondemand.com/#/entity/sap.m.Dialog",
   "apiUrl": "https://sapui5.hana.ondemand.com/#/api/sap.m.Dialog",
   "sampleUrls": [],

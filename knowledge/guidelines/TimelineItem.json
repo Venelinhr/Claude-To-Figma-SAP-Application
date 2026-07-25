@@ -1,7 +1,7 @@
 {
   "componentName": "TimelineItem",
   "slug": "timeline-item",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/timeline-item/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/timeline-item",
   "purpose": "Single event in a Timeline. Has user/source, action description, timestamp, optional content body.",
   "whenToUse": [
     "Inside Timeline",
@@ -9,7 +9,7 @@
   ],
   "whenNotToUse": [
     "Outside Timeline",
-    "For a standalone activity card \u2014 use Card or ColumnListItem"
+    "For a standalone activity card — use Card or ColumnListItem"
   ],
   "doRules": [
     "Always include user + timestamp",
@@ -18,7 +18,7 @@
   ],
   "dontRules": [
     "Do not omit timestamp",
-    "Do not embed long forms \u2014 link out instead",
+    "Do not embed long forms — link out instead",
     "Do not nest TimelineItem inside TimelineItem"
   ],
   "layoutGuidance": {
@@ -39,13 +39,13 @@
   "responsiveBehavior": {
     "XL": "Full size and visibility.",
     "L": "Full size and visibility.",
-    "M": "May condense \u2014 see Fiori responsive design guidelines.",
+    "M": "May condense — see Fiori responsive design guidelines.",
     "S": "May convert to alternative pattern on narrow viewports."
   },
   "accessibilityGuidance": {
     "ariaPattern": "Maps to ARIA pattern appropriate for data display.",
-    "contrast": "\u2265 4.5:1 for text, \u2265 3:1 for borders (WCAG AA).",
-    "keyboard": "Full keyboard support \u2014 Tab to focus, Enter/Space to activate.",
+    "contrast": "≥ 4.5:1 for text, ≥ 3:1 for borders (WCAG AA).",
+    "keyboard": "Full keyboard support — Tab to focus, Enter/Space to activate.",
     "screenReader": "Announced with role and state."
   },
   "patterns": [
@@ -58,5 +58,5 @@
     "See pluginNotes for plugin-specific rendering caveats."
   ],
   "version": "2025.06",
-  "lastChecked": "2026-06-26"
+  "lastChecked": "2026-07-25"
 }

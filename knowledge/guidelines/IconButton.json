@@ -1,7 +1,7 @@
 {
   "componentName": "IconButton",
   "slug": "icon-button",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/icon-button/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/iconbutton",
   "purpose": "A button that shows only an icon, no text. Used for compact action triggers when screen space is limited or actions are universally recognized.",
   "whenToUse": [
     "In toolbars where space is constrained",
@@ -10,30 +10,30 @@
     "In ShellBar for global actions (notifications, help, account)"
   ],
   "whenNotToUse": [
-    "For primary actions \u2014 use Button with label",
+    "For primary actions — use Button with label",
     "For unfamiliar icon metaphors",
     "When label adds important clarification"
   ],
   "doRules": [
     "Use a tooltip explaining the action",
     "Pair with a well-known icon metaphor",
-    "Keep touch area \u226532px even if icon is smaller",
+    "Keep touch area ≥32px even if icon is smaller",
     "Use Transparent type as default; Emphasized only for emphasis"
   ],
   "dontRules": [
-    "Do not use IconButton for primary actions \u2014 use Button with label",
+    "Do not use IconButton for primary actions — use Button with label",
     "Do not use unfamiliar custom icons",
     "Do not skip tooltip",
-    "Do not make touch area smaller than 32\u00d732px"
+    "Do not make touch area smaller than 32×32px"
   ],
   "layoutGuidance": {
     "placement": "In toolbars, ShellBar, table rows.",
-    "sizing": "32\u00d732px Compact / 44\u00d744px Cozy. Square aspect.",
+    "sizing": "32×32px Compact / 44×44px Cozy. Square aspect.",
     "spacing": "4px between adjacent icon buttons.",
     "alignment": "Right-aligned in toolbars by default."
   },
   "contentGuidance": {
-    "labelLength": "No label \u2014 tooltip only.",
+    "labelLength": "No label — tooltip only.",
     "contentRules": [
       "Icon must convey action clearly",
       "Tooltip describes action in verb form"
@@ -46,10 +46,10 @@
     ]
   },
   "responsiveBehavior": {
-    "XL": "Standard 32\u00d732px",
-    "L": "Standard 32\u00d732px",
-    "M": "Standard 32\u00d732px",
-    "S": "May grow to 44\u00d744px for touch targets"
+    "XL": "Standard 32×32px",
+    "L": "Standard 32×32px",
+    "M": "Standard 32×32px",
+    "S": "May grow to 44×44px for touch targets"
   },
   "accessibilityGuidance": [
     {
@@ -59,7 +59,7 @@
     },
     {
       "category": "tap-target",
-      "requirement": "Min 32\u00d732px Compact / 44\u00d744px Cozy",
+      "requirement": "Min 32×32px Compact / 44×44px Cozy",
       "wcag": "2.5.5 (AAA)"
     },
     {
@@ -94,5 +94,5 @@
     "ShellIconButton variant has different styling for the application shell"
   ],
   "version": "2026.Q2",
-  "lastChecked": "2026-06-25"
+  "lastChecked": "2026-07-25"
 }

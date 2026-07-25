@@ -5,31 +5,127 @@
   "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
   "componentCategory": "Display",
   "supportedVariants": [
-    { "property": "Design",   "ui5Property": "design",   "values": ["Full","StatusIconHidden"], "default": "Full" },
-    { "property": "Status",   "ui5Property": "status",   "values": ["None","Success","Warning","Error","Information"], "default": "None" },
-    { "property": "ValueState","ui5Property": "valueState","values": ["None","Success","Warning","Error","Information"], "default": "None" }
+    {
+      "property": "Design",
+      "ui5Property": "design",
+      "values": [
+        "Full",
+        "StatusIconHidden"
+      ],
+      "default": "Full"
+    },
+    {
+      "property": "Status",
+      "ui5Property": "status",
+      "values": [
+        "None",
+        "Success",
+        "Warning",
+        "Error",
+        "Information"
+      ],
+      "default": "None"
+    },
+    {
+      "property": "ValueState",
+      "ui5Property": "valueState",
+      "values": [
+        "None",
+        "Success",
+        "Warning",
+        "Error",
+        "Information"
+      ],
+      "default": "None"
+    }
   ],
   "supportedProperties": [
-    { "name": "text",   "ui5Name": "text",   "type": "string", "exposedInLibrary": true, "default": "" },
-    { "name": "status", "ui5Name": "status", "type": "string", "exposedInLibrary": true, "default": "None" },
-    { "name": "value",  "ui5Name": "value",  "type": "ObjectNumber", "exposedInLibrary": false, "default": null }
+    {
+      "name": "text",
+      "ui5Name": "text",
+      "type": "string",
+      "exposedInLibrary": true,
+      "default": ""
+    },
+    {
+      "name": "status",
+      "ui5Name": "status",
+      "type": "string",
+      "exposedInLibrary": true,
+      "default": "None"
+    },
+    {
+      "name": "value",
+      "ui5Name": "value",
+      "type": "ObjectNumber",
+      "exposedInLibrary": false,
+      "default": null
+    }
   ],
-  "supportedStates": ["None","Success","Warning","Error","Information"],
+  "supportedStates": [
+    "None",
+    "Success",
+    "Warning",
+    "Error",
+    "Information"
+  ],
   "typographyRules": [
-    { "role": "text",  "fontFamily": "72", "fontStyle": "Regular", "fontSize": 14, "sapStyleName": "MediumText/LHAuto/Regular" },
-    { "role": "value", "fontFamily": "72", "fontStyle": "Bold",    "fontSize": 14, "sapStyleName": "MediumText/LHAuto/Bold" }
+    {
+      "role": "text",
+      "fontFamily": "72",
+      "fontStyle": "Regular",
+      "fontSize": 14,
+      "sapStyleName": "MediumText/LHAuto/Regular"
+    },
+    {
+      "role": "value",
+      "fontFamily": "72",
+      "fontStyle": "Bold",
+      "fontSize": 14,
+      "sapStyleName": "MediumText/LHAuto/Bold"
+    }
   ],
   "colorTokenRules": [
-    { "role": "background",         "token": "sapContent_Container_Background", "fallbackHex": "#FFFFFF" },
-    { "role": "border",             "token": "sapContent_Container_BorderColor","fallbackHex": "#D5DADE" },
-    { "role": "status-icon-success","token": "sapPositiveElementColor","fallbackHex": "#256F3A" },
-    { "role": "status-icon-warning","token": "sapCriticalElementColor","fallbackHex": "#B87E00" },
-    { "role": "status-icon-error",  "token": "sapNegativeElementColor","fallbackHex": "#B00" },
-    { "role": "status-icon-info",   "token": "sapInformativeElementColor","fallbackHex": "#0070F2" }
+    {
+      "role": "background",
+      "token": "sapContent_Container_Background",
+      "fallbackHex": "#FFFFFF"
+    },
+    {
+      "role": "border",
+      "token": "sapContent_Container_BorderColor",
+      "fallbackHex": "#D5DADE"
+    },
+    {
+      "role": "status-icon-success",
+      "token": "sapPositiveElementColor",
+      "fallbackHex": "#256F3A"
+    },
+    {
+      "role": "status-icon-warning",
+      "token": "sapCriticalElementColor",
+      "fallbackHex": "#B87E00"
+    },
+    {
+      "role": "status-icon-error",
+      "token": "sapNegativeElementColor",
+      "fallbackHex": "#B00"
+    },
+    {
+      "role": "status-icon-info",
+      "token": "sapInformativeElementColor",
+      "fallbackHex": "#0070F2"
+    }
   ],
   "accessibilityRules": [
-    { "category": "labeling", "requirement": "The status icon must not be the sole conveyor of state — pair with text" },
-    { "category": "contrast", "requirement": "Text and status icon ≥ 4.5:1 against the tag background" }
+    {
+      "category": "labeling",
+      "requirement": "The status icon must not be the sole conveyor of state — pair with text"
+    },
+    {
+      "category": "contrast",
+      "requirement": "Text and status icon ≥ 4.5:1 against the tag background"
+    }
   ],
   "doRules": [
     "Use for compact composite KPI badges (label + numeric value + status icon)",
@@ -41,9 +137,23 @@
     "Do not use for status-only display — use ObjectStatus",
     "Do not stack more than 3 GenericTags side by side"
   ],
-  "compatibleComponents": ["DynamicPageTitle","DynamicPageHeader","ObjectPageHeader","Card","Panel","Toolbar","OverflowToolbar","ObjectListItem","ColumnListItem","StandardListItem"],
-  "incompatiblePatterns": ["Inside ShellBar","Inside Dialog footer"],
-  "guidelineUrl": "https://experience.sap.com/fiori-design-web/generic-tag/",
+  "compatibleComponents": [
+    "DynamicPageTitle",
+    "DynamicPageHeader",
+    "ObjectPageHeader",
+    "Card",
+    "Panel",
+    "Toolbar",
+    "OverflowToolbar",
+    "ObjectListItem",
+    "ColumnListItem",
+    "StandardListItem"
+  ],
+  "incompatiblePatterns": [
+    "Inside ShellBar",
+    "Inside Dialog footer"
+  ],
+  "guidelineUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/generic-tag",
   "demoKitUrl": "https://sapui5.hana.ondemand.com/#/entity/sap.m.GenericTag",
   "apiUrl": "https://sapui5.hana.ondemand.com/#/api/sap.m.GenericTag",
   "sampleUrls": [],
@@ -57,11 +167,31 @@
     ]
   },
   "composition": {
-    "validParents": ["DynamicPageTitle","DynamicPageHeader","ObjectPageHeader","Card","Panel","Toolbar","OverflowToolbar","ObjectListItem","ColumnListItem","StandardListItem","Dialog","Popover","SapTableRow"],
+    "validParents": [
+      "DynamicPageTitle",
+      "DynamicPageHeader",
+      "ObjectPageHeader",
+      "Card",
+      "Panel",
+      "Toolbar",
+      "OverflowToolbar",
+      "ObjectListItem",
+      "ColumnListItem",
+      "StandardListItem",
+      "Dialog",
+      "Popover",
+      "SapTableRow"
+    ],
     "topLevelOnly": false,
     "validChildren": [],
     "mustInclude": [],
     "mustExclude": [],
-    "commonSiblings": ["Title","Text","ObjectStatus","Tag","ObjectNumber"]
+    "commonSiblings": [
+      "Title",
+      "Text",
+      "ObjectStatus",
+      "Tag",
+      "ObjectNumber"
+    ]
   }
 }

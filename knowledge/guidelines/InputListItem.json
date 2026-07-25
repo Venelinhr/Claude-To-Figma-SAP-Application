@@ -1,7 +1,7 @@
 {
   "componentName": "InputListItem",
   "slug": "input-list-item",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/input-list-item/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/input-list-item",
   "purpose": "List row containing a Label + inline Input control. Used in settings screens, mobile form layouts, profile edit pages.",
   "whenToUse": [
     "Mobile-optimized form layouts",
@@ -9,8 +9,8 @@
     "Quick edit lists where each row contains one field"
   ],
   "whenNotToUse": [
-    "Multi-field forms \u2014 use Form / SimpleForm",
-    "Read-only display \u2014 use DisplayListItem"
+    "Multi-field forms — use Form / SimpleForm",
+    "Read-only display — use DisplayListItem"
   ],
   "doRules": [
     "Each row has exactly one Label + one Input",
@@ -39,13 +39,13 @@
   "responsiveBehavior": {
     "XL": "Full size and visibility.",
     "L": "Full size and visibility.",
-    "M": "May condense \u2014 see Fiori responsive design guidelines.",
+    "M": "May condense — see Fiori responsive design guidelines.",
     "S": "May convert to alternative pattern on narrow viewports."
   },
   "accessibilityGuidance": {
     "ariaPattern": "Maps to ARIA pattern appropriate for list item.",
-    "contrast": "\u2265 4.5:1 for text, \u2265 3:1 for borders (WCAG AA).",
-    "keyboard": "Full keyboard support \u2014 Tab to focus, Enter/Space to activate.",
+    "contrast": "≥ 4.5:1 for text, ≥ 3:1 for borders (WCAG AA).",
+    "keyboard": "Full keyboard support — Tab to focus, Enter/Space to activate.",
     "screenReader": "Announced with role and state."
   },
   "patterns": [
@@ -58,5 +58,5 @@
     "See pluginNotes for plugin-specific rendering caveats."
   ],
   "version": "2025.06",
-  "lastChecked": "2026-06-26"
+  "lastChecked": "2026-07-25"
 }

@@ -1,7 +1,7 @@
 {
   "componentName": "UnableToLoadImage",
   "slug": "illustrated-message",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/illustrated-message/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/illustrated-message",
   "purpose": "Empty-state illustration used when an image or media asset fails to load (network error, missing file, permission denied). Replaces the broken-image placeholder with a clear, on-brand fallback.",
   "whenToUse": [
     "Image src fails to resolve (404, 403, timeout)",
@@ -36,7 +36,9 @@
   "contentGuidance": {
     "labelLength": "Title ≤ 30 chars; description ≤ 80 chars",
     "contentRules": "Title states the problem; description offers retry option",
-    "examples": ["Title: 'Image unavailable' · Description: 'Could not load this image'"]
+    "examples": [
+      "Title: 'Image unavailable' · Description: 'Could not load this image'"
+    ]
   },
   "responsiveBehavior": {
     "XL": "Matches image container",
@@ -45,7 +47,10 @@
     "S": "Matches image container; may hide text if very small"
   },
   "accessibilityGuidance": {
-    "wcagCriteria": ["WCAG 2.1 · 1.1.1 Non-text Content (Level A)", "WCAG 2.1 · 4.1.3 Status Messages (Level AA)"],
+    "wcagCriteria": [
+      "WCAG 2.1 · 1.1.1 Non-text Content (Level A)",
+      "WCAG 2.1 · 4.1.3 Status Messages (Level AA)"
+    ],
     "requirements": [
       "role='img' with aria-label describing the failure",
       "role='status' on the wrapping element to announce the change",
@@ -53,9 +58,21 @@
       "Failed image src does not attempt to load repeatedly"
     ]
   },
-  "patterns": ["Image failure fallback", "Product card broken thumbnail", "Avatar fallback"],
-  "compatibility": {"allowedWith": ["IllustratedMessage (only)", "Image (as fallback)"], "forbiddenWith": ["Standalone without container"]},
+  "patterns": [
+    "Image failure fallback",
+    "Product card broken thumbnail",
+    "Avatar fallback"
+  ],
+  "compatibility": {
+    "allowedWith": [
+      "IllustratedMessage (only)",
+      "Image (as fallback)"
+    ],
+    "forbiddenWith": [
+      "Standalone without container"
+    ]
+  },
   "exceptions": [],
   "version": "1.149.0",
-  "lastChecked": "2026-07-08"
+  "lastChecked": "2026-07-25"
 }

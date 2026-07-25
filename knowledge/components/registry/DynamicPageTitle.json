@@ -90,7 +90,7 @@
   "incompatiblePatterns": [
     "Outside DynamicPage"
   ],
-  "guidelineUrl": "https://experience.sap.com/fiori-design-web/dynamicpagetitle/",
+  "guidelineUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/dynamicpagetitle",
   "demoKitUrl": "https://sapui5.hana.ondemand.com/#/entity/sap.m.DynamicPageTitle",
   "apiUrl": "https://sapui5.hana.ondemand.com/#/api/sap.m.DynamicPageTitle",
   "sampleUrls": [],

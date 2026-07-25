@@ -5,29 +5,115 @@
   "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
   "componentCategory": "List Item",
   "supportedVariants": [
-    { "property": "Form Factor",       "values": ["Compact","Cozy"], "default": "Compact" },
-    { "property": "Interaction State", "values": ["Regular","Hover","Focused","Active","Disabled"], "default": "Regular" },
-    { "property": "Selected",          "ui5Property": "selected", "values": ["True","False"], "default": "False" }
+    {
+      "property": "Form Factor",
+      "values": [
+        "Compact",
+        "Cozy"
+      ],
+      "default": "Compact"
+    },
+    {
+      "property": "Interaction State",
+      "values": [
+        "Regular",
+        "Hover",
+        "Focused",
+        "Active",
+        "Disabled"
+      ],
+      "default": "Regular"
+    },
+    {
+      "property": "Selected",
+      "ui5Property": "selected",
+      "values": [
+        "True",
+        "False"
+      ],
+      "default": "False"
+    }
   ],
   "supportedProperties": [
-    { "name": "text",       "ui5Name": "text",       "type": "string",  "exposedInLibrary": true,  "default": "" },
-    { "name": "icon",       "ui5Name": "icon",       "type": "URI",     "exposedInLibrary": false, "default": "" },
-    { "name": "shortcut",   "ui5Name": "shortcut",   "type": "string",  "exposedInLibrary": false, "default": "" },
-    { "name": "hasSubmenu", "ui5Name": "hasSubmenu", "type": "boolean", "exposedInLibrary": false, "default": false }
+    {
+      "name": "text",
+      "ui5Name": "text",
+      "type": "string",
+      "exposedInLibrary": true,
+      "default": ""
+    },
+    {
+      "name": "icon",
+      "ui5Name": "icon",
+      "type": "URI",
+      "exposedInLibrary": false,
+      "default": ""
+    },
+    {
+      "name": "shortcut",
+      "ui5Name": "shortcut",
+      "type": "string",
+      "exposedInLibrary": false,
+      "default": ""
+    },
+    {
+      "name": "hasSubmenu",
+      "ui5Name": "hasSubmenu",
+      "type": "boolean",
+      "exposedInLibrary": false,
+      "default": false
+    }
   ],
-  "supportedStates": ["Regular","Hover","Focused","Active","Disabled","Selected"],
+  "supportedStates": [
+    "Regular",
+    "Hover",
+    "Focused",
+    "Active",
+    "Disabled",
+    "Selected"
+  ],
   "typographyRules": [
-    { "role": "text",     "fontFamily": "72", "fontStyle": "Regular", "fontSize": 14, "sapStyleName": "MediumText/LHAuto/Regular" },
-    { "role": "shortcut", "fontFamily": "72", "fontStyle": "Regular", "fontSize": 12, "sapStyleName": "SmallText/LHAuto/Regular" }
+    {
+      "role": "text",
+      "fontFamily": "72",
+      "fontStyle": "Regular",
+      "fontSize": 14,
+      "sapStyleName": "MediumText/LHAuto/Regular"
+    },
+    {
+      "role": "shortcut",
+      "fontFamily": "72",
+      "fontStyle": "Regular",
+      "fontSize": 12,
+      "sapStyleName": "SmallText/LHAuto/Regular"
+    }
   ],
   "colorTokenRules": [
-    { "role": "text",         "token": "sapList_TextColor",        "fallbackHex": "#1A2733" },
-    { "role": "shortcut-text","token": "sapContent_LabelColor",    "fallbackHex": "#556B82" },
-    { "role": "hover-bg",     "token": "sapList_Hover_Background", "fallbackHex": "#F5F6F7" }
+    {
+      "role": "text",
+      "token": "sapList_TextColor",
+      "fallbackHex": "#1A2733"
+    },
+    {
+      "role": "shortcut-text",
+      "token": "sapContent_LabelColor",
+      "fallbackHex": "#556B82"
+    },
+    {
+      "role": "hover-bg",
+      "token": "sapList_Hover_Background",
+      "fallbackHex": "#F5F6F7"
+    }
   ],
   "accessibilityRules": [
-    { "category": "labeling", "requirement": "Text is required and read by screen readers" },
-    { "category": "keyboard", "requirement": "Enter/Space activates; Arrow keys navigate to sibling items" }
+    {
+      "category": "labeling",
+      "requirement": "Text is required and read by screen readers"
+    },
+    {
+      "category": "keyboard",
+      "requirement": "Enter/Space activates; Arrow keys navigate to sibling items"
+    }
   ],
   "doRules": [
     "Use only inside a Menu",
@@ -39,9 +125,14 @@
     "Do not nest submenus more than 2 levels deep",
     "Do not use for destructive actions without a confirmation step"
   ],
-  "compatibleComponents": ["Menu"],
-  "incompatiblePatterns": ["Inside List (use StandardListItem)","Inside Popover directly (wrap in Menu first)"],
-  "guidelineUrl": "https://experience.sap.com/fiori-design-web/menu/",
+  "compatibleComponents": [
+    "Menu"
+  ],
+  "incompatiblePatterns": [
+    "Inside List (use StandardListItem)",
+    "Inside Popover directly (wrap in Menu first)"
+  ],
+  "guidelineUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/menu",
   "demoKitUrl": "https://sapui5.hana.ondemand.com/#/entity/sap.m.MenuItem",
   "apiUrl": "https://sapui5.hana.ondemand.com/#/api/sap.m.MenuItem",
   "sampleUrls": [],
@@ -53,11 +144,15 @@
     "knownIssues": []
   },
   "composition": {
-    "validParents": ["Menu"],
+    "validParents": [
+      "Menu"
+    ],
     "topLevelOnly": false,
     "validChildren": [],
     "mustInclude": [],
     "mustExclude": [],
-    "commonSiblings": ["MenuListItem"]
+    "commonSiblings": [
+      "MenuListItem"
+    ]
   }
 }

@@ -1,7 +1,7 @@
 {
   "componentName": "Popover",
   "slug": "popover",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/popover/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/popover",
   "purpose": "Floating panel anchored to a triggering element. Shows transient supplementary content like a menu, picker, or detail snippet without taking over the screen.",
   "whenToUse": [
     "Overflow menus from a Button / IconButton",
@@ -10,20 +10,20 @@
     "Confirmation prompts for low-risk actions (use Dialog for high-risk)"
   ],
   "whenNotToUse": [
-    "For critical actions \u2014 use Dialog",
-    "For navigation \u2014 use SideNavigation or IconTabBar",
-    "For inline content \u2014 use Panel",
-    "When content needs to persist \u2014 use a dedicated section, not Popover"
+    "For critical actions — use Dialog",
+    "For navigation — use SideNavigation or IconTabBar",
+    "For inline content — use Panel",
+    "When content needs to persist — use a dedicated section, not Popover"
   ],
   "doRules": [
     "Anchor to the triggering element clearly (arrow / tail)",
-    "Provide a close affordance (\u00d7 or Esc)",
-    "Limit content to a single task \u2014 Popover should not branch into sub-tasks",
+    "Provide a close affordance (× or Esc)",
+    "Limit content to a single task — Popover should not branch into sub-tasks",
     "Bind fill to sapShellColor, border to sapShell_BorderColor"
   ],
   "dontRules": [
     "Do not nest Popovers (Popover-from-Popover)",
-    "Do not use Popover for forms with > 3 fields \u2014 use Dialog",
+    "Do not use Popover for forms with > 3 fields — use Dialog",
     "Do not auto-dismiss on hover-out for click-triggered Popovers",
     "Do not use Popover for navigation (use SideNavigation)"
   ],
@@ -45,13 +45,13 @@
   "responsiveBehavior": {
     "XL": "Full size and visibility.",
     "L": "Full size and visibility.",
-    "M": "May condense or collapse \u2014 see Fiori responsive design guidelines.",
+    "M": "May condense or collapse — see Fiori responsive design guidelines.",
     "S": "May convert to alternative pattern (Popover, Dialog) on narrow viewports."
   },
   "accessibilityGuidance": {
-    "ariaPattern": "Maps to ARIA pattern appropriate for overlay \u2014 see SAP Fiori a11y docs.",
-    "contrast": "\u2265 4.5:1 for text, \u2265 3:1 for borders (WCAG AA).",
-    "keyboard": "Full keyboard support \u2014 Tab to focus, Enter/Space to activate.",
+    "ariaPattern": "Maps to ARIA pattern appropriate for overlay — see SAP Fiori a11y docs.",
+    "contrast": "≥ 4.5:1 for text, ≥ 3:1 for borders (WCAG AA).",
+    "keyboard": "Full keyboard support — Tab to focus, Enter/Space to activate.",
     "screenReader": "Announced with role and state."
   },
   "patterns": [
@@ -69,5 +69,5 @@
     "See pluginNotes for plugin-specific rendering caveats."
   ],
   "version": "2025.06",
-  "lastChecked": "2026-06-26"
+  "lastChecked": "2026-07-25"
 }

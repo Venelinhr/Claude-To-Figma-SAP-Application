@@ -96,7 +96,7 @@
     "Inside a Dialog",
     "Inside a Panel content area"
   ],
-  "guidelineUrl": "https://experience.sap.com/fiori-design-web/sidenavigation/",
+  "guidelineUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/sidenavigation",
   "demoKitUrl": "https://sapui5.hana.ondemand.com/#/entity/sap.m.SideNavigation",
   "apiUrl": "https://sapui5.hana.ondemand.com/#/api/sap.m.SideNavigation",
   "sampleUrls": [],

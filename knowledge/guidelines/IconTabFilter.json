@@ -1,7 +1,7 @@
 {
   "componentName": "IconTabFilter",
   "slug": "icontabbar",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/icontabbar/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/icontabfilter",
   "purpose": "A single tab within an IconTabBar. Holds the tab label, optional icon, count badge, and selected state.",
   "whenToUse": [
     "As child of IconTabBar only",
@@ -9,16 +9,16 @@
   ],
   "whenNotToUse": [
     "Outside IconTabBar",
-    "For navigation across pages \u2014 use SideNavigation"
+    "For navigation across pages — use SideNavigation"
   ],
   "doRules": [
-    "Use short labels (1\u20133 words)",
+    "Use short labels (1–3 words)",
     "Show count in parens for tab badges like \"Artifacts (2)\"",
     "Use design=Vertical for label-only tabs; Horizontal for icon+label",
     "Set key for selectedKey binding"
   ],
   "dontRules": [
-    "Do not change tab label text via direct injection \u2014 use text property",
+    "Do not change tab label text via direct injection — use text property",
     "Do not nest IconTabFilter inside IconTabFilter",
     "Do not use long labels"
   ],
@@ -29,7 +29,7 @@
     "alignment": "Center within tab area."
   },
   "contentGuidance": {
-    "labelLength": "1\u20133 words.",
+    "labelLength": "1–3 words.",
     "contentRules": [
       "Use noun labels",
       "Add (count) for badges"
@@ -77,5 +77,5 @@
     "IconTabSeparator for visual grouping between tabs"
   ],
   "version": "2026.Q2",
-  "lastChecked": "2026-06-25"
+  "lastChecked": "2026-07-25"
 }

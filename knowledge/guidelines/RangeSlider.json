@@ -1,7 +1,7 @@
 {
   "componentName": "RangeSlider",
   "slug": "range-slider",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/range-slider/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/rangeslider",
   "purpose": "A two-handle slider for selecting a numeric range (start, end) within a bounded scale.",
   "whenToUse": [
     "Numeric range filter (price, quantity, age)",
@@ -9,8 +9,8 @@
     "In FilterBar for ranges"
   ],
   "whenNotToUse": [
-    "For single value \u2014 use Slider",
-    "For precise range entry \u2014 use two Input fields"
+    "For single value — use Slider",
+    "For precise range entry — use two Input fields"
   ],
   "doRules": [
     "Use for numeric range selection",
@@ -35,8 +35,8 @@
       "Optionally show selected range below"
     ],
     "examples": [
-      "10\u201350",
-      "0\u2013100"
+      "10–50",
+      "0–100"
     ]
   },
   "responsiveBehavior": {
@@ -76,8 +76,8 @@
     ]
   },
   "exceptions": [
-    "Constraint: end \u2265 start enforced automatically"
+    "Constraint: end ≥ start enforced automatically"
   ],
   "version": "2026.Q2",
-  "lastChecked": "2026-06-25"
+  "lastChecked": "2026-07-25"
 }

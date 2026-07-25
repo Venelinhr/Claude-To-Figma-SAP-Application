@@ -91,12 +91,12 @@
   "accessibilityRules": [
     {
       "category": "contrast",
-      "requirement": "Text contrast \u2265 4.5:1 against bg (WCAG AA)",
+      "requirement": "Text contrast ≥ 4.5:1 against bg (WCAG AA)",
       "wcag": "1.4.3"
     },
     {
       "category": "tap-target",
-      "requirement": "Min 32\u00d732 Compact / 44\u00d744 Cozy"
+      "requirement": "Min 32×32 Compact / 44×44 Cozy"
     },
     {
       "category": "keyboard",
@@ -108,16 +108,16 @@
     }
   ],
   "doRules": [
-    "Always show percent + descriptive label (\"47% \u2014 235 of 500 invoices\")",
+    "Always show percent + descriptive label (\"47% — 235 of 500 invoices\")",
     "Pick state color based on value (positive >= 80%, critical <= 20%)",
     "Use sapPositiveTextColor / sapCriticalTextColor / sapNegativeTextColor for semantic state",
     "Bind fill to a SAP variable matching state"
   ],
   "dontRules": [
     "Do not use ProgressIndicator without a label",
-    "Do not animate when stalled \u2014 show static state",
+    "Do not animate when stalled — show static state",
     "Do not stack multiple ProgressIndicators for the same metric",
-    "Do not use hardcoded color \u2014 bind to state-aware SAP token"
+    "Do not use hardcoded color — bind to state-aware SAP token"
   ],
   "compatibleComponents": [
     "Card",
@@ -130,7 +130,7 @@
     "Inside OverflowToolbar",
     "Inside Dialog footer"
   ],
-  "guidelineUrl": "https://experience.sap.com/fiori-design-web/progressindicator/",
+  "guidelineUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/progressindicator",
   "demoKitUrl": "https://sdk.openui5.org/entity/sap.m.ProgressIndicator",
   "apiUrl": "https://sdk.openui5.org/api/sap.m.ProgressIndicator",
   "sampleUrls": [
@@ -138,7 +138,7 @@
   ],
   "libraryVersion": "2025.06",
   "lastValidated": "2026-06-27",
-  "pluginNotes": "ProgressIndicator is a SAP instance. Plugin places via SAP_KEYS. Percent + label injected via setProperties (display.value) when supported, otherwise via text node lookup. State variant (None/Success/Warning/Error) drives the SAP-internal color binding \u2014 when state is set correctly, the fill auto-binds to the right semantic token.",
+  "pluginNotes": "ProgressIndicator is a SAP instance. Plugin places via SAP_KEYS. Percent + label injected via setProperties (display.value) when supported, otherwise via text node lookup. State variant (None/Success/Warning/Error) drives the SAP-internal color binding — when state is set correctly, the fill auto-binds to the right semantic token.",
   "composition": {
     "validParents": [
       "DynamicPage",

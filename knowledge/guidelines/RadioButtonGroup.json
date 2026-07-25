@@ -1,17 +1,17 @@
 {
   "componentName": "RadioButtonGroup",
   "slug": "radio-button-group",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/radio-button-group/",
-  "purpose": "Vertical group of mutually-exclusive RadioButton options. Composed at plugin-time from items[] \u2014 each item becomes a RadioButton instance.",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/radio-button-group",
+  "purpose": "Vertical group of mutually-exclusive RadioButton options. Composed at plugin-time from items[] — each item becomes a RadioButton instance.",
   "whenToUse": [
     "Single-select from 2-7 options where all should be visible",
     "Form fields with discrete value choices",
     "Survey-style questions"
   ],
   "whenNotToUse": [
-    "More than 7 options \u2014 use Select or ComboBox",
-    "Multi-select \u2014 use CheckBox group",
-    "Single yes/no \u2014 use Switch"
+    "More than 7 options — use Select or ComboBox",
+    "Multi-select — use CheckBox group",
+    "Single yes/no — use Switch"
   ],
   "doRules": [
     "Show all options at once",
@@ -42,13 +42,13 @@
   "responsiveBehavior": {
     "XL": "Full size and visibility.",
     "L": "Full size and visibility.",
-    "M": "May condense \u2014 see Fiori responsive design guidelines.",
+    "M": "May condense — see Fiori responsive design guidelines.",
     "S": "May convert to alternative pattern on narrow viewports."
   },
   "accessibilityGuidance": {
     "ariaPattern": "Maps to ARIA pattern appropriate for input.",
-    "contrast": "\u2265 4.5:1 for text, \u2265 3:1 for borders (WCAG AA).",
-    "keyboard": "Full keyboard support \u2014 Tab to focus, Enter/Space to activate.",
+    "contrast": "≥ 4.5:1 for text, ≥ 3:1 for borders (WCAG AA).",
+    "keyboard": "Full keyboard support — Tab to focus, Enter/Space to activate.",
     "screenReader": "Announced with role and state."
   },
   "patterns": [
@@ -66,5 +66,5 @@
     "See pluginNotes for plugin-specific rendering caveats."
   ],
   "version": "2025.06",
-  "lastChecked": "2026-06-26"
+  "lastChecked": "2026-07-25"
 }

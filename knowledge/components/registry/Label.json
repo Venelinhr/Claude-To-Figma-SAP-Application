@@ -80,14 +80,14 @@
     },
     {
       "category": "contrast",
-      "requirement": "Label-to-background contrast \u2265 4.5:1",
+      "requirement": "Label-to-background contrast ≥ 4.5:1",
       "wcag": "1.4.3"
     }
   ],
   "doRules": [
     "Place Label above or to the left of the field",
     "Mark required fields with the * indicator",
-    "Keep labels concise (1\u20133 words)"
+    "Keep labels concise (1–3 words)"
   ],
   "dontRules": [
     "Do not use Label as body text",
@@ -105,7 +105,7 @@
   "incompatiblePatterns": [
     "Standalone with no field associated"
   ],
-  "guidelineUrl": "https://experience.sap.com/fiori-design-web/label/",
+  "guidelineUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/label",
   "demoKitUrl": "https://sapui5.hana.ondemand.com/#/entity/sap.m.Label",
   "apiUrl": "https://sapui5.hana.ondemand.com/#/api/sap.m.Label",
   "sampleUrls": [],

@@ -1,7 +1,7 @@
 {
   "componentName": "GenericTag",
   "slug": "generic-tag",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/generic-tag/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/generic-tag",
   "purpose": "A compact tag control used to show a numeric KPI alongside a short label. Combines a label with a value, optionally with a semantic status color. Common in dashboards and object headers.",
   "whenToUse": [
     "Show a KPI with label + numeric value (e.g. 'Overdue: 12')",
@@ -36,7 +36,11 @@
   "contentGuidance": {
     "labelLength": "1-15 characters. Longer labels wrap.",
     "contentRules": "Label is a noun phrase, value is a number or short string",
-    "examples": ["Overdue: 12", "Complete: 87%", "Errors: 3"]
+    "examples": [
+      "Overdue: 12",
+      "Complete: 87%",
+      "Errors: 3"
+    ]
   },
   "responsiveBehavior": {
     "XL": "Inline in horizontal row",
@@ -45,19 +49,33 @@
     "S": "Stacks vertically or wraps"
   },
   "accessibilityGuidance": {
-    "wcagCriteria": ["WCAG 2.1 · 1.4.1 Use of Color (Level A)", "WCAG 2.1 · 1.4.3 Contrast (Level AA)"],
+    "wcagCriteria": [
+      "WCAG 2.1 · 1.4.1 Use of Color (Level A)",
+      "WCAG 2.1 · 1.4.3 Contrast (Level AA)"
+    ],
     "requirements": [
       "Semantic status colors always paired with icon or descriptive text",
       "Value + label together form an accessible name",
       "Focus indicator visible when interactive"
     ]
   },
-  "patterns": ["Object Header", "KPI dashboard row", "Card content"],
+  "patterns": [
+    "Object Header",
+    "KPI dashboard row",
+    "Card content"
+  ],
   "compatibility": {
-    "allowedWith": ["ObjectHeader", "Card", "Panel", "HBox"],
-    "forbiddenWith": ["Inside Table cells (too small)"]
+    "allowedWith": [
+      "ObjectHeader",
+      "Card",
+      "Panel",
+      "HBox"
+    ],
+    "forbiddenWith": [
+      "Inside Table cells (too small)"
+    ]
   },
   "exceptions": [],
   "version": "1.149.0",
-  "lastChecked": "2026-07-08"
+  "lastChecked": "2026-07-25"
 }

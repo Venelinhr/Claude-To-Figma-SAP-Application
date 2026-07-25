@@ -1,7 +1,7 @@
 {
   "componentName": "MenuListItem",
   "slug": "menu",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/menu/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/menu",
   "purpose": "A single item inside a Menu — a clickable action with optional icon, shortcut, and submenu chevron. Never used standalone; always inside a Menu.",
   "whenToUse": [
     "As an item in a Menu popover",
@@ -36,7 +36,11 @@
   "contentGuidance": {
     "labelLength": "≤ 30 characters, verb-first",
     "contentRules": "Imperative phrases, no punctuation",
-    "examples": ["Edit  ⌘E", "Export ▸", "Delete permanently"]
+    "examples": [
+      "Edit  ⌘E",
+      "Export ▸",
+      "Delete permanently"
+    ]
   },
   "responsiveBehavior": {
     "XL": "Full label + icon + shortcut",
@@ -45,7 +49,9 @@
     "S": "Shortcut may hide"
   },
   "accessibilityGuidance": {
-    "wcagCriteria": ["WCAG 2.1 · 4.1.2 Name, Role, Value (Level A)"],
+    "wcagCriteria": [
+      "WCAG 2.1 · 4.1.2 Name, Role, Value (Level A)"
+    ],
     "requirements": [
       "role='menuitem'",
       "aria-disabled when non-actionable",
@@ -53,12 +59,20 @@
       "Submenu items have aria-haspopup"
     ]
   },
-  "patterns": ["Menu items", "Context menu items", "Overflow menu items"],
+  "patterns": [
+    "Menu items",
+    "Context menu items",
+    "Overflow menu items"
+  ],
   "compatibility": {
-    "allowedWith": ["Menu (only)"],
-    "forbiddenWith": ["Any parent other than Menu"]
+    "allowedWith": [
+      "Menu (only)"
+    ],
+    "forbiddenWith": [
+      "Any parent other than Menu"
+    ]
   },
   "exceptions": [],
   "version": "1.149.0",
-  "lastChecked": "2026-07-08"
+  "lastChecked": "2026-07-25"
 }

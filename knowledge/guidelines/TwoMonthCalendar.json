@@ -1,7 +1,7 @@
 {
   "componentName": "TwoMonthCalendar",
   "slug": "planning-calendar",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/planning-calendar/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/calendar",
   "purpose": "A calendar view showing two consecutive months side-by-side. Used when the user needs to see current + next month at once — booking flows, date-range picking, comparing month layouts. A wider variant of Calendar.",
   "whenToUse": [
     "Booking or reservation flows where the range typically spans months",
@@ -36,7 +36,9 @@
   "contentGuidance": {
     "labelLength": "n/a — dates",
     "contentRules": "Days as numbers; weekday headers; month title with year",
-    "examples": ["January 2026 · February 2026"]
+    "examples": [
+      "January 2026 · February 2026"
+    ]
   },
   "responsiveBehavior": {
     "XL": "Two months side-by-side",
@@ -45,7 +47,10 @@
     "S": "Single month (falls back to Calendar)"
   },
   "accessibilityGuidance": {
-    "wcagCriteria": ["WCAG 2.1 · 2.1.1 Keyboard (Level A)", "WCAG 2.1 · 1.4.3 Contrast (Level AA)"],
+    "wcagCriteria": [
+      "WCAG 2.1 · 2.1.1 Keyboard (Level A)",
+      "WCAG 2.1 · 1.4.3 Contrast (Level AA)"
+    ],
     "requirements": [
       "aria-label on each day cell with full date (including month + year)",
       "Selected/range cells have visible highlight (not color alone)",
@@ -53,9 +58,24 @@
       "Today marker distinguishable without color"
     ]
   },
-  "patterns": ["Date-range picker", "Booking flow", "Planning calendar view"],
-  "compatibility": {"allowedWith": ["Page", "Panel", "Card", "Dialog"], "forbiddenWith": ["Popover (too narrow)", "Table cells"]},
+  "patterns": [
+    "Date-range picker",
+    "Booking flow",
+    "Planning calendar view"
+  ],
+  "compatibility": {
+    "allowedWith": [
+      "Page",
+      "Panel",
+      "Card",
+      "Dialog"
+    ],
+    "forbiddenWith": [
+      "Popover (too narrow)",
+      "Table cells"
+    ]
+  },
   "exceptions": [],
   "version": "1.149.0",
-  "lastChecked": "2026-07-08"
+  "lastChecked": "2026-07-25"
 }

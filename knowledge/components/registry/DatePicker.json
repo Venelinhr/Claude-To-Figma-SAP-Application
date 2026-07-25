@@ -125,7 +125,7 @@
   ],
   "dontRules": [
     "Do not require user to type the format manually",
-    "Do not use for date range \u2014 use DateRangePicker"
+    "Do not use for date range — use DateRangePicker"
   ],
   "compatibleComponents": [
     "Label",
@@ -135,7 +135,7 @@
   "incompatiblePatterns": [
     "Without Label"
   ],
-  "guidelineUrl": "https://experience.sap.com/fiori-design-web/datepicker/",
+  "guidelineUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/datepicker",
   "demoKitUrl": "https://sapui5.hana.ondemand.com/#/entity/sap.m.DatePicker",
   "apiUrl": "https://sapui5.hana.ondemand.com/#/api/sap.m.DatePicker",
   "sampleUrls": [],

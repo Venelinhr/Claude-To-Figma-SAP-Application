@@ -1,90 +1,118 @@
 {
   "componentName": "Switch",
   "slug": "switch",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/switch/",
-  "purpose": "A binary toggle for instant on/off settings without explicit save. Provides immediate state change feedback.",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/switch",
+  "purpose": "A UI component used to toggle a setting on or off with a button. It lets users turn individual features on or off to adjust display settings or personalize the application's appearance.",
   "whenToUse": [
-    "For instant binary settings (On/Off, Enabled/Disabled)",
-    "In settings pages, account preferences",
-    "When the state takes effect immediately without form submission"
+    "Set a setting as active or inactive (for example, in a dialog)",
+    "Clearly show the current mode or state of a setting",
+    "Apply changes that take effect immediately",
+    "Use a default switch when you need a simple on/off component with predefined icons and standard colors",
+    "Use a semantic switch when the action represents a positive or negative state",
+    "Add a descriptive label above or directly before a switch component so users understand which value it controls"
   ],
   "whenNotToUse": [
-    "For actions that need confirmation \u2014 use Button",
-    "In forms requiring \"Save\" submission \u2014 use CheckBox",
-    "For 3+ mutually exclusive options \u2014 use Select or RadioButton"
+    "Don't use for selecting multiple options or when extra steps (e.g. a Save button) are required for changes to take effect",
+    "Don't use when it's unclear which state the component is displaying — use a Checkbox instead",
+    "Don't include text inside the switch component itself — this causes localization issues"
   ],
   "doRules": [
-    "Use Switch for instant binary settings (On/Off)",
-    "Use AcceptReject type for explicit approval workflows",
-    "Provide a clear label describing what the switch controls",
-    "Show feedback when state changes (toast, status update)"
+    "Use Semantic type (green/red) when the action represents a clearly positive or negative state",
+    "Place a label above or directly before the switch to identify what it controls",
+    "Add optional text (e.g. 'On'/'Off') when the main label doesn't fully explain active vs inactive",
+    "Provide a tooltip when no label is available to give context",
+    "Use Compact density for desktop/mouse interactions; Cozy for touch devices"
   ],
   "dontRules": [
-    "Do not use Switch for actions that need confirmation \u2014 use Button",
-    "Do not use Switch in forms requiring \"Save\" \u2014 use CheckBox",
-    "Do not omit the descriptive label"
+    "Don't include text inside the switch handle — localization breaks the component",
+    "Don't use switch when change requires a separate Save action — use Checkbox instead",
+    "Don't truncate labels if avoidable — allow wrapping; truncate only as last resort"
   ],
   "layoutGuidance": {
-    "placement": "Inside Form, settings panels.",
-    "sizing": "52\u00d724px Compact / 60\u00d732px Cozy.",
-    "spacing": "16px between switch rows.",
-    "alignment": "Label left, switch right."
+    "placement": "Label above or directly before the switch. Side label repositions below the switch when horizontal space is insufficient.",
+    "sizing": "Compact mode: smaller height for mouse/keyboard. Cozy mode: larger for touch. Width auto.",
+    "spacing": "Label wraps by default. Optional text sits after the switch on the same line.",
+    "alignment": "Label above: switch pushed down when label wraps. Label to side: moves below on narrow containers."
   },
   "contentGuidance": {
-    "labelLength": "1\u20138 words describing the setting.",
+    "labelLength": "Short and descriptive (e.g. 'Enable Notifications', 'Receive Updates'). One sentence max.",
     "contentRules": [
-      "Use positive statements",
-      "Describe the state when On",
-      "Optionally provide customTextOn/Off"
+      "Label must identify what the switch controls",
+      "Optional text should be a single word (e.g. 'On'/'Off')",
+      "Supports LTR and RTL reading directions",
+      "Do not embed text inside the switch handle"
     ],
     "examples": [
-      "Receive email notifications",
-      "Two-factor authentication"
+      "Enable Notifications",
+      "Receive Updates",
+      "Dark Mode",
+      "Auto-save"
     ]
   },
   "responsiveBehavior": {
-    "XL": "Standard inline layout",
-    "L": "Standard inline layout",
-    "M": "Standard inline layout",
-    "S": "Full-width row with label above"
+    "XL": "Full switch with label and optional text",
+    "L": "Full switch with label and optional text",
+    "M": "Label may reposition below switch if side-label cannot fit horizontally",
+    "S": "Compact → Cozy for touch; side label moves below switch on narrow containers"
   },
   "accessibilityGuidance": [
     {
       "category": "keyboard",
-      "requirement": "Space toggles state",
+      "requirement": "Tab: moves focus to switch. Shift+Tab: navigates backward. Spacebar or Enter/Return: toggles state.",
       "wcag": "2.1.1 (A)"
     },
     {
+      "category": "focus",
+      "requirement": "Focused state displays an additional border around the track as a visible focus indicator.",
+      "wcag": "2.4.7 (AA)"
+    },
+    {
       "category": "labeling",
-      "requirement": "Pair with descriptive Label or use customTextOn/Off",
-      "wcag": "1.3.1 (A)"
+      "requirement": "Provide a tooltip when no visible label is present to identify what the switch controls.",
+      "wcag": "4.1.2 (A)"
     },
     {
-      "category": "status",
-      "requirement": "State communicated by position AND color \u2014 not color alone",
-      "wcag": "1.4.1 (A)"
-    },
-    {
-      "category": "announcements",
-      "requirement": "State change announced as \"On\" or \"Off\""
+      "category": "contrast",
+      "requirement": "SAP follows WCAG and WAI-ARIA standards. See Accessibility in SAP Fiori and Accessibility Design Tools Handbook.",
+      "wcag": "1.4.3 (AA)"
     }
   ],
   "patterns": [
-    "Settings toggle",
-    "Feature flag"
+    "Settings panel",
+    "Personalization dialog",
+    "Display settings toggle",
+    "Feature flag control",
+    "Form: binary state field"
   ],
   "compatibility": {
     "worksWith": [
+      "Dialog",
+      "Form",
       "Label",
-      "Form"
+      "Text",
+      "ObjectStatus",
+      "Panel",
+      "SimpleForm"
     ],
     "incompatible": [
-      "Inside a form requiring explicit submit"
+      "Inside Table cells when multiple options need selection — use Checkbox",
+      "When a Save action is required before the change takes effect — use Checkbox"
     ]
   },
   "exceptions": [
-    "AcceptReject type uses semantic colors (green/red) for approval workflows"
+    "Semantic type overrides default on/off colors with green (positive) and red (negative) — system-defined icons cannot be changed",
+    "Hover states are not supported on touch devices"
   ],
-  "version": "2026.Q2",
-  "lastChecked": "2026-06-25"
+  "types": [
+    "Default: icon inside handle, default on/off colors (gray/blue)",
+    "Semantic: green=positive (on), red=negative (off), system-defined icons",
+    "Switch with label: label placed above or before the switch",
+    "Switch with optional text: short text after switch explains active/inactive meaning"
+  ],
+  "figmaNode": "https://www.figma.com/design/SILcWzK5uFghKun9jx6D7c/SAP-Web-UI-Kit?node-id=19-2027",
+  "ui5Api": "https://ui5.sap.com/#/api/sap.m.Switch",
+  "ui5Samples": "https://ui5.sap.com/#/entity/sap.m.Switch",
+  "webComponent": "ui5-switch",
+  "version": "v1-148",
+  "lastChecked": "2026-07-25"
 }

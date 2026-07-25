@@ -1,7 +1,7 @@
 {
   "componentName": "IconTabBar",
   "slug": "icontabbar",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/icontabbar/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/icontabbar",
   "purpose": "A navigation container that organizes content into labeled tabs with optional icons. Tabs can show counters and badges. Used as a secondary navigation within a page.",
   "whenToUse": [
     "Organize related content into separate views at the top of a content area",
@@ -10,23 +10,23 @@
     "Display item counts in tab badges (e.g. \"Artifacts (2)\")"
   ],
   "whenNotToUse": [
-    "Inside a dialog \u2014 use a Form or Panel instead",
+    "Inside a dialog — use a Form or Panel instead",
     "Inside a table cell or list item",
-    "As the only navigation on a page \u2014 use SideNavigation for primary nav",
-    "When tabs exceed ~7 \u2014 split into separate pages or use hierarchical navigation"
+    "As the only navigation on a page — use SideNavigation for primary nav",
+    "When tabs exceed ~7 — split into separate pages or use hierarchical navigation"
   ],
   "doRules": [
     "Place at top of content area below page header",
-    "Use Bold weight for active tab and Semibold Duplex for inactive \u2014 same size",
+    "Use Bold weight for active tab and Semibold Duplex for inactive — same size",
     "Indicate active tab with 3px bottom bar in sapShell_Navigation_SelectedColor",
-    "Keep tab labels short (1\u20133 words) and consistent in length",
+    "Keep tab labels short (1–3 words) and consistent in length",
     "Show count in parens for tab badges"
   ],
   "dontRules": [
     "Do not nest IconTabBar inside another IconTabBar",
-    "Do not use more than 7 tabs \u2014 split into multiple pages",
-    "Do not change tab text via direct text node injection \u2014 use selectedKey + setProperties on IconTabFilter children",
-    "Do not communicate active state by color alone \u2014 use the bottom bar"
+    "Do not use more than 7 tabs — split into multiple pages",
+    "Do not change tab text via direct text node injection — use selectedKey + setProperties on IconTabFilter children",
+    "Do not communicate active state by color alone — use the bottom bar"
   ],
   "layoutGuidance": {
     "placement": "Top of content area, below DynamicPageHeader, full width.",
@@ -35,7 +35,7 @@
     "alignment": "Tabs left-aligned with 48px left padding."
   },
   "contentGuidance": {
-    "labelLength": "1\u20133 words. Add (count) badge when applicable.",
+    "labelLength": "1–3 words. Add (count) badge when applicable.",
     "contentRules": [
       "Use noun labels for content categories (Header, Overview, Artifacts)",
       "Pluralize counted entities",
@@ -58,7 +58,7 @@
   "accessibilityGuidance": [
     {
       "category": "contrast",
-      "requirement": "Active tab text contrast \u2265 4.5:1 with background",
+      "requirement": "Active tab text contrast ≥ 4.5:1 with background",
       "wcag": "1.4.3 (AA)"
     },
     {
@@ -104,5 +104,5 @@
     "For very wide tabs, allow horizontal scroll with shadows indicating overflow"
   ],
   "version": "2026.Q2",
-  "lastChecked": "2026-06-25"
+  "lastChecked": "2026-07-25"
 }

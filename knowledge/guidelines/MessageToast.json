@@ -1,7 +1,7 @@
 {
   "componentName": "MessageToast",
   "slug": "message-toast",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/message-toast/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/message-toast",
   "purpose": "Transient bottom-of-screen toast notification. Auto-dismisses after a few seconds. Non-blocking.",
   "whenToUse": [
     "Successful save confirmation",
@@ -9,9 +9,9 @@
     "Non-critical info that does not block workflow"
   ],
   "whenNotToUse": [
-    "Critical errors \u2014 use MessageBox",
-    "Validation feedback \u2014 use MessageStrip",
-    "Permanent status \u2014 use ObjectStatus"
+    "Critical errors — use MessageBox",
+    "Validation feedback — use MessageStrip",
+    "Permanent status — use ObjectStatus"
   ],
   "doRules": [
     "Use short messages (5-10 words)",
@@ -25,7 +25,7 @@
     "Do not include actions (use MessageStrip)"
   ],
   "layoutGuidance": {
-    "placement": "Place MessageToast inside a compatible container (Anywhere \u2014 appears as overlay).",
+    "placement": "Place MessageToast inside a compatible container (Anywhere — appears as overlay).",
     "sizing": "Auto width unless explicitly sized; height matches density (Compact 26-32px, Cozy 36-44px).",
     "spacing": "8px gap from adjacent elements; 16px between groups.",
     "alignment": "Inherits from parent Auto Layout."
@@ -42,24 +42,24 @@
   "responsiveBehavior": {
     "XL": "Full size and visibility.",
     "L": "Full size and visibility.",
-    "M": "May condense \u2014 see Fiori responsive design guidelines.",
+    "M": "May condense — see Fiori responsive design guidelines.",
     "S": "May convert to alternative pattern on narrow viewports."
   },
   "accessibilityGuidance": {
     "ariaPattern": "Maps to ARIA pattern appropriate for feedback.",
-    "contrast": "\u2265 4.5:1 for text, \u2265 3:1 for borders (WCAG AA).",
-    "keyboard": "Full keyboard support \u2014 Tab to focus, Enter/Space to activate.",
+    "contrast": "≥ 4.5:1 for text, ≥ 3:1 for borders (WCAG AA).",
+    "keyboard": "Full keyboard support — Tab to focus, Enter/Space to activate.",
     "screenReader": "Announced with role and state."
   },
   "patterns": [
-    "Used inside Anywhere \u2014 appears as overlay"
+    "Used inside Anywhere — appears as overlay"
   ],
   "compatibility": [
-    "Anywhere \u2014 appears as overlay"
+    "Anywhere — appears as overlay"
   ],
   "exceptions": [
     "See pluginNotes for plugin-specific rendering caveats."
   ],
   "version": "2025.06",
-  "lastChecked": "2026-06-26"
+  "lastChecked": "2026-07-25"
 }

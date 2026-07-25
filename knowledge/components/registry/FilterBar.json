@@ -95,7 +95,7 @@
     "Inside Table cell",
     "As Dialog content"
   ],
-  "guidelineUrl": "https://experience.sap.com/fiori-design-web/filterbar/",
+  "guidelineUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/filter-bar",
   "demoKitUrl": "https://sapui5.hana.ondemand.com/#/entity/sap.m.FilterBar",
   "apiUrl": "https://sapui5.hana.ondemand.com/#/api/sap.m.FilterBar",
   "sampleUrls": [],

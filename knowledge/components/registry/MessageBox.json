@@ -91,12 +91,12 @@
   "accessibilityRules": [
     {
       "category": "contrast",
-      "requirement": "Text contrast \u2265 4.5:1 against bg (WCAG AA)",
+      "requirement": "Text contrast ≥ 4.5:1 against bg (WCAG AA)",
       "wcag": "1.4.3"
     },
     {
       "category": "tap-target",
-      "requirement": "Min 32\u00d732 Compact / 44\u00d744 Cozy"
+      "requirement": "Min 32×32 Compact / 44×44 Cozy"
     },
     {
       "category": "keyboard",
@@ -113,7 +113,7 @@
     "Match button intent to action consequence"
   ],
   "dontRules": [
-    "Do not use MessageBox for non-critical info \u2014 use MessageToast",
+    "Do not use MessageBox for non-critical info — use MessageToast",
     "Do not omit confirm button on destructive actions",
     "Do not nest MessageBox"
   ],
@@ -123,7 +123,7 @@
   "incompatiblePatterns": [
     "See doRules and dontRules for context-specific rules."
   ],
-  "guidelineUrl": "https://experience.sap.com/fiori-design-web/message-box/",
+  "guidelineUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/message-box",
   "demoKitUrl": "https://sdk.openui5.org/entity/sap.m.MessageBox",
   "apiUrl": "https://sdk.openui5.org/api/sap.m.MessageBox",
   "sampleUrls": [

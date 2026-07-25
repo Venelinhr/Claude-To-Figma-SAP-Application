@@ -1,7 +1,7 @@
 {
   "componentName": "Timeline",
   "slug": "timeline",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/timeline/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/timeline",
   "purpose": "Vertical sequence of timestamped events. Used for activity feeds, audit logs, change history, task timelines.",
   "whenToUse": [
     "Activity feed of recent events on an object",
@@ -9,9 +9,9 @@
     "Sequence of related events in chronological order"
   ],
   "whenNotToUse": [
-    "Hierarchical data \u2014 use Tree",
-    "Tabular comparison \u2014 use Table",
-    "Live chat \u2014 use FeedListItem in a List"
+    "Hierarchical data — use Tree",
+    "Tabular comparison — use Table",
+    "Live chat — use FeedListItem in a List"
   ],
   "doRules": [
     "Sort newest-first by default",
@@ -20,7 +20,7 @@
     "Bind text to sapList_TextColor"
   ],
   "dontRules": [
-    "Do not paginate Timeline visibly \u2014 show recent N + a \"See more\" link",
+    "Do not paginate Timeline visibly — show recent N + a \"See more\" link",
     "Do not interleave with other content"
   ],
   "layoutGuidance": {
@@ -41,13 +41,13 @@
   "responsiveBehavior": {
     "XL": "Full size and visibility.",
     "L": "Full size and visibility.",
-    "M": "May condense \u2014 see Fiori responsive design guidelines.",
+    "M": "May condense — see Fiori responsive design guidelines.",
     "S": "May convert to alternative pattern on narrow viewports."
   },
   "accessibilityGuidance": {
     "ariaPattern": "Maps to ARIA pattern appropriate for data display.",
-    "contrast": "\u2265 4.5:1 for text, \u2265 3:1 for borders (WCAG AA).",
-    "keyboard": "Full keyboard support \u2014 Tab to focus, Enter/Space to activate.",
+    "contrast": "≥ 4.5:1 for text, ≥ 3:1 for borders (WCAG AA).",
+    "keyboard": "Full keyboard support — Tab to focus, Enter/Space to activate.",
     "screenReader": "Announced with role and state."
   },
   "patterns": [
@@ -64,5 +64,5 @@
     "See pluginNotes for plugin-specific rendering caveats."
   ],
   "version": "2025.06",
-  "lastChecked": "2026-06-26"
+  "lastChecked": "2026-07-25"
 }

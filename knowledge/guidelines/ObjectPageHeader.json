@@ -1,15 +1,15 @@
 {
   "componentName": "ObjectPageHeader",
   "slug": "object-page-header",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/object-page-header/",
-  "purpose": "Header of an ObjectPageLayout \u2014 visually identical to DynamicPageHeader. Holds title, subtitle, metadata, actions for an object.",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/object-page-header",
+  "purpose": "Header of an ObjectPageLayout — visually identical to DynamicPageHeader. Holds title, subtitle, metadata, actions for an object.",
   "whenToUse": [
     "Inside ObjectPageLayout",
     "Top of an Object Page detail screen"
   ],
   "whenNotToUse": [
-    "DynamicPage screens \u2014 use DynamicPageHeader",
-    "List Report screens \u2014 use DynamicPageTitle"
+    "DynamicPage screens — use DynamicPageHeader",
+    "List Report screens — use DynamicPageTitle"
   ],
   "doRules": [
     "Same conventions as DynamicPageHeader",
@@ -37,13 +37,13 @@
   "responsiveBehavior": {
     "XL": "Full size and visibility.",
     "L": "Full size and visibility.",
-    "M": "May condense \u2014 see Fiori responsive design guidelines.",
+    "M": "May condense — see Fiori responsive design guidelines.",
     "S": "May convert to alternative pattern on narrow viewports."
   },
   "accessibilityGuidance": {
     "ariaPattern": "Maps to ARIA pattern appropriate for page layout.",
-    "contrast": "\u2265 4.5:1 for text, \u2265 3:1 for borders (WCAG AA).",
-    "keyboard": "Full keyboard support \u2014 Tab to focus, Enter/Space to activate.",
+    "contrast": "≥ 4.5:1 for text, ≥ 3:1 for borders (WCAG AA).",
+    "keyboard": "Full keyboard support — Tab to focus, Enter/Space to activate.",
     "screenReader": "Announced with role and state."
   },
   "patterns": [
@@ -56,5 +56,5 @@
     "See pluginNotes for plugin-specific rendering caveats."
   ],
   "version": "2025.06",
-  "lastChecked": "2026-06-26"
+  "lastChecked": "2026-07-25"
 }

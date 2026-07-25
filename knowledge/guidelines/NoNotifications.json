@@ -1,7 +1,7 @@
 {
   "componentName": "NoNotifications",
   "slug": "illustrated-message",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/illustrated-message/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/illustrated-message",
   "purpose": "Empty-state illustration used inside the Notifications popover or notification inbox when the user has no notifications. Signals 'you're all caught up — nothing new here'.",
   "whenToUse": [
     "Notifications popover from ShellBar when list is empty",
@@ -36,7 +36,9 @@
   "contentGuidance": {
     "labelLength": "Title ≤ 40 chars; description ≤ 80 chars",
     "contentRules": "Title is positive; description is optional and brief",
-    "examples": ["Title: 'All caught up!' · Description: 'You have no new notifications'"]
+    "examples": [
+      "Title: 'All caught up!' · Description: 'You have no new notifications'"
+    ]
   },
   "responsiveBehavior": {
     "XL": "Dialog or Spot depending on container",
@@ -45,7 +47,9 @@
     "S": "Spot size"
   },
   "accessibilityGuidance": {
-    "wcagCriteria": ["WCAG 2.1 · 1.1.1 Non-text Content (Level A)"],
+    "wcagCriteria": [
+      "WCAG 2.1 · 1.1.1 Non-text Content (Level A)"
+    ],
     "requirements": [
       "role='img' with aria-label='No notifications'",
       "Title as semantic heading",
@@ -53,9 +57,21 @@
       "Screen reader announces the empty state"
     ]
   },
-  "patterns": ["Empty notifications popover", "Empty notification inbox", "Positive empty state"],
-  "compatibility": {"allowedWith": ["IllustratedMessage (only)"], "forbiddenWith": ["Standalone", "Any other parent"]},
+  "patterns": [
+    "Empty notifications popover",
+    "Empty notification inbox",
+    "Positive empty state"
+  ],
+  "compatibility": {
+    "allowedWith": [
+      "IllustratedMessage (only)"
+    ],
+    "forbiddenWith": [
+      "Standalone",
+      "Any other parent"
+    ]
+  },
   "exceptions": [],
   "version": "1.149.0",
-  "lastChecked": "2026-07-08"
+  "lastChecked": "2026-07-25"
 }

@@ -117,8 +117,8 @@
     "Allow filtering as user types"
   ],
   "dontRules": [
-    "Do not use when only one selection is allowed \u2014 use ComboBox",
-    "Do not use with <10 options \u2014 use CheckBox group"
+    "Do not use when only one selection is allowed — use ComboBox",
+    "Do not use with <10 options — use CheckBox group"
   ],
   "compatibleComponents": [
     "Label",
@@ -129,7 +129,7 @@
   "incompatiblePatterns": [
     "Without Label"
   ],
-  "guidelineUrl": "https://experience.sap.com/fiori-design-web/multicombobox/",
+  "guidelineUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/multicombobox",
   "demoKitUrl": "https://sapui5.hana.ondemand.com/#/entity/sap.m.MultiComboBox",
   "apiUrl": "https://sapui5.hana.ondemand.com/#/api/sap.m.MultiComboBox",
   "sampleUrls": [],

@@ -1,7 +1,7 @@
 {
   "componentName": "ObjectStatus",
   "slug": "object-status",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/object-status/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/objectstatus",
   "purpose": "A semantic status indicator combining icon, text, and semantic color. The standard SAP pattern for communicating state.",
   "whenToUse": [
     "Showing status (Success/Warning/Error/Information) on objects",
@@ -9,9 +9,9 @@
     "In ObjectHeader for prominent status display"
   ],
   "whenNotToUse": [
-    "For categorical labels (non-semantic) \u2014 use Tag",
-    "For interactive controls \u2014 use Button",
-    "Without text \u2014 status by color alone violates WCAG"
+    "For categorical labels (non-semantic) — use Tag",
+    "For interactive controls — use Button",
+    "Without text — status by color alone violates WCAG"
   ],
   "doRules": [
     "Always pair state color with state icon",
@@ -21,8 +21,8 @@
   ],
   "dontRules": [
     "Do not communicate status by color alone",
-    "Do not use Error state for warnings \u2014 use the right semantic level",
-    "Do not omit text \u2014 color + icon alone is insufficient"
+    "Do not use Error state for warnings — use the right semantic level",
+    "Do not omit text — color + icon alone is insufficient"
   ],
   "layoutGuidance": {
     "placement": "Table cell, List item, ObjectHeader, Form.",
@@ -31,7 +31,7 @@
     "alignment": "Icon left, text right."
   },
   "contentGuidance": {
-    "labelLength": "1\u20133 words.",
+    "labelLength": "1–3 words.",
     "contentRules": [
       "Status text describes state",
       "Combine with semantic state prop"
@@ -52,12 +52,12 @@
   "accessibilityGuidance": [
     {
       "category": "status",
-      "requirement": "State communicated by icon AND text \u2014 not color alone",
+      "requirement": "State communicated by icon AND text — not color alone",
       "wcag": "1.4.1 (A)"
     },
     {
       "category": "contrast",
-      "requirement": "Status text contrast \u2265 4.5:1",
+      "requirement": "Status text contrast ≥ 4.5:1",
       "wcag": "1.4.3 (AA)"
     },
     {
@@ -79,12 +79,12 @@
       "ObjectHeader"
     ],
     "incompatible": [
-      "Without text \u2014 icon-only status"
+      "Without text — icon-only status"
     ]
   },
   "exceptions": [
     "Inverted style for dark backgrounds"
   ],
   "version": "2026.Q2",
-  "lastChecked": "2026-06-25"
+  "lastChecked": "2026-07-25"
 }

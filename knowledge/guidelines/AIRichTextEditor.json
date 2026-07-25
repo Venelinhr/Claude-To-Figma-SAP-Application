@@ -1,7 +1,7 @@
 {
   "componentName": "AIRichTextEditor",
   "slug": "joule-rich-text-editor",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/joule/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/joule",
   "purpose": "A rich-text editor with AI-assisted content generation, formatting, and improvement. Distinguished from plain RichTextEditor by the Joule accent border and inline AI toolbar. Used for long-form authored content with formatting.",
   "whenToUse": [
     "Composing formal correspondence with formatting (bold, lists, links)",
@@ -36,7 +36,9 @@
   "contentGuidance": {
     "labelLength": "Placeholder ≤ 80 chars",
     "contentRules": "Rich HTML or Markdown; AI can refactor while preserving structure",
-    "examples": ["\"Compose your message — Joule can help refine it\""]
+    "examples": [
+      "\"Compose your message — Joule can help refine it\""
+    ]
   },
   "responsiveBehavior": {
     "XL": "Full toolbar + content",
@@ -45,7 +47,10 @@
     "S": "Toolbar collapses to essentials; AI in overflow"
   },
   "accessibilityGuidance": {
-    "wcagCriteria": ["WCAG 2.1 · 4.1.2 Name, Role, Value (Level A)", "WCAG 2.1 · 1.4.5 Images of Text (AA)"],
+    "wcagCriteria": [
+      "WCAG 2.1 · 4.1.2 Name, Role, Value (Level A)",
+      "WCAG 2.1 · 1.4.5 Images of Text (AA)"
+    ],
     "requirements": [
       "Toolbar buttons have aria-labels; AI actions clearly labeled",
       "role='textbox' with aria-multiline='true'",
@@ -53,9 +58,24 @@
       "Keyboard shortcuts follow standard editor conventions"
     ]
   },
-  "patterns": ["Email composer with AI", "Article authoring", "Knowledge base editing"],
-  "compatibility": {"allowedWith": ["Dialog", "Card", "Panel", "Form"], "forbiddenWith": ["Table cells", "Toolbar"]},
+  "patterns": [
+    "Email composer with AI",
+    "Article authoring",
+    "Knowledge base editing"
+  ],
+  "compatibility": {
+    "allowedWith": [
+      "Dialog",
+      "Card",
+      "Panel",
+      "Form"
+    ],
+    "forbiddenWith": [
+      "Table cells",
+      "Toolbar"
+    ]
+  },
   "exceptions": [],
   "version": "1.149.0",
-  "lastChecked": "2026-07-08"
+  "lastChecked": "2026-07-25"
 }

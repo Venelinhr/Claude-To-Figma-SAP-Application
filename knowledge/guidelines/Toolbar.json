@@ -1,7 +1,7 @@
 {
   "componentName": "Toolbar",
   "slug": "toolbar",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/toolbar/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/toolbar",
   "purpose": "Horizontal container for related actions, controls, and titles. The simpler sibling of OverflowToolbar — does NOT manage overflow when content exceeds available width.",
   "whenToUse": [
     "Action group with fixed, predictable content that won't overflow",
@@ -45,9 +45,9 @@
   },
   "responsiveBehavior": {
     "XL": "All items inline.",
-    "L":  "All items inline.",
-    "M":  "Risk of overflow — prefer OverflowToolbar.",
-    "S":  "High overflow risk — strongly prefer OverflowToolbar."
+    "L": "All items inline.",
+    "M": "Risk of overflow — prefer OverflowToolbar.",
+    "S": "High overflow risk — strongly prefer OverflowToolbar."
   },
   "accessibilityGuidance": {
     "ariaPattern": "role='toolbar' with aria-label describing purpose. Arrow keys navigate within toolbar.",
@@ -60,10 +60,20 @@
     "Form section header — section actions",
     "Dialog footer (rare; Dialog has its own buttons)"
   ],
-  "compatibility": ["Button", "MenuButton", "IconButton", "ToolbarSpacer", "Title", "Label", "Input", "SearchField", "Select"],
+  "compatibility": [
+    "Button",
+    "MenuButton",
+    "IconButton",
+    "ToolbarSpacer",
+    "Title",
+    "Label",
+    "Input",
+    "SearchField",
+    "Select"
+  ],
   "exceptions": [
     "In nearly all production cases, prefer OverflowToolbar. Toolbar is documented for completeness but its incompatibility with overflow makes it rare."
   ],
   "version": "2025.06",
-  "lastChecked": "2026-06-26"
+  "lastChecked": "2026-07-25"
 }

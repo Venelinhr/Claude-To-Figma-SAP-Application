@@ -1,38 +1,38 @@
 {
   "componentName": "List",
   "slug": "list",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/list/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/list",
   "purpose": "A vertical list of similar items, typically with title, description, and optional status or icon. Simpler than Table; no multi-column alignment.",
   "whenToUse": [
-    "For 3\u201320 similar items with consistent structure",
+    "For 3–20 similar items with consistent structure",
     "For master lists in split-screen flows",
-    "When items have title + 1\u20132 secondary attributes",
+    "When items have title + 1–2 secondary attributes",
     "For notification or message lists"
   ],
   "whenNotToUse": [
-    "For tabular data with multiple aligned columns \u2014 use Table",
-    "For very few items (<3) \u2014 inline them",
-    "For complex hierarchical data \u2014 use Tree"
+    "For tabular data with multiple aligned columns — use Table",
+    "For very few items (<3) — inline them",
+    "For complex hierarchical data — use Tree"
   ],
   "doRules": [
-    "Use List for ~3\u201320 items with consistent structure",
+    "Use List for ~3–20 items with consistent structure",
     "Show title + optional description per item",
     "Use MultiSelect mode for bulk actions",
     "Show item count or filter in toolbar"
   ],
   "dontRules": [
-    "Do not use List for tabular data with multiple aligned columns \u2014 use Table",
+    "Do not use List for tabular data with multiple aligned columns — use Table",
     "Do not put unrelated content types in one list",
     "Do not skip item type when row is interactive"
   ],
   "layoutGuidance": {
     "placement": "In page content, master pane of split-screen.",
-    "sizing": "Full width; item height varies by type (48\u201396px).",
+    "sizing": "Full width; item height varies by type (48–96px).",
     "spacing": "Separator border between items.",
     "alignment": "Left-aligned content."
   },
   "contentGuidance": {
-    "labelLength": "Title 1\u20138 words; description 1 line preferred.",
+    "labelLength": "Title 1–8 words; description 1 line preferred.",
     "contentRules": [
       "Use ObjectIdentifier or StandardListItem",
       "Group related items",
@@ -74,12 +74,12 @@
       "OverflowToolbar"
     ],
     "incompatible": [
-      "As primary navigation \u2014 use SideNavigation"
+      "As primary navigation — use SideNavigation"
     ]
   },
   "exceptions": [
     "GrowingList for incremental loading; FixedList for finite known set"
   ],
   "version": "2026.Q2",
-  "lastChecked": "2026-06-25"
+  "lastChecked": "2026-07-25"
 }

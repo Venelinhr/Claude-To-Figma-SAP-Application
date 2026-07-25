@@ -1,7 +1,7 @@
 {
   "componentName": "Footer",
   "slug": "footer",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/bar/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/page-footer-bar",
   "purpose": "A page-level footer region containing primary and secondary actions. Sits at the bottom of a Page, Dialog, or DynamicPage. Under the hood, this is a Bar with design=Footer. Used when actions should always be visible at the bottom regardless of content scroll.",
   "whenToUse": [
     "Bottom-of-page primary action rows (Save / Cancel / Submit)",
@@ -36,7 +36,9 @@
   "contentGuidance": {
     "labelLength": "Button labels ≤ 20 chars",
     "contentRules": "Only action buttons; no arbitrary text",
-    "examples": ["[Cancel]  spacer  [Save Draft] [Submit]"]
+    "examples": [
+      "[Cancel]  spacer  [Save Draft] [Submit]"
+    ]
   },
   "responsiveBehavior": {
     "XL": "All actions visible inline",
@@ -45,7 +47,10 @@
     "S": "Primary action full-width; secondary in overflow"
   },
   "accessibilityGuidance": {
-    "wcagCriteria": ["WCAG 2.1 · 1.3.1 Info and Relationships (Level A)", "WCAG 2.1 · 2.4.6 Headings and Labels (AA)"],
+    "wcagCriteria": [
+      "WCAG 2.1 · 1.3.1 Info and Relationships (Level A)",
+      "WCAG 2.1 · 2.4.6 Headings and Labels (AA)"
+    ],
     "requirements": [
       "role='contentinfo' or 'region' with aria-label='Actions'",
       "Focus order: left actions → primary right",
@@ -53,12 +58,24 @@
       "Sticky positioning does not overlap focused inputs"
     ]
   },
-  "patterns": ["Page footer", "Dialog footer", "Wizard footer"],
+  "patterns": [
+    "Page footer",
+    "Dialog footer",
+    "Wizard footer"
+  ],
   "compatibility": {
-    "allowedWith": ["Page", "DynamicPage", "Dialog", "Wizard"],
-    "forbiddenWith": ["Toolbar (they are different components)", "Nested Footer"]
+    "allowedWith": [
+      "Page",
+      "DynamicPage",
+      "Dialog",
+      "Wizard"
+    ],
+    "forbiddenWith": [
+      "Toolbar (they are different components)",
+      "Nested Footer"
+    ]
   },
   "exceptions": [],
   "version": "1.149.0",
-  "lastChecked": "2026-07-08"
+  "lastChecked": "2026-07-25"
 }

@@ -118,7 +118,7 @@
     },
     {
       "category": "tap-target",
-      "requirement": "Min 32\u00d732 (Compact) / 44\u00d744 (Cozy)"
+      "requirement": "Min 32×32 (Compact) / 44×44 (Cozy)"
     },
     {
       "category": "focus",
@@ -126,7 +126,7 @@
     },
     {
       "category": "contrast",
-      "requirement": "Border \u2265 3:1 with background (WCAG AA non-text)",
+      "requirement": "Border ≥ 3:1 with background (WCAG AA non-text)",
       "wcag": "1.4.11"
     }
   ],
@@ -137,10 +137,10 @@
     "Bind border to sapField_BorderColor and placeholder to sapField_PlaceholderTextColor"
   ],
   "dontRules": [
-    "Do not use SearchField as a generic text input \u2014 use Input instead",
+    "Do not use SearchField as a generic text input — use Input instead",
     "Do not use vague placeholders like 'Search' alone; specify what is searched",
     "Do not stack multiple SearchFields in one toolbar",
-    "Do not omit the magnifier icon \u2014 it is the visual signal that this is search"
+    "Do not omit the magnifier icon — it is the visual signal that this is search"
   ],
   "compatibleComponents": [
     "OverflowToolbar",
@@ -148,10 +148,10 @@
     "FilterBar"
   ],
   "incompatiblePatterns": [
-    "Inside table cells \u2014 use Input instead",
-    "Inside Dialog footer \u2014 use Input"
+    "Inside table cells — use Input instead",
+    "Inside Dialog footer — use Input"
   ],
-  "guidelineUrl": "https://experience.sap.com/fiori-design-web/search-field/",
+  "guidelineUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/search-field",
   "demoKitUrl": "https://sdk.openui5.org/entity/sap.m.SearchField",
   "apiUrl": "https://sdk.openui5.org/api/sap.m.SearchField",
   "sampleUrls": [
@@ -159,7 +159,7 @@
   ],
   "libraryVersion": "2025.06",
   "lastValidated": "2026-06-27",
-  "pluginNotes": "The SAP Figma library does NOT ship a distinct SearchField component. The plugin maps SearchField \u2192 Input instance and prepends a magnifier glyph in the placeholder when no leading icon is configured. SAP_KEYS: SearchField \u2192 'Input'. Status: AI specs MAY emit { component: 'SearchField', props: { placeholder: 'Filter X' } }. For visual consistency, prefer placing it after a ToolbarSpacer in OverflowToolbar.",
+  "pluginNotes": "The SAP Figma library does NOT ship a distinct SearchField component. The plugin maps SearchField → Input instance and prepends a magnifier glyph in the placeholder when no leading icon is configured. SAP_KEYS: SearchField → 'Input'. Status: AI specs MAY emit { component: 'SearchField', props: { placeholder: 'Filter X' } }. For visual consistency, prefer placing it after a ToolbarSpacer in OverflowToolbar.",
   "composition": {
     "validParents": [
       "OverflowToolbar",

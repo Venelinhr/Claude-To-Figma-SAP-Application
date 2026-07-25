@@ -100,7 +100,7 @@
   "incompatiblePatterns": [
     "Outside Table"
   ],
-  "guidelineUrl": "https://experience.sap.com/fiori-design-web/columnlistitem/",
+  "guidelineUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/columnlistitem",
   "demoKitUrl": "https://sapui5.hana.ondemand.com/#/entity/sap.m.ColumnListItem",
   "apiUrl": "https://sapui5.hana.ondemand.com/#/api/sap.m.ColumnListItem",
   "sampleUrls": [],

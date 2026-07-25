@@ -5,27 +5,101 @@
   "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
   "componentCategory": "Display",
   "supportedVariants": [
-    { "property": "ColorScheme", "ui5Property": "colorScheme", "values": ["1","2","3","4","5","6","7","8","9","10"], "default": "7" },
-    { "property": "Rendermode",  "ui5Property": "renderMode",  "values": ["Loose","Narrow"], "default": "Loose" }
+    {
+      "property": "ColorScheme",
+      "ui5Property": "colorScheme",
+      "values": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10"
+      ],
+      "default": "7"
+    },
+    {
+      "property": "Rendermode",
+      "ui5Property": "renderMode",
+      "values": [
+        "Loose",
+        "Narrow"
+      ],
+      "default": "Loose"
+    }
   ],
   "supportedProperties": [
-    { "name": "text",         "ui5Name": "text",         "type": "string",  "exposedInLibrary": true, "default": "" },
-    { "name": "colorScheme",  "ui5Name": "colorScheme",  "type": "int",     "exposedInLibrary": true, "default": 7 },
-    { "name": "displayOnly",  "ui5Name": "displayOnly",  "type": "boolean", "exposedInLibrary": false, "default": true },
-    { "name": "icon",         "ui5Name": "icon",         "type": "URI",     "exposedInLibrary": false, "default": "" }
+    {
+      "name": "text",
+      "ui5Name": "text",
+      "type": "string",
+      "exposedInLibrary": true,
+      "default": ""
+    },
+    {
+      "name": "colorScheme",
+      "ui5Name": "colorScheme",
+      "type": "int",
+      "exposedInLibrary": true,
+      "default": 7
+    },
+    {
+      "name": "displayOnly",
+      "ui5Name": "displayOnly",
+      "type": "boolean",
+      "exposedInLibrary": false,
+      "default": true
+    },
+    {
+      "name": "icon",
+      "ui5Name": "icon",
+      "type": "URI",
+      "exposedInLibrary": false,
+      "default": ""
+    }
   ],
-  "supportedStates": ["Regular"],
+  "supportedStates": [
+    "Regular"
+  ],
   "typographyRules": [
-    { "role": "text", "fontFamily": "72", "fontStyle": "Regular", "fontSize": 12, "sapStyleName": "SmallText/LHAuto/Regular" }
+    {
+      "role": "text",
+      "fontFamily": "72",
+      "fontStyle": "Regular",
+      "fontSize": 12,
+      "sapStyleName": "SmallText/LHAuto/Regular"
+    }
   ],
   "colorTokenRules": [
-    { "role": "text",        "token": "sapContent_LabelColor",        "fallbackHex": "#556B82" },
-    { "role": "bg-scheme-7", "token": "sapContent_Container_Background","fallbackHex": "#F5F6F7" },
-    { "role": "border",      "token": "sapContent_Container_BorderColor","fallbackHex": "#D5DADE" }
+    {
+      "role": "text",
+      "token": "sapContent_LabelColor",
+      "fallbackHex": "#556B82"
+    },
+    {
+      "role": "bg-scheme-7",
+      "token": "sapContent_Container_Background",
+      "fallbackHex": "#F5F6F7"
+    },
+    {
+      "role": "border",
+      "token": "sapContent_Container_BorderColor",
+      "fallbackHex": "#D5DADE"
+    }
   ],
   "accessibilityRules": [
-    { "category": "contrast", "requirement": "Text ≥ 4.5:1 against the color-scheme background" },
-    { "category": "labeling", "requirement": "Color must not be the sole conveyor of meaning" }
+    {
+      "category": "contrast",
+      "requirement": "Text ≥ 4.5:1 against the color-scheme background"
+    },
+    {
+      "category": "labeling",
+      "requirement": "Color must not be the sole conveyor of meaning"
+    }
   ],
   "doRules": [
     "Use for compact categorical labels (status categories, priority tiers, tags)",
@@ -37,9 +111,27 @@
     "Do not exceed 3 InfoLabels side by side — density becomes noisy",
     "Do not use as a Button substitute"
   ],
-  "compatibleComponents": ["Title","Text","Label","ObjectStatus","Tag","Panel","Card","StandardListItem","ColumnListItem","ObjectListItem","DynamicPageTitle","ObjectPageHeader","Toolbar","OverflowToolbar"],
-  "incompatiblePatterns": ["Inside ShellBar","Inside table header row"],
-  "guidelineUrl": "https://experience.sap.com/fiori-design-web/info-label/",
+  "compatibleComponents": [
+    "Title",
+    "Text",
+    "Label",
+    "ObjectStatus",
+    "Tag",
+    "Panel",
+    "Card",
+    "StandardListItem",
+    "ColumnListItem",
+    "ObjectListItem",
+    "DynamicPageTitle",
+    "ObjectPageHeader",
+    "Toolbar",
+    "OverflowToolbar"
+  ],
+  "incompatiblePatterns": [
+    "Inside ShellBar",
+    "Inside table header row"
+  ],
+  "guidelineUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/info-label",
   "demoKitUrl": "https://sapui5.hana.ondemand.com/#/entity/sap.m.InfoLabel",
   "apiUrl": "https://sapui5.hana.ondemand.com/#/api/sap.m.InfoLabel",
   "sampleUrls": [],
@@ -53,11 +145,37 @@
     ]
   },
   "composition": {
-    "validParents": ["Title","Text","Label","ObjectStatus","Panel","Card","StandardListItem","ColumnListItem","ObjectListItem","DynamicPageTitle","DynamicPageHeader","ObjectPageHeader","Toolbar","OverflowToolbar","FilterBar","Dialog","Popover","SapTableRow"],
+    "validParents": [
+      "Title",
+      "Text",
+      "Label",
+      "ObjectStatus",
+      "Panel",
+      "Card",
+      "StandardListItem",
+      "ColumnListItem",
+      "ObjectListItem",
+      "DynamicPageTitle",
+      "DynamicPageHeader",
+      "ObjectPageHeader",
+      "Toolbar",
+      "OverflowToolbar",
+      "FilterBar",
+      "Dialog",
+      "Popover",
+      "SapTableRow"
+    ],
     "topLevelOnly": false,
     "validChildren": [],
     "mustInclude": [],
     "mustExclude": [],
-    "commonSiblings": ["Tag","GenericTag","ObjectStatus","Title","Text","Label"]
+    "commonSiblings": [
+      "Tag",
+      "GenericTag",
+      "ObjectStatus",
+      "Title",
+      "Text",
+      "Label"
+    ]
   }
 }

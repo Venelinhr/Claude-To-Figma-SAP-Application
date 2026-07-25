@@ -115,7 +115,7 @@
   "accessibilityRules": [
     {
       "category": "contrast",
-      "requirement": "Text-to-background contrast \u2265 4.5:1 (WCAG AA)",
+      "requirement": "Text-to-background contrast ≥ 4.5:1 (WCAG AA)",
       "wcag": "1.4.3"
     },
     {
@@ -137,7 +137,7 @@
     "Keep button labels short and action-oriented (verb-first)"
   ],
   "dontRules": [
-    "Do not use multiple Emphasized buttons in one toolbar \u2014 confuses primary intent",
+    "Do not use multiple Emphasized buttons in one toolbar — confuses primary intent",
     "Do not use vague labels like 'OK', 'Click here', 'Submit' when more specific text fits",
     "Do not use a Button when a Link is more appropriate (navigation vs action)"
   ],
@@ -150,10 +150,10 @@
     "MenuButton"
   ],
   "incompatiblePatterns": [
-    "Inside table cells at small sizes \u2014 use Link or IconButton instead",
+    "Inside table cells at small sizes — use Link or IconButton instead",
     "Stacked vertically when horizontal toolbar layout applies"
   ],
-  "guidelineUrl": "https://experience.sap.com/fiori-design-web/button/",
+  "guidelineUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/button",
   "demoKitUrl": "https://sapui5.hana.ondemand.com/#/entity/sap.m.Button",
   "apiUrl": "https://sapui5.hana.ondemand.com/#/api/sap.m.Button",
   "sampleUrls": [

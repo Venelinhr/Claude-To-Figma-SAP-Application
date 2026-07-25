@@ -1,7 +1,7 @@
 {
   "componentName": "DynamicPage",
   "slug": "dynamic-page",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/dynamic-page-layout/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/dynamicpage",
   "purpose": "A page-layout container with a snappable header, sticky title, and scrollable content. The base for Object Page and many other floorplans.",
   "whenToUse": [
     "For pages with header metadata + main content",
@@ -9,9 +9,9 @@
     "When header should collapse on scroll"
   ],
   "whenNotToUse": [
-    "For simple forms \u2014 use Form directly",
-    "For full-screen dialogs \u2014 use Dialog",
-    "For wizards \u2014 use Wizard"
+    "For simple forms — use Form directly",
+    "For full-screen dialogs — use Dialog",
+    "For wizards — use Wizard"
   ],
   "doRules": [
     "Use DynamicPage for Object Page floorplan",
@@ -20,7 +20,7 @@
     "Set showFooter when destructive actions need persistent visibility"
   ],
   "dontRules": [
-    "Do not use DynamicPage for simple forms \u2014 use Form",
+    "Do not use DynamicPage for simple forms — use Form",
     "Do not nest DynamicPage inside DynamicPage",
     "Do not omit DynamicPageTitle"
   ],
@@ -28,7 +28,7 @@
     "placement": "Full content area below ShellBar.",
     "sizing": "Full viewport height.",
     "spacing": "Title 48px, header variable, content fills.",
-    "alignment": "Vertical stack: title \u2192 header \u2192 content \u2192 footer."
+    "alignment": "Vertical stack: title → header → content → footer."
   },
   "contentGuidance": {
     "labelLength": "N/A (container)",
@@ -74,5 +74,5 @@
     "preserveHeaderStateOnScroll prevents collapse on scroll"
   ],
   "version": "2026.Q2",
-  "lastChecked": "2026-06-25"
+  "lastChecked": "2026-07-25"
 }

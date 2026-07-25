@@ -1,7 +1,7 @@
 {
   "componentName": "ObjectPageLayout",
   "slug": "object-page",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/object-page/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/objectpagelayout",
   "purpose": "A floorplan for displaying a single business object with multiple sections. Includes object header, anchor bar, and scrollable section content.",
   "whenToUse": [
     "For object detail pages with multiple sections",
@@ -9,9 +9,9 @@
     "For Edit and Display modes of an object"
   ],
   "whenNotToUse": [
-    "For simple single-section pages \u2014 use DynamicPage",
-    "For lists of objects \u2014 use List Report",
-    "For wizards \u2014 use Wizard"
+    "For simple single-section pages — use DynamicPage",
+    "For lists of objects — use List Report",
+    "For wizards — use Wizard"
   ],
   "doRules": [
     "Use for object detail pages with multiple sections",
@@ -20,8 +20,8 @@
     "Use IconTabBar for grouped sections"
   ],
   "dontRules": [
-    "Do not use for simple single-section pages \u2014 use DynamicPage",
-    "Do not put a Table as the only content \u2014 use List Report",
+    "Do not use for simple single-section pages — use DynamicPage",
+    "Do not put a Table as the only content — use List Report",
     "Do not omit the object header"
   ],
   "layoutGuidance": {
@@ -31,7 +31,7 @@
     "alignment": "Anchor bar sticky top; sections scroll."
   },
   "contentGuidance": {
-    "labelLength": "Section titles 1\u20133 words.",
+    "labelLength": "Section titles 1–3 words.",
     "contentRules": [
       "Use ObjectPageSection for each section",
       "Use subsections for granularity"
@@ -80,5 +80,5 @@
     "useIconTabBar=true replaces Anchor Bar with IconTabBar"
   ],
   "version": "2026.Q2",
-  "lastChecked": "2026-06-25"
+  "lastChecked": "2026-07-25"
 }

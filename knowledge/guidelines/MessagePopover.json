@@ -1,7 +1,7 @@
 {
   "componentName": "MessagePopover",
   "slug": "message-popover",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/message-popover/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/message-popover",
   "purpose": "Anchored Popover that displays validation messages from a Form. Lists errors/warnings/info from across the form so users can navigate to each.",
   "whenToUse": [
     "Form validation summaries",
@@ -9,9 +9,9 @@
     "When users need to jump to each error from a single trigger"
   ],
   "whenNotToUse": [
-    "Inline field validation \u2014 use MessageStrip below the field",
-    "Critical errors \u2014 use MessageBox",
-    "Tooltips \u2014 use Popover with text"
+    "Inline field validation — use MessageStrip below the field",
+    "Critical errors — use MessageBox",
+    "Tooltips — use Popover with text"
   ],
   "doRules": [
     "Anchor to a status button with error count",
@@ -40,13 +40,13 @@
   "responsiveBehavior": {
     "XL": "Full size and visibility.",
     "L": "Full size and visibility.",
-    "M": "May condense \u2014 see Fiori responsive design guidelines.",
+    "M": "May condense — see Fiori responsive design guidelines.",
     "S": "May convert to alternative pattern on narrow viewports."
   },
   "accessibilityGuidance": {
     "ariaPattern": "Maps to ARIA pattern appropriate for feedback.",
-    "contrast": "\u2265 4.5:1 for text, \u2265 3:1 for borders (WCAG AA).",
-    "keyboard": "Full keyboard support \u2014 Tab to focus, Enter/Space to activate.",
+    "contrast": "≥ 4.5:1 for text, ≥ 3:1 for borders (WCAG AA).",
+    "keyboard": "Full keyboard support — Tab to focus, Enter/Space to activate.",
     "screenReader": "Announced with role and state."
   },
   "patterns": [
@@ -61,5 +61,5 @@
     "See pluginNotes for plugin-specific rendering caveats."
   ],
   "version": "2025.06",
-  "lastChecked": "2026-06-26"
+  "lastChecked": "2026-07-25"
 }

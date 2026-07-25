@@ -88,11 +88,11 @@
     }
   ],
   "doRules": [
-    "Use for date range filters (e.g. \"From \u2013 To\")",
+    "Use for date range filters (e.g. \"From – To\")",
     "Provide preset ranges (Last 7 days, This month, etc.)"
   ],
   "dontRules": [
-    "Do not use for single date \u2014 use DatePicker",
+    "Do not use for single date — use DatePicker",
     "Do not allow end date before start date"
   ],
   "compatibleComponents": [
@@ -103,7 +103,7 @@
   "incompatiblePatterns": [
     "Without Label"
   ],
-  "guidelineUrl": "https://experience.sap.com/fiori-design-web/daterangepicker/",
+  "guidelineUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/daterangepicker",
   "demoKitUrl": "https://sapui5.hana.ondemand.com/#/entity/sap.m.DateRangePicker",
   "apiUrl": "https://sapui5.hana.ondemand.com/#/api/sap.m.DateRangePicker",
   "sampleUrls": [],

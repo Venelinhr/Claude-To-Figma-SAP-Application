@@ -116,7 +116,7 @@
     "Inside ShellBar",
     "Inside Toolbar as an action"
   ],
-  "guidelineUrl": "https://experience.sap.com/fiori-design-web/rating-indicator/",
+  "guidelineUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/rating-indicator",
   "demoKitUrl": "https://sapui5.hana.ondemand.com/#/entity/sap.m.RatingIndicator",
   "apiUrl": "https://sapui5.hana.ondemand.com/#/api/sap.m.RatingIndicator",
   "sampleUrls": [],

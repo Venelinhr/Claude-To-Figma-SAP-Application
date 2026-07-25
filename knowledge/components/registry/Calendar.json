@@ -5,35 +5,147 @@
   "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
   "componentCategory": "DatePicker",
   "supportedVariants": [
-    { "property": "Form Factor",    "values": ["Compact","Cozy"], "default": "Compact" },
-    { "property": "Selection",      "ui5Property": "selection", "values": ["Day","Month","Year","Year Range"], "default": "Day" },
-    { "property": "Mixed Calendar", "ui5Property": "mixedCalendar", "values": ["True","False"], "default": "False" }
+    {
+      "property": "Form Factor",
+      "values": [
+        "Compact",
+        "Cozy"
+      ],
+      "default": "Compact"
+    },
+    {
+      "property": "Selection",
+      "ui5Property": "selection",
+      "values": [
+        "Day",
+        "Month",
+        "Year",
+        "Year Range"
+      ],
+      "default": "Day"
+    },
+    {
+      "property": "Mixed Calendar",
+      "ui5Property": "mixedCalendar",
+      "values": [
+        "True",
+        "False"
+      ],
+      "default": "False"
+    }
   ],
   "supportedProperties": [
-    { "name": "selection",       "ui5Name": "selection",       "type": "string",  "exposedInLibrary": true,  "default": "Day" },
-    { "name": "months",          "ui5Name": "months",          "type": "int",     "exposedInLibrary": false, "default": 1 },
-    { "name": "startDate",       "ui5Name": "startDate",       "type": "object",  "exposedInLibrary": false, "default": null },
-    { "name": "selectedDates",   "ui5Name": "selectedDates",   "type": "array",   "exposedInLibrary": false, "default": [] },
-    { "name": "singleSelection", "ui5Name": "singleSelection", "type": "boolean", "exposedInLibrary": false, "default": true }
+    {
+      "name": "selection",
+      "ui5Name": "selection",
+      "type": "string",
+      "exposedInLibrary": true,
+      "default": "Day"
+    },
+    {
+      "name": "months",
+      "ui5Name": "months",
+      "type": "int",
+      "exposedInLibrary": false,
+      "default": 1
+    },
+    {
+      "name": "startDate",
+      "ui5Name": "startDate",
+      "type": "object",
+      "exposedInLibrary": false,
+      "default": null
+    },
+    {
+      "name": "selectedDates",
+      "ui5Name": "selectedDates",
+      "type": "array",
+      "exposedInLibrary": false,
+      "default": []
+    },
+    {
+      "name": "singleSelection",
+      "ui5Name": "singleSelection",
+      "type": "boolean",
+      "exposedInLibrary": false,
+      "default": true
+    }
   ],
-  "supportedStates": ["Regular","Selected","Marked","Today","Disabled"],
+  "supportedStates": [
+    "Regular",
+    "Selected",
+    "Marked",
+    "Today",
+    "Disabled"
+  ],
   "typographyRules": [
-    { "role": "month-title",    "fontFamily": "72", "fontStyle": "Bold",    "fontSize": 14, "sapStyleName": "MediumText/LHAuto/Bold" },
-    { "role": "weekday-header", "fontFamily": "72", "fontStyle": "Regular", "fontSize": 12, "sapStyleName": "SmallText/LHAuto/Regular" },
-    { "role": "day-number",     "fontFamily": "72", "fontStyle": "Regular", "fontSize": 14, "sapStyleName": "MediumText/LHAuto/Regular" }
+    {
+      "role": "month-title",
+      "fontFamily": "72",
+      "fontStyle": "Bold",
+      "fontSize": 14,
+      "sapStyleName": "MediumText/LHAuto/Bold"
+    },
+    {
+      "role": "weekday-header",
+      "fontFamily": "72",
+      "fontStyle": "Regular",
+      "fontSize": 12,
+      "sapStyleName": "SmallText/LHAuto/Regular"
+    },
+    {
+      "role": "day-number",
+      "fontFamily": "72",
+      "fontStyle": "Regular",
+      "fontSize": 14,
+      "sapStyleName": "MediumText/LHAuto/Regular"
+    }
   ],
   "colorTokenRules": [
-    { "role": "background",     "token": "sapList_Background",              "fallbackHex": "#FFFFFF" },
-    { "role": "border",         "token": "sapList_BorderColor",             "fallbackHex": "#EAECEE" },
-    { "role": "selected-bg",    "token": "sapSelectedColor",                "fallbackHex": "#0070F2" },
-    { "role": "selected-text",  "token": "sapButton_Emphasized_TextColor",  "fallbackHex": "#FFFFFF" },
-    { "role": "today-border",   "token": "sapActiveColor",                  "fallbackHex": "#0070F2" },
-    { "role": "marked-bg",      "token": "sapLegendColor3",                 "fallbackHex": "#FFB000" }
+    {
+      "role": "background",
+      "token": "sapList_Background",
+      "fallbackHex": "#FFFFFF"
+    },
+    {
+      "role": "border",
+      "token": "sapList_BorderColor",
+      "fallbackHex": "#EAECEE"
+    },
+    {
+      "role": "selected-bg",
+      "token": "sapSelectedColor",
+      "fallbackHex": "#0070F2"
+    },
+    {
+      "role": "selected-text",
+      "token": "sapButton_Emphasized_TextColor",
+      "fallbackHex": "#FFFFFF"
+    },
+    {
+      "role": "today-border",
+      "token": "sapActiveColor",
+      "fallbackHex": "#0070F2"
+    },
+    {
+      "role": "marked-bg",
+      "token": "sapLegendColor3",
+      "fallbackHex": "#FFB000"
+    }
   ],
   "accessibilityRules": [
-    { "category": "keyboard", "requirement": "Arrow keys navigate days; PageUp/Down navigate months; Enter selects" },
-    { "category": "focus",    "requirement": "Focused day has visible focus ring using sapActiveColor" },
-    { "category": "labeling", "requirement": "aria-label on each day: 'Day, Weekday, Month Year'" }
+    {
+      "category": "keyboard",
+      "requirement": "Arrow keys navigate days; PageUp/Down navigate months; Enter selects"
+    },
+    {
+      "category": "focus",
+      "requirement": "Focused day has visible focus ring using sapActiveColor"
+    },
+    {
+      "category": "labeling",
+      "requirement": "aria-label on each day: 'Day, Weekday, Month Year'"
+    }
   ],
   "doRules": [
     "Use for standalone date selection (scheduling, review calendars) — NOT for date input in forms (use DatePicker)",
@@ -45,9 +157,21 @@
     "Do not use inside a table cell — space-inefficient",
     "Do not force width below native (272px single-month, 544px two-month)"
   ],
-  "compatibleComponents": ["Panel","Card","Dialog","Popover","DynamicSideContent","MessageStrip","Legend"],
-  "incompatiblePatterns": ["Inside Toolbar","Inside table cells","Inside FilterBar"],
-  "guidelineUrl": "https://experience.sap.com/fiori-design-web/calendar/",
+  "compatibleComponents": [
+    "Panel",
+    "Card",
+    "Dialog",
+    "Popover",
+    "DynamicSideContent",
+    "MessageStrip",
+    "Legend"
+  ],
+  "incompatiblePatterns": [
+    "Inside Toolbar",
+    "Inside table cells",
+    "Inside FilterBar"
+  ],
+  "guidelineUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/calendar",
   "demoKitUrl": "https://sapui5.hana.ondemand.com/#/entity/sap.ui.unified.Calendar",
   "apiUrl": "https://sapui5.hana.ondemand.com/#/api/sap.ui.unified.Calendar",
   "sampleUrls": [],
@@ -61,11 +185,30 @@
     ]
   },
   "composition": {
-    "validParents": ["Panel","Card","Dialog","Popover","DynamicSideContent","IconTabBar","IconTabFilter","ObjectPageSection","ObjectPageSubSection"],
+    "validParents": [
+      "Panel",
+      "Card",
+      "Dialog",
+      "Popover",
+      "DynamicSideContent",
+      "IconTabBar",
+      "IconTabFilter",
+      "ObjectPageSection",
+      "ObjectPageSubSection"
+    ],
     "topLevelOnly": false,
     "validChildren": [],
     "mustInclude": [],
-    "mustExclude": ["Toolbar","OverflowToolbar","FilterBar","SapTableRow","ColumnListItem"],
-    "commonSiblings": ["Legend","MessageStrip"]
+    "mustExclude": [
+      "Toolbar",
+      "OverflowToolbar",
+      "FilterBar",
+      "SapTableRow",
+      "ColumnListItem"
+    ],
+    "commonSiblings": [
+      "Legend",
+      "MessageStrip"
+    ]
   }
 }

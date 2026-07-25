@@ -136,7 +136,7 @@
     "Show character counter when maxLength applies"
   ],
   "dontRules": [
-    "Do not use for single-line input \u2014 use Input",
+    "Do not use for single-line input — use Input",
     "Do not omit Label"
   ],
   "compatibleComponents": [
@@ -147,7 +147,7 @@
   "incompatiblePatterns": [
     "Without Label"
   ],
-  "guidelineUrl": "https://experience.sap.com/fiori-design-web/textarea/",
+  "guidelineUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/textarea",
   "demoKitUrl": "https://sapui5.hana.ondemand.com/#/entity/sap.m.TextArea",
   "apiUrl": "https://sapui5.hana.ondemand.com/#/api/sap.m.TextArea",
   "sampleUrls": [],

@@ -1,7 +1,7 @@
 {
   "componentName": "CheckBox",
   "slug": "checkbox",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/checkbox/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/checkbox",
   "purpose": "A binary selection control (selected / not selected) with optional Partial state for indeterminate selections. Used in forms, lists, and tables for multi-select.",
   "whenToUse": [
     "Boolean settings (enable/disable)",
@@ -10,9 +10,9 @@
     "Terms acceptance, opt-in confirmations"
   ],
   "whenNotToUse": [
-    "For mutually exclusive options \u2014 use RadioButton",
-    "For instant toggles without form context \u2014 use Switch",
-    "When only one choice exists \u2014 use a different pattern"
+    "For mutually exclusive options — use RadioButton",
+    "For instant toggles without form context — use Switch",
+    "When only one choice exists — use a different pattern"
   ],
   "doRules": [
     "Use Partial state for \"select all\" with mixed children",
@@ -22,17 +22,17 @@
   ],
   "dontRules": [
     "Do not use a CheckBox when a Switch fits better (instant action)",
-    "Do not use CheckBox for mutually exclusive options \u2014 use RadioButton",
+    "Do not use CheckBox for mutually exclusive options — use RadioButton",
     "Do not skip the text label"
   ],
   "layoutGuidance": {
     "placement": "Inside Form, Table header (select-all), Table row (multi-select).",
-    "sizing": "16\u00d716px box. Touch area includes label.",
+    "sizing": "16×16px box. Touch area includes label.",
     "spacing": "8px between checkbox and label; 8px between checkboxes.",
     "alignment": "Box left, label right."
   },
   "contentGuidance": {
-    "labelLength": "1\u201310 words.",
+    "labelLength": "1–10 words.",
     "contentRules": [
       "Use sentence case",
       "State positive options (e.g. \"Enable\" not \"Don't disable\")"
@@ -87,8 +87,8 @@
     ]
   },
   "exceptions": [
-    "Partial state when \u22651 but not all children selected"
+    "Partial state when ≥1 but not all children selected"
   ],
   "version": "2026.Q2",
-  "lastChecked": "2026-06-25"
+  "lastChecked": "2026-07-25"
 }

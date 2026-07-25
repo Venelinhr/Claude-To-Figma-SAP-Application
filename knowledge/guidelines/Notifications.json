@@ -1,7 +1,7 @@
 {
   "componentName": "Notifications",
   "slug": "notifications",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/notifications-shellbar/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/notification",
   "purpose": "A popover accessible from the ShellBar that shows a list of user notifications. Contains NotificationListItems grouped by priority or time. Central hub for user alerts, tasks, and updates.",
   "whenToUse": [
     "As the notifications popover triggered from ShellBar",
@@ -36,7 +36,10 @@
   "contentGuidance": {
     "labelLength": "Popover title 'Notifications' + count badge",
     "contentRules": "Header actions: Mark all read, Clear all, Filter",
-    "examples": ["Notifications (5)", "High priority (2), Medium (3)"]
+    "examples": [
+      "Notifications (5)",
+      "High priority (2), Medium (3)"
+    ]
   },
   "responsiveBehavior": {
     "XL": "Standard popover",
@@ -45,7 +48,10 @@
     "S": "May become full-screen slide-in from right"
   },
   "accessibilityGuidance": {
-    "wcagCriteria": ["WCAG 2.1 · 4.1.2 Name, Role, Value (Level A)", "WCAG 2.1 · 1.3.1 Info and Relationships (Level A)"],
+    "wcagCriteria": [
+      "WCAG 2.1 · 4.1.2 Name, Role, Value (Level A)",
+      "WCAG 2.1 · 1.3.1 Info and Relationships (Level A)"
+    ],
     "requirements": [
       "Popover has role='dialog' with aria-label='Notifications'",
       "Trigger button announces unread count ('5 unread notifications')",
@@ -53,12 +59,20 @@
       "Escape closes the popover; focus returns to trigger"
     ]
   },
-  "patterns": ["ShellBar notifications", "User task inbox summary"],
+  "patterns": [
+    "ShellBar notifications",
+    "User task inbox summary"
+  ],
   "compatibility": {
-    "allowedWith": ["ShellBar (as anchor)", "NotificationListItem (as items)"],
-    "forbiddenWith": ["Inside a page (use dedicated notification inbox page instead)"]
+    "allowedWith": [
+      "ShellBar (as anchor)",
+      "NotificationListItem (as items)"
+    ],
+    "forbiddenWith": [
+      "Inside a page (use dedicated notification inbox page instead)"
+    ]
   },
   "exceptions": [],
   "version": "1.149.0",
-  "lastChecked": "2026-07-08"
+  "lastChecked": "2026-07-25"
 }

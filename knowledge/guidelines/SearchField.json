@@ -1,7 +1,7 @@
 {
   "componentName": "SearchField",
   "slug": "search-field",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/search-field/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/search-field",
   "purpose": "Input control specialized for filter/search queries. Visually identical to Input with a leading magnifier icon, used to narrow lists, tables, or filter results.",
   "whenToUse": [
     "Filter a visible list or table by free-text query",
@@ -49,9 +49,9 @@
   },
   "responsiveBehavior": {
     "XL": "Full width up to 280px.",
-    "L":  "Full width up to 280px.",
-    "M":  "May shrink to 200px; icon stays visible.",
-    "S":  "Collapses to icon-only; tap expands to full overlay."
+    "L": "Full width up to 280px.",
+    "M": "May shrink to 200px; icon stays visible.",
+    "S": "Collapses to icon-only; tap expands to full overlay."
   },
   "accessibilityGuidance": {
     "ariaPattern": "<input role='searchbox' aria-label='...'>. Maps to <search> landmark when wrapping content.",
@@ -64,10 +64,15 @@
     "FilterBar — text filter alongside select filters",
     "DynamicPageTitle — global search (rare)"
   ],
-  "compatibility": ["OverflowToolbar", "Toolbar", "FilterBar", "DynamicPageTitle"],
+  "compatibility": [
+    "OverflowToolbar",
+    "Toolbar",
+    "FilterBar",
+    "DynamicPageTitle"
+  ],
   "exceptions": [
     "The SAP Figma library does not ship a distinct SearchField component — plugin maps SearchField → Input and uses the placeholder as the search prompt."
   ],
   "version": "2025.06",
-  "lastChecked": "2026-06-26"
+  "lastChecked": "2026-07-25"
 }

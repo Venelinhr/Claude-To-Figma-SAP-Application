@@ -1,7 +1,7 @@
 {
   "componentName": "SideNavigation",
   "slug": "side-navigation",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/side-navigation/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/sidenavigation",
   "purpose": "A vertical navigation rail at the left side of the application providing primary navigation. Can be expanded (showing labels) or collapsed (icons only).",
   "whenToUse": [
     "For primary application navigation when there are 5+ top-level destinations",
@@ -9,12 +9,12 @@
     "For long-running task views where consistent navigation is important"
   ],
   "whenNotToUse": [
-    "For \u22644 top-level destinations \u2014 use IconTabBar instead",
+    "For ≤4 top-level destinations — use IconTabBar instead",
     "For one-time wizards or guided flows",
     "When horizontal space is severely constrained"
   ],
   "doRules": [
-    "Use Expanded variant when sidebar width \u2265 224px",
+    "Use Expanded variant when sidebar width ≥ 224px",
     "Use Collapsed (icon-only) when space is constrained",
     "Group related items under collapsible Navigation Group",
     "Mark current page with Selected state"
@@ -22,16 +22,16 @@
   "dontRules": [
     "Do not place more than 2 levels of nesting",
     "Do not mix icons-only and icon+label items in same group",
-    "Do not put primary actions in side nav \u2014 use ShellBar or toolbar"
+    "Do not put primary actions in side nav — use ShellBar or toolbar"
   ],
   "layoutGuidance": {
     "placement": "Left side, full viewport height, below ShellBar.",
-    "sizing": "224\u2013256px Expanded, 48px Collapsed.",
+    "sizing": "224–256px Expanded, 48px Collapsed.",
     "spacing": "4px between items.",
     "alignment": "Items left-aligned, icons centered in 16px box."
   },
   "contentGuidance": {
-    "labelLength": "1\u20133 words per item.",
+    "labelLength": "1–3 words per item.",
     "contentRules": [
       "Use nouns for destinations",
       "Maintain stable order",
@@ -48,7 +48,7 @@
     "XL": "Expanded by default with all items visible",
     "L": "Expanded by default",
     "M": "Collapsed by default, expand on hover/click",
-    "S": "Hidden \u2014 accessed via hamburger menu in ShellBar"
+    "S": "Hidden — accessed via hamburger menu in ShellBar"
   },
   "accessibilityGuidance": [
     {
@@ -92,5 +92,5 @@
     "Collapsed state hides labels but preserves icons + tooltips"
   ],
   "version": "2026.Q2",
-  "lastChecked": "2026-06-25"
+  "lastChecked": "2026-07-25"
 }

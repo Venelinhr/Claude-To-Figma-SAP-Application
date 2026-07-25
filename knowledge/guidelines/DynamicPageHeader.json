@@ -1,7 +1,7 @@
 {
   "componentName": "DynamicPageHeader",
   "slug": "dynamic-page-layout",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/dynamic-page-layout/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/dynamicpageheader",
   "purpose": "The expandable header section below the DynamicPageTitle. Holds metadata that supplements the title (vendor, mode, version, description).",
   "whenToUse": [
     "For supplementary metadata about the page object",
@@ -10,16 +10,16 @@
   ],
   "whenNotToUse": [
     "As page footer",
-    "For primary actions \u2014 use DynamicPageTitle",
-    "For navigation \u2014 use breadcrumbs in title"
+    "For primary actions — use DynamicPageTitle",
+    "For navigation — use breadcrumbs in title"
   ],
   "doRules": [
     "Place metadata that supplements the title (vendor, mode, version, etc.)",
     "Allow user to snap (collapse) for more content room",
-    "Use 48\u00d748px icon left-aligned next to text"
+    "Use 48×48px icon left-aligned next to text"
   ],
   "dontRules": [
-    "Do not put primary actions here \u2014 use DynamicPageTitle",
+    "Do not put primary actions here — use DynamicPageTitle",
     "Do not exceed 2 rows of metadata",
     "Do not duplicate title content"
   ],
@@ -30,7 +30,7 @@
     "alignment": "Icon left, content right."
   },
   "contentGuidance": {
-    "labelLength": "Description 1\u20132 lines.",
+    "labelLength": "Description 1–2 lines.",
     "contentRules": [
       "Use Label/value pairs for metadata",
       "Group related metadata"
@@ -76,5 +76,5 @@
     "pinnable=true allows user to lock header expanded"
   ],
   "version": "2026.Q2",
-  "lastChecked": "2026-06-25"
+  "lastChecked": "2026-07-25"
 }

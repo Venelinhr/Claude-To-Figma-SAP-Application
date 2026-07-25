@@ -105,13 +105,13 @@
     }
   ],
   "doRules": [
-    "Use for 2\u20136 mutually exclusive options",
+    "Use for 2–6 mutually exclusive options",
     "Always have one option selected by default when possible",
     "Group radios with same groupName"
   ],
   "dontRules": [
     "Do not use RadioButton outside a group",
-    "Do not use with more than 6 options \u2014 use Select"
+    "Do not use with more than 6 options — use Select"
   ],
   "compatibleComponents": [
     "Label",
@@ -121,7 +121,7 @@
   "incompatiblePatterns": [
     "Alone without a group"
   ],
-  "guidelineUrl": "https://experience.sap.com/fiori-design-web/radiobutton/",
+  "guidelineUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/radiobutton",
   "demoKitUrl": "https://sapui5.hana.ondemand.com/#/entity/sap.m.RadioButton",
   "apiUrl": "https://sapui5.hana.ondemand.com/#/api/sap.m.RadioButton",
   "sampleUrls": [],
@@ -129,7 +129,7 @@
   "lastValidated": "2026-06-27",
   "pluginNotes": {
     "textInjectionMethod": "setProperties",
-    "sizingConstraints": "16\u00d716px circle + label.",
+    "sizingConstraints": "16×16px circle + label.",
     "knownIssues": []
   },
   "composition": {

@@ -1,19 +1,19 @@
 {
   "componentName": "DateRangePicker",
   "slug": "date-range-picker",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/date-range-picker/",
-  "purpose": "Two-date input with shared calendar. User selects start and end dates. Used for filters like \"From \u2013 To\" or date-range constraints.",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/daterangepicker",
+  "purpose": "Two-date input with shared calendar. User selects start and end dates. Used for filters like \"From – To\" or date-range constraints.",
   "whenToUse": [
     "Date-range filters (date ranges in lists, reports)",
     "Period selection (vacation, report range)",
     "Constraining a range of values"
   ],
   "whenNotToUse": [
-    "For a single date \u2014 use DatePicker",
-    "For predefined ranges only \u2014 use Select with presets"
+    "For a single date — use DatePicker",
+    "For predefined ranges only — use Select with presets"
   ],
   "doRules": [
-    "Use for date range filters (e.g. \"From \u2013 To\")",
+    "Use for date range filters (e.g. \"From – To\")",
     "Provide preset ranges (Last 7 days, This month, etc.) when relevant",
     "Highlight selected range visually in calendar"
   ],
@@ -30,12 +30,12 @@
   "contentGuidance": {
     "labelLength": "Format hint in placeholder.",
     "contentRules": [
-      "Format like \"MM/dd/yyyy \u2013 MM/dd/yyyy\"",
+      "Format like \"MM/dd/yyyy – MM/dd/yyyy\"",
       "Show preset shortcuts above calendar"
     ],
     "examples": [
       "Last 7 days",
-      "01/01/2026 \u2013 06/25/2026"
+      "01/01/2026 – 06/25/2026"
     ]
   },
   "responsiveBehavior": {
@@ -75,8 +75,8 @@
     ]
   },
   "exceptions": [
-    "Locale-specific separator (\u2014, \u2013, \"to\") in display"
+    "Locale-specific separator (—, –, \"to\") in display"
   ],
   "version": "2026.Q2",
-  "lastChecked": "2026-06-25"
+  "lastChecked": "2026-07-25"
 }

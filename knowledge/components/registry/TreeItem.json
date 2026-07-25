@@ -67,12 +67,12 @@
   "accessibilityRules": [
     {
       "category": "contrast",
-      "requirement": "Text contrast \u2265 4.5:1 against bg (WCAG AA)",
+      "requirement": "Text contrast ≥ 4.5:1 against bg (WCAG AA)",
       "wcag": "1.4.3"
     },
     {
       "category": "tap-target",
-      "requirement": "Min 32\u00d732 Compact / 44\u00d744 Cozy"
+      "requirement": "Min 32×32 Compact / 44×44 Cozy"
     },
     {
       "category": "keyboard",
@@ -101,7 +101,7 @@
     "Outside of Tree",
     "Inside table cells"
   ],
-  "guidelineUrl": "https://experience.sap.com/fiori-design-web/treeitem/",
+  "guidelineUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/treeitem",
   "demoKitUrl": "https://sdk.openui5.org/entity/sap.m.TreeItem",
   "apiUrl": "https://sdk.openui5.org/api/sap.m.TreeItem",
   "sampleUrls": [
@@ -109,7 +109,7 @@
   ],
   "libraryVersion": "2025.06",
   "lastValidated": "2026-06-27",
-  "pluginNotes": "TreeItem is composed by Tree \u2014 specs should NOT emit TreeItem directly. Spec emits Tree with items[] array; plugin generates TreeItem instances internally.",
+  "pluginNotes": "TreeItem is composed by Tree — specs should NOT emit TreeItem directly. Spec emits Tree with items[] array; plugin generates TreeItem instances internally.",
   "composition": {
     "validParents": [
       "Tree",

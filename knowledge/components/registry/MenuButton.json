@@ -93,7 +93,7 @@
   "doRules": [
     "Use Split mode when default action is common (e.g. \"Save\" + \"Save and Close\")",
     "Use Regular mode for \"Add\", \"Actions\", \"More\" menus",
-    "Show \u25be arrow to indicate menu"
+    "Show ▾ arrow to indicate menu"
   ],
   "dontRules": [
     "Do not use MenuButton when fewer than 2 menu items exist",
@@ -108,7 +108,7 @@
     "Inside table cell",
     "Inside form field"
   ],
-  "guidelineUrl": "https://experience.sap.com/fiori-design-web/menubutton/",
+  "guidelineUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/menubutton",
   "demoKitUrl": "https://sapui5.hana.ondemand.com/#/entity/sap.m.MenuButton",
   "apiUrl": "https://sapui5.hana.ondemand.com/#/api/sap.m.MenuButton",
   "sampleUrls": [],

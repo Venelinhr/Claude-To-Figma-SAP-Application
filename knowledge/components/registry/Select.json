@@ -111,13 +111,13 @@
     }
   ],
   "doRules": [
-    "Use Select when 4\u201312 mutually exclusive options exist",
+    "Use Select when 4–12 mutually exclusive options exist",
     "Use a clear default value when applicable",
     "Pair every Select with a Label"
   ],
   "dontRules": [
-    "Do not use Select with fewer than 3 options \u2014 use RadioButton",
-    "Do not use Select with more than 12 options \u2014 use ComboBox with search"
+    "Do not use Select with fewer than 3 options — use RadioButton",
+    "Do not use Select with more than 12 options — use ComboBox with search"
   ],
   "compatibleComponents": [
     "Label",
@@ -128,7 +128,7 @@
   "incompatiblePatterns": [
     "Without a Label"
   ],
-  "guidelineUrl": "https://experience.sap.com/fiori-design-web/select/",
+  "guidelineUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/select",
   "demoKitUrl": "https://sapui5.hana.ondemand.com/#/entity/sap.m.Select",
   "apiUrl": "https://sapui5.hana.ondemand.com/#/api/sap.m.Select",
   "sampleUrls": [],

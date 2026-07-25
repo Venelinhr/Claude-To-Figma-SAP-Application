@@ -105,7 +105,7 @@
   "accessibilityRules": [
     {
       "category": "contrast",
-      "requirement": "Body text contrast \u2265 4.5:1 against background (WCAG AA)",
+      "requirement": "Body text contrast ≥ 4.5:1 against background (WCAG AA)",
       "wcag": "1.4.3"
     },
     {
@@ -124,8 +124,8 @@
     "Use the SAP font family 72 (default)"
   ],
   "dontRules": [
-    "Do not use Text for headings \u2014 use Title with appropriate Level",
-    "Do not use Text for interactive elements \u2014 use Link or Button",
+    "Do not use Text for headings — use Title with appropriate Level",
+    "Do not use Text for interactive elements — use Link or Button",
     "Do not hardcode font sizes outside the SAP scale (12/14/16/18/20/24/28)",
     "Do not use Text where Label semantics (form association) are needed"
   ],
@@ -140,9 +140,9 @@
   ],
   "incompatiblePatterns": [
     "As a clickable element (use Link or Button)",
-    "Multi-line within a single table cell \u2014 use ObjectIdentifier or ObjectAttribute"
+    "Multi-line within a single table cell — use ObjectIdentifier or ObjectAttribute"
   ],
-  "guidelineUrl": "https://experience.sap.com/fiori-design-web/text/",
+  "guidelineUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/text",
   "demoKitUrl": "https://sdk.openui5.org/entity/sap.m.Text",
   "apiUrl": "https://sdk.openui5.org/api/sap.m.Text",
   "sampleUrls": [
@@ -150,7 +150,7 @@
   ],
   "libraryVersion": "2025.06",
   "lastValidated": "2026-06-27",
-  "pluginNotes": "Text is a native renderer \u2014 there is no SAP Figma instance for sap.m.Text. The plugin creates a figma.createText() node with: t.fontName = { family: '72', style: 'Regular' }; t.fontSize = 14; and fill bound to sapList_TextColor (default) or sapContent_LabelColor (subtle). Currently missing a buildTree handler \u2014 specs that emit Text fall through to buildSapNode and return null silently. This is a known gap fixed in the audit pass: handler added at comp === 'Text'. Status: AI specs MAY emit { component: 'Text', label: '...', props: { wrap?: bool, subtle?: bool } } anywhere body text is needed.",
+  "pluginNotes": "Text is a native renderer — there is no SAP Figma instance for sap.m.Text. The plugin creates a figma.createText() node with: t.fontName = { family: '72', style: 'Regular' }; t.fontSize = 14; and fill bound to sapList_TextColor (default) or sapContent_LabelColor (subtle). Currently missing a buildTree handler — specs that emit Text fall through to buildSapNode and return null silently. This is a known gap fixed in the audit pass: handler added at comp === 'Text'. Status: AI specs MAY emit { component: 'Text', label: '...', props: { wrap?: bool, subtle?: bool } } anywhere body text is needed.",
   "composition": {
     "validParents": [
       "Panel",

@@ -1,7 +1,7 @@
 {
   "componentName": "AddDimensions",
   "slug": "illustrated-message",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/illustrated-message/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/illustrated-message",
   "purpose": "An empty-state illustration used inside IllustratedMessage when the user needs to add dimensions to a chart, pivot table, or analytical view. Signals 'no data because no dimensions selected yet — pick some to start'.",
   "whenToUse": [
     "Empty analytical chart before any dimensions are selected",
@@ -36,7 +36,9 @@
   "contentGuidance": {
     "labelLength": "Title ≤ 40 chars; description ≤ 120 chars; button ≤ 20 chars",
     "contentRules": "Title states the empty state; description explains; button is action-first",
-    "examples": ["Title: 'No dimensions selected' · Description: 'Add dimensions to start analyzing' · Button: 'Add dimensions'"]
+    "examples": [
+      "Title: 'No dimensions selected' · Description: 'Add dimensions to start analyzing' · Button: 'Add dimensions'"
+    ]
   },
   "responsiveBehavior": {
     "XL": "Scene or Dialog size",
@@ -45,7 +47,9 @@
     "S": "Spot size"
   },
   "accessibilityGuidance": {
-    "wcagCriteria": ["WCAG 2.1 · 1.1.1 Non-text Content (Level A)"],
+    "wcagCriteria": [
+      "WCAG 2.1 · 1.1.1 Non-text Content (Level A)"
+    ],
     "requirements": [
       "Illustration has role='img' with meaningful aria-label",
       "Title uses appropriate heading level",
@@ -53,9 +57,21 @@
       "Focus moves to CTA when illustration is shown"
     ]
   },
-  "patterns": ["Analytical empty state", "Chart configuration prompt", "Pivot table setup"],
-  "compatibility": {"allowedWith": ["IllustratedMessage (only)"], "forbiddenWith": ["Standalone", "Any other parent"]},
+  "patterns": [
+    "Analytical empty state",
+    "Chart configuration prompt",
+    "Pivot table setup"
+  ],
+  "compatibility": {
+    "allowedWith": [
+      "IllustratedMessage (only)"
+    ],
+    "forbiddenWith": [
+      "Standalone",
+      "Any other parent"
+    ]
+  },
   "exceptions": [],
   "version": "1.149.0",
-  "lastChecked": "2026-07-08"
+  "lastChecked": "2026-07-25"
 }

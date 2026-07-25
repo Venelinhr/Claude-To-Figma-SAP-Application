@@ -1,17 +1,17 @@
 {
   "componentName": "FeedInput",
   "slug": "feed-input",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/feed-input/",
-  "purpose": "Input optimised for feed/comment posting \u2014 multi-line text area with submit button anchored to the bottom-right.",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/feed-input",
+  "purpose": "Input optimised for feed/comment posting — multi-line text area with submit button anchored to the bottom-right.",
   "whenToUse": [
     "Comment composers under FeedListItem",
     "Reply boxes on activity items",
     "Note-posting in object detail pages"
   ],
   "whenNotToUse": [
-    "Simple text \u2014 use Input",
-    "Long-form documents \u2014 use TextArea",
-    "Form fields \u2014 use Input or TextArea per type"
+    "Simple text — use Input",
+    "Long-form documents — use TextArea",
+    "Form fields — use Input or TextArea per type"
   ],
   "doRules": [
     "Include an Avatar showing current user",
@@ -42,13 +42,13 @@
   "responsiveBehavior": {
     "XL": "Full size and visibility.",
     "L": "Full size and visibility.",
-    "M": "May condense \u2014 see Fiori responsive design guidelines.",
+    "M": "May condense — see Fiori responsive design guidelines.",
     "S": "May convert to alternative pattern on narrow viewports."
   },
   "accessibilityGuidance": {
     "ariaPattern": "Maps to ARIA pattern appropriate for input.",
-    "contrast": "\u2265 4.5:1 for text, \u2265 3:1 for borders (WCAG AA).",
-    "keyboard": "Full keyboard support \u2014 Tab to focus, Enter/Space to activate.",
+    "contrast": "≥ 4.5:1 for text, ≥ 3:1 for borders (WCAG AA).",
+    "keyboard": "Full keyboard support — Tab to focus, Enter/Space to activate.",
     "screenReader": "Announced with role and state."
   },
   "patterns": [
@@ -65,5 +65,5 @@
     "See pluginNotes for plugin-specific rendering caveats."
   ],
   "version": "2025.06",
-  "lastChecked": "2026-06-26"
+  "lastChecked": "2026-07-25"
 }

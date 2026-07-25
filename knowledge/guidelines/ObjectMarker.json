@@ -1,7 +1,7 @@
 {
   "componentName": "ObjectMarker",
   "slug": "object-marker",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/object-marker/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/object-marker",
   "purpose": "Status indicator with icon + label for an object's state (Draft, Locked, Unsaved, Flagged, Favorite).",
   "whenToUse": [
     "Object state in a list row or object header",
@@ -9,9 +9,9 @@
     "Read-only state visualization"
   ],
   "whenNotToUse": [
-    "Semantic status (Error/Warning/Success) \u2014 use ObjectStatus",
-    "Free-form tags \u2014 use Tag",
-    "For numeric values \u2014 use ObjectNumber"
+    "Semantic status (Error/Warning/Success) — use ObjectStatus",
+    "Free-form tags — use Tag",
+    "For numeric values — use ObjectNumber"
   ],
   "doRules": [
     "Use predefined types: Draft, Locked, LockedBy, Unsaved, Favorite, Flagged",
@@ -20,7 +20,7 @@
   ],
   "dontRules": [
     "Do not invent new marker types",
-    "Do not use ObjectMarker for action-required state \u2014 use MessageStrip"
+    "Do not use ObjectMarker for action-required state — use MessageStrip"
   ],
   "layoutGuidance": {
     "placement": "Place ObjectMarker inside a compatible container (ColumnListItem, ObjectListItem, DynamicPageHeader).",
@@ -40,13 +40,13 @@
   "responsiveBehavior": {
     "XL": "Full size and visibility.",
     "L": "Full size and visibility.",
-    "M": "May condense \u2014 see Fiori responsive design guidelines.",
+    "M": "May condense — see Fiori responsive design guidelines.",
     "S": "May convert to alternative pattern on narrow viewports."
   },
   "accessibilityGuidance": {
     "ariaPattern": "Maps to ARIA pattern appropriate for object display.",
-    "contrast": "\u2265 4.5:1 for text, \u2265 3:1 for borders (WCAG AA).",
-    "keyboard": "Full keyboard support \u2014 Tab to focus, Enter/Space to activate.",
+    "contrast": "≥ 4.5:1 for text, ≥ 3:1 for borders (WCAG AA).",
+    "keyboard": "Full keyboard support — Tab to focus, Enter/Space to activate.",
     "screenReader": "Announced with role and state."
   },
   "patterns": [
@@ -64,5 +64,5 @@
     "See pluginNotes for plugin-specific rendering caveats."
   ],
   "version": "2025.06",
-  "lastChecked": "2026-06-26"
+  "lastChecked": "2026-07-25"
 }

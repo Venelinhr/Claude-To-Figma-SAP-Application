@@ -1,7 +1,7 @@
 {
   "componentName": "FilterBar",
   "slug": "filter-bar",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/filter-bar/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/filter-bar",
   "purpose": "A panel that holds filter input fields above a list or table. Allows users to refine displayed results without leaving the page.",
   "whenToUse": [
     "Above List or Table when filtering is needed",
@@ -81,5 +81,5 @@
     "Adaptive filter shows hidden filters via \"Adapt Filters\" dialog"
   ],
   "version": "2026.Q2",
-  "lastChecked": "2026-06-25"
+  "lastChecked": "2026-07-25"
 }

@@ -102,7 +102,7 @@
     "Keep title short; use text for the description"
   ],
   "dontRules": [
-    "Do not use as standalone \u2014 always inside a row/item context",
+    "Do not use as standalone — always inside a row/item context",
     "Do not duplicate title and text content"
   ],
   "compatibleComponents": [
@@ -111,9 +111,9 @@
     "ColumnListItem"
   ],
   "incompatiblePatterns": [
-    "As page title \u2014 use DynamicPageTitle"
+    "As page title — use DynamicPageTitle"
   ],
-  "guidelineUrl": "https://experience.sap.com/fiori-design-web/objectidentifier/",
+  "guidelineUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/objectidentifier",
   "demoKitUrl": "https://sapui5.hana.ondemand.com/#/entity/sap.m.ObjectIdentifier",
   "apiUrl": "https://sapui5.hana.ondemand.com/#/api/sap.m.ObjectIdentifier",
   "sampleUrls": [],

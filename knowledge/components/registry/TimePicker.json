@@ -92,7 +92,7 @@
     "Match locale 12/24 hour format"
   ],
   "dontRules": [
-    "Do not use for date+time \u2014 use DateTimePicker"
+    "Do not use for date+time — use DateTimePicker"
   ],
   "compatibleComponents": [
     "Label",
@@ -101,7 +101,7 @@
   "incompatiblePatterns": [
     "Without Label"
   ],
-  "guidelineUrl": "https://experience.sap.com/fiori-design-web/timepicker/",
+  "guidelineUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/timepicker",
   "demoKitUrl": "https://sapui5.hana.ondemand.com/#/entity/sap.m.TimePicker",
   "apiUrl": "https://sapui5.hana.ondemand.com/#/api/sap.m.TimePicker",
   "sampleUrls": [],

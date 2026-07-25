@@ -1,7 +1,7 @@
 {
   "componentName": "NotificationListItem",
   "slug": "notification-list-item",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/notification-list-item/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/notification",
   "purpose": "A single notification entry shown in a Notifications popover or inbox. Contains title, description, timestamp, priority, author, and optional actions. Read/unread state visible.",
   "whenToUse": [
     "Inside a Notifications popover from ShellBar",
@@ -36,7 +36,9 @@
   "contentGuidance": {
     "labelLength": "Title ≤ 80 chars; description ≤ 200 chars; author ≤ 40 chars",
     "contentRules": "Title is the event; description is context; time is relative",
-    "examples": ["Purchase Order PO-48865 approved · by Nadia · 2h ago"]
+    "examples": [
+      "Purchase Order PO-48865 approved · by Nadia · 2h ago"
+    ]
   },
   "responsiveBehavior": {
     "XL": "Full layout with all metadata",
@@ -45,7 +47,10 @@
     "S": "Description truncates; single primary action"
   },
   "accessibilityGuidance": {
-    "wcagCriteria": ["WCAG 2.1 · 1.3.1 Info and Relationships (Level A)", "WCAG 2.1 · 1.4.1 Use of Color (Level A)"],
+    "wcagCriteria": [
+      "WCAG 2.1 · 1.3.1 Info and Relationships (Level A)",
+      "WCAG 2.1 · 1.4.1 Use of Color (Level A)"
+    ],
     "requirements": [
       "Unread state via icon or text, not color alone",
       "Priority label paired with icon (arrows/exclamations)",
@@ -53,12 +58,24 @@
       "Keyboard: Enter/Space activates default action"
     ]
   },
-  "patterns": ["Notifications popover (from ShellBar)", "Notification inbox", "Message center"],
+  "patterns": [
+    "Notifications popover (from ShellBar)",
+    "Notification inbox",
+    "Message center"
+  ],
   "compatibility": {
-    "allowedWith": ["Notifications", "List", "Panel"],
-    "forbiddenWith": ["Table cells", "Toolbar", "Standalone"]
+    "allowedWith": [
+      "Notifications",
+      "List",
+      "Panel"
+    ],
+    "forbiddenWith": [
+      "Table cells",
+      "Toolbar",
+      "Standalone"
+    ]
   },
   "exceptions": [],
   "version": "1.149.0",
-  "lastChecked": "2026-07-08"
+  "lastChecked": "2026-07-25"
 }

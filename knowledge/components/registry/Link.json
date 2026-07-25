@@ -102,7 +102,7 @@
     },
     {
       "category": "labeling",
-      "requirement": "Link text describes destination \u2014 avoid \"click here\""
+      "requirement": "Link text describes destination — avoid \"click here\""
     }
   ],
   "doRules": [
@@ -111,9 +111,9 @@
     "Mark external links with an icon or indicator"
   ],
   "dontRules": [
-    "Do not use Link for actions \u2014 use Button",
+    "Do not use Link for actions — use Button",
     "Do not use \"click here\" as link text",
-    "Do not style arbitrary text blue to imitate Link \u2014 use the component"
+    "Do not style arbitrary text blue to imitate Link — use the component"
   ],
   "compatibleComponents": [
     "Toolbar",
@@ -126,7 +126,7 @@
     "As primary CTA",
     "In tight UI like icon-only toolbar"
   ],
-  "guidelineUrl": "https://experience.sap.com/fiori-design-web/link/",
+  "guidelineUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/link",
   "demoKitUrl": "https://sapui5.hana.ondemand.com/#/entity/sap.m.Link",
   "apiUrl": "https://sapui5.hana.ondemand.com/#/api/sap.m.Link",
   "sampleUrls": [],

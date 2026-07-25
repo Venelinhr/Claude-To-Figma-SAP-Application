@@ -81,7 +81,7 @@
     "Use Small for inline contexts; Large for full-page"
   ],
   "dontRules": [
-    "Do not use for instant operations (<1s) \u2014 no feedback needed",
+    "Do not use for instant operations (<1s) — no feedback needed",
     "Do not block entire UI for non-critical operations",
     "Do not omit text when context unclear"
   ],
@@ -92,9 +92,9 @@
     "List"
   ],
   "incompatiblePatterns": [
-    "As replacement for empty state \u2014 use IllustratedMessage"
+    "As replacement for empty state — use IllustratedMessage"
   ],
-  "guidelineUrl": "https://experience.sap.com/fiori-design-web/busyindicator/",
+  "guidelineUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/busyindicator",
   "demoKitUrl": "https://sapui5.hana.ondemand.com/#/entity/sap.m.BusyIndicator",
   "apiUrl": "https://sapui5.hana.ondemand.com/#/api/sap.m.BusyIndicator",
   "sampleUrls": [],

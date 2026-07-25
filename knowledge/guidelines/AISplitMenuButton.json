@@ -1,7 +1,7 @@
 {
   "componentName": "AISplitMenuButton",
   "slug": "joule-split-menu-button",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/joule/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/joule",
   "purpose": "A split-button variant for AI-powered actions: main AI action on the left, dropdown arrow on the right that reveals variants. Combines fast access to the primary AI action with easy access to alternatives.",
   "whenToUse": [
     "Primary AI action with 2–5 close variants (Summarize / Summarize brief / Summarize technical)",
@@ -36,7 +36,9 @@
   "contentGuidance": {
     "labelLength": "Main action ≤ 20 chars",
     "contentRules": "Main label + verb-first variants in menu",
-    "examples": ["✨ Summarize ▼  (menu: Summarize · Summarize brief · Summarize technical)"]
+    "examples": [
+      "✨ Summarize ▼  (menu: Summarize · Summarize brief · Summarize technical)"
+    ]
   },
   "responsiveBehavior": {
     "XL": "Full label + arrow",
@@ -45,7 +47,10 @@
     "S": "May collapse to icon + arrow"
   },
   "accessibilityGuidance": {
-    "wcagCriteria": ["WCAG 2.1 · 2.1.1 Keyboard (Level A)", "WCAG 2.1 · 4.1.2 Name, Role, Value (Level A)"],
+    "wcagCriteria": [
+      "WCAG 2.1 · 2.1.1 Keyboard (Level A)",
+      "WCAG 2.1 · 4.1.2 Name, Role, Value (Level A)"
+    ],
     "requirements": [
       "Main button and arrow are separate focusable elements",
       "Arrow has aria-haspopup='menu' and aria-expanded",
@@ -53,9 +58,25 @@
       "AI role announced by screen reader ('AI-assisted split menu button')"
     ]
   },
-  "patterns": ["AI action with variants", "Toolbar Joule primary action", "AI split action bar"],
-  "compatibility": {"allowedWith": ["Toolbar", "OverflowToolbar", "Bar", "DynamicPageTitle", "ObjectHeader"], "forbiddenWith": ["Table cells", "Dense List rows"]},
+  "patterns": [
+    "AI action with variants",
+    "Toolbar Joule primary action",
+    "AI split action bar"
+  ],
+  "compatibility": {
+    "allowedWith": [
+      "Toolbar",
+      "OverflowToolbar",
+      "Bar",
+      "DynamicPageTitle",
+      "ObjectHeader"
+    ],
+    "forbiddenWith": [
+      "Table cells",
+      "Dense List rows"
+    ]
+  },
   "exceptions": [],
   "version": "1.149.0",
-  "lastChecked": "2026-07-08"
+  "lastChecked": "2026-07-25"
 }

@@ -1,7 +1,7 @@
 {
   "componentName": "AIMenuButton",
   "slug": "joule-menu-button",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/joule/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/joule",
   "purpose": "A menu button variant styled with the SAP AI accent, opening a menu of Joule-powered actions. Used in toolbars where multiple AI actions are grouped behind one entry point.",
   "whenToUse": [
     "Toolbar entry point for 2–8 AI-powered actions",
@@ -36,7 +36,10 @@
   "contentGuidance": {
     "labelLength": "≤ 25 chars, verb-first",
     "contentRules": "Action-oriented labels",
-    "examples": ["✨ AI Actions ▼", "✨ Joule ▼"]
+    "examples": [
+      "✨ AI Actions ▼",
+      "✨ Joule ▼"
+    ]
   },
   "responsiveBehavior": {
     "XL": "Icon + label + chevron",
@@ -45,7 +48,9 @@
     "S": "Icon + chevron only"
   },
   "accessibilityGuidance": {
-    "wcagCriteria": ["WCAG 2.1 · 4.1.2 Name, Role, Value (Level A)"],
+    "wcagCriteria": [
+      "WCAG 2.1 · 4.1.2 Name, Role, Value (Level A)"
+    ],
     "requirements": [
       "role='button' with aria-haspopup='menu' and aria-expanded",
       "aria-label describes menu contents ('AI actions')",
@@ -53,9 +58,24 @@
       "Keyboard: Enter opens; Arrow keys navigate; Escape closes"
     ]
   },
-  "patterns": ["Toolbar AI actions", "Object page AI menu", "Card header AI shortcut"],
-  "compatibility": {"allowedWith": ["Toolbar", "OverflowToolbar", "DynamicPageTitle", "Card"], "forbiddenWith": ["Table cells", "Inline in text"]},
+  "patterns": [
+    "Toolbar AI actions",
+    "Object page AI menu",
+    "Card header AI shortcut"
+  ],
+  "compatibility": {
+    "allowedWith": [
+      "Toolbar",
+      "OverflowToolbar",
+      "DynamicPageTitle",
+      "Card"
+    ],
+    "forbiddenWith": [
+      "Table cells",
+      "Inline in text"
+    ]
+  },
   "exceptions": [],
   "version": "1.149.0",
-  "lastChecked": "2026-07-08"
+  "lastChecked": "2026-07-25"
 }

@@ -5,31 +5,128 @@
   "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
   "componentCategory": "Input",
   "supportedVariants": [
-    { "property": "Form Factor",       "values": ["Compact","Cozy"], "default": "Compact" },
-    { "property": "Interaction State", "values": ["Regular","Hover","Focused","Active","Disabled","Readonly","Error","Warning","Information","Success"], "default": "Regular" }
+    {
+      "property": "Form Factor",
+      "values": [
+        "Compact",
+        "Cozy"
+      ],
+      "default": "Compact"
+    },
+    {
+      "property": "Interaction State",
+      "values": [
+        "Regular",
+        "Hover",
+        "Focused",
+        "Active",
+        "Disabled",
+        "Readonly",
+        "Error",
+        "Warning",
+        "Information",
+        "Success"
+      ],
+      "default": "Regular"
+    }
   ],
   "supportedProperties": [
-    { "name": "value",       "ui5Name": "value",       "type": "string",  "exposedInLibrary": true,  "default": "" },
-    { "name": "placeholder", "ui5Name": "placeholder", "type": "string",  "exposedInLibrary": true,  "default": "" },
-    { "name": "editable",    "ui5Name": "editable",    "type": "boolean", "exposedInLibrary": false, "default": true },
-    { "name": "showButton",  "ui5Name": "showButton",  "type": "boolean", "exposedInLibrary": false, "default": true }
+    {
+      "name": "value",
+      "ui5Name": "value",
+      "type": "string",
+      "exposedInLibrary": true,
+      "default": ""
+    },
+    {
+      "name": "placeholder",
+      "ui5Name": "placeholder",
+      "type": "string",
+      "exposedInLibrary": true,
+      "default": ""
+    },
+    {
+      "name": "editable",
+      "ui5Name": "editable",
+      "type": "boolean",
+      "exposedInLibrary": false,
+      "default": true
+    },
+    {
+      "name": "showButton",
+      "ui5Name": "showButton",
+      "type": "boolean",
+      "exposedInLibrary": false,
+      "default": true
+    }
   ],
-  "supportedStates": ["Regular","Hover","Focused","Active","Disabled","Error","Warning","Information","Success"],
+  "supportedStates": [
+    "Regular",
+    "Hover",
+    "Focused",
+    "Active",
+    "Disabled",
+    "Error",
+    "Warning",
+    "Information",
+    "Success"
+  ],
   "typographyRules": [
-    { "role": "value",       "fontFamily": "72", "fontStyle": "Regular", "fontSize": 14, "sapStyleName": "MediumText/LHAuto/Regular" },
-    { "role": "placeholder", "fontFamily": "72", "fontStyle": "Regular", "fontSize": 14, "sapStyleName": "MediumText/LHAuto/Regular" }
+    {
+      "role": "value",
+      "fontFamily": "72",
+      "fontStyle": "Regular",
+      "fontSize": 14,
+      "sapStyleName": "MediumText/LHAuto/Regular"
+    },
+    {
+      "role": "placeholder",
+      "fontFamily": "72",
+      "fontStyle": "Regular",
+      "fontSize": 14,
+      "sapStyleName": "MediumText/LHAuto/Regular"
+    }
   ],
   "colorTokenRules": [
-    { "role": "field-background",  "token": "sapField_Background",        "fallbackHex": "#FFFFFF" },
-    { "role": "field-border",      "token": "sapField_BorderColor",       "fallbackHex": "#556B81" },
-    { "role": "field-focus",       "token": "sapField_FocusColor",        "fallbackHex": "#0064D9" },
-    { "role": "value-text",        "token": "sapField_TextColor",         "fallbackHex": "#1A2733" },
-    { "role": "placeholder-text",  "token": "sapField_PlaceholderTextColor", "fallbackHex": "#67707E" }
+    {
+      "role": "field-background",
+      "token": "sapField_Background",
+      "fallbackHex": "#FFFFFF"
+    },
+    {
+      "role": "field-border",
+      "token": "sapField_BorderColor",
+      "fallbackHex": "#556B81"
+    },
+    {
+      "role": "field-focus",
+      "token": "sapField_FocusColor",
+      "fallbackHex": "#0064D9"
+    },
+    {
+      "role": "value-text",
+      "token": "sapField_TextColor",
+      "fallbackHex": "#1A2733"
+    },
+    {
+      "role": "placeholder-text",
+      "token": "sapField_PlaceholderTextColor",
+      "fallbackHex": "#67707E"
+    }
   ],
   "accessibilityRules": [
-    { "category": "labeling",  "requirement": "Associate a Label via labelFor" },
-    { "category": "keyboard",  "requirement": "Arrow keys open list; typing filters items" },
-    { "category": "focus",     "requirement": "Visible focus indicator using sapField_FocusColor" }
+    {
+      "category": "labeling",
+      "requirement": "Associate a Label via labelFor"
+    },
+    {
+      "category": "keyboard",
+      "requirement": "Arrow keys open list; typing filters items"
+    },
+    {
+      "category": "focus",
+      "requirement": "Visible focus indicator using sapField_FocusColor"
+    }
   ],
   "doRules": [
     "Use ComboBox when the user picks ONE value from a known list AND may need to type-ahead / free-form entry",
@@ -41,9 +138,23 @@
     "Do not use for date/time — use DatePicker / TimePicker",
     "Do not overload with 200+ items — use a MultiInput with Suggestions or a Value Help Dialog"
   ],
-  "compatibleComponents": ["Label","Form","SimpleForm","FormElement","FilterBar","Toolbar","OverflowToolbar","Panel","Dialog","Popover"],
-  "incompatiblePatterns": ["Inside ShellBar","Inside table cells"],
-  "guidelineUrl": "https://experience.sap.com/fiori-design-web/combo-box/",
+  "compatibleComponents": [
+    "Label",
+    "Form",
+    "SimpleForm",
+    "FormElement",
+    "FilterBar",
+    "Toolbar",
+    "OverflowToolbar",
+    "Panel",
+    "Dialog",
+    "Popover"
+  ],
+  "incompatiblePatterns": [
+    "Inside ShellBar",
+    "Inside table cells"
+  ],
+  "guidelineUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/combo-box",
   "demoKitUrl": "https://sapui5.hana.ondemand.com/#/entity/sap.m.ComboBox",
   "apiUrl": "https://sapui5.hana.ondemand.com/#/api/sap.m.ComboBox",
   "sampleUrls": [],
@@ -57,11 +168,29 @@
     ]
   },
   "composition": {
-    "validParents": ["Form","SimpleForm","FormContainer","FormElement","FilterBar","Toolbar","OverflowToolbar","Panel","Card","Dialog","Popover","SapFormSection"],
+    "validParents": [
+      "Form",
+      "SimpleForm",
+      "FormContainer",
+      "FormElement",
+      "FilterBar",
+      "Toolbar",
+      "OverflowToolbar",
+      "Panel",
+      "Card",
+      "Dialog",
+      "Popover",
+      "SapFormSection"
+    ],
     "topLevelOnly": false,
     "validChildren": [],
     "mustInclude": [],
     "mustExclude": [],
-    "commonSiblings": ["Label","Input","Select","MultiComboBox"]
+    "commonSiblings": [
+      "Label",
+      "Input",
+      "Select",
+      "MultiComboBox"
+    ]
   }
 }

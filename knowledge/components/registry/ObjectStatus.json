@@ -112,12 +112,12 @@
   "accessibilityRules": [
     {
       "category": "status",
-      "requirement": "State communicated by icon AND text \u2014 not color alone",
+      "requirement": "State communicated by icon AND text — not color alone",
       "wcag": "1.4.1 (A)"
     },
     {
       "category": "contrast",
-      "requirement": "Status text contrast \u2265 4.5:1",
+      "requirement": "Status text contrast ≥ 4.5:1",
       "wcag": "1.4.3 (AA)"
     },
     {
@@ -132,7 +132,7 @@
   ],
   "dontRules": [
     "Do not communicate status by color alone",
-    "Do not use Error state for warnings \u2014 use the right semantic level"
+    "Do not use Error state for warnings — use the right semantic level"
   ],
   "compatibleComponents": [
     "Table",
@@ -141,9 +141,9 @@
     "ObjectHeader"
   ],
   "incompatiblePatterns": [
-    "Without text \u2014 icon-only status"
+    "Without text — icon-only status"
   ],
-  "guidelineUrl": "https://experience.sap.com/fiori-design-web/objectstatus/",
+  "guidelineUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/objectstatus",
   "demoKitUrl": "https://sapui5.hana.ondemand.com/#/entity/sap.m.ObjectStatus",
   "apiUrl": "https://sapui5.hana.ondemand.com/#/api/sap.m.ObjectStatus",
   "sampleUrls": [],

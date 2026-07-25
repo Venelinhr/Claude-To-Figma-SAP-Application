@@ -1,8 +1,8 @@
 {
   "componentName": "FormattedText",
   "slug": "formatted-text",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/formatted-text/",
-  "purpose": "Text container that supports inline HTML-like markup \u2014 bold, italic, links, line breaks. Used for rich text in object descriptions, help content, formatted messages.",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/formatted-text",
+  "purpose": "Text container that supports inline HTML-like markup — bold, italic, links, line breaks. Used for rich text in object descriptions, help content, formatted messages.",
   "whenToUse": [
     "Object descriptions with mixed formatting",
     "Help text with inline links",
@@ -10,10 +10,10 @@
     "Server-supplied formatted content"
   ],
   "whenNotToUse": [
-    "Plain text \u2014 use Text",
-    "Headings \u2014 use Title",
-    "Lists \u2014 use List",
-    "Editable rich text \u2014 use TextArea + format toolbar"
+    "Plain text — use Text",
+    "Headings — use Title",
+    "Lists — use List",
+    "Editable rich text — use TextArea + format toolbar"
   ],
   "doRules": [
     "Sanitize HTML before rendering",
@@ -43,13 +43,13 @@
   "responsiveBehavior": {
     "XL": "Full size and visibility.",
     "L": "Full size and visibility.",
-    "M": "May condense \u2014 see Fiori responsive design guidelines.",
+    "M": "May condense — see Fiori responsive design guidelines.",
     "S": "May convert to alternative pattern on narrow viewports."
   },
   "accessibilityGuidance": {
     "ariaPattern": "Maps to ARIA pattern appropriate for typography.",
-    "contrast": "\u2265 4.5:1 for text, \u2265 3:1 for borders (WCAG AA).",
-    "keyboard": "Full keyboard support \u2014 Tab to focus, Enter/Space to activate.",
+    "contrast": "≥ 4.5:1 for text, ≥ 3:1 for borders (WCAG AA).",
+    "keyboard": "Full keyboard support — Tab to focus, Enter/Space to activate.",
     "screenReader": "Announced with role and state."
   },
   "patterns": [
@@ -67,5 +67,5 @@
     "See pluginNotes for plugin-specific rendering caveats."
   ],
   "version": "2025.06",
-  "lastChecked": "2026-06-26"
+  "lastChecked": "2026-07-25"
 }

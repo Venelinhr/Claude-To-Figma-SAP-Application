@@ -88,11 +88,11 @@
     "Use TableCell as documented in SAP Fiori Design Guidelines (https://experience.sap.com/fiori-design-web/table/)"
   ],
   "dontRules": [
-    "Do not use TableCell outside its documented placements — see composition.validParents"
+    "Do not use TableCell outside its documented placements \u2014 see composition.validParents"
   ],
   "compatibleComponents": [],
   "incompatiblePatterns": [],
-  "guidelineUrl": "https://experience.sap.com/fiori-design-web/table/",
+  "guidelineUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/responsive-table",
   "demoKitUrl": "",
   "apiUrl": "",
   "sampleUrls": [],

@@ -1,7 +1,7 @@
 {
   "componentName": "RatingIndicator",
   "slug": "rating-indicator",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/rating-indicator/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/rating-indicator",
   "purpose": "Displays or captures a rating on a numeric scale, typically 0-5 stars. Used for reviews, feedback, priority selection, and any 1-N ordinal input.",
   "whenToUse": [
     "Show a rating value from user reviews or evaluations",
@@ -36,7 +36,10 @@
   "contentGuidance": {
     "labelLength": "n/a — numeric",
     "contentRules": "Value is a number 0-maxValue, optionally with 0.5 increments",
-    "examples": ["★★★★☆ (4.0)", "★★★★★ (5.0 out of 5)"]
+    "examples": [
+      "★★★★☆ (4.0)",
+      "★★★★★ (5.0 out of 5)"
+    ]
   },
   "responsiveBehavior": {
     "XL": "Full-size stars",
@@ -45,7 +48,10 @@
     "S": "Consider showing numeric value only"
   },
   "accessibilityGuidance": {
-    "wcagCriteria": ["WCAG 2.1 · 1.4.1 Use of Color (Level A)", "WCAG 2.1 · 2.5.5 Target Size (AAA)"],
+    "wcagCriteria": [
+      "WCAG 2.1 · 1.4.1 Use of Color (Level A)",
+      "WCAG 2.1 · 2.5.5 Target Size (AAA)"
+    ],
     "requirements": [
       "Interactive mode: 32px min compact / 44px min cozy tap target per star",
       "Star shape distinguishes rated vs unrated (not just color)",
@@ -53,12 +59,26 @@
       "Keyboard: Arrow keys change rating in interactive mode"
     ]
   },
-  "patterns": ["Product cards", "Review sections", "Feedback forms", "Priority pickers"],
+  "patterns": [
+    "Product cards",
+    "Review sections",
+    "Feedback forms",
+    "Priority pickers"
+  ],
   "compatibility": {
-    "allowedWith": ["Card", "Panel", "Form", "StandardListItem", "ObjectListItem"],
-    "forbiddenWith": ["Dense table cells", "Bar"]
+    "allowedWith": [
+      "Card",
+      "Panel",
+      "Form",
+      "StandardListItem",
+      "ObjectListItem"
+    ],
+    "forbiddenWith": [
+      "Dense table cells",
+      "Bar"
+    ]
   },
   "exceptions": [],
   "version": "1.149.0",
-  "lastChecked": "2026-07-08"
+  "lastChecked": "2026-07-25"
 }

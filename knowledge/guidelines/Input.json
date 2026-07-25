@@ -1,109 +1,138 @@
 {
   "componentName": "Input",
   "slug": "input-field",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/input-field/",
-  "purpose": "A single-line text input field for user data entry. Supports semantic input types (Text, Email, Number, Password, URL, Tel) and value state feedback (Error, Warning, Success, Information).",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/input-field",
+  "purpose": "Lets users enter or edit single-line text or numeric values. Supports autocomplete suggestions, value help, 6 data types (text, number, email, URL, phone, password), and value states for validation feedback.",
   "whenToUse": [
-    "Capture single-line user input in forms and filters",
-    "Allow free-text entry where options are not predefined",
-    "Provide search input with placeholder text",
-    "Use type=Email or Number for semantic mobile keyboard"
+    "Enter a short, single-line text or number",
+    "Enter a password, URL, phone number, or email address",
+    "Select a single item from a large dataset (more than 200 items) — combine with autocomplete/suggestions and value help",
+    "Find an object by searching for more than one attribute (ID, city, customer name)",
+    "For 20–200 items use ComboBox; for fewer than 20 items use Select"
   ],
   "whenNotToUse": [
-    "Use Select when 4\u201312 fixed options exist",
-    "Use ComboBox when many options with type-ahead needed",
-    "Use DatePicker for date input",
-    "Use TextArea for multi-line input"
+    "Don't use Input for dates/times — use DatePicker, DateRangeSelection, or DateTimePicker",
+    "Don't use Input for long text — use TextArea",
+    "Don't use Input for selecting multiple values — use MultiComboBox (fewer than 200 items) or MultiInput (more than 200 items)"
   ],
   "doRules": [
-    "Pair every Input with a Label component",
-    "Use placeholder text only as a hint \u2014 never as a replacement for label",
-    "Use valueState=Error with valueStateText message when validation fails",
-    "Use type=\"Email\" or \"Number\" for semantic input types \u2014 improves mobile keyboard",
-    "Show clear icon when user has typed (showClearIcon=true)"
+    "Always pair every input field with a visible label — visible labels are mandatory for accessibility",
+    "Use placeholder text as a hint or example only — never as a label replacement (placeholder disappears on typing)",
+    "Indicate required fields with asterisk (*) via Label required property",
+    "Use appropriate value states (Negative/Critical/Positive/Information) with value state messages for validation",
+    "Use Clear icon (showClearIcon=true) to let users remove typed text",
+    "Use right text alignment for numeric input (amounts, decimal values)",
+    "Implement suggestions/autocomplete to help users enter data faster",
+    "Provide real-time validation feedback as users type, not just on form submission"
   ],
   "dontRules": [
-    "Do not use placeholder as the field label",
-    "Do not communicate error state by red border alone \u2014 include text message",
-    "Do not use Input when MultiInput, Select, or DatePicker fits better",
-    "Do not skip the visible Label"
+    "Don't replace labels with placeholder text",
+    "Don't communicate error state by red border alone — include text message",
+    "Don't set a fixed width — use form containers and 12-column layout approach instead",
+    "Don't include interactive elements in custom suggestions",
+    "Don't use the icon control for button-like interactions — use the icon property"
   ],
   "layoutGuidance": {
-    "placement": "Inside a Form, FilterBar, or Dialog body.",
-    "sizing": "Default 256px wide; resizes to fill form column.",
-    "spacing": "Vertical spacing between fields: 8px (Compact), 16px (Cozy).",
-    "alignment": "Left-aligned with Label above or to the left."
+    "placement": "Inside Form, FilterBar, Dialog, or Toolbar. Width 100% by default — determined by parent container.",
+    "sizing": "Width 100% by default. Use form layout containers rather than fixed widths. Suggestion box matches input width by default.",
+    "spacing": "Vertical spacing between fields: 8px Compact, 16px Cozy. S/M viewport: Cozy mode. L viewport: Compact mode.",
+    "alignment": "Label above or to the left. Text alignment: right for numeric, left/begin for text-based inputs. Center alignment only for short codes."
   },
   "contentGuidance": {
-    "labelLength": "Placeholder \u2264 50 chars. Value visible up to field width.",
+    "labelLength": "Short, descriptive label text (e.g. 'First Name', 'Invoice Date'). Placeholder ≤ 50 chars.",
     "contentRules": [
-      "Use sentence case for placeholders",
-      "Indicate required fields with * via Label.required=true",
-      "Provide valueStateText for error/warning states"
+      "Label must always be visible",
+      "Placeholder provides hints or examples of expected format",
+      "Required fields marked with * next to label",
+      "Value state messages explain what needs correction",
+      "Supports LTR and RTL reading directions"
     ],
     "examples": [
-      "Filter Artifacts",
-      "Search",
-      "Enter name",
-      "name@company.com"
+      "First Name",
+      "Invoice Date",
+      "Search products…",
+      "name@company.com",
+      "Enter amount"
     ]
   },
   "responsiveBehavior": {
-    "XL": "Full width of form column",
-    "L": "Full width of form column",
-    "M": "Single column stacked layout",
-    "S": "Full viewport width with Label above"
+    "XL": "Full table suggestions displayed. Compact mode.",
+    "L": "Full table suggestions displayed. Compact mode.",
+    "M": "Responsive table pop-in for tabular suggestions. Cozy mode.",
+    "S": "On tap: keyboard appears, view switches to full screen with input at top and suggestions below. Cozy mode. One-finger tap to select."
   },
   "accessibilityGuidance": [
     {
-      "category": "contrast",
-      "requirement": "Border contrast \u2265 3:1 against background",
-      "wcag": "1.4.11 (AA)"
+      "category": "keyboard",
+      "requirement": "Tab: moves focus; Shift+Tab: backward. F4/Alt+Up/Down: opens value help. Escape: closes suggestion list or reverts changes. Enter: selects item. Ctrl+Alt+F8: focuses first link in value state message.",
+      "wcag": "2.1.1 (A)"
     },
     {
       "category": "labeling",
-      "requirement": "Every input MUST have visible or aria label",
+      "requirement": "Every input MUST have a visible label. Visible labels improve usability, accessibility, and screen reader support.",
       "wcag": "1.3.1 (A)"
     },
     {
       "category": "focus",
-      "requirement": "Visible focus indicator on focused state",
+      "requirement": "Active/focus state identical. Focus state must be visible when keyboard is available.",
       "wcag": "2.4.7 (AA)"
     },
     {
       "category": "status",
-      "requirement": "Value state communicated by color AND icon AND text \u2014 not color alone",
+      "requirement": "Value state communicated by color AND icon AND text — not color alone. Custom suggestions with additional info must be accessible via invisible message.",
       "wcag": "1.4.1 (A)"
     },
     {
-      "category": "keyboard",
-      "requirement": "Tab moves focus; Enter submits form"
+      "category": "contrast",
+      "requirement": "Border contrast ≥ 3:1 against background",
+      "wcag": "1.4.11 (AA)"
     }
   ],
   "patterns": [
     "Form field",
     "Filter input",
-    "Search",
-    "Inline edit"
+    "Search field",
+    "Inline edit",
+    "Autocomplete selection",
+    "Value help dialog trigger"
   ],
   "compatibility": {
     "worksWith": [
       "Label",
       "Form",
       "SimpleForm",
-      "Toolbar",
+      "ResponsiveGridLayout",
+      "FilterBar",
       "Dialog",
-      "FilterBar"
+      "Toolbar",
+      "ValueHelpDialog",
+      "SelectDialog"
     ],
     "incompatible": [
-      "Without Label",
-      "Inside Table cell at S viewport (use inline edit pattern)"
+      "Without visible Label",
+      "For date/time entry — use DatePicker",
+      "For multi-line text — use TextArea",
+      "For multi-value selection — use MultiComboBox or MultiInput"
     ]
   },
   "exceptions": [
-    "Search input inside Shell uses Shell Search variant with rounded corners",
-    "Read-only inputs use editable=false and lose border"
+    "SAP Web Components only: Input as search field for free-text search. SAPUI5 uses SearchField instead.",
+    "SAPUI5 only: Tabular suggestions, suggestion trigger character count, key-value text format",
+    "Typeahead/autocomplete not available on Android devices",
+    "Read-only state: non-editable with grey background"
   ],
-  "version": "2026.Q2",
-  "lastChecked": "2026-06-25"
+  "types": [
+    "Basic input: free text entry, no suggestions",
+    "Input with label: descriptive label above or before",
+    "Input with suggestions: autocomplete and dropdown list",
+    "Input with value help: triggers value help dialog via icon",
+    "Input with description: additional context text after field (unit, currency)",
+    "Input as search (SAP Web Components only): free-text or filter search"
+  ],
+  "figmaNode": "https://www.figma.com/design/SILcWzK5uFghKun9jx6D7c/SAP-Web-UI-Kit?node-id=2-1352",
+  "ui5Api": "https://ui5.sap.com/#/api/sap.m.Input",
+  "ui5Samples": "https://ui5.sap.com/#/entity/sap.m.Input",
+  "webComponent": "ui5-input",
+  "version": "v1-148",
+  "lastChecked": "2026-07-25"
 }

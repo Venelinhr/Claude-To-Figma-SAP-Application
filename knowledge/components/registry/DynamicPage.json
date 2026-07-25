@@ -87,7 +87,7 @@
   "incompatiblePatterns": [
     "Inside Dialog"
   ],
-  "guidelineUrl": "https://experience.sap.com/fiori-design-web/dynamicpage/",
+  "guidelineUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/dynamicpage",
   "demoKitUrl": "https://sapui5.hana.ondemand.com/#/entity/sap.m.DynamicPage",
   "apiUrl": "https://sapui5.hana.ondemand.com/#/api/sap.m.DynamicPage",
   "sampleUrls": [],

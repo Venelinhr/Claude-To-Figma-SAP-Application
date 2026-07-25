@@ -68,7 +68,7 @@
     "Indicate sort direction with arrow icon"
   ],
   "dontRules": [
-    "Do not use a Column for actions \u2014 use a separate action column",
+    "Do not use a Column for actions — use a separate action column",
     "Do not stack header labels vertically"
   ],
   "compatibleComponents": [
@@ -78,7 +78,7 @@
   "incompatiblePatterns": [
     "Outside Table"
   ],
-  "guidelineUrl": "https://experience.sap.com/fiori-design-web/column/",
+  "guidelineUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/column",
   "demoKitUrl": "https://sapui5.hana.ondemand.com/#/entity/sap.m.Column",
   "apiUrl": "https://sapui5.hana.ondemand.com/#/api/sap.m.Column",
   "sampleUrls": [],

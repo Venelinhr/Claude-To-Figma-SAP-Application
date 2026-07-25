@@ -67,12 +67,12 @@
   "accessibilityRules": [
     {
       "category": "contrast",
-      "requirement": "Text contrast \u2265 4.5:1 against bg (WCAG AA)",
+      "requirement": "Text contrast ≥ 4.5:1 against bg (WCAG AA)",
       "wcag": "1.4.3"
     },
     {
       "category": "tap-target",
-      "requirement": "Min 32\u00d732 Compact / 44\u00d744 Cozy"
+      "requirement": "Min 32×32 Compact / 44×44 Cozy"
     },
     {
       "category": "keyboard",
@@ -95,12 +95,12 @@
     "Do not include actions (use MessageStrip)"
   ],
   "compatibleComponents": [
-    "Anywhere \u2014 appears as overlay"
+    "Anywhere — appears as overlay"
   ],
   "incompatiblePatterns": [
     "See doRules and dontRules for context-specific rules."
   ],
-  "guidelineUrl": "https://experience.sap.com/fiori-design-web/message-toast/",
+  "guidelineUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/message-toast",
   "demoKitUrl": "https://sdk.openui5.org/entity/sap.m.MessageToast",
   "apiUrl": "https://sdk.openui5.org/api/sap.m.MessageToast",
   "sampleUrls": [
@@ -108,7 +108,7 @@
   ],
   "libraryVersion": "2025.06",
   "lastValidated": "2026-06-27",
-  "pluginNotes": "MessageToast aliases to Toast. Plugin renders as a centered overlay frame with dark fill and white text. Auto-dismiss is runtime-only \u2014 Figma shows the visual state.",
+  "pluginNotes": "MessageToast aliases to Toast. Plugin renders as a centered overlay frame with dark fill and white text. Auto-dismiss is runtime-only — Figma shows the visual state.",
   "composition": {
     "validParents": [],
     "topLevelOnly": true,

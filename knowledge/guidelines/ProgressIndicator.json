@@ -1,7 +1,7 @@
 {
   "componentName": "ProgressIndicator",
   "slug": "progress-indicator",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/progressindicator/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/progressindicator",
   "purpose": "Horizontal bar showing the completion percentage of a long-running task or quantitative state (storage used, completion progress, score).",
   "whenToUse": [
     "Long-running tasks (upload, sync, processing)",
@@ -10,22 +10,22 @@
     "KPI tiles showing percentage of target"
   ],
   "whenNotToUse": [
-    "For indeterminate progress \u2014 use BusyIndicator",
-    "For categorical status \u2014 use ObjectStatus",
-    "For ratings \u2014 use RatingIndicator",
-    "For percentages alone (no progress connotation) \u2014 use Text with %"
+    "For indeterminate progress — use BusyIndicator",
+    "For categorical status — use ObjectStatus",
+    "For ratings — use RatingIndicator",
+    "For percentages alone (no progress connotation) — use Text with %"
   ],
   "doRules": [
-    "Always show percent + descriptive label (\"47% \u2014 235 of 500 invoices\")",
+    "Always show percent + descriptive label (\"47% — 235 of 500 invoices\")",
     "Pick state color based on value (positive >= 80%, critical <= 20%)",
     "Use sapPositiveTextColor / sapCriticalTextColor / sapNegativeTextColor for semantic state",
     "Bind fill to a SAP variable matching state"
   ],
   "dontRules": [
     "Do not use ProgressIndicator without a label",
-    "Do not animate when stalled \u2014 show static state",
+    "Do not animate when stalled — show static state",
     "Do not stack multiple ProgressIndicators for the same metric",
-    "Do not use hardcoded color \u2014 bind to state-aware SAP token"
+    "Do not use hardcoded color — bind to state-aware SAP token"
   ],
   "layoutGuidance": {
     "placement": "Place ProgressIndicator inside a compatible container (Card, Panel, ColumnListItem).",
@@ -45,13 +45,13 @@
   "responsiveBehavior": {
     "XL": "Full size and visibility.",
     "L": "Full size and visibility.",
-    "M": "May condense or collapse \u2014 see Fiori responsive design guidelines.",
+    "M": "May condense or collapse — see Fiori responsive design guidelines.",
     "S": "May convert to alternative pattern (Popover, Dialog) on narrow viewports."
   },
   "accessibilityGuidance": {
-    "ariaPattern": "Maps to ARIA pattern appropriate for feedback \u2014 see SAP Fiori a11y docs.",
-    "contrast": "\u2265 4.5:1 for text, \u2265 3:1 for borders (WCAG AA).",
-    "keyboard": "Full keyboard support \u2014 Tab to focus, Enter/Space to activate.",
+    "ariaPattern": "Maps to ARIA pattern appropriate for feedback — see SAP Fiori a11y docs.",
+    "contrast": "≥ 4.5:1 for text, ≥ 3:1 for borders (WCAG AA).",
+    "keyboard": "Full keyboard support — Tab to focus, Enter/Space to activate.",
     "screenReader": "Announced with role and state."
   },
   "patterns": [
@@ -70,5 +70,5 @@
     "See pluginNotes for plugin-specific rendering caveats."
   ],
   "version": "2025.06",
-  "lastChecked": "2026-06-26"
+  "lastChecked": "2026-07-25"
 }

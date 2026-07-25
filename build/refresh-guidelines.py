@@ -62,7 +62,7 @@ GUIDELINE_SCHEMA_FIELDS = [
     "exceptions", "version", "lastChecked"
 ]
 
-SAP_FIORI_BASE = "https://experience.sap.com/fiori-design-web/"
+SAP_FIORI_BASE = "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/"
 
 
 def load_registry() -> dict:
@@ -121,7 +121,21 @@ Source URL: {guideline_url}
 Steps:
 1. Use Chrome MCP: `navigate_page("{guideline_url}")`
 2. Wait for: `wait_for(["When to Use", "When Not to Use", "Do", "Don't"])`
-3. Get page content: `take_snapshot()` — extract all text
+3. Get page content via evaluate_script — extract structured text from main#main:
+   ```js
+   const main = document.querySelector('main#main');
+   const getMeta = n => document.querySelector(`meta[name="${{n}}"]`)?.content || '';
+   return {{
+     title: document.querySelector('h1')?.innerText.trim() || document.title,
+     status: getMeta('uielementsstatus'),
+     category: getMeta('uielementscategory'),
+     modified: getMeta('modified-time'),
+     content: main?.innerText || '',
+     apiLinks: Array.from(main?.querySelectorAll('a[href*="ui5.sap.com"]') || []).map(a => ({{text: a.innerText.trim(), href: a.href}})),
+     imageAlts: Array.from(main?.querySelectorAll('img[alt]') || []).map(i => i.alt).filter(a => a),
+     related: Array.from(main?.querySelectorAll('a[href*="ui-elements/"]') || []).map(a => a.innerText.trim()).filter(t => t)
+   }};
+   ```
 4. Also run: `evaluate_script` on ui5.sap.com to get uxGuidelinesLink + description:
    ```js
    const res = await fetch('https://ui5.sap.com/test-resources/sap/m/designtime/apiref/api.json');

@@ -1,7 +1,7 @@
 {
   "componentName": "IconSplitButton",
   "slug": "split-button",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/split-button/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/split-button",
   "purpose": "An icon-only split-button: main action icon on left, dropdown arrow on right that opens a Menu. Space-efficient version of SplitButton where the icon alone is meaningful.",
   "whenToUse": [
     "Toolbar row actions with 2–5 close variants (Save / Save as / Save & Close via icon)",
@@ -36,7 +36,9 @@
   "contentGuidance": {
     "labelLength": "n/a — icon only",
     "contentRules": "Icon must be well-known; tooltip describes the primary action",
-    "examples": ["[💾▼] Save (menu: Save · Save as · Save & Close)"]
+    "examples": [
+      "[💾▼] Save (menu: Save · Save as · Save & Close)"
+    ]
   },
   "responsiveBehavior": {
     "XL": "Icon + arrow",
@@ -45,7 +47,10 @@
     "S": "May collapse into a MenuButton with labels"
   },
   "accessibilityGuidance": {
-    "wcagCriteria": ["WCAG 2.1 · 4.1.2 Name, Role, Value (Level A)", "WCAG 2.1 · 2.5.5 Target Size (AAA)"],
+    "wcagCriteria": [
+      "WCAG 2.1 · 4.1.2 Name, Role, Value (Level A)",
+      "WCAG 2.1 · 2.5.5 Target Size (AAA)"
+    ],
     "requirements": [
       "Main icon has aria-label describing primary action",
       "Arrow has aria-label='More options' and aria-haspopup='menu'",
@@ -53,9 +58,24 @@
       "Keyboard: Enter on main = primary; Down on arrow = open menu"
     ]
   },
-  "patterns": ["Toolbar dense action", "Object header split action", "Editor toolbar"],
-  "compatibility": {"allowedWith": ["Toolbar", "OverflowToolbar", "Bar", "DynamicPageTitle"], "forbiddenWith": ["Table cells (too small)", "Dense List rows"]},
+  "patterns": [
+    "Toolbar dense action",
+    "Object header split action",
+    "Editor toolbar"
+  ],
+  "compatibility": {
+    "allowedWith": [
+      "Toolbar",
+      "OverflowToolbar",
+      "Bar",
+      "DynamicPageTitle"
+    ],
+    "forbiddenWith": [
+      "Table cells (too small)",
+      "Dense List rows"
+    ]
+  },
   "exceptions": [],
   "version": "1.149.0",
-  "lastChecked": "2026-07-08"
+  "lastChecked": "2026-07-25"
 }

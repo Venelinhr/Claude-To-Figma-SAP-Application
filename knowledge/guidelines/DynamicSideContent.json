@@ -1,7 +1,7 @@
 {
   "componentName": "DynamicSideContent",
   "slug": "dynamic-side-content",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/dynamic-side-content/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/dynamic-side-content",
   "purpose": "A two-column layout with a main content area and a side content panel. The side content is context-sensitive (help text, related info, metadata) and can collapse or hide at smaller viewports. Used to keep primary content visible while offering auxiliary information.",
   "whenToUse": [
     "Main content needs a persistent auxiliary panel (help, related, metadata)",
@@ -36,7 +36,10 @@
   "contentGuidance": {
     "labelLength": "Side heading ≤ 40 chars",
     "contentRules": "Main content: primary task. Side content: help text, related lists, timestamps",
-    "examples": ["Main: object form · Side: activity timeline", "Main: chart · Side: legend + filters"]
+    "examples": [
+      "Main: object form · Side: activity timeline",
+      "Main: chart · Side: legend + filters"
+    ]
   },
   "responsiveBehavior": {
     "XL": "Both columns visible",
@@ -45,7 +48,10 @@
     "S": "Side content hidden, accessible via a toggle button"
   },
   "accessibilityGuidance": {
-    "wcagCriteria": ["WCAG 2.1 · 1.3.2 Meaningful Sequence (Level A)", "WCAG 2.1 · 1.4.10 Reflow (Level AA)"],
+    "wcagCriteria": [
+      "WCAG 2.1 · 1.3.2 Meaningful Sequence (Level A)",
+      "WCAG 2.1 · 1.4.10 Reflow (Level AA)"
+    ],
     "requirements": [
       "Reading order: main content → side content",
       "Side content has landmark role (aside/complementary)",
@@ -53,12 +59,25 @@
       "Content reflows without horizontal scroll at 320px width"
     ]
   },
-  "patterns": ["Object Page with metadata sidebar", "Analytical page with legend", "Help panel alongside form"],
+  "patterns": [
+    "Object Page with metadata sidebar",
+    "Analytical page with legend",
+    "Help panel alongside form"
+  ],
   "compatibility": {
-    "allowedWith": ["DynamicPage", "ObjectPageLayout", "Panel", "Card", "Timeline"],
-    "forbiddenWith": ["Inside Dialog (space too limited)", "Inside another DynamicSideContent"]
+    "allowedWith": [
+      "DynamicPage",
+      "ObjectPageLayout",
+      "Panel",
+      "Card",
+      "Timeline"
+    ],
+    "forbiddenWith": [
+      "Inside Dialog (space too limited)",
+      "Inside another DynamicSideContent"
+    ]
   },
   "exceptions": [],
   "version": "1.149.0",
-  "lastChecked": "2026-07-08"
+  "lastChecked": "2026-07-25"
 }

@@ -1,7 +1,7 @@
 {
   "componentName": "EmptyPlanningCalendar",
   "slug": "illustrated-message",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/illustrated-message/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/illustrated-message",
   "purpose": "Empty-state illustration for a planning calendar with no scheduled events, meetings, or bookings. Signals 'no events in this range — either extend the range or create the first event'.",
   "whenToUse": [
     "Weekly/monthly planning calendar with no bookings in the visible range",
@@ -36,7 +36,9 @@
   "contentGuidance": {
     "labelLength": "Title ≤ 40 chars; description ≤ 120 chars",
     "contentRules": "Title states the empty state; description offers a next step",
-    "examples": ["Title: 'Nothing scheduled' · Description: 'Your calendar is clear — create an event to get started' · Button: 'Create event'"]
+    "examples": [
+      "Title: 'Nothing scheduled' · Description: 'Your calendar is clear — create an event to get started' · Button: 'Create event'"
+    ]
   },
   "responsiveBehavior": {
     "XL": "Scene / Dialog size",
@@ -45,7 +47,9 @@
     "S": "Spot size"
   },
   "accessibilityGuidance": {
-    "wcagCriteria": ["WCAG 2.1 · 1.1.1 Non-text Content (Level A)"],
+    "wcagCriteria": [
+      "WCAG 2.1 · 1.1.1 Non-text Content (Level A)"
+    ],
     "requirements": [
       "role='img' with descriptive aria-label",
       "Title uses semantic heading",
@@ -53,9 +57,21 @@
       "Focus moves to CTA on show"
     ]
   },
-  "patterns": ["Empty calendar view", "Fresh scheduling flow", "Filtered calendar with no results"],
-  "compatibility": {"allowedWith": ["IllustratedMessage (only)"], "forbiddenWith": ["Standalone", "Any other parent"]},
+  "patterns": [
+    "Empty calendar view",
+    "Fresh scheduling flow",
+    "Filtered calendar with no results"
+  ],
+  "compatibility": {
+    "allowedWith": [
+      "IllustratedMessage (only)"
+    ],
+    "forbiddenWith": [
+      "Standalone",
+      "Any other parent"
+    ]
+  },
   "exceptions": [],
   "version": "1.149.0",
-  "lastChecked": "2026-07-08"
+  "lastChecked": "2026-07-25"
 }

@@ -1,7 +1,7 @@
 {
   "componentName": "HomepageHeroBanner",
   "slug": "home-page",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/home-page/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/banner",
   "purpose": "A large hero banner at the top of a home page or launchpad. Communicates brand identity, primary welcome message, and optional call-to-action. Usually spans full width with a background image and prominent typography.",
   "whenToUse": [
     "Landing page for a role-based SAP app",
@@ -36,7 +36,10 @@
   "contentGuidance": {
     "labelLength": "Title ≤ 60 chars; subtitle ≤ 140 chars",
     "contentRules": "Title is welcome/orientation; subtitle offers context; CTA is verb-first",
-    "examples": ["Welcome, Nadia — your dashboard is ready", "Get started with Purchase Orders — Create new PO ▸"]
+    "examples": [
+      "Welcome, Nadia — your dashboard is ready",
+      "Get started with Purchase Orders — Create new PO ▸"
+    ]
   },
   "responsiveBehavior": {
     "XL": "Full hero with image + text + CTA",
@@ -45,7 +48,10 @@
     "S": "Title + CTA only, image may hide or be simplified"
   },
   "accessibilityGuidance": {
-    "wcagCriteria": ["WCAG 2.1 · 1.4.3 Contrast (Level AA)", "WCAG 2.1 · 1.1.1 Non-text Content (Level A)"],
+    "wcagCriteria": [
+      "WCAG 2.1 · 1.4.3 Contrast (Level AA)",
+      "WCAG 2.1 · 1.1.1 Non-text Content (Level A)"
+    ],
     "requirements": [
       "Title contrast against background ≥ 4.5:1 (add overlay if needed)",
       "Background image has alt='' (decorative) or descriptive alt",
@@ -53,12 +59,24 @@
       "CTA button clearly labeled with the destination action"
     ]
   },
-  "patterns": ["Fiori Launchpad landing", "Initial Page floorplan", "Product marketing home"],
+  "patterns": [
+    "Fiori Launchpad landing",
+    "Initial Page floorplan",
+    "Product marketing home"
+  ],
   "compatibility": {
-    "allowedWith": ["DynamicPage (as first child)", "Page (as first child)"],
-    "forbiddenWith": ["Dialog", "Popover", "Panel", "Card"]
+    "allowedWith": [
+      "DynamicPage (as first child)",
+      "Page (as first child)"
+    ],
+    "forbiddenWith": [
+      "Dialog",
+      "Popover",
+      "Panel",
+      "Card"
+    ]
   },
   "exceptions": [],
   "version": "1.149.0",
-  "lastChecked": "2026-07-08"
+  "lastChecked": "2026-07-25"
 }

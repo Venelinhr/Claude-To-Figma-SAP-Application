@@ -1,7 +1,7 @@
 {
   "componentName": "Table",
   "slug": "responsive-table",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/responsive-table/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/responsive-table",
   "purpose": "A tabular display of data with columns, rows, and optional selection. Supports sorting, filtering, multi-select, and inline actions.",
   "whenToUse": [
     "For structured data with multiple aligned columns",
@@ -89,5 +89,5 @@
     "Use TreeTable for hierarchical data"
   ],
   "version": "2026.Q2",
-  "lastChecked": "2026-06-25"
+  "lastChecked": "2026-07-25"
 }

@@ -1,7 +1,7 @@
 {
   "componentName": "StepInput",
   "slug": "step-input",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/step-input/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/stepinput",
   "purpose": "A bounded numeric input with up/down stepper buttons. Used for counts and small numeric values with min/max bounds.",
   "whenToUse": [
     "Bounded numeric input with min/max (Qty, count, percent)",
@@ -9,8 +9,8 @@
     "Currency or unit values"
   ],
   "whenNotToUse": [
-    "For unbounded numbers \u2014 use Input type=Number",
-    "For large numeric ranges (>1000) \u2014 typing is faster",
+    "For unbounded numbers — use Input type=Number",
+    "For large numeric ranges (>1000) — typing is faster",
     "For non-numeric input"
   ],
   "doRules": [
@@ -81,5 +81,5 @@
     "displayValuePrecision controls decimal places"
   ],
   "version": "2026.Q2",
-  "lastChecked": "2026-06-25"
+  "lastChecked": "2026-07-25"
 }

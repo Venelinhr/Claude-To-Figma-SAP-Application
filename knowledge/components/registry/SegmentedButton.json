@@ -85,12 +85,12 @@
   "accessibilityRules": [
     {
       "category": "contrast",
-      "requirement": "Text contrast \u2265 4.5:1 against bg (WCAG AA)",
+      "requirement": "Text contrast ≥ 4.5:1 against bg (WCAG AA)",
       "wcag": "1.4.3"
     },
     {
       "category": "tap-target",
-      "requirement": "Min 32\u00d732 Compact / 44\u00d744 Cozy"
+      "requirement": "Min 32×32 Compact / 44×44 Cozy"
     },
     {
       "category": "keyboard",
@@ -109,7 +109,7 @@
   ],
   "dontRules": [
     "Do not allow zero-selected state (always one is active)",
-    "Do not exceed 5 segments \u2014 readability degrades",
+    "Do not exceed 5 segments — readability degrades",
     "Do not mix SegmentedButton with Select for the same axis",
     "Do not use SegmentedButton on narrow mobile viewports (use Select)"
   ],
@@ -123,7 +123,7 @@
     "Inside table cells",
     "Inside Dialog footer"
   ],
-  "guidelineUrl": "https://experience.sap.com/fiori-design-web/segmentedbutton/",
+  "guidelineUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/segmentedbutton",
   "demoKitUrl": "https://sdk.openui5.org/entity/sap.m.SegmentedButton",
   "apiUrl": "https://sdk.openui5.org/api/sap.m.SegmentedButton",
   "sampleUrls": [
@@ -131,7 +131,7 @@
   ],
   "libraryVersion": "2025.06",
   "lastValidated": "2026-06-27",
-  "pluginNotes": "SegmentedButton is a SAP instance. Plugin places via SAP_KEYS. Items[] array drives the segments \u2014 plugin replicates the first segment N times with text injection per item. The 'selected' item is marked via the Selected variant property.",
+  "pluginNotes": "SegmentedButton is a SAP instance. Plugin places via SAP_KEYS. Items[] array drives the segments — plugin replicates the first segment N times with text injection per item. The 'selected' item is marked via the Selected variant property.",
   "composition": {
     "validParents": [
       "OverflowToolbar",

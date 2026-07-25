@@ -1,15 +1,15 @@
 {
   "componentName": "ObjectPageSection",
   "slug": "object-page-section",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/object-page-section/",
-  "purpose": "Major section of an ObjectPageLayout \u2014 has a title, optional anchor in the navigation menu, contains SubSections.",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/object-page-section",
+  "purpose": "Major section of an ObjectPageLayout — has a title, optional anchor in the navigation menu, contains SubSections.",
   "whenToUse": [
     "Inside ObjectPageLayout",
     "When detail page has multiple major themes (General / Schedule / Notes)"
   ],
   "whenNotToUse": [
     "Outside ObjectPageLayout",
-    "For minor groupings \u2014 use ObjectPageSubSection or Panel"
+    "For minor groupings — use ObjectPageSubSection or Panel"
   ],
   "doRules": [
     "Provide a clear, scoped title",
@@ -39,13 +39,13 @@
   "responsiveBehavior": {
     "XL": "Full size and visibility.",
     "L": "Full size and visibility.",
-    "M": "May condense \u2014 see Fiori responsive design guidelines.",
+    "M": "May condense — see Fiori responsive design guidelines.",
     "S": "May convert to alternative pattern on narrow viewports."
   },
   "accessibilityGuidance": {
     "ariaPattern": "Maps to ARIA pattern appropriate for page layout.",
-    "contrast": "\u2265 4.5:1 for text, \u2265 3:1 for borders (WCAG AA).",
-    "keyboard": "Full keyboard support \u2014 Tab to focus, Enter/Space to activate.",
+    "contrast": "≥ 4.5:1 for text, ≥ 3:1 for borders (WCAG AA).",
+    "keyboard": "Full keyboard support — Tab to focus, Enter/Space to activate.",
     "screenReader": "Announced with role and state."
   },
   "patterns": [
@@ -58,5 +58,5 @@
     "See pluginNotes for plugin-specific rendering caveats."
   ],
   "version": "2025.06",
-  "lastChecked": "2026-06-26"
+  "lastChecked": "2026-07-25"
 }

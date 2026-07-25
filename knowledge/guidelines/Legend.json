@@ -1,7 +1,7 @@
 {
   "componentName": "Legend",
   "slug": "chart-legend",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/analytical-list-page/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/legend",
   "purpose": "A key that maps colors, patterns, or icons to data categories in a chart or calendar. Provides the reader with the meaning of visual encodings. Common in analytical dashboards, calendar apps, and visualization-heavy screens.",
   "whenToUse": [
     "Alongside any chart with more than 2 series",
@@ -36,7 +36,10 @@
   "contentGuidance": {
     "labelLength": "Each item ≤ 20 chars",
     "contentRules": "Swatch + label; optional value shown after the label",
-    "examples": ["■ Sales  ■ Costs  ■ Profit", "● Meetings  ● Deadlines  ● Personal"]
+    "examples": [
+      "■ Sales  ■ Costs  ■ Profit",
+      "● Meetings  ● Deadlines  ● Personal"
+    ]
   },
   "responsiveBehavior": {
     "XL": "Horizontal row visible",
@@ -45,7 +48,10 @@
     "S": "Vertical stack below chart"
   },
   "accessibilityGuidance": {
-    "wcagCriteria": ["WCAG 2.1 · 1.4.1 Use of Color (Level A)", "WCAG 2.1 · 1.4.3 Contrast (Level AA)"],
+    "wcagCriteria": [
+      "WCAG 2.1 · 1.4.1 Use of Color (Level A)",
+      "WCAG 2.1 · 1.4.3 Contrast (Level AA)"
+    ],
     "requirements": [
       "Swatches use both color AND pattern/icon to distinguish series",
       "Legend labels have 4.5:1 contrast",
@@ -53,12 +59,26 @@
       "Screen reader announces 'legend' role for the wrapping container"
     ]
   },
-  "patterns": ["Chart legend", "Calendar type key", "Heat map key"],
+  "patterns": [
+    "Chart legend",
+    "Calendar type key",
+    "Heat map key"
+  ],
   "compatibility": {
-    "allowedWith": ["Card", "Panel", "AnalyticalListPage", "Calendar", "DynamicSideContent"],
-    "forbiddenWith": ["Standalone without a chart", "Inside Dialog title", "Table cells"]
+    "allowedWith": [
+      "Card",
+      "Panel",
+      "AnalyticalListPage",
+      "Calendar",
+      "DynamicSideContent"
+    ],
+    "forbiddenWith": [
+      "Standalone without a chart",
+      "Inside Dialog title",
+      "Table cells"
+    ]
   },
   "exceptions": [],
   "version": "1.149.0",
-  "lastChecked": "2026-07-08"
+  "lastChecked": "2026-07-25"
 }

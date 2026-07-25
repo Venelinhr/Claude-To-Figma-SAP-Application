@@ -1,8 +1,8 @@
 {
   "componentName": "Wizard",
   "slug": "wizard",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/wizard/",
-  "purpose": "Multi-step process layout \u2014 guides user through a sequence of WizardSteps with progress indicator at top. Used for onboarding, data entry, complex object creation.",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/wizard",
+  "purpose": "Multi-step process layout — guides user through a sequence of WizardSteps with progress indicator at top. Used for onboarding, data entry, complex object creation.",
   "whenToUse": [
     "New object creation requiring multiple form pages",
     "Onboarding flows",
@@ -10,9 +10,9 @@
     "Operations that branch based on earlier choices"
   ],
   "whenNotToUse": [
-    "Single-page form \u2014 use Form",
-    "Linear data review (no input) \u2014 use Timeline",
-    "Step count > 7 \u2014 redesign with sections"
+    "Single-page form — use Form",
+    "Linear data review (no input) — use Timeline",
+    "Step count > 7 — redesign with sections"
   ],
   "doRules": [
     "Show all steps in the header even when only one is active",
@@ -23,7 +23,7 @@
   "dontRules": [
     "Do not exceed ~7 steps",
     "Do not allow Next without validation passing",
-    "Do not skip rendering disabled future steps \u2014 they should be visible"
+    "Do not skip rendering disabled future steps — they should be visible"
   ],
   "layoutGuidance": {
     "placement": "Place Wizard inside a compatible container (DynamicPage, Dialog).",
@@ -43,13 +43,13 @@
   "responsiveBehavior": {
     "XL": "Full size and visibility.",
     "L": "Full size and visibility.",
-    "M": "May condense \u2014 see Fiori responsive design guidelines.",
+    "M": "May condense — see Fiori responsive design guidelines.",
     "S": "May convert to alternative pattern on narrow viewports."
   },
   "accessibilityGuidance": {
     "ariaPattern": "Maps to ARIA pattern appropriate for page layout.",
-    "contrast": "\u2265 4.5:1 for text, \u2265 3:1 for borders (WCAG AA).",
-    "keyboard": "Full keyboard support \u2014 Tab to focus, Enter/Space to activate.",
+    "contrast": "≥ 4.5:1 for text, ≥ 3:1 for borders (WCAG AA).",
+    "keyboard": "Full keyboard support — Tab to focus, Enter/Space to activate.",
     "screenReader": "Announced with role and state."
   },
   "patterns": [
@@ -64,5 +64,5 @@
     "See pluginNotes for plugin-specific rendering caveats."
   ],
   "version": "2025.06",
-  "lastChecked": "2026-06-26"
+  "lastChecked": "2026-07-25"
 }

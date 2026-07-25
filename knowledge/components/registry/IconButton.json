@@ -106,7 +106,7 @@
     },
     {
       "category": "tap-target",
-      "requirement": "Min 32\u00d732px (Compact) / 44\u00d744px (Cozy)"
+      "requirement": "Min 32×32px (Compact) / 44×44px (Cozy)"
     },
     {
       "category": "focus",
@@ -116,10 +116,10 @@
   "doRules": [
     "Use a tooltip explaining the action",
     "Pair with a well-known icon metaphor",
-    "Keep touch area \u226532px even if icon is smaller"
+    "Keep touch area ≥32px even if icon is smaller"
   ],
   "dontRules": [
-    "Do not use IconButton for primary actions \u2014 use Button with label",
+    "Do not use IconButton for primary actions — use Button with label",
     "Do not use unfamiliar custom icons"
   ],
   "compatibleComponents": [
@@ -131,7 +131,7 @@
   "incompatiblePatterns": [
     "As primary CTA without label"
   ],
-  "guidelineUrl": "https://experience.sap.com/fiori-design-web/iconbutton/",
+  "guidelineUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/iconbutton",
   "demoKitUrl": "https://sapui5.hana.ondemand.com/#/entity/sap.m.IconButton",
   "apiUrl": "https://sapui5.hana.ondemand.com/#/api/sap.m.IconButton",
   "sampleUrls": [],
@@ -139,7 +139,7 @@
   "lastValidated": "2026-07-08",
   "pluginNotes": {
     "textInjectionMethod": "setProperties",
-    "sizingConstraints": "32\u00d732px Compact / 44\u00d744px Cozy. Square aspect.",
+    "sizingConstraints": "32×32px Compact / 44×44px Cozy. Square aspect.",
     "knownIssues": []
   },
   "composition": {

@@ -1,7 +1,7 @@
 {
   "componentName": "AvatarGroup",
   "slug": "avatar-group",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/avatar-group/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/avatar-group",
   "purpose": "Group of overlapping Avatars showing multiple users or entities. Final Avatar can be a +N counter for overflow.",
   "whenToUse": [
     "List of users assigned to a task",
@@ -10,8 +10,8 @@
     "Up to ~5 visible + counter"
   ],
   "whenNotToUse": [
-    "Single user \u2014 use Avatar",
-    "When all users must be individually identifiable \u2014 use a list",
+    "Single user — use Avatar",
+    "When all users must be individually identifiable — use a list",
     "For non-user entities use Tag or ObjectMarker"
   ],
   "doRules": [
@@ -42,13 +42,13 @@
   "responsiveBehavior": {
     "XL": "Full size and visibility.",
     "L": "Full size and visibility.",
-    "M": "May condense \u2014 see Fiori responsive design guidelines.",
+    "M": "May condense — see Fiori responsive design guidelines.",
     "S": "May convert to alternative pattern on narrow viewports."
   },
   "accessibilityGuidance": {
     "ariaPattern": "Maps to ARIA pattern appropriate for object display.",
-    "contrast": "\u2265 4.5:1 for text, \u2265 3:1 for borders (WCAG AA).",
-    "keyboard": "Full keyboard support \u2014 Tab to focus, Enter/Space to activate.",
+    "contrast": "≥ 4.5:1 for text, ≥ 3:1 for borders (WCAG AA).",
+    "keyboard": "Full keyboard support — Tab to focus, Enter/Space to activate.",
     "screenReader": "Announced with role and state."
   },
   "patterns": [
@@ -67,5 +67,5 @@
     "See pluginNotes for plugin-specific rendering caveats."
   ],
   "version": "2025.06",
-  "lastChecked": "2026-06-26"
+  "lastChecked": "2026-07-25"
 }

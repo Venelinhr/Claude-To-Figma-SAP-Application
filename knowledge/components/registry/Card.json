@@ -119,7 +119,7 @@
     "Inside table cells",
     "Stacked vertically without spacing"
   ],
-  "guidelineUrl": "https://experience.sap.com/fiori-design-web/card/",
+  "guidelineUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/card",
   "demoKitUrl": "https://sdk.openui5.org/entity/sap.m.Card",
   "apiUrl": "https://sdk.openui5.org/api/sap.m.Card",
   "sampleUrls": [

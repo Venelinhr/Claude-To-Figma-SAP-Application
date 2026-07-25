@@ -1,7 +1,7 @@
 {
   "componentName": "ToolbarItems",
   "slug": "toolbar",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/toolbar/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/toolbar-overview",
   "purpose": "A grouping wrapper for items inside a Toolbar. Used to collect a related set of actions together — visually or semantically. Rendered by the plugin as a pass-through — parent Toolbar handles the actual layout.",
   "whenToUse": [
     "Group related actions inside a Toolbar (view toggles, sort options)",
@@ -36,7 +36,9 @@
   "contentGuidance": {
     "labelLength": "n/a — container",
     "contentRules": "Contains only Toolbar-legal items (Button, IconButton, Select, etc.)",
-    "examples": ["Group 1: [Sort ▼] [Filter ▼]  ·  Group 2: [Grid] [List]"]
+    "examples": [
+      "Group 1: [Sort ▼] [Filter ▼]  ·  Group 2: [Grid] [List]"
+    ]
   },
   "responsiveBehavior": {
     "XL": "All items visible inline",
@@ -45,7 +47,9 @@
     "S": "May collapse entirely into overflow menu"
   },
   "accessibilityGuidance": {
-    "wcagCriteria": ["WCAG 2.1 · 1.3.1 Info and Relationships (Level A)"],
+    "wcagCriteria": [
+      "WCAG 2.1 · 1.3.1 Info and Relationships (Level A)"
+    ],
     "requirements": [
       "role='group' with aria-label describing the group's purpose",
       "Focus order follows visual order within the group",
@@ -53,9 +57,22 @@
       "Group can be reached via a single Tab, then Arrow keys within"
     ]
   },
-  "patterns": ["Grouped toolbar actions", "View mode toggle group", "Filter action cluster"],
-  "compatibility": {"allowedWith": ["Toolbar", "OverflowToolbar"], "forbiddenWith": ["Standalone", "Any non-Toolbar parent"]},
+  "patterns": [
+    "Grouped toolbar actions",
+    "View mode toggle group",
+    "Filter action cluster"
+  ],
+  "compatibility": {
+    "allowedWith": [
+      "Toolbar",
+      "OverflowToolbar"
+    ],
+    "forbiddenWith": [
+      "Standalone",
+      "Any non-Toolbar parent"
+    ]
+  },
   "exceptions": [],
   "version": "1.149.0",
-  "lastChecked": "2026-07-08"
+  "lastChecked": "2026-07-25"
 }

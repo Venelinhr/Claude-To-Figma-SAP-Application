@@ -1,7 +1,7 @@
 {
   "componentName": "MessageStrip",
   "slug": "message-strip",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/message-strip/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/messagestrip",
   "purpose": "A horizontal message bar for inline feedback (Information, Positive, Warning, Error). Persistent message about page or section state.",
   "whenToUse": [
     "Page-level or section-level status message",
@@ -10,8 +10,8 @@
     "Persistent contextual information"
   ],
   "whenNotToUse": [
-    "For transient toasts \u2014 use MessageToast",
-    "For destructive confirmations \u2014 use Dialog",
+    "For transient toasts — use MessageToast",
+    "For destructive confirmations — use Dialog",
     "As primary CTA container"
   ],
   "doRules": [
@@ -23,10 +23,10 @@
     "Include close button when message is dismissible"
   ],
   "dontRules": [
-    "Do not use MessageStrip for transient toasts \u2014 use MessageToast",
+    "Do not use MessageStrip for transient toasts — use MessageToast",
     "Do not use as primary CTA container",
     "Do not stack multiple MessageStrips of same type",
-    "Do not omit icon \u2014 status by color alone violates WCAG"
+    "Do not omit icon — status by color alone violates WCAG"
   ],
   "layoutGuidance": {
     "placement": "Top of Page content, Dialog body, Form section.",
@@ -35,14 +35,14 @@
     "alignment": "Icon left, text middle, close right."
   },
   "contentGuidance": {
-    "labelLength": "Message 1\u20132 sentences.",
+    "labelLength": "Message 1–2 sentences.",
     "contentRules": [
       "Concise, action-oriented text",
       "Include link to detailed help when needed"
     ],
     "examples": [
       "Settings saved successfully.",
-      "Could not save \u2014 check your connection."
+      "Could not save — check your connection."
     ]
   },
   "responsiveBehavior": {
@@ -54,7 +54,7 @@
   "accessibilityGuidance": [
     {
       "category": "status",
-      "requirement": "Type communicated by icon AND text \u2014 not color alone",
+      "requirement": "Type communicated by icon AND text — not color alone",
       "wcag": "1.4.1 (A)"
     },
     {
@@ -89,5 +89,5 @@
     "showCloseButton=true allows user dismissal"
   ],
   "version": "2026.Q2",
-  "lastChecked": "2026-06-25"
+  "lastChecked": "2026-07-25"
 }

@@ -1,7 +1,7 @@
 {
   "componentName": "Image",
   "slug": "image",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/image/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/image",
   "purpose": "Displays a raster image (photo, product shot, avatar). Supports lazy loading and fallback content. Use for content imagery, not for iconography (use Icon component instead).",
   "whenToUse": [
     "Show a product photo, user avatar (photo), or content image",
@@ -36,7 +36,10 @@
   "contentGuidance": {
     "labelLength": "Alt text 5-125 characters describing the image content",
     "contentRules": "Alt text describes the image's role in the page, not its visual",
-    "examples": ["'Product: red ergonomic chair'", "'CEO Nadia Fischer'"]
+    "examples": [
+      "'Product: red ergonomic chair'",
+      "'CEO Nadia Fischer'"
+    ]
   },
   "responsiveBehavior": {
     "XL": "Native or upscaled with quality settings",
@@ -45,7 +48,10 @@
     "S": "May hide non-essential images or use smaller variants"
   },
   "accessibilityGuidance": {
-    "wcagCriteria": ["WCAG 2.1 · 1.1.1 Non-text Content (Level A)", "WCAG 2.1 · 1.4.5 Images of Text (Level AA)"],
+    "wcagCriteria": [
+      "WCAG 2.1 · 1.1.1 Non-text Content (Level A)",
+      "WCAG 2.1 · 1.4.5 Images of Text (Level AA)"
+    ],
     "requirements": [
       "Alt text required for content images",
       "Empty alt='' for purely decorative images",
@@ -53,14 +59,28 @@
       "Provide long descriptions for complex images via aria-describedby"
     ]
   },
-  "patterns": ["Card thumbnail", "List item avatar", "Page hero image", "Product cards"],
+  "patterns": [
+    "Card thumbnail",
+    "List item avatar",
+    "Page hero image",
+    "Product cards"
+  ],
   "compatibility": {
-    "allowedWith": ["Card", "StandardListItem", "ObjectListItem", "Page", "Panel"],
-    "forbiddenWith": ["ShellBar (use logo prop)", "Dialog title bar"]
+    "allowedWith": [
+      "Card",
+      "StandardListItem",
+      "ObjectListItem",
+      "Page",
+      "Panel"
+    ],
+    "forbiddenWith": [
+      "ShellBar (use logo prop)",
+      "Dialog title bar"
+    ]
   },
   "exceptions": [
     "Web pages that must be text-only should hide images completely, not use empty alt"
   ],
   "version": "1.149.0",
-  "lastChecked": "2026-07-08"
+  "lastChecked": "2026-07-25"
 }

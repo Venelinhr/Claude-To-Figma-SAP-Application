@@ -1,7 +1,7 @@
 {
   "componentName": "AIButton",
   "slug": "ai-button",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/joule/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/joule",
   "purpose": "A button variant that triggers an AI-powered action (Joule integration). Visually distinguished with the SAP AI accent color and often a spark or wand icon. Used to signal AI-assisted features to users.",
   "whenToUse": [
     "Trigger an AI-generated action (draft an email, summarize, translate)",
@@ -36,7 +36,10 @@
   "contentGuidance": {
     "labelLength": "≤ 25 chars, verb-first",
     "contentRules": "Action-oriented ('Draft', 'Summarize', 'Explain')",
-    "examples": ["✨ Draft response", "✨ Summarize with Joule"]
+    "examples": [
+      "✨ Draft response",
+      "✨ Summarize with Joule"
+    ]
   },
   "responsiveBehavior": {
     "XL": "Icon + label",
@@ -45,7 +48,10 @@
     "S": "Icon only, label in tooltip"
   },
   "accessibilityGuidance": {
-    "wcagCriteria": ["WCAG 2.1 · 4.1.2 Name, Role, Value (Level A)", "WCAG 2.1 · 1.4.3 Contrast (Level AA)"],
+    "wcagCriteria": [
+      "WCAG 2.1 · 4.1.2 Name, Role, Value (Level A)",
+      "WCAG 2.1 · 1.4.3 Contrast (Level AA)"
+    ],
     "requirements": [
       "aria-label describes the AI action ('Draft response with Joule')",
       "Loading state announced (aria-busy='true')",
@@ -53,12 +59,24 @@
       "Icon has meaningful role (not decorative)"
     ]
   },
-  "patterns": ["Joule integration", "AI-assisted form fill", "Content generation"],
+  "patterns": [
+    "Joule integration",
+    "AI-assisted form fill",
+    "Content generation"
+  ],
   "compatibility": {
-    "allowedWith": ["Toolbar", "Form", "Card", "Panel", "DynamicPageTitle actions"],
-    "forbiddenWith": ["Inside another AI element without visual separation"]
+    "allowedWith": [
+      "Toolbar",
+      "Form",
+      "Card",
+      "Panel",
+      "DynamicPageTitle actions"
+    ],
+    "forbiddenWith": [
+      "Inside another AI element without visual separation"
+    ]
   },
   "exceptions": [],
   "version": "1.149.0",
-  "lastChecked": "2026-07-08"
+  "lastChecked": "2026-07-25"
 }

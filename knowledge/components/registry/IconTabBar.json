@@ -164,7 +164,7 @@
     "Inside a table cell or list item",
     "As the only navigation on a page (use SideNavigation for primary nav)"
   ],
-  "guidelineUrl": "https://experience.sap.com/fiori-design-web/icontabbar/",
+  "guidelineUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/icontabbar",
   "demoKitUrl": "https://sapui5.hana.ondemand.com/#/entity/sap.m.IconTabBar",
   "apiUrl": "https://sapui5.hana.ondemand.com/#/api/sap.m.IconTabBar",
   "sampleUrls": [

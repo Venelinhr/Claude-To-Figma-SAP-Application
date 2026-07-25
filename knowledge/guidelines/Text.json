@@ -1,7 +1,7 @@
 {
   "componentName": "Text",
   "slug": "text",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/text/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/text",
   "purpose": "Plain text node for body content, descriptions, paragraph copy, and inline labels. The most basic text primitive in the SAP UI vocabulary.",
   "whenToUse": [
     "Body copy, descriptions, paragraphs in cards, panels, dialogs",
@@ -50,9 +50,9 @@
   },
   "responsiveBehavior": {
     "XL": "Full text shown.",
-    "L":  "Full text shown.",
-    "M":  "Wrapping enabled where width contracts.",
-    "S":  "May truncate with maxLines or wrap; ensure readability."
+    "L": "Full text shown.",
+    "M": "Wrapping enabled where width contracts.",
+    "S": "May truncate with maxLines or wrap; ensure readability."
   },
   "accessibilityGuidance": {
     "ariaPattern": "Maps to plain text node (no aria role). Inherits from parent landmark.",
@@ -66,11 +66,20 @@
     "Form — Text for help/hint",
     "Empty state — Text for explanatory copy"
   ],
-  "compatibility": ["Form", "Panel", "Dialog", "DynamicPage", "Card", "Table", "List", "ColumnListItem"],
+  "compatibility": [
+    "Form",
+    "Panel",
+    "Dialog",
+    "DynamicPage",
+    "Card",
+    "Table",
+    "List",
+    "ColumnListItem"
+  ],
   "exceptions": [
     "Native renderer — no SAP instance for sap.m.Text. Plugin creates figma.createText() with bound SAP variables.",
     "When wrapping is critical (long descriptions), explicitly set props.wrap=true."
   ],
   "version": "2025.06",
-  "lastChecked": "2026-06-26"
+  "lastChecked": "2026-07-25"
 }

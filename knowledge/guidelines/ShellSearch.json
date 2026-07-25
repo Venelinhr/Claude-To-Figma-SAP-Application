@@ -1,7 +1,7 @@
 {
   "componentName": "ShellSearch",
   "slug": "shell-bar",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/shell-bar/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/shellbar",
   "purpose": "A search field mounted inside the ShellBar for app-wide or global search. Distinct from an inline SearchField that filters content on a page. Provides a persistent entry point to search from anywhere in the app.",
   "whenToUse": [
     "As the global search affordance in ShellBar",
@@ -36,7 +36,10 @@
   "contentGuidance": {
     "labelLength": "Placeholder ≤ 30 chars",
     "contentRules": "Placeholder hints at scope ('Search all objects…')",
-    "examples": ["\"Search everything...\"", "\"Find people, files, or actions\""]
+    "examples": [
+      "\"Search everything...\"",
+      "\"Find people, files, or actions\""
+    ]
   },
   "responsiveBehavior": {
     "XL": "Expanded field always visible",
@@ -45,7 +48,10 @@
     "S": "Icon only; opens full-screen search overlay on tap"
   },
   "accessibilityGuidance": {
-    "wcagCriteria": ["WCAG 2.1 · 4.1.2 Name, Role, Value (Level A)", "WCAG 2.1 · 2.1.1 Keyboard (Level A)"],
+    "wcagCriteria": [
+      "WCAG 2.1 · 4.1.2 Name, Role, Value (Level A)",
+      "WCAG 2.1 · 2.1.1 Keyboard (Level A)"
+    ],
     "requirements": [
       "role='search' on wrapping landmark",
       "aria-label='Search'",
@@ -53,9 +59,21 @@
       "Suggestions announced via aria-live='polite'"
     ]
   },
-  "patterns": ["Global app search", "Cross-object find", "Fiori Launchpad search"],
-  "compatibility": {"allowedWith": ["ShellBar (only)"], "forbiddenWith": ["Standalone", "Any parent other than ShellBar"]},
+  "patterns": [
+    "Global app search",
+    "Cross-object find",
+    "Fiori Launchpad search"
+  ],
+  "compatibility": {
+    "allowedWith": [
+      "ShellBar (only)"
+    ],
+    "forbiddenWith": [
+      "Standalone",
+      "Any parent other than ShellBar"
+    ]
+  },
   "exceptions": [],
   "version": "1.149.0",
-  "lastChecked": "2026-07-08"
+  "lastChecked": "2026-07-25"
 }

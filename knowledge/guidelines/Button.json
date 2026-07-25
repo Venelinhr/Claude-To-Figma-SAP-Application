@@ -1,91 +1,104 @@
 {
   "componentName": "Button",
   "slug": "button",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/button/",
-  "purpose": "A clickable control that triggers an action. Buttons come in multiple semantic types (Emphasized, Accept, Reject, Negative, Critical, Transparent) to communicate action priority and consequence.",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/button",
+  "purpose": "Buttons enable users to trigger actions in applications, from submitting data to opening menus or toggling views. Available in 4 types: simple button, toggle button, segmented button, and menu button.",
   "whenToUse": [
-    "Trigger primary or secondary actions in forms, toolbars, dialogs, and pages",
-    "Use Emphasized type for the single primary action per screen",
-    "Pair an icon with a label for clarity when the icon is not universally recognized",
-    "Use Transparent or Ghost for de-emphasized secondary actions",
-    "Use Negative for destructive actions like delete or cancel-and-discard"
+    "Use simple buttons for specific actions: Create/Edit/Save, Approve/Reject, Accept/Decline, OK/Cancel",
+    "Use toggle buttons in a toolbar to activate/deactivate an object or switch between states",
+    "Use segmented buttons in toolbar when user must select one option from a small group (e.g. Year/Month/Day)",
+    "Use menu button when you need a dropdown with more than one option"
   ],
   "whenNotToUse": [
-    "Use a Link when the action is navigation (going to another page or URL)",
-    "Inside table cells at small sizes \u2014 use Link or IconButton instead",
-    "When stacking many buttons vertically \u2014 restructure with toolbars or menus"
+    "Don't use button to link to a different page or object — use Link instead",
+    "Don't use button for general navigation functions — use Home or Breadcrumbs",
+    "Don't use button to navigate a multi-step process — use Wizard",
+    "Don't use button for file upload — use Upload Set control",
+    "Don't use button when users must select from multiple related options — use RadioButton or CheckBox"
   ],
   "doRules": [
-    "Use Emphasized type for the single primary action per screen",
-    "Pair an icon with a label for clarity when the icon is not universally recognized",
-    "Keep button labels short and action-oriented (verb-first)",
-    "Use Negative type with confirmation dialog for destructive actions"
+    "One primary action (Emphasized style) per page maximum",
+    "Use Emphasized style for primary action in header/footer toolbar",
+    "Use Ghost (type=ghost) style for secondary actions in header/footer toolbar",
+    "Use Transparent style for negative path actions in header/footer toolbar",
+    "Use Accept/Reject semantic button styles for positive/negative actions; always text buttons",
+    "Use verb in imperative for button text (Save, Cancel, Edit)",
+    "Add tooltip to icon-only buttons",
+    "Use counter badge to show number of affected items; attention badge to attract attention"
   ],
   "dontRules": [
-    "Do not use multiple Emphasized buttons in one toolbar \u2014 confuses primary intent",
-    "Do not use vague labels like \"OK\", \"Click here\", \"Submit\" when more specific text fits",
-    "Do not use a Button when a Link is more appropriate (navigation vs action)",
-    "Do not put primary buttons on the left of toolbars \u2014 primary action goes right"
+    "Do not use multiple Emphasized buttons per page — one primary action only",
+    "Do not use icon control for buttons — use the icon property of Button instead",
+    "Do not change text or icon of a toggle button when pressed — screen readers announce 'pressed' state",
+    "Do not use semantic button styles in content toolbars (tables, forms, charts)",
+    "Do not use icon-only buttons for business actions — only for generic standard icon metaphors",
+    "Do not use vague labels like 'OK', 'Click here', 'Submit' when specific text fits"
   ],
   "layoutGuidance": {
-    "placement": "Right-aligned in toolbars for primary actions; left for secondary/cancel.",
-    "sizing": "Auto width; height 26px Compact / 36px Cozy. Min 32\u00d732 touch target.",
-    "spacing": "8px gap between buttons in toolbar.",
-    "alignment": "Group related buttons; separate destructive with spacing."
+    "placement": "Primary action: right-aligned in header/footer toolbars. Negative path action: left side. In content toolbars: most important action highlighted, secondary/negative use Transparent style.",
+    "sizing": "Grows to fit text. Fixed size causes truncation. Max width for menu button: 12rem (192px). Compact/Cozy supported.",
+    "spacing": "8px gap between buttons in toolbar. Counter badge: inside button (Compact) or top-right corner (Cozy).",
+    "alignment": "Group related buttons. Separate destructive actions with spacing."
   },
   "contentGuidance": {
-    "labelLength": "1\u20133 words max. Verb-first (\"Save\", \"Add Artifact\", \"Delete Package\").",
+    "labelLength": "Short and meaningful. 1–3 words. Verb in imperative (Save, Cancel, Edit). Can add count in parentheses: Edit (3).",
     "contentRules": [
-      "Use sentence case unless brand requires title case",
-      "Avoid punctuation in labels",
-      "Localize all labels"
+      "Use imperative verb for all actions",
+      "Use standard action labels per UXC-015 terminology standard",
+      "Account for text up to 300% longer in other languages",
+      "Supports LTR and RTL reading directions"
     ],
     "examples": [
       "Save",
       "Cancel",
-      "Add",
+      "Edit",
+      "Create",
+      "Approve",
+      "Reject",
       "Delete Package",
-      "Export"
+      "Edit (3)"
     ]
   },
   "responsiveBehavior": {
-    "XL": "Full button with label and optional icon",
-    "L": "Full button with label and optional icon",
-    "M": "Full button or icon-only for space-constrained toolbars",
-    "S": "Icon-only with tooltip on mobile; move secondary actions to overflow menu"
+    "XL": "Full button with text and optional icon. Menu button triggers cascading dropdown.",
+    "L": "Full button with text and optional icon. Menu button triggers cascading dropdown.",
+    "M": "Full button. In responsive containers, button may move to another line.",
+    "S": "Menu button opens in full-screen dialog with Cancel footer. Items with submenus become navigable with Back button."
   },
   "accessibilityGuidance": [
     {
+      "category": "keyboard",
+      "requirement": "Enter and Space activate. Tab moves focus. Supports keyboard shortcuts via sap.ui.core.CommandExecution.",
+      "wcag": "2.1.1 (A)"
+    },
+    {
+      "category": "focus",
+      "requirement": "Visible focus indicator. States: regular, hover, pressed, focused, disabled.",
+      "wcag": "2.4.7 (AA)"
+    },
+    {
+      "category": "labeling",
+      "requirement": "Icon-only buttons MUST have tooltip + default accessibility text. Use app-specific text if icon name is not ideal.",
+      "wcag": "4.1.2 (A)"
+    },
+    {
       "category": "contrast",
-      "requirement": "Text-to-background contrast \u2265 4.5:1",
+      "requirement": "Text-to-background contrast ≥ 4.5:1",
       "wcag": "1.4.3 (AA)"
     },
     {
       "category": "tap-target",
-      "requirement": "Min 32\u00d732px Compact / 44\u00d744px Cozy",
+      "requirement": "Min 32×32px Compact / 44×44px Cozy",
       "wcag": "2.5.5 (AAA)"
-    },
-    {
-      "category": "labeling",
-      "requirement": "Icon-only buttons MUST have tooltip + aria-label",
-      "wcag": "4.1.2 (A)"
-    },
-    {
-      "category": "focus",
-      "requirement": "Visible focus indicator with 3:1 contrast against adjacent colors",
-      "wcag": "2.4.7 (AA)"
-    },
-    {
-      "category": "keyboard",
-      "requirement": "Enter and Space activate; Tab moves focus",
-      "wcag": "2.1.1 (A)"
     }
   ],
   "patterns": [
     "Toolbar action",
     "Dialog action",
     "Form submission",
-    "Bulk action"
+    "Bulk action",
+    "Primary/Secondary/Tertiary action hierarchy",
+    "Browse and collect (with badge)"
   ],
   "compatibility": {
     "worksWith": [
@@ -94,18 +107,28 @@
       "Dialog",
       "Form",
       "Panel",
-      "MenuButton",
-      "ShellBar"
+      "ShellBar",
+      "Table (inline actions)"
     ],
     "incompatible": [
-      "Inside Table cells at S viewport",
+      "Inside Table cells at S viewport — use Link instead",
       "Stacked vertically in toolbar"
     ]
   },
   "exceptions": [
-    "When used inside IconTabBar action area, hide label and show icon only",
-    "In condensed list rows, prefer Link over Button"
+    "SAP Fiori Elements supports text-only buttons except in tables where inline actions can be icon or text (not both)",
+    "Within SAP S/4HANA, a button can contain either an icon or text (not both)",
+    "Toggle button stays pressed until pressed again — do not change text/icon in pressed state"
   ],
-  "version": "2026.Q2",
-  "lastChecked": "2026-06-25"
+  "types": [
+    "Simple button: one action, text or icon",
+    "Toggle button: switches between two states; one always active",
+    "Segmented button: group of connected buttons, one selectable at a time",
+    "Standard menu button: opens menu on activation",
+    "Split menu button: text area triggers default action; arrow area opens dropdown menu"
+  ],
+  "ui5Api": "https://ui5.sap.com/#/api/sap.m.Button",
+  "ui5Samples": "https://ui5.sap.com/#/entity/sap.m.Button",
+  "version": "v1-148",
+  "lastChecked": "2026-07-25"
 }

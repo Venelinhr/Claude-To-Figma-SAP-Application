@@ -98,7 +98,7 @@
     },
     {
       "category": "contrast",
-      "requirement": "Initials/icon contrast \u2265 4.5:1 against background",
+      "requirement": "Initials/icon contrast ≥ 4.5:1 against background",
       "wcag": "1.4.3 (AA)"
     }
   ],
@@ -120,7 +120,7 @@
   "incompatiblePatterns": [
     "As primary CTA"
   ],
-  "guidelineUrl": "https://experience.sap.com/fiori-design-web/avatar/",
+  "guidelineUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/avatar",
   "demoKitUrl": "https://sapui5.hana.ondemand.com/#/entity/sap.m.Avatar",
   "apiUrl": "https://sapui5.hana.ondemand.com/#/api/sap.m.Avatar",
   "sampleUrls": [],

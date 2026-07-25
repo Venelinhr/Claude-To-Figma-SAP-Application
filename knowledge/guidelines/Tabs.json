@@ -1,15 +1,15 @@
 {
   "componentName": "Tabs",
   "slug": "tabs",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/tabs/",
-  "purpose": "Top-aligned tabbed navigation with text labels. Visual variant of IconTabBar \u2014 used when tabs do not need icons.",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/tabs",
+  "purpose": "Top-aligned tabbed navigation with text labels. Visual variant of IconTabBar — used when tabs do not need icons.",
   "whenToUse": [
     "Page-level tab navigation when icons would add noise",
     "Sub-section navigation on detail pages"
   ],
   "whenNotToUse": [
-    "When tabs are critical app-level navigation \u2014 use IconTabBar",
-    "When more than ~7 tabs \u2014 use Select or ComboBox"
+    "When tabs are critical app-level navigation — use IconTabBar",
+    "When more than ~7 tabs — use Select or ComboBox"
   ],
   "doRules": [
     "Mark exactly one tab as selected",
@@ -39,13 +39,13 @@
   "responsiveBehavior": {
     "XL": "Full size and visibility.",
     "L": "Full size and visibility.",
-    "M": "May condense \u2014 see Fiori responsive design guidelines.",
+    "M": "May condense — see Fiori responsive design guidelines.",
     "S": "May convert to alternative pattern on narrow viewports."
   },
   "accessibilityGuidance": {
     "ariaPattern": "Maps to ARIA pattern appropriate for navigation.",
-    "contrast": "\u2265 4.5:1 for text, \u2265 3:1 for borders (WCAG AA).",
-    "keyboard": "Full keyboard support \u2014 Tab to focus, Enter/Space to activate.",
+    "contrast": "≥ 4.5:1 for text, ≥ 3:1 for borders (WCAG AA).",
+    "keyboard": "Full keyboard support — Tab to focus, Enter/Space to activate.",
     "screenReader": "Announced with role and state."
   },
   "patterns": [
@@ -62,5 +62,5 @@
     "See pluginNotes for plugin-specific rendering caveats."
   ],
   "version": "2025.06",
-  "lastChecked": "2026-06-26"
+  "lastChecked": "2026-07-25"
 }

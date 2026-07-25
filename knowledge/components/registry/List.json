@@ -116,7 +116,7 @@
   "incompatiblePatterns": [
     "As primary navigation — use SideNavigation"
   ],
-  "guidelineUrl": "https://experience.sap.com/fiori-design-web/list/",
+  "guidelineUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/list",
   "demoKitUrl": "https://sapui5.hana.ondemand.com/#/entity/sap.m.List",
   "apiUrl": "https://sapui5.hana.ondemand.com/#/api/sap.m.List",
   "sampleUrls": [],

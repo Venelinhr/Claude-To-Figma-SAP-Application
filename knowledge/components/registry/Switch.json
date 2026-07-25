@@ -104,7 +104,7 @@
     },
     {
       "category": "status",
-      "requirement": "State communicated by position AND color \u2014 not color alone"
+      "requirement": "State communicated by position AND color — not color alone"
     }
   ],
   "doRules": [
@@ -113,8 +113,8 @@
     "Provide a clear label describing what the switch controls"
   ],
   "dontRules": [
-    "Do not use Switch for actions that need confirmation \u2014 use Button",
-    "Do not use Switch in forms requiring \"Save\" \u2014 use CheckBox"
+    "Do not use Switch for actions that need confirmation — use Button",
+    "Do not use Switch in forms requiring \"Save\" — use CheckBox"
   ],
   "compatibleComponents": [
     "Label",
@@ -123,7 +123,7 @@
   "incompatiblePatterns": [
     "Inside a form that requires explicit submit"
   ],
-  "guidelineUrl": "https://experience.sap.com/fiori-design-web/switch/",
+  "guidelineUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/switch",
   "demoKitUrl": "https://sapui5.hana.ondemand.com/#/entity/sap.m.Switch",
   "apiUrl": "https://sapui5.hana.ondemand.com/#/api/sap.m.Switch",
   "sampleUrls": [],
@@ -131,7 +131,7 @@
   "lastValidated": "2026-06-27",
   "pluginNotes": {
     "textInjectionMethod": "setProperties",
-    "sizingConstraints": "52\u00d724px Compact / 60\u00d732px Cozy.",
+    "sizingConstraints": "52×24px Compact / 60×32px Cozy.",
     "knownIssues": []
   },
   "composition": {

@@ -1,7 +1,7 @@
 {
   "componentName": "Banner",
   "slug": "banner",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/message-page/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/banner",
   "purpose": "A generic banner element for showing prominent messages within page content. Distinct from MessageStrip (inline validation) and NotificationBanner (system-wide, at page top). Used inside cards, panels, or content sections to highlight important information.",
   "whenToUse": [
     "Highlight an important content-level message inside a card or panel",
@@ -36,7 +36,9 @@
   "contentGuidance": {
     "labelLength": "Title ≤ 60 chars; description ≤ 160 chars",
     "contentRules": "Title states the fact; description gives context or action",
-    "examples": ["Read-only mode — this record has been locked by another user"]
+    "examples": [
+      "Read-only mode — this record has been locked by another user"
+    ]
   },
   "responsiveBehavior": {
     "XL": "Icon + title + description + action",
@@ -45,7 +47,10 @@
     "S": "Title only; expand for description"
   },
   "accessibilityGuidance": {
-    "wcagCriteria": ["WCAG 2.1 · 1.4.1 Use of Color (Level A)", "WCAG 2.1 · 4.1.3 Status Messages (Level AA)"],
+    "wcagCriteria": [
+      "WCAG 2.1 · 1.4.1 Use of Color (Level A)",
+      "WCAG 2.1 · 4.1.3 Status Messages (Level AA)"
+    ],
     "requirements": [
       "role='status' or 'alert' depending on severity",
       "Icon paired with descriptive text",
@@ -53,12 +58,26 @@
       "Focus is not stolen unless critical"
     ]
   },
-  "patterns": ["Inline content notice", "Feature announcement", "Read-only indicator"],
+  "patterns": [
+    "Inline content notice",
+    "Feature announcement",
+    "Read-only indicator"
+  ],
   "compatibility": {
-    "allowedWith": ["Page", "Panel", "Card", "DynamicPage content", "ObjectPageSection"],
-    "forbiddenWith": ["Toolbar", "Table cells", "Dialog title bar"]
+    "allowedWith": [
+      "Page",
+      "Panel",
+      "Card",
+      "DynamicPage content",
+      "ObjectPageSection"
+    ],
+    "forbiddenWith": [
+      "Toolbar",
+      "Table cells",
+      "Dialog title bar"
+    ]
   },
   "exceptions": [],
   "version": "1.149.0",
-  "lastChecked": "2026-07-08"
+  "lastChecked": "2026-07-25"
 }

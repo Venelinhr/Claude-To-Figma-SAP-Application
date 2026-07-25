@@ -1,17 +1,17 @@
 {
   "componentName": "SimpleForm",
   "slug": "simple-form",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/simple-form/",
-  "purpose": "Simplified Form alternative \u2014 automatically lays out Label + Input pairs in responsive columns. Less verbose than Form, more rigid.",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/simple-form",
+  "purpose": "Simplified Form alternative — automatically lays out Label + Input pairs in responsive columns. Less verbose than Form, more rigid.",
   "whenToUse": [
     "Standard label-input form layouts",
     "Settings pages",
     "Object edit screens with mostly text/select fields"
   ],
   "whenNotToUse": [
-    "Custom field layouts \u2014 use Form",
-    "Single-field input \u2014 use Input",
-    "Multi-line data entry \u2014 use multiple Forms"
+    "Custom field layouts — use Form",
+    "Single-field input — use Input",
+    "Multi-line data entry — use multiple Forms"
   ],
   "doRules": [
     "Group related fields with FormContainer",
@@ -41,13 +41,13 @@
   "responsiveBehavior": {
     "XL": "Full size and visibility.",
     "L": "Full size and visibility.",
-    "M": "May condense \u2014 see Fiori responsive design guidelines.",
+    "M": "May condense — see Fiori responsive design guidelines.",
     "S": "May convert to alternative pattern on narrow viewports."
   },
   "accessibilityGuidance": {
     "ariaPattern": "Maps to ARIA pattern appropriate for forms.",
-    "contrast": "\u2265 4.5:1 for text, \u2265 3:1 for borders (WCAG AA).",
-    "keyboard": "Full keyboard support \u2014 Tab to focus, Enter/Space to activate.",
+    "contrast": "≥ 4.5:1 for text, ≥ 3:1 for borders (WCAG AA).",
+    "keyboard": "Full keyboard support — Tab to focus, Enter/Space to activate.",
     "screenReader": "Announced with role and state."
   },
   "patterns": [
@@ -65,5 +65,5 @@
     "See pluginNotes for plugin-specific rendering caveats."
   ],
   "version": "2025.06",
-  "lastChecked": "2026-06-26"
+  "lastChecked": "2026-07-25"
 }

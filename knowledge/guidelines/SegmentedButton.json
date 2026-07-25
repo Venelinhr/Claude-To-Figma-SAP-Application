@@ -1,7 +1,7 @@
 {
   "componentName": "SegmentedButton",
   "slug": "segmented-button",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/segmentedbutton/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/segmentedbutton",
   "purpose": "Group of mutually exclusive button options shown side-by-side. Used for view-mode switching, mode toggling, or single-select from 2-5 options.",
   "whenToUse": [
     "View mode toggle (List / Grid / Map)",
@@ -10,10 +10,10 @@
     "Wizard step jump (rare; usually use IconTabBar)"
   ],
   "whenNotToUse": [
-    "More than 5 options \u2014 use Select or IconTabBar",
-    "Multi-select \u2014 use CheckBox group",
-    "For primary actions \u2014 use Button",
-    "For navigation \u2014 use IconTabBar"
+    "More than 5 options — use Select or IconTabBar",
+    "Multi-select — use CheckBox group",
+    "For primary actions — use Button",
+    "For navigation — use IconTabBar"
   ],
   "doRules": [
     "Mark exactly one segment as selected at all times",
@@ -23,7 +23,7 @@
   ],
   "dontRules": [
     "Do not allow zero-selected state (always one is active)",
-    "Do not exceed 5 segments \u2014 readability degrades",
+    "Do not exceed 5 segments — readability degrades",
     "Do not mix SegmentedButton with Select for the same axis",
     "Do not use SegmentedButton on narrow mobile viewports (use Select)"
   ],
@@ -45,13 +45,13 @@
   "responsiveBehavior": {
     "XL": "Full size and visibility.",
     "L": "Full size and visibility.",
-    "M": "May condense or collapse \u2014 see Fiori responsive design guidelines.",
+    "M": "May condense or collapse — see Fiori responsive design guidelines.",
     "S": "May convert to alternative pattern (Popover, Dialog) on narrow viewports."
   },
   "accessibilityGuidance": {
-    "ariaPattern": "Maps to ARIA pattern appropriate for input \u2014 see SAP Fiori a11y docs.",
-    "contrast": "\u2265 4.5:1 for text, \u2265 3:1 for borders (WCAG AA).",
-    "keyboard": "Full keyboard support \u2014 Tab to focus, Enter/Space to activate.",
+    "ariaPattern": "Maps to ARIA pattern appropriate for input — see SAP Fiori a11y docs.",
+    "contrast": "≥ 4.5:1 for text, ≥ 3:1 for borders (WCAG AA).",
+    "keyboard": "Full keyboard support — Tab to focus, Enter/Space to activate.",
     "screenReader": "Announced with role and state."
   },
   "patterns": [
@@ -69,5 +69,5 @@
     "See pluginNotes for plugin-specific rendering caveats."
   ],
   "version": "2025.06",
-  "lastChecked": "2026-06-26"
+  "lastChecked": "2026-07-25"
 }

@@ -117,7 +117,7 @@
     "Inside Dialog (overlay-in-overlay)",
     "Inside table cells (anchoring fails on scroll)"
   ],
-  "guidelineUrl": "https://experience.sap.com/fiori-design-web/popover/",
+  "guidelineUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/popover",
   "demoKitUrl": "https://sdk.openui5.org/entity/sap.m.Popover",
   "apiUrl": "https://sdk.openui5.org/api/sap.m.Popover",
   "sampleUrls": [

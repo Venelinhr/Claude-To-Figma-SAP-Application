@@ -107,8 +107,8 @@
     "Set step size based on context (1 for integer counts, 0.1 for decimals)"
   ],
   "dontRules": [
-    "Do not use for unbounded numbers \u2014 use Input type=Number",
-    "Do not use for currency \u2014 use specialized currency input"
+    "Do not use for unbounded numbers — use Input type=Number",
+    "Do not use for currency — use specialized currency input"
   ],
   "compatibleComponents": [
     "Label",
@@ -117,7 +117,7 @@
   "incompatiblePatterns": [
     "Without min/max bounds"
   ],
-  "guidelineUrl": "https://experience.sap.com/fiori-design-web/stepinput/",
+  "guidelineUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/stepinput",
   "demoKitUrl": "https://sapui5.hana.ondemand.com/#/entity/sap.m.StepInput",
   "apiUrl": "https://sapui5.hana.ondemand.com/#/api/sap.m.StepInput",
   "sampleUrls": [],

@@ -118,7 +118,7 @@
   ],
   "dontRules": [
     "Do not use a CheckBox when a Switch fits better (instant action)",
-    "Do not use CheckBox for mutually exclusive options \u2014 use RadioButton"
+    "Do not use CheckBox for mutually exclusive options — use RadioButton"
   ],
   "compatibleComponents": [
     "Label",
@@ -129,7 +129,7 @@
   "incompatiblePatterns": [
     "Without text or aria-label"
   ],
-  "guidelineUrl": "https://experience.sap.com/fiori-design-web/checkbox/",
+  "guidelineUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/checkbox",
   "demoKitUrl": "https://sapui5.hana.ondemand.com/#/entity/sap.m.CheckBox",
   "apiUrl": "https://sapui5.hana.ondemand.com/#/api/sap.m.CheckBox",
   "sampleUrls": [],
@@ -137,7 +137,7 @@
   "lastValidated": "2026-06-27",
   "pluginNotes": {
     "textInjectionMethod": "setProperties",
-    "sizingConstraints": "16\u00d716px box + label text. Touch area extends to label.",
+    "sizingConstraints": "16×16px box + label text. Touch area extends to label.",
     "knownIssues": []
   },
   "composition": {

@@ -1,7 +1,7 @@
 {
   "componentName": "MessageBox",
   "slug": "message-box",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/message-box/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/message-box",
   "purpose": "Modal dialog for confirming actions, showing errors, asking yes/no questions. Has predefined types: Confirm, Error, Warning, Information, Success.",
   "whenToUse": [
     "Destructive action confirmation (Delete X?)",
@@ -9,9 +9,9 @@
     "Critical decisions before commit"
   ],
   "whenNotToUse": [
-    "Non-blocking feedback \u2014 use MessageStrip",
-    "Toast-style ephemeral \u2014 use MessageToast",
-    "Multi-step interaction \u2014 use Dialog"
+    "Non-blocking feedback — use MessageStrip",
+    "Toast-style ephemeral — use MessageToast",
+    "Multi-step interaction — use Dialog"
   ],
   "doRules": [
     "Use predefined types (Confirm / Error / Warning / Information / Success)",
@@ -19,7 +19,7 @@
     "Match button intent to action consequence"
   ],
   "dontRules": [
-    "Do not use MessageBox for non-critical info \u2014 use MessageToast",
+    "Do not use MessageBox for non-critical info — use MessageToast",
     "Do not omit confirm button on destructive actions",
     "Do not nest MessageBox"
   ],
@@ -41,13 +41,13 @@
   "responsiveBehavior": {
     "XL": "Full size and visibility.",
     "L": "Full size and visibility.",
-    "M": "May condense \u2014 see Fiori responsive design guidelines.",
+    "M": "May condense — see Fiori responsive design guidelines.",
     "S": "May convert to alternative pattern on narrow viewports."
   },
   "accessibilityGuidance": {
     "ariaPattern": "Maps to ARIA pattern appropriate for feedback.",
-    "contrast": "\u2265 4.5:1 for text, \u2265 3:1 for borders (WCAG AA).",
-    "keyboard": "Full keyboard support \u2014 Tab to focus, Enter/Space to activate.",
+    "contrast": "≥ 4.5:1 for text, ≥ 3:1 for borders (WCAG AA).",
+    "keyboard": "Full keyboard support — Tab to focus, Enter/Space to activate.",
     "screenReader": "Announced with role and state."
   },
   "patterns": [
@@ -60,5 +60,5 @@
     "See pluginNotes for plugin-specific rendering caveats."
   ],
   "version": "2025.06",
-  "lastChecked": "2026-06-26"
+  "lastChecked": "2026-07-25"
 }

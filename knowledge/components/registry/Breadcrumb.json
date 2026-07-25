@@ -131,7 +131,7 @@
     "Inside a Dialog — modal dialogs do not have hierarchy context",
     "On worklist screens where users come from a single 'my queue' entry point"
   ],
-  "guidelineUrl": "https://experience.sap.com/fiori-design-web/breadcrumb/",
+  "guidelineUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/breadcrumb",
   "demoKitUrl": "https://sdk.openui5.org/entity/sap.m.Breadcrumbs",
   "apiUrl": "https://sdk.openui5.org/api/sap.m.Breadcrumbs",
   "sampleUrls": [

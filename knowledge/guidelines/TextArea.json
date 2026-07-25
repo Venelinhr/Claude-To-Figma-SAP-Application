@@ -1,7 +1,7 @@
 {
   "componentName": "TextArea",
   "slug": "text-area",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/text-area/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/textarea",
   "purpose": "A multi-line text input for free-form content. Supports auto-grow, character counting, and value state validation.",
   "whenToUse": [
     "Multi-line free text (comments, descriptions, notes)",
@@ -9,9 +9,9 @@
     "For long-form input in dialogs and forms"
   ],
   "whenNotToUse": [
-    "For single-line input \u2014 use Input",
-    "For structured multi-value \u2014 use MultiInput",
-    "For rich text \u2014 use rich text editor"
+    "For single-line input — use Input",
+    "For structured multi-value — use MultiInput",
+    "For rich text — use rich text editor"
   ],
   "doRules": [
     "Use for multi-line free text (comments, descriptions)",
@@ -20,7 +20,7 @@
     "Enable growing=true to expand as user types"
   ],
   "dontRules": [
-    "Do not use for single-line input \u2014 use Input",
+    "Do not use for single-line input — use Input",
     "Do not omit Label",
     "Do not set maxLength below realistic length"
   ],
@@ -83,5 +83,5 @@
     "growing=true allows auto-resize on content"
   ],
   "version": "2026.Q2",
-  "lastChecked": "2026-06-25"
+  "lastChecked": "2026-07-25"
 }

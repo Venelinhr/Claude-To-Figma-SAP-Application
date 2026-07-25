@@ -1,7 +1,7 @@
 {
   "componentName": "OverflowToolbar",
   "slug": "toolbar-overflow",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/toolbar-overflow/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/toolbar-overflow",
   "purpose": "A horizontal action bar that automatically collapses its less-important actions into an overflow ⋮ menu when the available width is insufficient. Used above tables, in dialogs, and as a section-level action toolbar.",
   "whenToUse": [
     "Above a Table or List to host bulk-action buttons (Add, Delete, Approve, Export)",
@@ -85,5 +85,5 @@
     "Nested inside another OverflowToolbar — combine into a single toolbar"
   ],
   "version": "1.149.0",
-  "lastChecked": "2026-06-26"
+  "lastChecked": "2026-07-25"
 }

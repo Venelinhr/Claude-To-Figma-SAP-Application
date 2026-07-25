@@ -99,7 +99,7 @@
   "incompatiblePatterns": [
     "Inside a Dialog content area as a permanent list — use List instead"
   ],
-  "guidelineUrl": "https://experience.sap.com/fiori-design-web/menu/",
+  "guidelineUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/menu",
   "demoKitUrl": "https://sapui5.hana.ondemand.com/#/entity/sap.m.Menu",
   "apiUrl": "https://sapui5.hana.ondemand.com/#/api/sap.m.Menu",
   "sampleUrls": [],

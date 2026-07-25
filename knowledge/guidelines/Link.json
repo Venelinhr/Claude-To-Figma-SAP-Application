@@ -1,7 +1,7 @@
 {
   "componentName": "Link",
   "slug": "link",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/link/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/link",
   "purpose": "A navigational text element that takes the user to another page, view, or external URL. Distinct from Button (which triggers actions).",
   "whenToUse": [
     "For navigation between pages or to external URLs",
@@ -10,7 +10,7 @@
     "For inline references within prose"
   ],
   "whenNotToUse": [
-    "For actions \u2014 use Button",
+    "For actions — use Button",
     "As primary CTA",
     "When the destination is unclear"
   ],
@@ -21,9 +21,9 @@
     "Use Subtle variant in secondary contexts"
   ],
   "dontRules": [
-    "Do not use Link for actions \u2014 use Button",
+    "Do not use Link for actions — use Button",
     "Do not use \"click here\" as link text",
-    "Do not style arbitrary text blue to imitate Link \u2014 use the component"
+    "Do not style arbitrary text blue to imitate Link — use the component"
   ],
   "layoutGuidance": {
     "placement": "Inline within text; in toolbars; in table cells.",
@@ -32,7 +32,7 @@
     "alignment": "Inherits text alignment."
   },
   "contentGuidance": {
-    "labelLength": "1\u20138 words; descriptive.",
+    "labelLength": "1–8 words; descriptive.",
     "contentRules": [
       "Describe the destination",
       "Avoid \"click here\", \"more\"",
@@ -63,7 +63,7 @@
     },
     {
       "category": "labeling",
-      "requirement": "Link text describes destination \u2014 avoid \"click here\"",
+      "requirement": "Link text describes destination — avoid \"click here\"",
       "wcag": "2.4.4 (A)"
     },
     {
@@ -95,5 +95,5 @@
     "Emphasized variant for key inline references"
   ],
   "version": "2026.Q2",
-  "lastChecked": "2026-06-25"
+  "lastChecked": "2026-07-25"
 }

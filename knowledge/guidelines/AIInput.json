@@ -1,7 +1,7 @@
 {
   "componentName": "AIInput",
   "slug": "joule-input",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/joule/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/joule",
   "purpose": "A single-line text input with AI-assisted suggestions or completion. Visually distinguished by the Joule accent border. User types, the AI proposes completions or corrections inline.",
   "whenToUse": [
     "Field that benefits from AI-assisted autocomplete (names, entities, tags)",
@@ -36,7 +36,9 @@
   "contentGuidance": {
     "labelLength": "Placeholder ≤ 40 chars",
     "contentRules": "Placeholder describes what to type and hints at AI value",
-    "examples": ["\"Describe the supplier — Joule will find matches\""]
+    "examples": [
+      "\"Describe the supplier — Joule will find matches\""
+    ]
   },
   "responsiveBehavior": {
     "XL": "Full width",
@@ -45,7 +47,10 @@
     "S": "Full width"
   },
   "accessibilityGuidance": {
-    "wcagCriteria": ["WCAG 2.1 · 4.1.2 Name, Role, Value (Level A)", "WCAG 2.1 · 3.3.2 Labels or Instructions (Level A)"],
+    "wcagCriteria": [
+      "WCAG 2.1 · 4.1.2 Name, Role, Value (Level A)",
+      "WCAG 2.1 · 3.3.2 Labels or Instructions (Level A)"
+    ],
     "requirements": [
       "aria-describedby points to a hint explaining AI assistance",
       "aria-autocomplete='list' or 'both' as appropriate",
@@ -53,9 +58,23 @@
       "Screen reader announces 'AI-assisted' role on focus"
     ]
   },
-  "patterns": ["AI-assisted search", "Joule prompt entry", "Smart autocomplete field"],
-  "compatibility": {"allowedWith": ["Form", "FormElement", "FilterBar", "Dialog"], "forbiddenWith": ["Table cells (too dense)"]},
+  "patterns": [
+    "AI-assisted search",
+    "Joule prompt entry",
+    "Smart autocomplete field"
+  ],
+  "compatibility": {
+    "allowedWith": [
+      "Form",
+      "FormElement",
+      "FilterBar",
+      "Dialog"
+    ],
+    "forbiddenWith": [
+      "Table cells (too dense)"
+    ]
+  },
   "exceptions": [],
   "version": "1.149.0",
-  "lastChecked": "2026-07-08"
+  "lastChecked": "2026-07-25"
 }

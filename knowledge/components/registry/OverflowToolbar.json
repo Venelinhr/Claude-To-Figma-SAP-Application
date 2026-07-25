@@ -155,7 +155,7 @@
     "As Dialog content (use Dialog footer buttons instead)",
     "Nested inside another OverflowToolbar"
   ],
-  "guidelineUrl": "https://experience.sap.com/fiori-design-web/toolbar-overflow/",
+  "guidelineUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/toolbar-overflow",
   "demoKitUrl": "https://sapui5.hana.ondemand.com/#/entity/sap.m.OverflowToolbar",
   "apiUrl": "https://sapui5.hana.ondemand.com/#/api/sap.m.OverflowToolbar",
   "sampleUrls": [

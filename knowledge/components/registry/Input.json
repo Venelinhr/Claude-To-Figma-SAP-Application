@@ -141,7 +141,7 @@
   "accessibilityRules": [
     {
       "category": "contrast",
-      "requirement": "Border contrast \u2265 3:1 against background",
+      "requirement": "Border contrast ≥ 3:1 against background",
       "wcag": "1.4.11"
     },
     {
@@ -154,18 +154,18 @@
     },
     {
       "category": "status",
-      "requirement": "Value state communicated by color AND icon AND text message \u2014 not color alone"
+      "requirement": "Value state communicated by color AND icon AND text message — not color alone"
     }
   ],
   "doRules": [
     "Pair every Input with a Label component",
-    "Use placeholder text only as a hint \u2014 never as a replacement for label",
+    "Use placeholder text only as a hint — never as a replacement for label",
     "Use valueState=Error with valueStateText message when validation fails",
-    "Use type='Email' or 'Number' for semantic input types \u2014 improves mobile keyboard"
+    "Use type='Email' or 'Number' for semantic input types — improves mobile keyboard"
   ],
   "dontRules": [
     "Do not use placeholder as the field label",
-    "Do not communicate error state by red border alone \u2014 include text",
+    "Do not communicate error state by red border alone — include text",
     "Do not use Input when MultiInput, Select, or DatePicker fits better"
   ],
   "compatibleComponents": [
@@ -179,7 +179,7 @@
     "Inside a non-form container without a Label",
     "Stacked tightly without spacing"
   ],
-  "guidelineUrl": "https://experience.sap.com/fiori-design-web/input-field/",
+  "guidelineUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/input-field",
   "demoKitUrl": "https://sapui5.hana.ondemand.com/#/entity/sap.m.Input",
   "apiUrl": "https://sapui5.hana.ondemand.com/#/api/sap.m.Input",
   "sampleUrls": [

@@ -132,7 +132,7 @@
     "Standalone outside SideNavigation",
     "Inside Toolbar"
   ],
-  "guidelineUrl": "https://experience.sap.com/fiori-design-web/navigationitem/",
+  "guidelineUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/navigationitem",
   "demoKitUrl": "https://sapui5.hana.ondemand.com/#/entity/sap.m.NavigationItem",
   "apiUrl": "https://sapui5.hana.ondemand.com/#/api/sap.m.NavigationItem",
   "sampleUrls": [],

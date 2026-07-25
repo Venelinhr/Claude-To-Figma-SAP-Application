@@ -1,16 +1,16 @@
 {
   "componentName": "TreeItem",
   "slug": "tree-item",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/treeitem/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/treeitem",
   "purpose": "A single row within a Tree. Carries text, optional icon, and expand/collapse affordance for child items.",
   "whenToUse": [
     "Inside a Tree as a tree node",
     "When child items are nested directly under this item via the children property"
   ],
   "whenNotToUse": [
-    "Outside of a Tree \u2014 TreeItem only works inside Tree",
-    "As a list item \u2014 use StandardListItem instead",
-    "For interactive actions \u2014 TreeItem is a row, not an action"
+    "Outside of a Tree — TreeItem only works inside Tree",
+    "As a list item — use StandardListItem instead",
+    "For interactive actions — TreeItem is a row, not an action"
   ],
   "doRules": [
     "Provide text for every TreeItem",
@@ -41,13 +41,13 @@
   "responsiveBehavior": {
     "XL": "Full size and visibility.",
     "L": "Full size and visibility.",
-    "M": "May condense or collapse \u2014 see Fiori responsive design guidelines.",
+    "M": "May condense or collapse — see Fiori responsive design guidelines.",
     "S": "May convert to alternative pattern (Popover, Dialog) on narrow viewports."
   },
   "accessibilityGuidance": {
-    "ariaPattern": "Maps to ARIA pattern appropriate for data display \u2014 see SAP Fiori a11y docs.",
-    "contrast": "\u2265 4.5:1 for text, \u2265 3:1 for borders (WCAG AA).",
-    "keyboard": "Full keyboard support \u2014 Tab to focus, Enter/Space to activate.",
+    "ariaPattern": "Maps to ARIA pattern appropriate for data display — see SAP Fiori a11y docs.",
+    "contrast": "≥ 4.5:1 for text, ≥ 3:1 for borders (WCAG AA).",
+    "keyboard": "Full keyboard support — Tab to focus, Enter/Space to activate.",
     "screenReader": "Announced with role and state."
   },
   "patterns": [
@@ -60,5 +60,5 @@
     "See pluginNotes for plugin-specific rendering caveats."
   ],
   "version": "2025.06",
-  "lastChecked": "2026-06-26"
+  "lastChecked": "2026-07-25"
 }

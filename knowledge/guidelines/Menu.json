@@ -1,7 +1,7 @@
 {
   "componentName": "Menu",
   "slug": "menu",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/menu/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/menu",
   "purpose": "A vertical list of clickable items shown in a Popover-like container. Used to group secondary actions, provide contextual choices, or expose overflow actions. Typically anchored to a MenuButton, IconButton, or context invocation.",
   "whenToUse": [
     "Group 3-10 related actions behind a single button",
@@ -36,7 +36,9 @@
   "contentGuidance": {
     "labelLength": "Item labels ≤ 30 characters; verb-first (e.g. 'Delete', 'Export as CSV')",
     "contentRules": "Actions as short imperative phrases; no punctuation",
-    "examples": ["Edit · Duplicate · Export ▸ · ─ · Delete"]
+    "examples": [
+      "Edit · Duplicate · Export ▸ · ─ · Delete"
+    ]
   },
   "responsiveBehavior": {
     "XL": "Anchored Popover",
@@ -45,7 +47,10 @@
     "S": "May become full-width action sheet at bottom of screen"
   },
   "accessibilityGuidance": {
-    "wcagCriteria": ["WCAG 2.1 · 2.1.1 Keyboard (Level A)", "WCAG 2.1 · 4.1.2 Name, Role, Value (Level A)"],
+    "wcagCriteria": [
+      "WCAG 2.1 · 2.1.1 Keyboard (Level A)",
+      "WCAG 2.1 · 4.1.2 Name, Role, Value (Level A)"
+    ],
     "requirements": [
       "role='menu' with role='menuitem' on items",
       "Focus moves into first item on open; returns to trigger on close",
@@ -53,12 +58,25 @@
       "Destructive items announced with aria-label like 'Delete permanently'"
     ]
   },
-  "patterns": ["MenuButton", "SplitButton overflow", "Context menu on right-click", "Toolbar overflow"],
+  "patterns": [
+    "MenuButton",
+    "SplitButton overflow",
+    "Context menu on right-click",
+    "Toolbar overflow"
+  ],
   "compatibility": {
-    "allowedWith": ["MenuButton", "SplitButton", "IconButton", "Popover"],
-    "forbiddenWith": ["Standalone (always anchored)", "Inside Table cells directly"]
+    "allowedWith": [
+      "MenuButton",
+      "SplitButton",
+      "IconButton",
+      "Popover"
+    ],
+    "forbiddenWith": [
+      "Standalone (always anchored)",
+      "Inside Table cells directly"
+    ]
   },
   "exceptions": [],
   "version": "1.149.0",
-  "lastChecked": "2026-07-08"
+  "lastChecked": "2026-07-25"
 }

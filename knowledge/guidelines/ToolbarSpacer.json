@@ -1,7 +1,7 @@
 {
   "componentName": "ToolbarSpacer",
   "slug": "toolbar-spacer",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/toolbar/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/toolbar-overview",
   "purpose": "An invisible flex-grow element inside a Toolbar (or Bar) that pushes items apart. Used to separate a title on the left from actions on the right, or to distribute space between groups of toolbar items.",
   "whenToUse": [
     "Push a group of items to the right side of a Toolbar",
@@ -36,7 +36,9 @@
   "contentGuidance": {
     "labelLength": "n/a",
     "contentRules": "No visible content",
-    "examples": ["[Title] [Spacer] [Save] [Cancel]"]
+    "examples": [
+      "[Title] [Spacer] [Save] [Cancel]"
+    ]
   },
   "responsiveBehavior": {
     "XL": "Fills available space",
@@ -45,19 +47,34 @@
     "S": "May be ignored if items stack"
   },
   "accessibilityGuidance": {
-    "wcagCriteria": ["WCAG 2.1 · 1.3.1 Info and Relationships (Level A)"],
+    "wcagCriteria": [
+      "WCAG 2.1 · 1.3.1 Info and Relationships (Level A)"
+    ],
     "requirements": [
       "role='presentation' — no semantic meaning for screen readers",
       "Focus order is unaffected (spacer is not focusable)",
       "Does not appear in the accessibility tree"
     ]
   },
-  "patterns": ["Toolbar with left title + right actions", "Bar footer with cancel + submit", "OverflowToolbar layouts"],
+  "patterns": [
+    "Toolbar with left title + right actions",
+    "Bar footer with cancel + submit",
+    "OverflowToolbar layouts"
+  ],
   "compatibility": {
-    "allowedWith": ["Toolbar", "OverflowToolbar", "Bar", "FilterBar"],
-    "forbiddenWith": ["Panel content", "Card content", "Dialog content directly"]
+    "allowedWith": [
+      "Toolbar",
+      "OverflowToolbar",
+      "Bar",
+      "FilterBar"
+    ],
+    "forbiddenWith": [
+      "Panel content",
+      "Card content",
+      "Dialog content directly"
+    ]
   },
   "exceptions": [],
   "version": "1.149.0",
-  "lastChecked": "2026-07-08"
+  "lastChecked": "2026-07-25"
 }

@@ -73,7 +73,7 @@
     "Use AIRichTextEditor as documented in SAP Fiori Design Guidelines"
   ],
   "dontRules": [
-    "Do not use AIRichTextEditor outside its documented placements \u2014 see composition.validParents"
+    "Do not use AIRichTextEditor outside its documented placements — see composition.validParents"
   ],
   "compatibleComponents": [
     "Label",
@@ -82,7 +82,7 @@
     "MultiComboBox"
   ],
   "incompatiblePatterns": [],
-  "guidelineUrl": "https://experience.sap.com/fiori-design-web/joule/",
+  "guidelineUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/joule",
   "demoKitUrl": "",
   "apiUrl": "",
   "sampleUrls": [],

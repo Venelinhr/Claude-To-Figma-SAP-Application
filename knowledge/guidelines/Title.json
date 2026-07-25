@@ -1,7 +1,7 @@
 {
   "componentName": "Title",
   "slug": "title",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/title/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/title",
   "purpose": "Heading text that labels a page, section, or grouped content. Title carries semantic heading level (H1-H6) which screen readers use for navigation; visual size is determined by the level variant.",
   "whenToUse": [
     "Page-level H1 — exactly one per page, inside DynamicPageTitle.slots.heading",
@@ -54,9 +54,9 @@
   },
   "responsiveBehavior": {
     "XL": "Full size at H1 28px / H2 24px / etc.",
-    "L":  "Full size at all levels.",
-    "M":  "Page H1 may scale to 24px on dense mobile-tablet hybrid layouts.",
-    "S":  "Page H1 scales to 20px; sub-headings may be reduced one step."
+    "L": "Full size at all levels.",
+    "M": "Page H1 may scale to 24px on dense mobile-tablet hybrid layouts.",
+    "S": "Page H1 scales to 20px; sub-headings may be reduced one step."
   },
   "accessibilityGuidance": {
     "ariaPattern": "Maps to <h1>-<h6> HTML element via Level/TitleStyle variant. Screen readers expose heading level for navigation.",
@@ -71,11 +71,19 @@
     "Panel — header label",
     "Form — section grouping"
   ],
-  "compatibility": ["DynamicPageTitle", "ObjectPageLayout", "Panel", "Form", "OverflowToolbar", "Toolbar", "Dialog"],
+  "compatibility": [
+    "DynamicPageTitle",
+    "ObjectPageLayout",
+    "Panel",
+    "Form",
+    "OverflowToolbar",
+    "Toolbar",
+    "Dialog"
+  ],
   "exceptions": [
     "The SAP Figma library does not ship a standalone Title instance — the plugin aliases Title to the SAP Label instance for rendered output, OR uses a native text node bound to SAP text style + color variables.",
     "Native text rendering is acceptable as long as the fill is bound to a SAP variable (sapTitleColor or sapList_TextColor)."
   ],
   "version": "2025.06",
-  "lastChecked": "2026-06-26"
+  "lastChecked": "2026-07-25"
 }

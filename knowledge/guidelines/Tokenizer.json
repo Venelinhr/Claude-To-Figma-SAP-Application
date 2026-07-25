@@ -1,7 +1,7 @@
 {
   "componentName": "Tokenizer",
   "slug": "tokenizer",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/tokenizer/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/tokenizer",
   "purpose": "A horizontal container of Token chips. Used to show multiple selected values together with overflow handling and add/remove affordances.",
   "whenToUse": [
     "Display selected filter values from a FilterBar",
@@ -10,9 +10,9 @@
     "Anywhere MultiComboBox or MultiInput's built-in tokenizer is insufficient"
   ],
   "whenNotToUse": [
-    "Single-value input \u2014 use Input",
-    "For action buttons \u2014 use OverflowToolbar",
-    "For navigation tabs \u2014 use IconTabBar"
+    "Single-value input — use Input",
+    "For action buttons — use OverflowToolbar",
+    "For navigation tabs — use IconTabBar"
   ],
   "doRules": [
     "Provide tokens via items[] array",
@@ -21,7 +21,7 @@
     "Bind background to sapBackgroundColor"
   ],
   "dontRules": [
-    "Do not exceed ~10 visible tokens \u2014 use overflow",
+    "Do not exceed ~10 visible tokens — use overflow",
     "Do not mix Token and other content inside Tokenizer",
     "Do not nest Tokenizers",
     "Do not omit the overflow indicator"
@@ -44,13 +44,13 @@
   "responsiveBehavior": {
     "XL": "Full size and visibility.",
     "L": "Full size and visibility.",
-    "M": "May condense or collapse \u2014 see Fiori responsive design guidelines.",
+    "M": "May condense or collapse — see Fiori responsive design guidelines.",
     "S": "May convert to alternative pattern (Popover, Dialog) on narrow viewports."
   },
   "accessibilityGuidance": {
-    "ariaPattern": "Maps to ARIA pattern appropriate for input \u2014 see SAP Fiori a11y docs.",
-    "contrast": "\u2265 4.5:1 for text, \u2265 3:1 for borders (WCAG AA).",
-    "keyboard": "Full keyboard support \u2014 Tab to focus, Enter/Space to activate.",
+    "ariaPattern": "Maps to ARIA pattern appropriate for input — see SAP Fiori a11y docs.",
+    "contrast": "≥ 4.5:1 for text, ≥ 3:1 for borders (WCAG AA).",
+    "keyboard": "Full keyboard support — Tab to focus, Enter/Space to activate.",
     "screenReader": "Announced with role and state."
   },
   "patterns": [
@@ -68,5 +68,5 @@
     "See pluginNotes for plugin-specific rendering caveats."
   ],
   "version": "2025.06",
-  "lastChecked": "2026-06-26"
+  "lastChecked": "2026-07-25"
 }

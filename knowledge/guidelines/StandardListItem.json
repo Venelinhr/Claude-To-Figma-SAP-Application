@@ -1,7 +1,7 @@
 {
   "componentName": "StandardListItem",
   "slug": "list",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/list/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/standardlistitem",
   "purpose": "A standard item in a List with title, description, info, and optional icon. Most common list item type.",
   "whenToUse": [
     "As child of List for simple items",
@@ -9,17 +9,17 @@
     "For notification items"
   ],
   "whenNotToUse": [
-    "For complex layouts \u2014 use CustomListItem",
-    "For tabular data \u2014 use ColumnListItem in a Table"
+    "For complex layouts — use CustomListItem",
+    "For tabular data — use ColumnListItem in a Table"
   ],
   "doRules": [
     "Use Navigation type when item leads to detail",
     "Pair title with optional description and icon",
     "Use info property for trailing status/value",
-    "Keep title short \u2014 truncate with ellipsis if long"
+    "Keep title short — truncate with ellipsis if long"
   ],
   "dontRules": [
-    "Do not put complex layouts inside StandardListItem \u2014 use CustomListItem",
+    "Do not put complex layouts inside StandardListItem — use CustomListItem",
     "Do not omit type when item is interactive",
     "Do not stack multiple long lines"
   ],
@@ -30,7 +30,7 @@
     "alignment": "Icon left, title+description center-left, info right."
   },
   "contentGuidance": {
-    "labelLength": "Title 1\u20138 words.",
+    "labelLength": "Title 1–8 words.",
     "contentRules": [
       "Title bold, description regular",
       "Info trailing right"
@@ -72,5 +72,5 @@
     "When icon is large product image, use ProductListItem instead"
   ],
   "version": "2026.Q2",
-  "lastChecked": "2026-06-25"
+  "lastChecked": "2026-07-25"
 }

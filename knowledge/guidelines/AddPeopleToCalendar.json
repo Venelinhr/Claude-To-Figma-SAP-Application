@@ -1,7 +1,7 @@
 {
   "componentName": "AddPeopleToCalendar",
   "slug": "illustrated-message",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/illustrated-message/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/illustrated-message",
   "purpose": "Empty-state illustration used inside IllustratedMessage for empty planning-calendar or scheduling views where no people/attendees have been added yet.",
   "whenToUse": [
     "Empty planning calendar awaiting attendees",
@@ -36,7 +36,9 @@
   "contentGuidance": {
     "labelLength": "Title ≤ 40 chars; description ≤ 120 chars",
     "contentRules": "Title names the state; description invites action",
-    "examples": ["Title: 'No attendees yet' · Description: 'Add people to see their availability' · Button: 'Add attendees'"]
+    "examples": [
+      "Title: 'No attendees yet' · Description: 'Add people to see their availability' · Button: 'Add attendees'"
+    ]
   },
   "responsiveBehavior": {
     "XL": "Scene / Dialog size",
@@ -45,7 +47,9 @@
     "S": "Spot size"
   },
   "accessibilityGuidance": {
-    "wcagCriteria": ["WCAG 2.1 · 1.1.1 Non-text Content (Level A)"],
+    "wcagCriteria": [
+      "WCAG 2.1 · 1.1.1 Non-text Content (Level A)"
+    ],
     "requirements": [
       "role='img' with descriptive aria-label",
       "Title as semantic heading",
@@ -53,9 +57,21 @@
       "Focus moves to CTA on show"
     ]
   },
-  "patterns": ["Empty planning calendar", "Meeting scheduler onboarding", "Team scheduler"],
-  "compatibility": {"allowedWith": ["IllustratedMessage (only)"], "forbiddenWith": ["Standalone", "Any other parent"]},
+  "patterns": [
+    "Empty planning calendar",
+    "Meeting scheduler onboarding",
+    "Team scheduler"
+  ],
+  "compatibility": {
+    "allowedWith": [
+      "IllustratedMessage (only)"
+    ],
+    "forbiddenWith": [
+      "Standalone",
+      "Any other parent"
+    ]
+  },
   "exceptions": [],
   "version": "1.149.0",
-  "lastChecked": "2026-07-08"
+  "lastChecked": "2026-07-25"
 }

@@ -112,7 +112,7 @@
     "Inside OverflowToolbar",
     "Nested in another Carousel"
   ],
-  "guidelineUrl": "https://experience.sap.com/fiori-design-web/carousel/",
+  "guidelineUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/carousel",
   "demoKitUrl": "https://sdk.openui5.org/entity/sap.m.Carousel",
   "apiUrl": "https://sdk.openui5.org/api/sap.m.Carousel",
   "sampleUrls": [

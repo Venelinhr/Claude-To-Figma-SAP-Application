@@ -119,7 +119,7 @@
   "incompatiblePatterns": [
     "Outside IconTabBar"
   ],
-  "guidelineUrl": "https://experience.sap.com/fiori-design-web/icontabfilter/",
+  "guidelineUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/icontabfilter",
   "demoKitUrl": "https://sapui5.hana.ondemand.com/#/entity/sap.m.IconTabFilter",
   "apiUrl": "https://sapui5.hana.ondemand.com/#/api/sap.m.IconTabFilter",
   "sampleUrls": [],

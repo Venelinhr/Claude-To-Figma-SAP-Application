@@ -1,7 +1,7 @@
 {
   "componentName": "NavigationItem",
   "slug": "navigation-item",
-  "sourceUrl": "https://experience.sap.com/fiori-design-web/side-navigation/",
+  "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/navigationitem",
   "purpose": "An individual entry in the SideNavigation. Can be a top-level Navigation Item or a nested Child Item. Supports selected and expanded states.",
   "whenToUse": [
     "As a child of SideNavigation only",
@@ -15,13 +15,13 @@
   ],
   "doRules": [
     "Use Semibold Duplex for top-level items, Regular for sub-items",
-    "Indicate current page with Selected variant \u2014 3px left bar + tinted bg",
+    "Indicate current page with Selected variant — 3px left bar + tinted bg",
     "Indent child items 24px under parent",
     "Show expand arrow when item has children"
   ],
   "dontRules": [
-    "Do not change text color via direct override \u2014 use Selected variant",
-    "Do not add custom corner radius \u2014 use sapButton_BorderCornerRadius (8px)",
+    "Do not change text color via direct override — use Selected variant",
+    "Do not add custom corner radius — use sapButton_BorderCornerRadius (8px)",
     "Do not skip selected indicator"
   ],
   "layoutGuidance": {
@@ -31,7 +31,7 @@
     "alignment": "Icon left, label center, expand arrow right."
   },
   "contentGuidance": {
-    "labelLength": "1\u20133 words preferred; truncate with ellipsis if longer.",
+    "labelLength": "1–3 words preferred; truncate with ellipsis if longer.",
     "contentRules": [
       "Use nouns for destinations",
       "Consistent capitalization"
@@ -51,7 +51,7 @@
   "accessibilityGuidance": [
     {
       "category": "contrast",
-      "requirement": "Selected state contrast \u2265 4.5:1",
+      "requirement": "Selected state contrast ≥ 4.5:1",
       "wcag": "1.4.3 (AA)"
     },
     {
@@ -88,5 +88,5 @@
     "Two Click-Area variant when item has both navigation and expand"
   ],
   "version": "2026.Q2",
-  "lastChecked": "2026-06-25"
+  "lastChecked": "2026-07-25"
 }

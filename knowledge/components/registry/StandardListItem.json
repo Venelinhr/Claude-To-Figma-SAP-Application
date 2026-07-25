@@ -114,7 +114,7 @@
     "Pair title with optional description and icon"
   ],
   "dontRules": [
-    "Do not put complex layouts inside StandardListItem \u2014 use ColumnListItem"
+    "Do not put complex layouts inside StandardListItem — use ColumnListItem"
   ],
   "compatibleComponents": [
     "List"
@@ -123,7 +123,7 @@
     "Outside List",
     "As table row"
   ],
-  "guidelineUrl": "https://experience.sap.com/fiori-design-web/standardlistitem/",
+  "guidelineUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/standardlistitem",
   "demoKitUrl": "https://sapui5.hana.ondemand.com/#/entity/sap.m.StandardListItem",
   "apiUrl": "https://sapui5.hana.ondemand.com/#/api/sap.m.StandardListItem",
   "sampleUrls": [],
