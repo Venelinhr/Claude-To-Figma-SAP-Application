@@ -89,7 +89,7 @@ Every rule here is a hard constraint — violating it produces an invalid SAP Fi
 | Page-level (Create, Export all) | DynamicPageTitle `actions` slot | Button in OverflowToolbar |
 | List-level (bulk: Delete selected, Export selected) | Table `headerToolbar` | Button in OverflowToolbar |
 | Row-level (inline: Edit, Delete this row) | ColumnListItem `type` or `deleteButton` | NavigationRow or DeleteButton |
-| Finalising (Save draft, Submit) | DynamicPage `footer` slot | Button (Emphasized) in OverflowToolbar |
+| Finalising (Save draft, Submit) | DynamicPage `footer` slot | Button (Type=Primary) in OverflowToolbar |
 | Object-level (Edit, Delete entity) | ObjectPageDynamicHeaderTitle `actions` | Button |
 
 ---

@@ -25,7 +25,9 @@ CODE=$(echo "$INPUT" | jq -r '.tool_input.code // ""')
 PROJ="${CLAUDE_PROJECT_DIR:-$(cd "$(dirname "$0")/../.." && pwd)}"
 
 # Only gate BUILDS (node-creating / cloning). Read-only inspects pass silently.
-echo "$CODE" | grep -qE "createInstance|createFrame|importComponentSetByKeyAsync|\.clone\(|appendChild|insertChild|setProperties" || exit 0
+# Shared build definition — see lib-build-detect.sh.
+source "$(dirname "$0")/lib-build-detect.sh"
+is_build "$CODE" || exit 0
 
 MARKER="$PROJ/.claude/.reference-selected"
 
@@ -47,8 +49,12 @@ fi
 
 # Read the recorded score.
 SCORE=$(jq -r '.score // 0' "$MARKER" 2>/dev/null)
-# Integer compare (floor). Default 0 if unparseable.
-SCORE_INT=$(printf '%.0f' "$SCORE" 2>/dev/null || echo 0)
+# Integer compare, FLOOR. Default 0 if unparseable.
+# Was printf '%.0f', which ROUNDS despite the comment saying floor — so a recorded
+# 59.6 became 60 and passed a ">= 60" gate. Scores are genuinely fractional
+# (score-canonical.js emits e.g. 63.3), so this admitted below-threshold references.
+SCORE_INT=$(printf '%s' "$SCORE" | awk '{ v=$0+0; printf "%d", (v<0 ? -int(-v) : int(v)) }' 2>/dev/null)
+[ -n "$SCORE_INT" ] || SCORE_INT=0
 
 if [ "${SCORE_INT:-0}" -lt 60 ]; then
   if [ ! -f "$PROJ/.claude/.scratch-approved" ]; then

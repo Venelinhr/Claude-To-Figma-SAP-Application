@@ -26,7 +26,7 @@ Two-zone horizontal split card — flight legs on the left, price + CTA on the r
 | Flight leg rows | Auto Layout frames | `flex-grow` connector lines keep pill+icon centered |
 | Duration pill | Native frame | `borderRadius: 12px`, `sapNeutralBackground` fill |
 | Price delta | `ObjectNumber` | Green semantic color for positive delta |
-| CTA button | `Button` | Type=Emphasized, full width in zone B |
+| CTA button | `Button` | Type=Primary, full width in zone B |
 | Baggage icons | `◆ICON/suitcase` | 3× baggage, `◆ICON/flight` for airplane |
 
 ---
@@ -68,5 +68,5 @@ Flight Result Card
     ├── Guarantee Badge           L3  ObjectStatus
     ├── Total Price               L3  ObjectNumber (bold)
     ├── Passenger Count           L3  Text
-    └── CTA Button                L3  SAP Button Emphasized
+    └── CTA Button                L3  SAP Button Type=Primary
 ```

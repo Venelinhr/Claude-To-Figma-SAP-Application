@@ -146,9 +146,9 @@ visual preference for the Figma file, not a UX guideline.
 ```
 Footer (INSTANCE 834×40, at y=592)
 └── ⿻ Actions Compact (SLOT)
-    ├── 1st Action (INSTANCE) — "Previous" Default     (back-action)
-    ├── 2nd Action (INSTANCE) — "Next"     Emphasized  (primary-action)
-    └── 3rd Action (INSTANCE) — "Cancel"   Transparent (safe-escape)
+    ├── 1st Action (INSTANCE) — "Previous" Tertiary  (back-action)
+    ├── 2nd Action (INSTANCE) — "Next"     Primary   (primary-action)
+    └── 3rd Action (INSTANCE) — "Cancel"   Tertiary  (safe-escape)
 ```
 
 **Plugin rule: Footer always HUGs vertical**. The 40px is canonical for
@@ -161,21 +161,26 @@ on the Footer FRAME so it grows with its children.
 The intent field on a footer button maps to a SAP Button `Type` variant.
 The spec can override with `props.type` for custom cases.
 
+**Live SAP Web UI Kit Button Type values:**
+`Primary` / `Secondary` / `Accept` / `Reject` / `Attention` / `Tertiary`
+There is NO `Emphasized`, `Transparent`, `Negative`, `Ghost`, or `Default` in the kit — those are
+UI5 API vocabulary and will throw if passed to `setProperties`.
+
 | Intent              | SAP Button Type | Visual                                | Used for               |
 |---------------------|-----------------|---------------------------------------|------------------------|
-| `primary-action`    | `Emphasized`    | Solid blue fill, white text           | Next, Save, Submit, OK |
-| `destructive`       | `Negative`      | Solid red fill, white text            | Delete, Remove         |
-| `back-action`       | `Default`       | White fill, grey border, blue text    | Previous, Back         |
-| `safe-escape`       | `Transparent`   | No fill, no border, blue text         | Cancel, Close          |
-| `secondary-action`  | `Default`       | White fill, grey border, blue text    | Generic secondary      |
-| `(no intent)`       | `Transparent`   | (safest default)                      | Fallback               |
+| `primary-action`    | `Primary`       | Solid blue fill, white text           | Next, Save, Submit, OK |
+| `destructive`       | `Reject`        | Solid red fill, white text            | Delete, Remove         |
+| `back-action`       | `Tertiary`      | No fill, no border, blue text         | Previous, Back         |
+| `safe-escape`       | `Tertiary`      | No fill, no border, blue text         | Cancel, Close          |
+| `secondary-action`  | `Tertiary`      | No fill, no border, blue text         | Generic secondary      |
+| `(no intent)`       | `Tertiary`      | (safest default)                      | Fallback               |
 
-**Override**: `{ "intent": "back-action", "props": { "type": "Ghost" } }` →
-explicit `props.type` wins over the intent's default.
+**Override**: `{ "intent": "back-action", "props": { "type": "Secondary" } }` →
+explicit `props.type` wins over the intent's default. The override must also be a valid kit value.
 
 **Designer reference**: this map matches the visual treatment in the
-reference Dialog at node 138:17478 — Previous (Default w/ border) +
-Next (Emphasized blue) + Cancel (Transparent no-border).
+reference Dialog at node 138:17478 — Previous (Tertiary) +
+Next (Primary, blue) + Cancel (Tertiary, no border).
 
 This DOES use the SAP Footer instance. The fact that we couldn't easily
 mutate the action labels via Plugin API means the designer probably

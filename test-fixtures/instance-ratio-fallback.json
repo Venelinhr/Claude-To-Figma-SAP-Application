@@ -1,0 +1,24 @@
+{
+  "type": "FRAME",
+  "name": "Purchase Orders",
+  "children": [
+    { "type": "FRAME", "name": "Header" },
+    { "type": "FRAME", "name": "Nav" },
+    {
+      "type": "FRAME",
+      "name": "Content",
+      "children": [
+        { "type": "FRAME", "name": "Toolbar" },
+        { "type": "FRAME", "name": "Divider" },
+        { "type": "TEXT", "name": "Purchase Orders" },
+        { "type": "TEXT", "name": "Filter" },
+        { "type": "RECTANGLE", "name": "Button bg" },
+        { "type": "RECTANGLE", "name": "Button bg" },
+        { "type": "FRAME", "name": "Row" },
+        { "type": "FRAME", "name": "Row" },
+        { "type": "TEXT", "name": "Status" },
+        { "type": "INSTANCE", "name": "Button" }
+      ]
+    }
+  ]
+}

@@ -452,9 +452,9 @@ This is the last action of EVERY build. Always. No exceptions.
 | sapList_TextColor | #131E29 | 0.075, 0.118, 0.161 | Body / table text |
 | sapContent_LabelColor | #556B82 | 0.333, 0.420, 0.510 | Labels / captions |
 | sapButton_Emphasized_Background | #0070F2 | 0, 0.439, 0.949 | Primary button bg |
-| sapPositiveTextColor | #256F3A | 0.145, 0.435, 0.227 | Success text |
-| sapCriticalTextColor | #A8650B | 0.659, 0.396, 0.043 | Warning text |
-| sapNegativeTextColor | #BD2920 | 0.741, 0.161, 0.125 | Error text / asterisk |
+| sapPositiveTextColor | #1E8F56 | 0.118, 0.561, 0.337 | Success text |
+| sapCriticalTextColor | #DF7B01 | 0.875, 0.482, 0.004 | Warning text |
+| sapNegativeTextColor | #BB0000 | 0.733, 0, 0 | Error text / asterisk |
 | sapLinkColor | #0064D9 | 0, 0.392, 0.851 | Links / interactive text |
 
 # TYPOGRAPHY ROLES (`[typo:role]` — on EVERY native `createText()` node name)

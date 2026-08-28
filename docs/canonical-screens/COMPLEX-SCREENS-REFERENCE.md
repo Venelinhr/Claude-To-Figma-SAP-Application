@@ -51,7 +51,7 @@ Infrastructure              [network icon, collapsed]
 | `sapList_TextColor` | `#131E29` | all labels |
 | `sapList_SelectionBackgroundColor` | `#EBF8FF` | selected row fill |
 | `sapList_HighlightColor` | `#0064D9` | 3px selected left bar |
-| `sapScrollBar_FaceColor` | `#7B91A8` | scroll thumb |
+| `sapScrollBar_FaceColor` | `#9EA8B1` | scroll thumb |
 | `sapButton_BorderCornerRadius` | 8px | nav item pill radius |
 
 **Layout:** COLUMN, gap 4; item height 32, pitch 36px (32+4 gap); top-level pl 16/pr 6 gap 8; sub-items pl 40 (indent aligns under parent). Font: `72 Semibold Duplex` 600 (parents/selected), `72 Regular` 400 (sub-items), 14px.
@@ -78,7 +78,7 @@ List Item (122)            3px green success rail + ObjectStatus(Success) + "Val
 ### Components
 - `Dynamic Page Header` (`30:2115`) — Page Title + Subtitle + visible overflow (…)
 - `Icon Tab Bar` (`49:2571`) Inline/S · `Tab` (`49:2636`) — Steps selected
-- `Button` Transparent "Hide Filters" (filter icon + blue label) · `Icon Button` (`2:97`) Sort/Settings/Clear/Add — all Tertiary/Compact blue
+- `Button` Type=Tertiary "Hide Filters" (filter icon + blue label) · `Icon Button` (`2:97`) Sort/Settings/Clear/Add — all Tertiary/Compact blue
 - `Select` (`2:156`, Compact) · `Input` (`2:7`, Compact) · `Object Status`(Success, `sys-enter-2` green check) · `Object Attribute` (`49:2587`, key-only rows)
 - List Item = custom composite "Validate System List Item" (3px success border, selected blue bg)
 

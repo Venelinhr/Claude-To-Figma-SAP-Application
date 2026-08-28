@@ -1,0 +1,22 @@
+{
+  "type": "FRAME",
+  "name": "L1 Purchase Orders [sapBackgroundColor]",
+  "children": [
+    { "type": "INSTANCE", "name": "ShellBar" },
+    { "type": "INSTANCE", "name": "SideNavigation" },
+    {
+      "type": "FRAME",
+      "name": "L2 Content",
+      "children": [
+        { "type": "INSTANCE", "name": "DynamicPageTitle" },
+        { "type": "INSTANCE", "name": "FilterBar" },
+        { "type": "INSTANCE", "name": "Button" },
+        { "type": "INSTANCE", "name": "Button" },
+        { "type": "INSTANCE", "name": "Table" },
+        { "type": "INSTANCE", "name": "ObjectStatus" },
+        { "type": "INSTANCE", "name": "ObjectStatus" },
+        { "type": "TEXT", "name": "Title [typo:heading]" }
+      ]
+    }
+  ]
+}

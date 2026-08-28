@@ -66,7 +66,7 @@
 | **Dialog** | Real SAP Dialog → `detachInstance()` → inject Header title via text node re-find after await, inject Wizard Page Header via `insertChild`, inject content into `⿻ Content` slot, replace SAP Footer with native Footer + fresh SAP Button instances |
 | **Wizard steps** | Native `.base/Wizard Step` VERTICAL frames (72px, stretch-to-fill). Active = solid blue circle + 3px Active Plate. Visited = white + 2px blue border + blue number. Future = white + 1px grey border + grey text |
 | **Step connectors** | 1px-tall horizontal lines, `layoutGrow=1`, color = blue (after visited/active) or grey (before future) |
-| **Footer buttons** | Intent → variant map: `back-action`=Default, `primary-action`=Emphasized, `safe-escape`=Transparent, `destructive`=Negative. `props.type` override available |
+| **Footer buttons** | Intent → kit `Type` map: `back-action`=Tertiary, `primary-action`=Primary, `safe-escape`=Tertiary, `destructive`=Reject. `props.type` override available (must also be a valid kit value) |
 | **Footer height** | Always HUGs — `layoutSizingVertical='HUG'` — adapts to button size (26px Compact / 32px Cozy) |
 | **Table** | Native FRAME when spec has columns/items. SAP Table instance fallback only for placeholder. Column widths from `props.width` (% or px). `slot.layoutSizingHorizontal='FILL'` on the SAP List slot |
 | **Text rendering** | Text in Panel children + Table cells: direct inline `figma.createText()` at the call site — bypasses buildTree Text handler font-race. `makeText()` is now `async` with `setTextSafe()` |
@@ -87,7 +87,7 @@
 |---|---|
 | **Dialog** | Fake FRAME → Real SAP detached instance with real children |
 | **Wizard steps** | 24px native circles → 32px `.base/Wizard Step` frames with Active Plate, correct state colors, properly sized connectors |
-| **Footer** | All buttons Emphasized → Intent-mapped (Default / Emphasized / Transparent). HUG height |
+| **Footer** | All buttons one type → Intent-mapped kit `Type` (Primary / Secondary / Tertiary). HUG height |
 | **Table** | SAP demo Sales Orders → Native table with spec data |
 | **Text** | Silent failures → Direct inline render bypassing the broken handler |
 | **OverflowToolbar** | Had border → Borderless (correct SAP convention) |

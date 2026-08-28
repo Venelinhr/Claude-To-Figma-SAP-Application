@@ -197,15 +197,15 @@ The Kit provides components. Canonicals provide proven business compositions. Us
 4. **[sapToken] fill tags on every fill layer.** No raw hex. No token tag on transparent layout frames (Bind will paint them).
 5. **Compact form factor.** All instances unless user explicitly asks for Cozy. Never switch to Cozy to fix a11y warnings.
 6. **One Primary button per action group.** Cancel/Close = Tertiary. Row/toolbar icons = Tertiary. Secondary only when a bordered alternative is shown.
-7. **Divider frames in Schedule dialog clones: KEEP.** The SAP canonical uses them — do NOT replace with strokes. In custom layouts: use strokeBottomWeight on parent instead.
+7. **Dividers.** NEW builds: 1px lines = stroke on the parent (`strokeBottomWeight=1`), never `createFrame()`. EXCEPTION — cloned canonical/gold-standard nodes (e.g. the Schedule dialog) KEEP their existing 1px native `Divider` frames: PM-approved, never convert to strokes. `/sap-fix` may flag them, never remove them.
 8. **32px side padding. 16px rhythm between elements. 8px tight / 24px section / 32px page.** Never random values.
 9. **Frame placement: BESIDE rightmost at y=200.** Never maxY+200 (makes frames invisible far below).
 10. **Responsive layout: when changing screen width, resize ALL child elements proportionally.** Recalculate form widths (total - padding - gaps - fixed panels). If a canonical wizard header is designed for 834px — resize the SCREEN to 834px, not the wizard to 960px. Wizard steps at 834px = 4×178.5px with 8px gaps and 48px L/R padding — never stretch to a different width (proportions break).
 11. **Shell = ShellBar + 256px SideNavigation.** Clone verbatim on every screen. Never improvise chrome.
-11. **Actions ON the object.** Contextual menu on the selected node — never in a distant toolbar.
-12. **Clone canonicals for complex compositions.** Dialog, Wizard header, Schedule forms — always duplicate the canonical base. Never build from scratch.
-13. **Two-line stacked text = counterAxisAlignItems: CENTER** on the parent frame.
-14. **Validated Figma URL at the end of every build** (`node-id=NNNN-NNNNN` hyphen format).
+12. **Actions ON the object.** Contextual menu on the selected node — never in a distant toolbar.
+13. **Clone canonicals for complex compositions.** Dialog, Wizard header, Schedule forms — always duplicate the canonical base. Never build from scratch.
+14. **Two-line stacked text = counterAxisAlignItems: CENTER** on the parent frame.
+15. **Validated Figma URL at the end of every build** (`node-id=NNNN-NNNNN` hyphen format).
 
 ---
 
@@ -224,7 +224,7 @@ The Kit provides components. Canonicals provide proven business compositions. Us
 
 All states: 560px · `border-radius: 8px` · Labels ABOVE fields · Required `*` = `[sapNegativeColor]` · Footer: Tertiary "Cancel" + Primary "Save schedule" (no third button).
 
-**Divider frames (1px) = CORRECT in Schedule clones. Keep them.**
+**Dividers (hard rule 7):** cloned canonical/gold-standard nodes (e.g. this Schedule dialog) KEEP their existing 1px native `Divider` frames — PM-approved, never convert to strokes. NEW builds use stroke on the parent (`strokeBottomWeight=1`) instead.
 
 | State | Recurrence | End Date | Node |
 |---|---|---|---|
@@ -286,8 +286,8 @@ Report these proactively and offer to fix:
 | Native shape as a UI component | "Native frame where a Kit instance should be" | Assets panel → search → drag real instance |
 | More than 1 Primary button | "Two primaries — only one allowed" | Change others to Tertiary |
 | "Tab Text" in IconTabBar | "Placeholder labels detected" | Set real labels via properties panel |
-| Divider frame in custom layout | "Native Divider in custom layout — use stroke instead" | strokeBottomWeight=1 on parent |
-| Divider frame in Schedule clone | ✅ CORRECT — keep it | Do NOT replace with strokes |
+| Divider frame in a NEW build | "Native Divider in a new build — use stroke instead" | strokeBottomWeight=1 on parent |
+| Divider frame in a cloned canonical | ✅ CORRECT — flag only, keep it | Do NOT convert to strokes, do NOT remove |
 | Form Factor set on ObjectStatus / Avatar | "No Form Factor prop — will throw" | Remove the property |
 | Dark hex fill (#1D2D3E, #1B3346…) | "Dark fill — no SAP variable, breaks Bind" | Replace with Horizon Light token tag |
 | Two-line stack not centred | "Stacked text should be CENTER aligned" | counterAxisAlignItems: CENTER on parent |
@@ -307,7 +307,7 @@ Report these proactively and offer to fix:
 - [ ] All fill layers: `[sapToken]` tag — zero raw hex, zero tags on transparent frames
 - [ ] All native text layers: `[typo:role]` tag
 - [ ] One Primary per action group; rest Tertiary/Secondary
-- [ ] Divider frames kept in Schedule clones; strokes on parent in custom layouts
+- [ ] Dividers: strokes on parent in NEW builds; existing 1px `Divider` frames KEPT in cloned canonicals (flag only, never remove)
 - [ ] 32px padding · counterAxisAlignItems:CENTER on 2-line stacks
 - [ ] Frame placed BESIDE rightmost at y=200
 - [ ] Every layer renamed — zero layers named "Frame", "Frame 1", "Group", or "Rectangle"

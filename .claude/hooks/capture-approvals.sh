@@ -30,8 +30,26 @@ if echo "$PROMPT" | grep -qE "(architecture|information architecture|\bia\b|floo
 fi
 
 # ── Wireframe / plan approval ────────────────────────────────────────────────
-# Short, deliberate approval phrases. Kept tight to avoid capturing incidental "ok".
-if echo "$PROMPT" | grep -qE "(^|[^a-z])(approve|approved|go ahead|build it|looks good|lgtm|ship it|proceed|yes,? build|do it|make it)([^a-z]|$)" \
+# TIGHTENED 2026-08-28. The previous single regex treated bare "do it", "make it"
+# and "proceed" as wireframe approval. Those are ordinary English — verified false
+# positives included "do it now, run the tests" and "make it faster", each of which
+# silently satisfied Gate 3 for the NEXT build. That is precisely the self-approval
+# the marker exists to prevent, arriving through the user's own unrelated words.
+#
+# Approval words are now split by strength:
+#   STRONG — unambiguous, accepted standalone.
+#   WEAK   — everyday phrases, accepted ONLY alongside build/wireframe context.
+# A negation anywhere in the prompt ("don't approve", "not approved") vetoes both.
+
+STRONG='(approve|approved|lgtm|ship it|build it|yes,? build)'
+WEAK='(go ahead|looks good|proceed|do it|make it)'
+CONTEXT='(wireframe|layer structure|layer tree|floorplan|layout|screen|build|gate|mockup|design)'
+NEGATION='(do ?n.?t|do not|never|not) +(approve|approved|build|proceed|go ahead)|no,? +(approve|build)'
+
+if echo "$PROMPT" | grep -qE "$NEGATION"; then
+  :   # explicit refusal — write nothing
+elif echo "$PROMPT" | grep -qE "(^|[^a-z])$STRONG([^a-z]|$)" \
+   || { echo "$PROMPT" | grep -qE "(^|[^a-z])$WEAK([^a-z]|$)" && echo "$PROMPT" | grep -qE "$CONTEXT"; } \
    || echo "$PROMPT" | grep -qE "wireframe.*(approve|ok|good|yes)|(approve|ok|yes).*wireframe" \
    || echo "$PROMPT" | grep -qE "layer structure.*(approve|ok|good|yes)|(approve|ok|yes).*layer structure"; then
   echo "{\"approvedBy\":\"user-prompt\",\"at\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || echo session)\"}" > "$PROJ/.claude/.wireframe-approved"

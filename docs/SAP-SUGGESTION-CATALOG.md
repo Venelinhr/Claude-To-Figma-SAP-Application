@@ -63,7 +63,7 @@ actions into the overflow menu", "Clone the approved Orders List and inject the 
 
 | Observed | Suggest | Why |
 |---|---|---|
-| >1 Emphasized button in a group | **One primary; rest Secondary/Tertiary** | SAP allows a single primary action |
+| >1 `Primary` button in a group | **One Primary; rest Secondary/Tertiary** | SAP allows a single primary action |
 | Destructive action inline + prominent | **Move to overflow menu** | Prevents accidental data loss |
 | Text buttons for row actions | **Icon-only IconButtons (Tertiary)** | Compact, less clutter in dense rows |
 | Scattered related actions | **Group into a toolbar / overflow** | Consistent action affordance |

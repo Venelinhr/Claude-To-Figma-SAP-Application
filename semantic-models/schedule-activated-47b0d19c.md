@@ -31,7 +31,7 @@ floorplan: Confirmation Dialog (dark shell)
 | B | ◆ICON/appointment-2 | 16px | sapContent_ContrastTextColor |
 | B | Timer pill | amber bg | sapCriticalTextColor bg |
 | C | Button ×3 | Type=Default, icon+label | sapButton_Background |
-| C | Button Deactivate | Type=Tertiary/Transparent | sapButton_TextColor |
+| C | Button Deactivate | Type=Tertiary | sapButton_TextColor |
 
 ## Token Map
 - Page bg: #1A2430 (dark shell — no standard token; use sapShell_Background)

@@ -19,7 +19,9 @@ CODE=$(echo "$INPUT" | jq -r '.tool_input.code // ""')
 PROJ="${CLAUDE_PROJECT_DIR:-$(cd "$(dirname "$0")/../.." && pwd)}"
 
 # Only stamp on a BUILD (node-creating / cloning). Read-only inspects don't count.
-echo "$CODE" | grep -qE "createInstance|createFrame|importComponentSetByKeyAsync|\.clone\(|appendChild|insertChild|setProperties" || exit 0
+# Shared build definition — see lib-build-detect.sh.
+source "$(dirname "$0")/lib-build-detect.sh"
+is_build "$CODE" || exit 0
 
 mkdir -p "$PROJ/.claude" 2>/dev/null
 printf 'build %s\n' "$(date -u 2>/dev/null || echo session)" > "$PROJ/.claude/.last-build-node" 2>/dev/null

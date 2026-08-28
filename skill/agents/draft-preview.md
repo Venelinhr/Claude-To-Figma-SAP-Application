@@ -144,7 +144,7 @@ Refuse the change and explain when:
 
 1. **Component not in registry** — e.g. "add a Carousel" (Carousel isn't in `knowledge/components/registry/`). Reply: *"Carousel isn't in the registered SAP component set for this project. Closest available: [List | Card | IconTabBar]. Which would you like?"*
 
-2. **Forbidden combination** — e.g. FilterBar on a worklist (worklists don't use FilterBar — they show a pre-scoped queue). Or multiple Emphasized buttons in one toolbar (SAP allows only one primary action per toolbar). Reply naming the rule violated.
+2. **Forbidden combination** — e.g. FilterBar on a worklist (worklists don't use FilterBar — they show a pre-scoped queue). Or multiple `Primary` buttons in one toolbar (SAP allows only one primary action per toolbar). Reply naming the rule violated.
 
 3. **Raw hex / pixel value** — e.g. "make the header #1E88E5" or "set padding to 24px". Reply: *"Spec uses SAP semantic tokens, not raw values. Pick one of: sapButton_TextColor, sapTitleColor, sapBackgroundColor, …"* (or the spacing-token equivalent when that lands).
 

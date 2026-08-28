@@ -37,7 +37,7 @@ builds. An "improve this screen" request goes through the same discipline as a n
 - [ ] **Real SAP instances only** — `importComponentSetByKeyAsync` → `createInstance()`. Never `createFrame()` for a component (Button, Input, Select, Table, ObjectStatus, IconTabBar, ShellBar, etc.)
 - [ ] **SAP text styles** — every text node has a `[typo:role]` name tag. NEVER raw `fontName:{family:'72'}` alone. (Raw 72 = Bind fails.)
 - [ ] **SAP tokens** — every fill/stroke is a `[sapToken]`-tagged SAP variable. Never raw hex.
-- [ ] **No Divider frames** — 1px lines are `strokeBottomWeight`/`strokeTopWeight` + stroke on the parent, never a native "Divider" frame.
+- [ ] **Dividers** — NEW builds: 1px lines = stroke on the parent (`strokeBottomWeight`/`strokeTopWeight`), never `createFrame()`. EXCEPTION — cloned canonical/gold-standard nodes (e.g. the Schedule dialog) KEEP their existing 1px native `Divider` frames: PM-approved, never convert to strokes. `/sap-fix` may flag them, never remove them.
 - [ ] **Compact form factor** by default on all instances. Never switch to Cozy to silence a11y warnings.
 - [ ] **Two-line stacked text** → `counterAxisAlignItems='CENTER'`.
 - [ ] **32px side padding** on containers (never 48).

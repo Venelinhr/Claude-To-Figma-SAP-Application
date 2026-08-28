@@ -101,8 +101,10 @@ Example: `t.name = 'Order ID [typo:labelBold] [sapLinkColor]'`
 HR-1  Side padding = 32px always  (paddingLeft = paddingRight = 32 — NEVER 48)
 HR-2  IconButtons  = Type:Tertiary always  (view/edit/delete/toolbar/nav icons)
 HR-3  Two-line stacked text = counterAxisAlignItems:'CENTER' always  (never MIN/MAX)
-HR-4  Dividers = stroke settings on parent frame  (NEVER createFrame() for 1px lines)
+HR-4  Dividers — NEW builds: 1px lines = stroke on the parent (strokeBottomWeight=1), never createFrame().
        → node.strokeBottomWeight=1 / strokeTopWeight=1 + node.strokes=[{type:'SOLID',...}]
+       EXCEPTION — cloned canonical/gold-standard nodes (e.g. the Schedule dialog) KEEP their existing
+       1px native "Divider" frames: PM-approved, never convert to strokes. /sap-fix may flag them, never remove them.
 HR-5  Form Factor = Compact always  (every SAP instance — NEVER switch to Cozy to fix a11y tap-target warnings)
 ```
 

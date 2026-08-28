@@ -208,5 +208,26 @@ else
 fi
 
 echo ""
+echo "$(printf '─%.0s' {1..60})"
+echo "Instance-ratio detector (silent native-frame fallback)"
+echo "$(printf '─%.0s' {1..60})"
+# WIRED 2026-08-28. lint-instance-ratio.js was an ORPHAN — no hook, no test — despite
+# targeting the single most damaging failure in this project's history: an SAP import
+# fails, the build silently falls back to createFrame(), and the result "looks nothing
+# like SAP". docs/SAP-INVARIANT-ARCHITECTURE.md flagged it as unwired. Now it is tested.
+if node build/lint-instance-ratio.js test-fixtures/instance-ratio-healthy.json >/dev/null 2>&1; then
+  echo "  ✓ healthy SAP screen correctly PASSES the instance-ratio check"
+else
+  echo -e "${RED}lint-instance-ratio.js rejected a known-good SAP frame — detector mis-calibrated${NC}"
+  exit 1
+fi
+if node build/lint-instance-ratio.js test-fixtures/instance-ratio-fallback.json >/dev/null 2>&1; then
+  echo -e "${RED}lint-instance-ratio.js PASSED a native-frame fallback screen — detector not enforcing${NC}"
+  exit 1
+else
+  echo "  ✓ native-frame fallback correctly FAILS (root cause #3 now detected)"
+fi
+
+echo ""
 echo "All specs within baseline. Pipeline is clean."
 exit 0

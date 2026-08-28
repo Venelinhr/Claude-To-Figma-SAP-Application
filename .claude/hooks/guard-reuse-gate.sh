@@ -24,8 +24,11 @@ CODE=$(echo "$INPUT" | jq -r '.tool_input.code // ""')
 
 # ── Detect a BUILD (vs a read-only inspect / tweak) ──
 # Includes .clone( — RULE 28's preferred clone-canonical path (was previously blind to it).
+# Shared build definition — see lib-build-detect.sh. The old 4-token grep let a
+# build that only appended/mutated existing nodes bypass the reuse gate entirely.
+source "$(dirname "$0")/lib-build-detect.sh"
 IS_BUILD=false
-echo "$CODE" | grep -qE "importComponentSetByKeyAsync|createInstance|createFrame|\.clone\(" && IS_BUILD=true
+is_build "$CODE" && IS_BUILD=true
 [ "$IS_BUILD" = true ] || exit 0
 
 blockmsg() {

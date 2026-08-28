@@ -172,7 +172,7 @@ Text = native `figma.createText()` with family `72`, tagged `[typo:role]` (see �
 > | Schedule Op — State C End Date (FULL) | `9:1550` | 560 | full expanded: Monthly + end date |
 > | Schedule Op — State D EndOnly | `9:1609` | 560 | recurrence off + end date on |
 >
-> Cross-cutting rules: Dividers = native frames named `Divider` (sapList_BorderColor) on the Schedule dialog; list-report rows use a 3px vertical `Success Border` accent instead. Progress Row = native 40×12 green bar + ObjectStatus Success; SegmentedButton always HUG; Selects in schedule dialog = 80px; conditional sub-sections toggled via `visible` (`hidden=true` until active); recurrence wrapper = `RecurrenceExpanded` when on / `RecWrap` h48 when off.
+> Cross-cutting rules: Dividers — NEW builds use stroke on the parent (`strokeBottomWeight=1`), never `createFrame()`; EXCEPTION — cloned canonical/gold-standard nodes (e.g. the Schedule dialog) KEEP their existing 1px native `Divider` frames (sapList_BorderColor): PM-approved, never convert to strokes, `/sap-fix` may flag them but never remove them. List-report rows use a 3px vertical `Success Border` accent instead. Progress Row = native 40×12 green bar + ObjectStatus Success; SegmentedButton always HUG; Selects in schedule dialog = 80px; conditional sub-sections toggled via `visible` (`hidden=true` until active); recurrence wrapper = `RecurrenceExpanded` when on / `RecWrap` h48 when off.
 >
 > **Also mirrored in file `3UN4OKl1PVlloiKccyYPOe`** ("Claude to Figma SAP Application") — same set, valid clone source. **Design System Governance Console** (most complex): file `p7zm5EMBk5DRRZdxNeJ4f5` nodes `197:107995` / `197:123144` — ShellBar + AppLayout(SideNav 224 w/ Quick Create footer) + DynamicPageHeader(breadcrumb) + Bar(SegmentedButton + SplitButton) + IconTabBar + DynamicSideContent(Main 848 Panel w/ nested Table + Side 320 Panel w/ Calendar + MessageStrip + List).
 
@@ -249,7 +249,7 @@ Tag any fill/stroke layer `<desc> [sapTokenName]`; set the hex below so the plug
 | sapList_SelectionBackgroundColor | `#EBF8FF` | Selected row bg (blue tint) |
 | sapList_SelectionBorderColor | `#0064D9` | Selected/active outline |
 | sapTitleColor | `#1D2D3E` | Page title / H1 |
-| sapTextColor | `#1D2D3E` | Body text (general) |
+| sapTextColor | `#131E29` | Body text (general) |
 | sapContent_LabelColor | `#556B82` | Metadata labels |
 | sapLinkColor | `#0064D9` | Links / breadcrumb |
 | sapPositiveTextColor | `#1E8F56` | Success text (∞ Indefinitely) |

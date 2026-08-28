@@ -16,8 +16,11 @@ echo "$TOOL" | grep -qi "use_figma" || exit 0
 CODE=$(echo "$INPUT" | jq -r '.tool_input.code // ""')
 PROJ="${CLAUDE_PROJECT_DIR:-$(cd "$(dirname "$0")/../.." && pwd)}"
 
-# Detect a BUILD (node-creating / cloning). Read-only inspects pass.
-echo "$CODE" | grep -qE "createInstance|createFrame|importComponentSetByKeyAsync|\.clone\(|appendChild|insertChild" || exit 0
+# Detect a BUILD (node-creating / cloning / mutating). Read-only inspects pass.
+# Shared definition — see lib-build-detect.sh. Previously this grep omitted
+# setProperties, so a screen rebuilt purely through property mutation skipped Gate 3.
+source "$(dirname "$0")/lib-build-detect.sh"
+is_build "$CODE" || exit 0
 
 # Wireframe approval is independent (written only by capture-approvals.sh on a user prompt).
 if [ ! -f "$PROJ/.claude/.wireframe-approved" ]; then

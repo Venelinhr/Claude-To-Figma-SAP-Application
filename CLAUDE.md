@@ -66,7 +66,7 @@ cd "/Users/C5408360/Downloads/Task to Figma SAP layouts components" && claude
 | **Update registry** | `/sap-registry-update <ComponentName>` | Fix variant props, add slots, correct tokens |
 | **Figma Agent skill** | See setup below ↓ | SAP designer inside Figma's AI Agent (NOT a Claude Code command) |
 
-**`/sap-screen` encodes ALL 31 rules.** It enforces: dark-ref→build-light, real SAP instances only, wireframe hard gate, L1-L5 naming, 32px padding, no Divider frames, no spacer frames, Compact always, one Primary button, FILL after appendChild, validated URL at end.
+**`/sap-screen` encodes ALL 31 rules.** It enforces: dark-ref→build-light, real SAP instances only, wireframe hard gate, L1-L5 naming, 32px padding, no NEW Divider frames (cloned canonicals keep theirs), no spacer frames, Compact always, one Primary button, FILL after appendChild, validated URL at end.
 
 ---
 
@@ -347,7 +347,7 @@ Full doc: `docs/SAP-FIORI-DEFAULT-METHODOLOGY.md` | Memory: `feedback_sap_method
 
 ## ⭐⭐⭐ SCHEDULE DIALOG GOLD STANDARD (2026-07-22 — SAP PM approved)
 
-- **Divider frames:** 1px native FRAME named "Divider" with `sapList_BorderColor #e5e5e5` — this IS correct. Do NOT replace with strokeBottomWeight.
+- **Divider frames (scoped rule — see Rule 4):** NEW builds: 1px lines = stroke on the parent (`strokeBottomWeight=1`), never `createFrame()`. EXCEPTION — cloned canonical/gold-standard nodes (e.g. the Schedule dialog) KEEP their existing 1px native `Divider` frames (`sapList_BorderColor #e5e5e5`): PM-approved, never convert to strokes. `/sap-fix` may flag them, never remove them.
 - **Form labels:** ABOVE fields (not left) in Schedule dialogs. Left-label (Layout Grid 33%/67%) is only for Wizard forms.
 - **Inactive row:** `opacity: 0.45` on the entire unselected RadioButton row
 - **Footer:** Tertiary "Cancel" + Primary "Save schedule" — no third button
@@ -409,10 +409,12 @@ Full doc: `docs/SAP-FIORI-DEFAULT-METHODOLOGY.md` | Memory: `feedback_sap_method
 - **This includes table cells with price+sub-currency, amount+currency, name+variant** — any 2-line vertical stack
 - Apply this DURING BUILD, not as a fix after. Verified wrong = top-aligned price cell 2026-07-19.
 
-**Rule 4 — NEVER create native Divider frames**
-- NEVER `figma.createFrame()` for a 1px divider line
-- ALWAYS use stroke settings on the parent frame instead:
+**Rule 4 — Dividers: strokes on new builds, keep them in cloned canonicals**
+- NEW builds: 1px lines = stroke on the parent (`strokeBottomWeight=1`), never `createFrame()`.
   `node.strokes = [{type:'SOLID', color:...}]` + `node.strokeBottomWeight = 1` (or top/left/right)
+- EXCEPTION — cloned canonical/gold-standard nodes (e.g. the Schedule dialog) KEEP their existing
+  1px native `Divider` frames: PM-approved, never convert to strokes. `/sap-fix` may flag them,
+  never remove them.
 
 **Rule 5 — Default Form Factor is ALWAYS Compact**
 - ALL SAP instances → `'Form Factor': 'Compact'` — no exceptions without explicit user instruction

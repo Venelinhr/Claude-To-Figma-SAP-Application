@@ -8,7 +8,7 @@
 
 ## SCHEDULE OPERATION DIALOG — 5 states (the canonical progressive-disclosure form)
 
-**Shared anatomy (all states):** Self-contained card, NOT a page — 8px radius + 1px `sapList_BorderColor` #e5e5e5 border + white `sapGroup_ContentBackground` + `sapContent_Shadow1`. Sections separated by **full-width 1px dividers** (divider-driven, zero root gap). All sections 24px horizontal padding; 16px vertical; header asymmetric pt-20/pb-16. Footer: right-aligned Cancel (Transparent, blue text) + Save schedule (Emphasized). Two-up field row: 512px content, two 248px cols, 16px gap, each col = 46px vertical stack (16px label + 4px gap + 26px Compact field). Required asterisk = separate text node `sapNegativeColor` #aa0808.
+**Shared anatomy (all states):** Self-contained card, NOT a page — 8px radius + 1px `sapList_BorderColor` #e5e5e5 border + white `sapGroup_ContentBackground` + `sapContent_Shadow1`. Sections separated by **full-width 1px dividers** (divider-driven, zero root gap). All sections 24px horizontal padding; 16px vertical; header asymmetric pt-20/pb-16. Footer: right-aligned Cancel (Type=Tertiary, blue text) + Save schedule (Type=Primary). Two-up field row: 512px content, two 248px cols, 16px gap, each col = 46px vertical stack (16px label + 4px gap + 26px Compact field). Required asterisk = separate text node `sapNegativeColor` #aa0808.
 
 | State | Node | Dims | What's shown |
 |---|---|---|---|
@@ -19,7 +19,7 @@
 | **D EndOnly** | `9:1609` | 560×430 | End date CHECKED, Recurrence UNCHECKED → End date/time row visible |
 
 ### Components
-`Input` (Date, Compact, trailingAction calendar icon, placeholder "e.g. Jul 15, 2026") · `Input` (Time, Compact, trailingAction clock, "4:30 PM") · nested `Calendar` popover (272×272, weekNumbers, Day selection, 56 date cells, hidden until opened) · `Checkbox` (Recurrence / End date, Compact) · `Segmented Button` (Compact/Text, 4 segments, 5th hidden) · `Radio Button` (Day / Relative day) · `Select` ×5 (Day-of-month/Interval/Ordinal/Weekday/Relative — all reuse Input control) · `Button` Cancel (Transparent) + Save (Emphasized).
+`Input` (Date, Compact, trailingAction calendar icon, placeholder "e.g. Jul 15, 2026") · `Input` (Time, Compact, trailingAction clock, "4:30 PM") · nested `Calendar` popover (272×272, weekNumbers, Day selection, 56 date cells, hidden until opened) · `Checkbox` (Recurrence / End date, Compact) · `Segmented Button` (Compact/Text, 4 segments, 5th hidden) · `Radio Button` (Day / Relative day) · `Select` ×5 (Day-of-month/Interval/Ordinal/Weekday/Relative — all reuse Input control) · `Button` Cancel (Type=Tertiary) + Save (Type=Primary).
 
 ### Signature patterns
 1. **Divider-driven sections** — 4 full-width 1px dividers, no root gap.
@@ -39,7 +39,7 @@
 **The signature: TWO-ZONE SPLIT** — Zone A (Legs, 483w fixed) + full-height 1px vert-separator + Zone B (Price/CTA, 267w fixed). Both fixed-width, NOT fill.
 
 ### Components
-`Button` "Auswählen" Emphasized (227×36) · Icons: `pushpin-on`, `flight`, `suitcase`×3, `favorite` (star), `action`/share, `heart-2` (outline), `validate` (shield-check).
+`Button` "Auswählen" Type=Primary (227×36) · Icons: `pushpin-on`, `flight`, `suitcase`×3, `favorite` (star), `action`/share, `heart-2` (outline), `validate` (shield-check).
 
 ### Signature patterns
 1. **Flight-leg connector row:** dep-time | grow-line | duration-pill | flight-icon | grow-line | arr-time — the two 1px lines use `flex-grow` to keep pill+icon centered regardless of time widths.
@@ -59,7 +59,7 @@
 ```
 AppLayout [Sidebar 224 (SideNav, 3 items, "Outage List Overview" selected) | Content 1216]
 Content: DynamicPageHeader (1216×76) — "Outage List Overview" (24px 72 Black) + "10 records total"
-                                        + 3 title actions: Manage Teams / Tool Registry (Transparent) / + New Outage (Emphasized)
+                                        + 3 title actions: Manage Teams / Tool Registry (Type=Tertiary) / + New Outage (Type=Primary)
          Filter Bar (1216×60) — SearchField (452) + Select "All tools" (180) + Select "All statuses" (180) + 2 DatePickers (170 each)
          Table (1184×472, 16px inset) — 8 bold columns, 10 ColumnListItem rows (44px each)
 ```
@@ -70,7 +70,7 @@ Content: DynamicPageHeader (1216×76) — "Outage List Overview" (24px 72 Black)
 - UPDATED critical = orange `sapCriticalTextColor` #b44f00
 - UPDATED negative = red `sapNegativeTextColor` #aa0808
 
-ID column = `Link` `sapLinkColor` #0064d9 ×10. **+ New Outage = Emphasized button in page-header title actions (not toolbar).**
+ID column = `Link` `sapLinkColor` #0064d9 ×10. **+ New Outage = Type=Primary button in page-header title actions (not toolbar).**
 
 ---
 
@@ -87,7 +87,7 @@ ID column = `Link` `sapLinkColor` #0064d9 ×10. **+ New Outage = Emphasized butt
 2. **Two-Click-Area** — expandable parents split into label-navigate zone + separate 36px chevron-toggle zone (px-12 py-8) — key SAP a11y affordance.
 3. **Slot architecture** — `⿻ Navigation Items` + `⿻ Footer` named slots with pre-provisioned HIDDEN placeholders (16 total: 12 top + 4 footer) → items toggle via boolean visibility, not add/remove.
 4. **Selected accent = 3px ABSOLUTELY-positioned bar** (left:0 top:0 bottom:0), `sapList_HighlightColor` #0064D9, over the rounded-8 bg — NOT a border.
-5. **Quick Create** = Secondary/Emphasized button, Compact, 1px `sapButton_BorderColor` #BCC3CA border, blue `sapButton_TextColor` #0064D9 label, leading `write-new` icon.
+5. **Quick Create** = Type=Secondary button, Compact, 1px `sapButton_BorderColor` #BCC3CA border, blue `sapButton_TextColor` #0064D9 label, leading `write-new` icon.
 
 ### Metrics
 Item height 32, pitch 36 (32+4 gap), radius 8; top-level pl-16/pr-6 gap-8 (icon 16 + label + chevron); sub-items pl-40 no icon; footer 84px with 1px `sapToolbar_SeparatorColor` #D9D9D9 divider. Font: navigable = `72 Semibold Duplex` 600, children/heading = `72 Regular` 400.
@@ -120,7 +120,7 @@ Dialog card (771–811px, rounded 8-12px, 1px border)
 2. **Active-step label flips to Semibold** (72 Semibold, `sapTitleColor`); inactive stay Regular (`sapContent_LabelColor`). Subtle current-step cue.
 3. **Connectors = flex-grow 1px lines** colored #0064d9 (grow to fill between steps).
 4. **Some wizards add a 3px Active Plate underline** beneath the active step (dual indicator — node 190:100212).
-5. **Footer buttons** — mix of Emphasized (Next) + Transparent (Previous/Cancel), Compact 26px, radius 8.
+5. **Footer buttons** — mix of Type=Primary (Next) + Type=Tertiary (Previous/Cancel), Compact 26px, radius 8.
 
 ### Tokens
 `sapBackgroundColor` #f5f6f7 (overlay) · `sapShellColor` #ffffff (card/panel/field) · `sapShell_BorderColor` #d9d9d9 (borders) · `sapButton_Emphasized_Background` #0070f2 (active circle + Next) · `sapButton_TextColor` #0064d9 (inactive circles/connectors) · `sapNegativeTextColor` #aa0808 (asterisk) · `sapList_SelectionBackgroundColor` #ebf8ff (selected list row).
@@ -144,7 +144,7 @@ AppLayout (1440×773)
 └── Content (1216)
     ├── DynamicPageHeader (104) — Breadcrumb + Title "Design System Governance" (24px Black)
     │                            + Subtitle "4 tokens · 152 components tracked · Next review: 2026-07-10"
-    │                            + Toolbar: Edit (Emphasized) / Copy (Default) / share / fullscreen / close X
+    │                            + Toolbar: Edit (Type=Primary) / Copy (Type=Secondary) / share / fullscreen / close X
     ├── Bar / FilterBar (44) — SegmentedButton (4 segs) + SplitButton (right)
     ├── IconTabBar (44) — Proposals[sel, 3px indicator] / Token Assignments / Review Calendar / More
     └── DynamicSideContent
@@ -156,7 +156,7 @@ AppLayout (1440×773)
 ```
 
 ### Signature patterns
-1. **SplitButton** "Approve Selected" (Emphasized + dropdown) = primary bulk action on selected rows.
+1. **SplitButton** "Approve Selected" (Type=Primary + dropdown) = primary bulk action on selected rows.
 2. **DynamicSideContent** — main table + side panel (calendar + message strip) responsive split.
 3. **Collapsible DynamicPageHeader** — Expand/Collapse + Pin toggle centered at bottom edge; snapped title uses Header4/900.
 4. **RatingIndicator** — Compact, 5 stars, partial fill.

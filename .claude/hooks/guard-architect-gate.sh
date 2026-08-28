@@ -28,7 +28,9 @@ CODE=$(echo "$INPUT" | jq -r '.tool_input.code // ""')
 PROJ="${CLAUDE_PROJECT_DIR:-$(cd "$(dirname "$0")/../.." && pwd)}"
 
 # Only gate a BUILD (node-creating). Read-only inspects pass.
-echo "$CODE" | grep -qE "createInstance|createFrame|importComponentSetByKeyAsync|\.clone\(|appendChild|insertChild" || exit 0
+# Shared build definition — see lib-build-detect.sh (was missing setProperties).
+source "$(dirname "$0")/lib-build-detect.sh"
+is_build "$CODE" || exit 0
 
 # ── SKIP conditions (real markers only — no phantom markers) ──
 # 1. Canonical clone declared → architecture is inherited from the canonical, not designed fresh.

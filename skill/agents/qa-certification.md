@@ -306,7 +306,7 @@ Header / DynamicPageHeader   | DynamicPageHeader + Title     | ✓
 Filter bar                   | SearchField + Select ×2       | ✓
 Table                        | Table + 8 Columns + rows      | ✓
 Status column                | ObjectStatus (4 variants)     | ✓
-Footer action                | Button (Emphasized)           | ✓
+Footer action                | Button (Type=Primary)         | ✓
 [side panel]                 | —                             | ✗ OMITTED — repair
 ─────────────────────────────────────────────────────────────
 Coverage: 5/6 regions = 83% → the ✗ row MUST be repaired or documented as an exception.

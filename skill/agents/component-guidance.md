@@ -178,8 +178,8 @@ Produce a structured report for each recommended component, using the fetched gu
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-COMPONENT: Button / Emphasized (Primary)
-SAP class: sap.m.Button  type="Emphasized"
+COMPONENT: Button — primary action
+SAP class: sap.m.Button  type="Emphasized"   ← UI5 API vocab; the Figma kit Type is `Primary`
 Guideline: {uxGuidelinesLink from API JSON}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 

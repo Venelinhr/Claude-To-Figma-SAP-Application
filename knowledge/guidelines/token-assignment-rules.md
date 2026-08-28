@@ -46,19 +46,19 @@ Every entry is verified from `get_design_context` on confirmed-quality screens.
 |---|---|---|---|
 | Card / frame background | `sapGroup_ContentBackground` | #ffffff | `[sapGroup_ContentBackground]` |
 | Card stroke/border | `sapList_BorderColor` | #e5e5e5 | `[stroke:sapList_BorderColor]` |
-| Screen/dialog title text | `sapTitleColor` | #131e29 | fill on text layer |
+| Screen/dialog title text | `sapTitleColor` | #1d2d3e | fill on text layer |
 | Body / default text | `sapTextColor` | #131e29 | fill on text layer |
 | Field labels / subtitles / captions | `sapContent_LabelColor` | #556b82 | fill on text layer |
-| Required asterisk `*` | `sapNegativeColor` | #bb0000 | fill on text layer |
+| Required asterisk `*` | `sapNegativeColor` | #bd2920 | fill on text layer |
 | Section background (Monthly pattern box) | `sapBackgroundColor` | #f5f6f7 | `[sapBackgroundColor]` |
 | Divider lines | `sapList_BorderColor` | #e5e5e5 | `[sapList_BorderColor]` |
 | Field border | `sapField_BorderColor` | #556b81 | fill on frame |
 | Field background | `sapField_Background` | #ffffff | fill on frame |
 | Selected/active state | `sapButton_Emphasized_Background` | #0070f2 | SAP Button instance |
-| Positive / success text | `sapPositiveTextColor` | #256f3a | fill on text layer |
-| Critical / warning text | `sapCriticalTextColor` | #a8650b | fill on text layer |
+| Positive / success text | `sapPositiveTextColor` | #1e8f56 | fill on text layer |
+| Critical / warning text | `sapCriticalTextColor` | #df7b01 | fill on text layer |
 | Error / negative text | `sapNegativeTextColor` | #bb0000 | fill on text layer |
-| Disabled text | `sapContent_DisabledTextColor` | #b0bfc9 | fill on text layer |
+| Disabled text | `sapContent_DisabledTextColor` | #89919a | fill on text layer |
 | Link / interactive | `sapLinkColor` | #0064d9 | fill on text layer |
 | Duration pill background | `sapNeutralBackground` | #f5f6f7 | `[sapNeutralBackground]` |
 
@@ -91,8 +91,8 @@ Every entry is verified from `get_design_context` on confirmed-quality screens.
 | Section label (TIMING) | `SmallText/Regular` + `sapContent_LabelColor` — always uppercase text | 355:39080 |
 | Dividers | `h-px w-full bg-[var(--sapList_BorderColor)]` | 355:39080 |
 | Footer | `h-[60px] px-[24px] py-[12px] justify-end items-center` | 355:39080 |
-| Primary button (footer) | `design=Emphasized` — blue, right-aligned | 355:39080 |
-| Secondary button (footer) | `design=Transparent` — left of primary | 355:39080 |
+| Primary button (footer) | kit `Type=Primary` — blue, right-aligned | 355:39080 |
+| Secondary button (footer) | kit `Type=Tertiary` — left of primary | 355:39080 |
 | **Flight card horizontal layout** | Two zones: Zone A — Legs (FILL) + vertical separator + Zone B — Price (276px FIXED) | 472:34431 |
 | **Flight leg structure** | VERTICAL auto-layout: label-row → flight-row → airport-row, gap 8 | 472:34431 |
 | **Flight time row** | HORIZONTAL, gap 8: dep-time → line (layoutGrow:1) → dur-pill → icon → line (layoutGrow:1) → arr-time | 472:34431 |
@@ -214,7 +214,7 @@ Flight Result Card [sapGroup_ContentBackground] [stroke:sapList_BorderColor]
       ├── price                       (72 Bold 28px, [typo:priceHeader], sapTitleColor)
       ├── price-sub                   (SmallText/LHAuto/Regular, sapContent_LabelColor)
       ├── Spacer
-      └── Select Button               (SAP Button Emphasized instance, FILL width)
+      └── Select Button               (SAP Button Type=Primary instance, FILL width)
 ```
 
 **Color tokens confirmed bound:**

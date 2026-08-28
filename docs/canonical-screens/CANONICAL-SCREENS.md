@@ -474,7 +474,7 @@ Orders List Report (1440px)
 ├── Page Header [sapShellColor]                    pad 32px
 │   ├── Title "Orders" [typo:heading]
 │   ├── Subtitle "Track and manage customer orders" [typo:body]
-│   └── Button "Create Order" (Type=Emphasized, Compact)
+│   └── Button "Create Order" (Type=Primary, Compact)
 ├── Filter Area [sapShellColor]                    pad 32px
 │   ├── Input "Search orders..." (Compact)
 │   └── Filter Row: Status Select | Payment Select | Fulfillment Select
@@ -531,7 +531,7 @@ Products Inventory (1440px)
 ├── Icon Tab Bar (Shell Navigation XL) — Inventory active
 ├── Page Header [sapShellColor] pad 32px
 │   ├── Title "Products Inventory" + Subtitle
-│   └── Export CSV + Import CSV (Secondary) + Add Product (Emphasized) — ALL Compact
+│   └── Export CSV + Import CSV (Secondary) + Add Product (Primary) — ALL Compact
 ├── URL Scraper Bar [sapShellColor]
 │   ├── SAP Input FILL "Paste Amazon URL..." — Compact
 │   └── SAP Button "Scrape" Secondary Compact
