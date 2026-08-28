@@ -1,12 +1,63 @@
 {
-  "//": "DE-DUP 2026-07-22 (F-1): UserPromptSubmit/Stop/SessionStart + 6 use_figma guards are registered in ~/.claude/settings.json via sap-scope-guard.sh (self-scoping, works from any launch dir). They were ALSO here, causing every hook to fire twice. Removed the duplicates. Kept here ONLY: project-only guards global does not run (guard-architect-gate, block-codejs-read, block-generated-files, guard-private-screens) and all PostToolUse hooks. If you ever remove the global registration, restore the duplicates from tmp/project-settings.backup.json.",
+  "//": "SELF-CONTAINED 2026-08-28 (v2). Previously this file relied on ~/.claude/settings.json to register the 6 use_figma guards + UserPromptSubmit/Stop/SessionStart chain via an absolute path to the ORIGINAL project folder. That made this copy ungated: the global dispatcher checks the session cwd against its own hardcoded root, sees a different folder, and exits 0 — every gate silently dormant. All hooks are now registered HERE using $CLAUDE_PROJECT_DIR, so whichever folder you launch from gates itself. No double-firing: the global registration still points at the original folder's dispatcher, which no-ops for this cwd.",
   "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cat \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/.sap-session-banner.txt 2>/dev/null"
+          },
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/load-workflow-contract.sh",
+            "statusMessage": "Loading SAP workflow contract…",
+            "async": true
+          },
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/surface-learnings.sh",
+            "statusMessage": "Surfacing SAP lessons…",
+            "async": true
+          },
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/clear-reuse-marker.sh",
+            "statusMessage": "Clearing SAP gate markers…",
+            "async": true
+          }
+        ]
+      }
+    ],
     "UserPromptSubmit": [
       {
         "hooks": [
           {
             "type": "command",
             "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/recall-vdi.sh"
+          },
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/enforce-wireframe-first.sh",
+            "statusMessage": "Checking wireframe gate…"
+          },
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/feedback-learn.sh",
+            "statusMessage": "Learning from feedback…",
+            "async": true
+          },
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/recall-lessons.sh",
+            "statusMessage": "Recalling SAP lessons…",
+            "async": true
+          },
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/capture-approvals.sh",
+            "statusMessage": "Capturing approvals…",
+            "async": true
           }
         ]
       }
@@ -46,6 +97,11 @@
           {
             "type": "command",
             "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/block-generated-files.sh"
+          },
+          {
+            "type": "command",
+            "command": "in=$(cat); fp=$(echo \"$in\" | jq -r \".tool_input.file_path // empty\"); if echo \"$fp\" | grep -qE \"[.]claude/[.](wireframe-approved|scratch-approved|reuse-declared|workflow-loaded|last-build-node|reference-selected|architect-approved)$\"; then echo \"BLOCKED: approval/gate markers cannot be written by the agent (Write/Edit). Present the wireframe and wait for the user's approval; the marker is written only by the user's own words.\" >&2; exit 2; fi; exit 0",
+            "statusMessage": "Guarding SAP approval markers…"
           }
         ]
       },
@@ -64,6 +120,11 @@
           {
             "type": "command",
             "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/guard-private-screens.sh"
+          },
+          {
+            "type": "command",
+            "command": "in=$(cat); op=$(echo \"$in\" | jq -r \".tool_input.command // empty\"); if echo \"$op\" | grep -qE \"(>|>>|tee|cp |mv |ln |install |printf|node -e|python3? -c).*[.]claude/[.](wireframe-approved|scratch-approved|reuse-declared|workflow-loaded|last-build-node|reference-selected|architect-approved)\"; then echo \"BLOCKED: approval/gate markers cannot be written by the agent. Present the wireframe and wait for the user's approval.\" >&2; exit 2; fi; exit 0",
+            "statusMessage": "Guarding SAP approval markers…"
           }
         ]
       },
@@ -72,11 +133,60 @@
         "hooks": [
           {
             "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/guard-workflow-contract.sh"
+          },
+          {
+            "type": "command",
             "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/guard-reference-gate.sh"
           },
           {
             "type": "command",
             "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/guard-architect-gate.sh"
+          },
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/guard-wireframe-gate.sh"
+          },
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/guard-reuse-gate.sh"
+          },
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/guard-figma-code.sh"
+          },
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/guard-manifest-drift.sh"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/lint-on-stop.sh",
+            "statusMessage": "SAP build reality gate…"
+          },
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/verify-learnings.sh",
+            "statusMessage": "Verifying lessons…",
+            "async": true
+          },
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/clear-reuse-marker.sh",
+            "statusMessage": "Clearing gate markers…",
+            "async": true
+          },
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/surface-canonical-record.sh",
+            "statusMessage": "Recording canonical…",
+            "async": true
           }
         ]
       }

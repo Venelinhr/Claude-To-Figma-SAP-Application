@@ -18,34 +18,40 @@
 #
 # stdin (the PreToolUse payload) is captured and forwarded verbatim to the real guard.
 
-# PATH-INDEPENDENT (2026-08-28): derive the project root from this script's own
-# location instead of a hardcoded absolute path. Previously this was pinned to
-# one folder, so ANY copy/worktree/rename ran with every gate silently dormant —
-# the exact RC-1 failure this dispatcher exists to prevent, reintroduced by a
-# constant. HOOK_DIR is <root>/.claude/hooks, so root is two levels up.
-HOOK_DIR="$(cd "$(dirname "$0")" && pwd)"
-SAP_PROJECT="$(cd "$HOOK_DIR/../.." && pwd)"
+# PROJECT-RELATIVE (2026-08-28). This used to pin SAP_PROJECT to one hardcoded
+# absolute path, so ANY copy, worktree or rename of the project ran with every
+# gate silently dormant — precisely the RC-1 failure this dispatcher exists to
+# prevent, reintroduced as a constant.
+#
+# It now resolves the project from the SESSION's cwd, not from where this script
+# happens to live, and then runs THAT project's own guard scripts. One global
+# registration therefore serves the original folder, this worktree, and any
+# future copy, with each getting its own hooks. Non-SAP projects still no-op.
 GUARD="$1"
-
-# Sanity: the derived root must actually look like the SAP project. If the
-# marker file is absent we are not where we think we are — fail OPEN (never
-# block unrelated work) but say so loudly on stderr.
-if [ ! -f "$SAP_PROJECT/SAP_BUILD_MANIFEST.md" ]; then
-  echo "sap-scope-guard: '$SAP_PROJECT' has no SAP_BUILD_MANIFEST.md — not a SAP project root, skipping" >&2
-  exit 0
-fi
 
 INPUT=$(cat)
 
-# Determine the active session directory. PreToolUse payloads carry .cwd; fall back to $PWD.
+# Active session directory. PreToolUse payloads carry .cwd; fall back to $PWD.
 CWD=$(echo "$INPUT" | jq -r '.cwd // empty' 2>/dev/null)
 [ -z "$CWD" ] && CWD="$PWD"
+[ -d "$CWD" ] || exit 0
 
-# Only enforce when the session is inside the SAP project.
-case "$CWD" in
-  "$SAP_PROJECT"|"$SAP_PROJECT"/*) : ;;   # in scope — run the guard
-  *) exit 0 ;;                             # other project — no-op
-esac
+# Walk up from the session cwd looking for a SAP project root: a directory that
+# has BOTH the build manifest and a hooks dir. First match wins.
+SAP_PROJECT=""
+probe="$(cd "$CWD" 2>/dev/null && pwd)"
+while [ -n "$probe" ] && [ "$probe" != "/" ]; do
+  if [ -f "$probe/SAP_BUILD_MANIFEST.md" ] && [ -d "$probe/.claude/hooks" ]; then
+    SAP_PROJECT="$probe"
+    break
+  fi
+  probe="$(dirname "$probe")"
+done
+
+# Not inside any SAP project → no-op, so Figma work in other projects is untouched.
+[ -n "$SAP_PROJECT" ] || exit 0
+
+HOOK_DIR="$SAP_PROJECT/.claude/hooks"
 
 # Guard must exist; if not, fail OPEN (do not block unrelated work on a config error) but note it.
 if [ -z "$GUARD" ] || [ ! -f "$HOOK_DIR/$GUARD" ]; then
