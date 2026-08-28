@@ -229,5 +229,28 @@ else
 fi
 
 echo ""
+echo "$(printf '─%.0s' {1..60})"
+echo "Hook executability (every registered hook must actually run)"
+echo "$(printf '─%.0s' {1..60})"
+# ADDED 2026-08-28. A hook registered in settings.json but lacking +x does not fail
+# loudly — the runtime reports "Permission denied" as a NON-BLOCKING status and
+# carries on, so a gate silently fails OPEN. mark-build.sh had been in this state
+# since July; nothing noticed because a duplicate global writer covered for it.
+# guard-marker-write.sh landed the same way and left the marker guard inert.
+hook_fail=0
+for cfg in .claude/settings.json; do
+  [ -f "$cfg" ] || continue
+  for h in $(grep -oE '\.claude/hooks/[A-Za-z0-9_-]+\.sh' "$cfg" | sort -u); do
+    if [ ! -f "$h" ]; then
+      echo -e "${RED}registered hook missing on disk: $h${NC}"; hook_fail=1
+    elif [ ! -x "$h" ]; then
+      echo -e "${RED}registered hook not executable (will fail OPEN): $h — run: chmod +x $h${NC}"; hook_fail=1
+    fi
+  done
+done
+if [ "$hook_fail" -ne 0 ]; then exit 1; fi
+echo "  ✓ every hook registered in settings.json exists and is executable"
+
+echo ""
 echo "All specs within baseline. Pipeline is clean."
 exit 0
