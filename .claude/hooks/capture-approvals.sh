@@ -57,7 +57,11 @@ elif echo "$PROMPT" | grep -qE "(^|[^a-z])$STRONG([^a-z]|$)" \
 fi
 
 # ── Explicit consent to build from scratch (pure Figma frames, no canonical) ──
-if echo "$PROMPT" | grep -qE "from scratch|from zero|build new|no reference|no canonical|pure figma|start fresh|nothing to clone|build it from" ; then
+# WIDENED 2026-08-28. The old list required the exact words "from scratch". A real
+# reply of "build form scratch" (a one-letter typo) therefore wrote no marker, the
+# build stayed blocked, and the reason was invisible — the user had plainly consented.
+# Typos and word order are now tolerated; the intent is still unambiguous.
+if echo "$PROMPT" | grep -qE "fro?m scratch|form scratch|scratch build|build.*scratch|from zero|build new|no reference|no canonical|pure figma|start fresh|nothing to clone|build it from" ; then
   echo "{\"scratchApprovedBy\":\"user-prompt\",\"at\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || echo session)\"}" > "$PROJ/.claude/.scratch-approved"
   echo "<approval-captured marker=\".scratch-approved\">User consent to build from scratch detected — the ask-before-scratch gate is satisfied. Still: prefer cloning an approved screen if one exists (RULE 28).</approval-captured>"
 fi
