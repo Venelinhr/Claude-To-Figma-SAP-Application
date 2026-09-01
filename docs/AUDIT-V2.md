@@ -236,7 +236,8 @@ Implemented in v2, tested by `build/test-gates.sh` (28 synthetic-payload checks)
 | P3 | `guard-figma-code.sh` Block 2 (a `createFrame/createText` variable named after any of the 152 registry components, or a checkbox glyph in `characters`) and Block 3 (more frames than instances, ≥6, unless `// layout-only: N`); `guard-workflow-contract.sh` scoped to builds like every other gate | `.claude/hooks/guard-figma-code.sh`, `.claude/hooks/guard-workflow-contract.sh` |
 | P5 | `guard-screenshot-budget.sh` (1 + one per completed build; the user's own words grant one more via `capture-approvals.sh`) + `count-build.sh` | `.claude/hooks/guard-screenshot-budget.sh`, `.claude/hooks/count-build.sh`, `.claude/hooks/capture-approvals.sh` |
 | P6 | `guard-scoped-metadata.sh` — blocks `get_metadata` on `0:1`; flags any result > 20 KB with the scoped alternative | `.claude/hooks/guard-scoped-metadata.sh` |
-| P9 | `build/measure-build.sh` (delivered earlier), `build/test-gates.sh` (new) wired into `build/test-build.sh` | `build/` |
+| P9 | `build/measure-build.sh` (delivered earlier), `build/test-gates.sh` (new, 31 checks) wired into `build/test-build.sh`; `build/replay-gates.sh` (replay any past session's real `use_figma` code through the current gates); `build/retest-headless.sh` (the §7 re-test, unattended, from a terminal); `build/expand-tree-dump.js` (compact live-tree dump → verifier shape, `--based-on` provenance) | `build/` |
+| P10 | `record-reference.js` now requires `--name` (the node's name read live) and every gate message says to read the node first; `clear-reuse-marker.sh` keeps markers across resume/compact and no longer deletes the reuse decision every turn | `build/record-reference.js`, `.claude/hooks/clear-reuse-marker.sh` |
 
 Still proposed (each needs a separate decision):
 
@@ -251,7 +252,64 @@ Still proposed (each needs a separate decision):
 jq '.hooks.UserPromptSubmit += [{"hooks":[{"type":"command","command":"\"/Users/C5408360/Downloads/sap-pipeline-v2/.claude/hooks/global-gates-off-warning.sh\""}]}]' ~/.claude/settings.json > /tmp/s.json && mv /tmp/s.json ~/.claude/settings.json
 ```
 
-Expected effect on the re-test (§7): the five-refusal loop cannot recur (all preconditions are listed before any code is written, and one refusal lists everything); the two API-trap deaths cannot recur; a native-heavy or glyph-checkbox build is refused before it reaches Figma; screenshots stop at the budget. Time/tokens are now measured the same way every run — that number, not a feeling, decides the comparison with version 1.
+### 8.1 Replay — the real code of both runs through the new gates
+
+`build/replay-gates.sh` (new) takes every historical `use_figma` payload from a session log and runs it through the code-level gates as they are now. No Figma, no tokens, deterministic.
+
+**Run A (Sep 1) replayed:**
+
+| Call | Output tok | THEN (what Figma did) | NOW (code gates) |
+|---|---|---|---|
+| 18:27:44 | 8,420 | threw: `primaryAxisSizingMode … 'HUG'` | **blocked pre-flight** — `line 56: root.primaryAxisSizingMode = 'HUG'` **and** `line 317: chkHdr.characters is a checkbox glyph` |
+| 18:28:58 | 7,060 | threw: `FILL can only be set on children of auto-layout frames` | **blocked pre-flight** — `line 51: shellBar.layoutSizing…` (FILL before append) **and** `line 316: chkTxt = figma.createText() is named 'Checkbox [typo:body]'` |
+| 18:30:06 | 6,461 | ran → the native-heavy screen you saw | **blocked pre-flight** — `line 332: chkT = figma.createText() is named 'Checkbox …'` |
+| 6 later calls | 514–955 | ran (property injections, fixes) | pass — correct, they are legitimate |
+
+All three full-screen builds would have been stopped before Figma with the offending line named. The text-node checkbox you found by eye was in the very first build code (line 317); the gate now names it in the first refusal. A pre-flight refusal costs an in-place fix and a resend of the same code — not a Figma round-trip plus a regeneration that introduces the next trap (call 2 introduced a new one).
+
+**Run B (Aug 28) replayed:** all five payloads pass the code gates — correct: that code was 45 real instances against 11 frames. Run B's failure was preconditions, and `test-gates.sh` proves the new behaviour for that case: a build with no markers now gets **one** refusal listing all five missing preconditions (`guard-chain.sh`), and `gate-status.sh` lists them before any code exists.
+
+Reproduce:
+```bash
+bash build/replay-gates.sh ~/.claude/projects/-Users-C5408360/e4549909-ade8-422e-b77f-afa752ab57b4.jsonl --day 2026-09-01
+bash build/replay-gates.sh ~/.claude/projects/-Users-C5408360-Downloads-sap-pipeline-v2/a9da4b29-459d-4b30-8a27-dfba8f2706aa.jsonl
+```
+
+### 8.2 One more defect found while preparing the live re-test
+
+`clear-reuse-marker.sh` wiped every gate marker on **any** SessionStart — including `source = resume` and `source = compact`. A session that compacted mid-build (both Run A and Run B did) lost its approvals and recorded decisions and was re-blocked; a resumed or headless multi-turn build was impossible. Fixed: the full reset now runs only for a fresh start (`startup` / `clear`); covered by `test-gates.sh` §8.
+
+The same file also deleted `.reuse-declared` on **every** event — the line was commented "per-turn (Stop)" but was not guarded by the event at all. A build spans turns (wireframe → approve → build), so the reuse decision recorded in the wireframe turn was gone by the build turn and the reuse gate refused again: that is the `guard-reuse-gate ×3` in Run B's table (§1.2). Plan artifacts are now build-scoped exactly like approvals: cleared when a build completes (a newer `verify.json`) or on a fresh session start — never per turn.
+
+Expected effect on the live re-test (§7): the five-refusal loop cannot recur; the two API-trap deaths cannot recur; a native-heavy or glyph-checkbox build is refused before it reaches Figma; screenshots stop at the budget; approvals survive compaction. Time/tokens are measured the same way every run — that number, not a feeling, decides the comparison with version 1.
+
+### 8.3 Live build with the v2 flow (2026-09-02, from the audit session)
+
+A fresh headless session cannot be started from inside the desktop app (the injected per-session bearer token is refused by a child `claude -p`: `401 Invalid bearer token`; a clean environment has no credentials and waits for login). So the v2 flow was driven by hand from this session, against the real Figma file, with every gate run on the real payloads before they were sent. What the consent gates need — a human's "approve" — was **not** forged; they are covered by `test-gates.sh` and stated here as not exercised.
+
+**Result:** `Purchase Order Overview`, node **`1239:56605`** in file `p7zm5EMBk5DRRZdxNeJ4f5`, placed beside its source. Level-2 clone of the confirmed 1440 px **Orders List Report `889:45857`**. Hand-off screenshot: `output/1239-56605-handoff.png`. URL: `https://www.figma.com/design/p7zm5EMBk5DRRZdxNeJ4f5/SAP-application-builder?node-id=1239-56605`
+
+| | Run A (Sep 1) | Run B (Aug 28) | **Live build (Sep 2)** |
+|---|---|---|---|
+| `use_figma` build calls | 9 (2 threw) | 5 (all refused) | **2, both landed first time** |
+| Gate refusals | — (no gates) | 5 | **0** — `gate-status` was ✓ on every decision line before any code; each payload passed the 7 code/decision gates (`api-gotchas`, `figma-code`, `manifest-drift`, `reuse`, `reference`, `architect`, `workflow`) |
+| Screenshots | 6 | 0 | **1**, at hand-off |
+| Native : SAP instances (code) | 55 : 10 | 11 : 45 | `createFrame` **0**; 109 kit instances in the frame, **6 real SAP Checkbox instances**, ObjectStatus `Semantic` set per row (Warning / Success / Error / Information) |
+| Header / hidden content | header not full width, parts hidden | — | 1440 root, header 1440, six filters in a 3+3 grid (six full labels do not fit one 1376 px row), nothing clipped after the fixes below |
+| Reality gate (`verify-invariants.js`) | never run | never run | **run** — see below |
+
+**Reality gate.** 204 nodes outside kit internals were dumped and verified (`--canonical 889:45857 --pre-bind`). It found **3 genuine defects, all inherited from the canonical**, all fixed and re-verified live: a stray unbound `#000000` stroke on row 1 (removed), the "Pending Approval" badge overflowing its 136 px cell by 2 px (cells re-sized 136→148 / 156→144, net zero — the new INV 5 caught exactly the hidden-content class you reported), and row 5's Actions cell FIXED instead of FILL (icons misaligned; set to FILL). After the fixes: **0 raw-hex, 0 overflow.**
+
+It also reported **130 flags that are not defects**: 78 `FAIL_FAKE_COMPONENT` (frames named `Filter Area`, `HDR Order`, `Row 4500012345`, `Chk Cell`, `Responsive Table` …) and 52 `FAIL_TYPO_TAG` (texts with no `[typo:role]` tag). Run on the **PM-confirmed canonical itself** (`output/889-45857-compact.json`, 58 nodes), the verifier fails it the same way — 37 flags, including the same stray stroke — and 28 of the names it rejects on the build are the canonical's own names verbatim. The container allowlist and the tag convention were written for from-scratch builds; the default path is clone-first (RULE 28). The two were never reconciled because, until today, the verifier had never been run on a live build.
+
+**Cost of this build, honestly:** 12.7 min wall-clock and 71k output tokens between reading the canonical and the last fix — but this session carries 630k tokens of audit context and every step above was reasoned in the open, so those two numbers are not the benchmark. The comparable numbers are the ones in the table: 2 calls, 0 errors, 0 refusals, 1 screenshot, 0 native frames created. The 3–5 min / ≤12k benchmark is a fresh session's number: `bash build/retest-headless.sh` from a terminal, or `bin/sap-v2` by hand.
+
+### 8.4 Two new pain points, found only because a real build was measured
+
+| # | Pain point | Proof | Fix | Priority |
+|---|---|---|---|---|
+| **P10** | **Canonical ids drift; the scorer's top match resolves to the wrong screen.** `score-canonical.js` ranks "Outage List Overview" first (84.5) with `figNode 750:174925`; in the live file that id is **"Schedule Operation — State D EndOnly", a 560×430 dialog**. `docs/NODE-ID-CONFLICTS.md` already lists it. The manifest names the desktop List Report under three different ids (`750:174925`, `30:2741`, and the confirmed table's) and calls `804:44859` "1440px" while it is 320 px live. A Level-2 clone by id would have built a list report from a dialog, silently. | live reads in this session; `docs/NODE-ID-CONFLICTS.md:106`; `SAP_BUILD_MANIFEST.md:22,168,197` | Done: `record-reference.js` requires `--name` read live; gate messages, `gate-status`, CLAUDE.md and `/sap-screen` say read-then-assert; the clone code asserts `src.name` and width. To do: resolve canonicals by **name + width in the live file** (`figma.currentPage.query('FRAME[name=…]')`), never by index id; re-key `canonical-index.json` and `SAP_BUILD_MANIFEST.md §3b` against the live file and delete the conflicting rows. | **P0** — a wrong clone is a silent total failure |
+| **P11** | **The reality gate rejects the pipeline's own gold standard.** INV 1's allowlist (`Row$`, `Header$`, `Block$` …) and INV 3's `[typo:role]` tags do not match the confirmed canonicals' names (`… Cell`, `HDR …`, `Row <id>`, `Filter Area`, untagged styled texts), so every clone-first build fails 100+ flags by construction and the only genuine findings are buried. | §8.3: 37 flags on the canonical's own 58 nodes; 28 rejected names verbatim canonical | Provenance-aware verification: when `basedOnCanonical` is set, dump the canonical too and verify the **delta** (nodes added or renamed by the build) at full strictness, while nodes inherited unchanged from a confirmed canonical pass INV 1/INV 3 by provenance; keep INV 2/INV 5 on everything (they found the three real defects). Add the canonicals' container patterns to the allowlist for from-scratch builds; make INV 3 accept a text whose live font is `72` at a role size. | **P0** — until then the gate cannot be made mandatory on the default path |
 
 ## Appendix — evidence pointers
 

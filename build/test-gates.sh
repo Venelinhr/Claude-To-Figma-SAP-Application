@@ -127,6 +127,15 @@ BIG=$(head -c 25000 /dev/zero | tr '\0' 'x')
 plm "12:345" PostToolUse "$BIG" | bash "$D" >"$OUT" 2>&1; grep -q "metadata-cost-warning" "$OUT" && ok "a 25 KB result gets the cost warning" || bad "big metadata result not flagged"
 plm "12:345" PostToolUse "small" | bash "$D" >"$OUT" 2>&1; grep -q "metadata-cost-warning" "$OUT" && bad "small result wrongly flagged" || ok "a small result is silent"
 
+echo "8. clear-reuse-marker.sh (markers survive resume/compact, reset on a fresh start)"
+all_markers
+jq -n '{hook_event_name:"SessionStart", source:"resume"}' | CLAUDE_PROJECT_DIR="$ROOT" bash "$H/clear-reuse-marker.sh" >/dev/null 2>&1
+[ -f "$M/.wireframe-approved" ] && [ -f "$M/.reuse-declared" ] && ok "SessionStart(source=resume) keeps the session's approvals and decisions" || bad "resume wiped the markers"
+jq -n '{hook_event_name:"SessionStart", source:"compact"}' | CLAUDE_PROJECT_DIR="$ROOT" bash "$H/clear-reuse-marker.sh" >/dev/null 2>&1
+[ -f "$M/.wireframe-approved" ] && ok "SessionStart(source=compact) keeps them too" || bad "compaction wiped the markers"
+jq -n '{hook_event_name:"SessionStart", source:"startup"}' | CLAUDE_PROJECT_DIR="$ROOT" bash "$H/clear-reuse-marker.sh" >/dev/null 2>&1
+[ ! -f "$M/.wireframe-approved" ] && [ ! -f "$M/.reuse-declared" ] && ok "SessionStart(source=startup) resets to a clean slate" || bad "fresh start did not clear the markers"
+
 echo "7. executability (hooks in settings.json + guard-chain members + tools)"
 miss=0
 for h in $(grep -ohE '\.claude/hooks/[A-Za-z0-9_-]+\.sh' .claude/settings.json .claude/hooks/guard-chain.sh | sort -u) build/gate-status.sh build/measure-build.sh bin/sap-v2; do

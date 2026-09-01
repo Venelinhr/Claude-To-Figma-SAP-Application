@@ -40,7 +40,9 @@ if [ ! -f "$MARKER" ]; then
   echo "     (or from a cached VDI model:  node build/score-canonical.js --from-model semantic-models/<file>.md)" >&2
   echo "  3. Pick the best gold reference. When unsure, the curated gold set + default anchor (9:1550" >&2
   echo "     for dialogs) are in memory: reference_gold_standard_screen_set.md." >&2
-  echo "  4. Record it:  node build/record-reference.js --node \"<id>\" --score <n> --rationale \"...\" --effort \"...\"" >&2
+  echo "  4. READ the node live (use_figma: name + width) — ids drift; the index's 'Outage List' id is a dialog in the live file." >&2
+  echo "  5. Record it:  node build/record-reference.js --node \"<id>\" --name \"<live name>\" --score <n> --rationale \"...\" --effort \"...\"" >&2
+  echo "     and assert src.name === \"<live name>\" in the clone code before .clone()." >&2
   echo "" >&2
   echo "If NO reference scores >= 60, this is a from-scratch build — record the low score AND get the" >&2
   echo "user's explicit OK (writes .scratch-approved) before building." >&2

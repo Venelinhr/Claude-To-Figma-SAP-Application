@@ -80,7 +80,7 @@ Building composites from scratch loses internal `⿻` slot frames → `setProper
 
 **⛔ Gate 0.7 — ALSO record the canonical reference** (hard-blocked by `guard-reference-gate.sh`): after scoring, commit the chosen reference:
 ```
-node build/record-reference.js --node "<id>" --score <n> --rationale "<one line>" --effort "<low/med/high + what changes>"
+node build/record-reference.js --node "<id>" --name "<name read LIVE via use_figma>" --score <n> --rationale "<one line>" --effort "<low/med/high + what changes>"
 ```
 The build is blocked until `.reference-selected` exists. If nothing scores ≥60, record the low score AND get the user's OK (`.scratch-approved`) first. **When unsure which reference, use the curated gold set below / default anchor `9-1550` for dialogs.**
 

@@ -40,7 +40,7 @@ if [ -f "$M/.reference-selected" ]; then
     need "reference" "score $REF_SCORE < 60 → ASK the user for OK to build from scratch (their own words write .scratch-approved)"
   fi
 else
-  need "reference" "node build/score-canonical.js --floorplan \"<fp>\" --regions <r> --components <c>  →  node build/record-reference.js --node \"<id>\" --score <n> --rationale \"…\" --effort \"…\""
+  need "reference" "node build/score-canonical.js --floorplan \"<fp>\" --regions <r> --components <c>  →  READ the top node live (use_figma: name + width; ids drift)  →  node build/record-reference.js --node \"<id>\" --name \"<live name>\" --score <n> --rationale \"…\" --effort \"…\""
 fi
 
 # 3 ── reuse decision (RULE 31)

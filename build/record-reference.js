@@ -23,6 +23,12 @@ const node = get('--node') || '';
 const score = parseFloat(get('--score') || 'NaN');
 const rationale = get('--rationale') || '';
 const effort = get('--effort') || '';
+// 2026-09-02: the node's NAME as read LIVE from the file (via use_figma) — required.
+// Why: the scorer's top match "Outage List Overview" (canonical-index figNode 750:174925)
+// resolved in the live file to "Schedule Operation — State D EndOnly", a 560×430 dialog
+// (docs/NODE-ID-CONFLICTS.md already listed that id). A clone by id alone would have
+// built a list report from a dialog, silently. The build code must assert this name.
+const name = get('--name') || '';
 
 // Validate node id FORMAT (N:N or N-N, optional file-prefix like E083...:2:5355 tolerated by
 // checking the trailing node segment). Reject obviously-bad input.
@@ -41,9 +47,16 @@ if (!rationale) {
   console.error('✗ --rationale is required (one line: why this reference)');
   process.exit(1);
 }
+if (!name) {
+  console.error('✗ --name is required: the node\'s name as read LIVE via use_figma (e.g. --name "Orders List Report").');
+  console.error('  Node ids drift between files and docs (750:174925 is a dialog in the live file, not the Outage List).');
+  console.error('  Read it:  use_figma → (await figma.getNodeByIdAsync("<id>")).name   then assert it in the clone code.');
+  process.exit(1);
+}
 
 const decision = {
   nodeId: node,
+  verifiedName: name,
   score,
   rationale,
   adaptationEffort: effort || '(unspecified)',

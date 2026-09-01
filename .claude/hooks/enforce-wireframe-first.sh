@@ -109,7 +109,9 @@ Your FIRST and ONLY output before user approval MUST be ALL 4 SECTIONS in this e
 
   5. Gate 0.7 — SELECT & RECORD the canonical reference (HIGHEST-LEVERAGE STEP):
      score candidates (score-canonical.js), pick the gold node, then
-     `node build/record-reference.js --node "<id>" --score <n> --rationale "..." --effort "..."`.
+     `node build/record-reference.js --node "<id>" --name "<name read LIVE via use_figma>" --score <n> --rationale "..." --effort "..."`.
+     READ THE NODE FIRST (name + width): ids drift between files and docs — the index's "Outage List"
+     id is a 560px dialog in the live file. The clone code must assert src.name === that name.
      guard-reference-gate.sh hard-blocks the build until this is recorded. Gold set + default
      anchor 9:1550 (dialogs) → memory reference_gold_standard_screen_set.md.
   6. Gate 1 — Canonical search: CLONE (with node ID) or BUILD. Never skip.
