@@ -136,6 +136,29 @@ jq -n '{hook_event_name:"SessionStart", source:"compact"}' | CLAUDE_PROJECT_DIR=
 jq -n '{hook_event_name:"SessionStart", source:"startup"}' | CLAUDE_PROJECT_DIR="$ROOT" bash "$H/clear-reuse-marker.sh" >/dev/null 2>&1
 [ ! -f "$M/.wireframe-approved" ] && [ ! -f "$M/.reuse-declared" ] && ok "SessionStart(source=startup) resets to a clean slate" || bad "fresh start did not clear the markers"
 
+echo "9. capture-dump.sh (the reality gate runs on the returned tree — no write-back by the model)"
+rm -f "$ROOT/output/9999-1-compact.json" "$ROOT/output/9999-1-tree.json" "$ROOT/output/9999-1-verify.json" "$M/.dump-in-progress"
+echo '{"level":2,"score":80,"baseCanonical":"889:45857","deltaSpec":null}' > "$M/.reuse-declared"
+ROW0='["9999:1","Test Screen","FRAME",true,"VERTICAL",1,"","","",1440,0,0,1440,800,"FIXED",true,"","#f5f6f7|1",""]'
+ROW1='["9999:2","Shell Bar","INSTANCE",true,"HORIZONTAL",2,"29a19a09fca9d6b091876a2945f88f33867f0487","","",1440,0,0,1440,52,"FILL",true,"9999:1","#ffffff|1",""]'
+# (a) full dump in one result
+PR=$(jq -n --arg t "{\"total\":2,\"rows\":[$ROW0,$ROW1]}" --arg cwd "$ROOT" '{tool_name:"mcp__figma__use_figma", tool_input:{code:"dump"}, tool_response:[{type:"text", text:$t}], cwd:$cwd, hook_event_name:"PostToolUse"}')
+printf '%s' "$PR" | CLAUDE_PROJECT_DIR="$ROOT" bash "$H/capture-dump.sh" >"$OUT" 2>"$ERR"
+if [ -f "$ROOT/output/9999-1-verify.json" ] && grep -q '<reality-gate node="9999:1"' "$OUT" && grep -q 'overallPass=' "$OUT"; then ok "a returned dump is saved, expanded and verified by the hook; the verdict is injected"; else bad "capture-dump full: $(head -c 200 "$OUT") $(head -c 200 "$ERR")"; fi
+# (b) sliced dump: slice 0 → partial notice; slice 1 → verdict
+rm -f "$ROOT/output/9999-1-compact.json" "$ROOT/output/9999-1-tree.json" "$ROOT/output/9999-1-verify.json"
+PR0=$(jq -n --arg t "{\"total\":2,\"from\":0,\"rows\":[$ROW0]}" --arg cwd "$ROOT" '{tool_name:"mcp__figma__use_figma", tool_input:{code:"dump"}, tool_response:[{type:"text", text:$t}], cwd:$cwd, hook_event_name:"PostToolUse"}')
+PR1=$(jq -n --arg t "{\"total\":2,\"from\":1,\"rows\":[$ROW1]}" --arg cwd "$ROOT" '{tool_name:"mcp__figma__use_figma", tool_input:{code:"dump"}, tool_response:[{type:"text", text:$t}], cwd:$cwd, hook_event_name:"PostToolUse"}')
+printf '%s' "$PR0" | CLAUDE_PROJECT_DIR="$ROOT" bash "$H/capture-dump.sh" >"$OUT" 2>"$ERR"
+grep -q 'status="partial"' "$OUT" && [ ! -f "$ROOT/output/9999-1-verify.json" ] && ok "slice 0 → 'partial', verifier not run yet" || bad "capture-dump slice 0: $(head -c 200 "$OUT")"
+printf '%s' "$PR1" | CLAUDE_PROJECT_DIR="$ROOT" bash "$H/capture-dump.sh" >"$OUT" 2>"$ERR"
+[ -f "$ROOT/output/9999-1-verify.json" ] && grep -q 'overallPass=' "$OUT" && [ "$(jq 'length' "$ROOT/output/9999-1-tree.json")" = "2" ] && ok "slice 1 completes the dump → 2 nodes verified, verdict injected" || bad "capture-dump slice 1: $(head -c 200 "$OUT")"
+# (c) an ordinary use_figma result is ignored
+PRX=$(jq -n --arg cwd "$ROOT" '{tool_name:"mcp__figma__use_figma", tool_input:{code:"x"}, tool_response:[{type:"text", text:"{\"rootId\":\"1:2\",\"qa\":{\"instances\":3}}"}], cwd:$cwd, hook_event_name:"PostToolUse"}')
+printf '%s' "$PRX" | CLAUDE_PROJECT_DIR="$ROOT" bash "$H/capture-dump.sh" >"$OUT" 2>"$ERR"
+[ ! -s "$OUT" ] && ok "a non-dump use_figma result is ignored" || bad "capture-dump reacted to a non-dump result"
+rm -f "$ROOT/output/9999-1-compact.json" "$ROOT/output/9999-1-tree.json" "$ROOT/output/9999-1-verify.json" "$M/.dump-in-progress"
+
 echo "7. executability (hooks in settings.json + guard-chain members + tools)"
 miss=0
 for h in $(grep -ohE '\.claude/hooks/[A-Za-z0-9_-]+\.sh' .claude/settings.json .claude/hooks/guard-chain.sh | sort -u) build/gate-status.sh build/measure-build.sh bin/sap-v2; do

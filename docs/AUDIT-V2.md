@@ -238,6 +238,7 @@ Implemented in v2, tested by `build/test-gates.sh` (28 synthetic-payload checks)
 | P6 | `guard-scoped-metadata.sh` — blocks `get_metadata` on `0:1`; flags any result > 20 KB with the scoped alternative | `.claude/hooks/guard-scoped-metadata.sh` |
 | P9 | `build/measure-build.sh` (delivered earlier), `build/test-gates.sh` (new, 31 checks) wired into `build/test-build.sh`; `build/replay-gates.sh` (replay any past session's real `use_figma` code through the current gates); `build/retest-headless.sh` (the §7 re-test, unattended, from a terminal); `build/expand-tree-dump.js` (compact live-tree dump → verifier shape, `--based-on` provenance) | `build/` |
 | P10 | `record-reference.js` now requires `--name` (the node's name read live) and every gate message says to read the node first; `clear-reuse-marker.sh` keeps markers across resume/compact and no longer deletes the reuse decision every turn | `build/record-reference.js`, `.claude/hooks/clear-reuse-marker.sh` |
+| P11-a | `capture-dump.sh` — the reality gate runs on the `use_figma` result inside a PostToolUse hook; the model never writes the tree back (−12k output tokens, no compaction); `build/templates/dump-tree.use_figma.js` and `dump-delta.use_figma.js` are the dump payloads | `.claude/hooks/capture-dump.sh`, `build/templates/` |
 
 Still proposed (each needs a separate decision):
 
@@ -348,7 +349,27 @@ Wall-clock: ~13 turns at roughly 20–30 s each on a 110–140k context ≈ **4�
 cd "/Users/C5408360/Downloads/sap-pipeline-v2" && bash build/retest-headless.sh     # or: bin/sap-v2, build by hand, then: bash build/measure-build.sh --latest
 ```
 
-Why it could not be produced here — tried three ways, each measured: (1) a `claude -p` started inside the desktop app inherits its per-session bearer token, which the API refuses for a child process (`401 Invalid bearer token`); (2) a clean-environment session **does** start (session `0c17b7ba…`: hooks ran, context loaded, 176 s to the first API call) but `~/.claude/settings.json` routes every CLI session through the corporate gateway on `localhost:6655` (the `corporate` alias in `~/.zshrc`), and that gateway was **not running**: `API Error: Connection refused`; (3) the desktop app's own proxy (`localhost:11436`) is a boundary deliberately not worked around. So the one command is, in a terminal:
+### 9.2a Measured — fresh-context benchmark (2026-09-02, supersedes the projection above)
+
+A clean-context agent (Sonnet-class model, no prior conversation, this session's sanctioned auth path, the real Figma file) ran the same v2 protocol by hand — gate-status → scorer → read the canonical live → record → code gates on each payload → build → reality gate → one screenshot. Its full transcript was measured with `measure-build.sh`:
+
+| | Run A (Sep 1, yours) | **Fresh-context v2 build** |
+|---|---|---|
+| Wall-clock | 7.1 min | **9.7 min** (7.3 build · ~1.5 reality gate · 0.9 hand-off after a compaction) |
+| Output tokens | 33,122 | **31,727** |
+| Context: first turn / avg / max | 88k / 120k / 159k | 123k / 149k / 170k → compaction |
+| `use_figma` calls | 9 (2 threw) | 6 (1 read · 2 build · 3 dump) — **0 errors, 0 gate refusals** |
+| Screenshots | 6 | **1** |
+| `createFrame` in code | 55 | **0** |
+| Result | native-heavy, unverified | `1251:56875`, verified: **0 raw hex, 0 overflow** |
+
+Where the 31.7k output tokens went (code/JSON ≈ 3 chars per token): writing the 204-node dump back to disk for the verifier ≈ **12k**; the two build calls ≈ 6.7k; the same code written to files for the pre-flight gate check ≈ 3.8k (benchmark-only — a hooked session checks the tool input without a file); dump code sent three times ≈ 1.6k; wireframe text + Bash ≈ 2.5k; other ≈ 5k. The three dump slices also added ≈ 12k of context, which is what tipped the session into compaction.
+
+**Honest verdict on time and tokens: not yet better.** Same tokens as the broken run, 2.6 minutes slower — because the reality gate, which had never run on a live build before, costs ~24k tokens round-trip when the model must echo the tree back. The build itself (steps 1–7) cost ≈ 11k output tokens and ≈ 5 min, inside target.
+
+**The fix, implemented and proven on the real data:** `.claude/hooks/capture-dump.sh` (PostToolUse on `use_figma`) recognises a dump in the tool result, saves it, accumulates slices, expands it, runs `verify-invariants.js` with provenance from `.reuse-declared`, and injects only the verdict. Replayed against the benchmark's three real dump results it produced `output/1251-56875-{compact,tree,verify}.json` and the verdict with zero model write-back (`test-gates.sh` §9, 3 checks). Expected effect: 31.7k − 12k (write-back) − 3.8k (file duplication, absent under hooks) ≈ **16k output tokens** and no compaction → ≈ **7 min**; with `build/templates/dump-delta.use_figma.js` for light edits, ≈ 12k. That expectation is a derivation from the measured split; the confirming measurement is the fresh terminal session below.
+
+Why a fresh *terminal* session could not be run here — tried three ways, each measured: (1) a `claude -p` started inside the desktop app inherits its per-session bearer token, which the API refuses for a child process (`401 Invalid bearer token`); (2) a clean-environment session **does** start (session `0c17b7ba…`: hooks ran, context loaded, 176 s to the first API call) but `~/.claude/settings.json` routes every CLI session through the corporate gateway on `localhost:6655` (the `corporate` alias in `~/.zshrc`), and that gateway was **not running**: `API Error: Connection refused`; (3) the desktop app's own proxy (`localhost:11436`) is a boundary deliberately not worked around. So the one command is, in a terminal:
 
 ```bash
 corporate && cd "/Users/C5408360/Downloads/sap-pipeline-v2" && bash build/retest-headless.sh

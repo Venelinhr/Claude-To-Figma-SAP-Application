@@ -90,6 +90,11 @@
           {
             "type": "command",
             "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/count-build.sh"
+          },
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/capture-dump.sh",
+            "statusMessage": "SAP reality gate on the returned tree…"
           }
         ]
       },
