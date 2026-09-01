@@ -348,7 +348,13 @@ Wall-clock: ~13 turns at roughly 20–30 s each on a 110–140k context ≈ **4�
 cd "/Users/C5408360/Downloads/sap-pipeline-v2" && bash build/retest-headless.sh     # or: bin/sap-v2, build by hand, then: bash build/measure-build.sh --latest
 ```
 
-Why it could not be produced here: a `claude -p` started inside the desktop app inherits a per-session bearer token that the API refuses for a child process (`401 Invalid bearer token`), and a clean environment has no credentials. That boundary is deliberate; it was not worked around.
+Why it could not be produced here — tried three ways, each measured: (1) a `claude -p` started inside the desktop app inherits its per-session bearer token, which the API refuses for a child process (`401 Invalid bearer token`); (2) a clean-environment session **does** start (session `0c17b7ba…`: hooks ran, context loaded, 176 s to the first API call) but `~/.claude/settings.json` routes every CLI session through the corporate gateway on `localhost:6655` (the `corporate` alias in `~/.zshrc`), and that gateway was **not running**: `API Error: Connection refused`; (3) the desktop app's own proxy (`localhost:11436`) is a boundary deliberately not worked around. So the one command is, in a terminal:
+
+```bash
+corporate && cd "/Users/C5408360/Downloads/sap-pipeline-v2" && bash build/retest-headless.sh
+```
+
+The runner now refuses to start when the gateway is down and passes the alias's proxy variables through. First turn takes 3 minutes before the first token (cold start) — that is normal.
 
 ### 9.3 Token levers, ranked by what they save per build
 

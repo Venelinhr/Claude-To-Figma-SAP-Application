@@ -28,13 +28,30 @@ I should be able to search, filter, sort the results and open a purchase order t
 PROMPT2="Architecture approved. Wireframe approved. If no canonical scores 60 or more, build from scratch is OK. Build it now — satisfy every line of gate-status first, one use_figma build call, then hand off with the validated URL."
 PROMPT3="Continue. Satisfy every remaining line of bash build/gate-status.sh, then build. Approved."
 
+# RUN THIS FROM A TERMINAL IN CORPORATE MODE (2026-09-02 findings):
+#   ~/.claude/settings.json routes every CLI session through the local gateway on
+#   localhost:6655 (the `corporate` alias in ~/.zshrc). If that gateway is not running the
+#   first turn ends with "API Error: Connection refused". A session started from inside the
+#   Claude desktop app cannot run this either: it inherits a per-session bearer token the API
+#   refuses for a child process (401). So:   corporate   →   bash build/retest-headless.sh
+# The CLI runs in a clean environment (the desktop app's variables would break auth) but the
+# proxy variables the corporate alias sets are passed through. Cold start (hooks + ~15 MCP
+# servers) takes a minute or more before the first token — do not mistake that for a hang.
+if ! curl -sS -m 3 -o /dev/null "http://localhost:6655/anthropic/" 2>/dev/null; then
+  echo "⛔ local gateway localhost:6655 is not reachable — run the \`corporate\` alias / start the gateway first (see header)." >&2
+  exit 1
+fi
+cl() { env -i HOME="$HOME" PATH="$PATH" USER="$USER" SHELL="${SHELL:-/bin/zsh}" TERM="${TERM:-xterm}" LANG="${LANG:-en_US.UTF-8}" \
+       ${HTTPS_PROXY:+HTTPS_PROXY="$HTTPS_PROXY"} ${HTTP_PROXY:+HTTP_PROXY="$HTTP_PROXY"} ${NO_PROXY:+NO_PROXY="$NO_PROXY"} \
+       ${ANTHROPIC_BASE_URL:+ANTHROPIC_BASE_URL="$ANTHROPIC_BASE_URL"} ${ANTHROPIC_AUTH_TOKEN:+ANTHROPIC_AUTH_TOKEN="$ANTHROPIC_AUTH_TOKEN"} \
+       claude "$@"; }
 run_turn() {  # $1 = prompt, $2 = session id or empty → prints JSON result
   # The prompt goes in on STDIN: --allowedTools is variadic and would swallow a trailing
   # positional prompt as another tool name ("Input must be provided…" — seen 2026-09-01).
   if [ -n "${2:-}" ]; then
-    printf '%s' "$1" | claude -p --resume "$2" --output-format json --permission-mode acceptEdits --allowedTools "$TOOLS" 2>>"$LOG"
+    printf '%s' "$1" | cl -p --resume "$2" --output-format json --permission-mode acceptEdits --allowedTools "$TOOLS" 2>>"$LOG"
   else
-    printf '%s' "$1" | claude -p --output-format json --permission-mode acceptEdits --allowedTools "$TOOLS" 2>>"$LOG"
+    printf '%s' "$1" | cl -p --output-format json --permission-mode acceptEdits --allowedTools "$TOOLS" 2>>"$LOG"
   fi
 }
 show() { jq -r '"  session=\(.session_id // "?")  turns=\(.num_turns // "?")  cost_usd=\(.total_cost_usd // "?")  duration_s=\((.duration_ms // 0) / 1000 | floor)\n  ── result head ──\n\(.result // "" | .[0:700])"' <<<"$1" 2>/dev/null || printf '%s\n' "${1:0:700}"; }
