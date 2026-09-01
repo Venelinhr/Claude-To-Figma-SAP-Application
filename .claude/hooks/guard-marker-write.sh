@@ -28,7 +28,7 @@
 
 TIER1='wireframe-approved|scratch-approved|architect-approved'
 TIER2='reference-selected|reuse-declared|workflow-loaded|last-build-node'
-TIER3='wireframe-pending'
+TIER3='wireframe-pending|screenshots-taken|builds-count|screenshot-requested'
 ALL="$TIER1|$TIER2|$TIER3"
 
 INPUT=$(cat)

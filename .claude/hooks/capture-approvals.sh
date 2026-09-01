@@ -72,6 +72,12 @@ if [ -f "$PROJ/.claude/.wireframe-pending" ]; then
   fi
 fi
 
+# ── Explicit screenshot request (grants one screenshot above the budget) ──────
+# guard-screenshot-budget.sh allows 1 + one-per-build; the user's own words may add one.
+if echo "$PROMPT" | grep -qE "screenshot|show me (the|a|how)|let me see|can i see|take a (picture|shot)"; then
+  printf 'requested %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || echo session)" > "$PROJ/.claude/.screenshot-requested"
+fi
+
 # ── Explicit consent to build from scratch (pure Figma frames, no canonical) ──
 # WIDENED 2026-08-28. The old list required the exact words "from scratch". A real
 # reply of "build form scratch" (a one-letter typo) therefore wrote no marker, the

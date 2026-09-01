@@ -1,5 +1,5 @@
 {
-  "//": "SELF-CONTAINED 2026-08-28 (v2). Previously this file relied on ~/.claude/settings.json to register the 6 use_figma guards + UserPromptSubmit/Stop/SessionStart chain via an absolute path to the ORIGINAL project folder. That made this copy ungated: the global dispatcher checks the session cwd against its own hardcoded root, sees a different folder, and exits 0 — every gate silently dormant. All hooks are now registered HERE using $CLAUDE_PROJECT_DIR, so whichever folder you launch from gates itself. No double-firing: the global registration still points at the original folder's dispatcher, which no-ops for this cwd.",
+  "//": "SELF-CONTAINED 2026-08-28 (v2). Previously this file relied on ~/.claude/settings.json to register the use_figma guards + UserPromptSubmit/Stop/SessionStart chain via an absolute path to the ORIGINAL project folder. That made this copy ungated: the global dispatcher checks the session cwd against its own hardcoded root, sees a different folder, and exits 0 — every gate silently dormant. All hooks are registered HERE using $CLAUDE_PROJECT_DIR, so a session launched from THIS folder gates itself (a session launched elsewhere loads none of this — see bin/sap-v2 and AUDIT-V2 §1.1). 2026-09-01: the 8 use_figma PreToolUse gates run through guard-chain.sh so ONE refusal reports EVERY failing gate; screenshot budget, scoped metadata and build counting added.",
   "hooks": {
     "SessionStart": [
       {
@@ -86,6 +86,19 @@
           {
             "type": "command",
             "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/mark-build.sh"
+          },
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/count-build.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "mcp__figma__get_metadata",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/guard-scoped-metadata.sh"
           }
         ]
       }
@@ -133,31 +146,26 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/guard-workflow-contract.sh"
-          },
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/guard-chain.sh",
+            "statusMessage": "SAP build gates (all at once)…"
+          }
+        ]
+      },
+      {
+        "matcher": "mcp__figma__get_screenshot|mcp__figma__take_screenshot",
+        "hooks": [
           {
             "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/guard-reference-gate.sh"
-          },
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/guard-screenshot-budget.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "mcp__figma__get_metadata",
+        "hooks": [
           {
             "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/guard-architect-gate.sh"
-          },
-          {
-            "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/guard-wireframe-gate.sh"
-          },
-          {
-            "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/guard-reuse-gate.sh"
-          },
-          {
-            "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/guard-figma-code.sh"
-          },
-          {
-            "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/guard-manifest-drift.sh"
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/guard-scoped-metadata.sh"
           }
         ]
       }

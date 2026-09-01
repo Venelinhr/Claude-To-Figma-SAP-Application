@@ -53,10 +53,12 @@ Root causes this rule fixes (from the 2026-07-22 performance audit): re-approval
 
 ## ⭐ SKILLS — INVOKE THESE, NOT RAW INSTRUCTIONS
 
-**Launch Claude from the project folder first** (so all hooks are active):
+**Launch Claude from THIS project folder first** (so all hooks are active) — in the terminal, never by pasting into Claude:
 ```bash
-cd "/Users/C5408360/Downloads/Task to Figma SAP layouts components" && claude
+"/Users/C5408360/Downloads/sap-pipeline-v2/bin/sap-v2"
 ```
+The first turn must print `✅ SAP pipeline v2 — project hooks ACTIVE`. No line = no gates (AUDIT-V2 §1.1).
+Before writing any build code: `bash build/gate-status.sh` — every precondition on one screen (AUDIT-V2 P0').
 
 | Skill | Command | When to use |
 |---|---|---|
@@ -259,7 +261,7 @@ It ships with the repo. Every build clones from it. No exceptions.
 
 ### Reuse-First enforcement (RULE 31 — mechanical since 2026-07-17)
 - **Score:** `node build/score-canonical.js --floorplan "<fp>" --regions <r> --components <c>` — deterministic, use it
-- **Record decision:** `echo '{"level":N,"score":S,"baseCanonical":"<id>","deltaSpec":null}' > .claude/.reuse-declared`
+- **Record decision:** `node build/record-reuse-decision.js --level N --score S --base "<id|none>"` (raw writes to the marker are blocked by guard-marker-write.sh)
 - **Gate blocks** if missing/invalid, if L1-4 code lacks `.clone(`, or if L5 lacks `.scratch-approved`
 - **Integrity:** `node build/check-reuse-integrity.js` · token/key drift now **hard-fails** in `check-manifest-sync.js`
 

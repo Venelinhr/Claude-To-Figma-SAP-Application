@@ -45,11 +45,12 @@ Before building you MUST:
 1. Score the request:   node build/score-canonical.js --floorplan \"<fp>\" --regions <r1,r2> --components <c1,c2>
 2. Pick the top match + reuse level (1-5).
 3. For Level 1-4, write a delta-spec and validate it:  node build/validate-delta-spec.js <spec.json>
-4. Record the decision as JSON:
-   echo '{\"level\":<N>,\"score\":<S>,\"baseCanonical\":\"<id-or-none>\",\"deltaSpec\":\"<path-or-null>\"}' > .claude/.reuse-declared
+4. Record the decision with the sanctioned script (raw writes to the marker are blocked):
+   node build/record-reuse-decision.js --level <N> --score <S> --base \"<node-id>\" [--delta <path>]
 
 If this is a genuine Level 5 (no canonical scored >=60):
-   echo '{\"level\":5,\"score\":0,\"baseCanonical\":\"none\",\"deltaSpec\":null}' > .claude/.reuse-declared
+   node build/record-reuse-decision.js --level 5 --score <S> --base none
+All preconditions at once:  bash build/gate-status.sh
 
 Reuse > rebuild. Do not rebuild a screen a canonical could satisfy."
 fi
@@ -62,7 +63,7 @@ DELTA=$(jq -r '.deltaSpec // empty' "$MARKER" 2>/dev/null)
 
 if [ -z "$LEVEL" ]; then
   blockmsg "⛔ RULE 31 BLOCKED — .claude/.reuse-declared is not valid JSON (no .level).
-Rewrite it: echo '{\"level\":<N>,\"score\":<S>,\"baseCanonical\":\"<id>\",\"deltaSpec\":\"<path-or-null>\"}' > .claude/.reuse-declared"
+Rewrite it:  node build/record-reuse-decision.js --level <N> --score <S> --base \"<id|none>\""
 fi
 
 # level 1-5

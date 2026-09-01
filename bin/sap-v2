@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# sap-v2 — launch Claude Code INSIDE the v2 project, so every gate is active.
+#
+# Why this exists (2026-09-01): the "v2 test" was started from $HOME — the launch
+# line was pasted into Claude instead of the terminal. Project hooks and CLAUDE.md
+# load from the launch directory only, so zero gates ran and the wrong pipeline was
+# measured. This script makes the right launch a single word.
+#
+# Usage:   bin/sap-v2 [any claude args…]
+# Alias:   alias sap-v2='"/Users/C5408360/Downloads/sap-pipeline-v2/bin/sap-v2"'
+set -e
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+if [ ! -f "$ROOT/SAP_BUILD_MANIFEST.md" ] || [ ! -f "$ROOT/.claude/settings.json" ]; then
+  echo "sap-v2: $ROOT is not a SAP pipeline project (no SAP_BUILD_MANIFEST.md / .claude/settings.json)" >&2
+  exit 1
+fi
+command -v claude >/dev/null 2>&1 || { echo "sap-v2: 'claude' is not in PATH" >&2; exit 1; }
+cd "$ROOT"
+N=$(grep -c '"command"' .claude/settings.json 2>/dev/null || echo '?')
+echo "sap-v2 → $ROOT   ($N project hooks will load; expect the ✅ ACTIVE line on the first turn)"
+exec claude "$@"

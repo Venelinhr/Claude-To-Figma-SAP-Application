@@ -55,6 +55,10 @@ semantic-models/project-knowledge-*.md
 .claude/.scratch-approved
 .claude/.workflow-loaded
 .claude/.agent-turn1
+.claude/.wireframe-pending
+.claude/.screenshots-taken
+.claude/.builds-count
+.claude/.screenshot-requested
 .claude/.bridge-token
 .claude/.manifest-sync-ok
 .claude/.reference-selected

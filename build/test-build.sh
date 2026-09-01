@@ -293,5 +293,22 @@ rm -f "$PROJECT_ROOT/.claude/.wireframe-pending" "$PROJECT_ROOT/.claude/.wirefra
 if [ "$wf_fail" -ne 0 ]; then exit 1; fi
 
 echo ""
+echo "$(printf '─%.0s' {1..60})"
+echo "Gate machinery (build/test-gates.sh — 28 synthetic hook payloads)"
+echo "$(printf '─%.0s' {1..60})"
+# ADDED 2026-09-01 (AUDIT-V2 Part C). Runs guard-chain / gate-status / api-gotchas /
+# figma-code / screenshot budget / scoped metadata against synthetic payloads. Wired here
+# so it can never become an orphan like lint-instance-ratio.js once was.
+GATES_LOG=$(mktemp)
+if bash build/test-gates.sh >"$GATES_LOG" 2>&1; then
+  grep -E '^Results' "$GATES_LOG" | sed 's/^/  ✓ /'
+else
+  cat "$GATES_LOG"; rm -f "$GATES_LOG"
+  echo -e "${RED}Gate machinery regression — see build/test-gates.sh output above${NC}"
+  exit 1
+fi
+rm -f "$GATES_LOG"
+
+echo ""
 echo "All specs within baseline. Pipeline is clean."
 exit 0

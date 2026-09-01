@@ -66,7 +66,7 @@ Launched correctly from the v2 folder with `/sap-screen`. Gates ACTIVE (`wirefra
 | 11:01:10 | 13 KB (cf 2 · ci 9 · clone 1) | ⛔ blocked — `guard-wireframe-gate.sh` |
 | 11:02:59 | — | context exhausted → compaction |
 
-Five times the agent generated the full screen (≈7k output tokens each, ≈35k total), and five times a gate refused it — a *different* gate each time, because the PreToolUse chain stops at the first failure and reports only that one. The "approved" prompt at 10:55:35 cost 22,307 tokens of follow-up with three blocked builds inside it. Three bare `continue` prompts (10:51–10:53) were needed to get the agent moving after stops.
+Five times the agent generated the full screen (≈7k output tokens each, ≈35k total), and five times a gate refused it — a *different* gate each time. The log shows exactly one gate's message per refusal, so each attempt taught the agent one missing precondition. The "approved" prompt at 10:55:35 cost 22,307 tokens of follow-up with three blocked builds inside it. Three bare `continue` prompts (10:51–10:53) were needed to get the agent moving after stops.
 
 **The gates did their job. The cost model around them is the defect:** the check happens *after* the expensive step (code generation), one precondition at a time, on a monolithic 13–17 KB payload.
 
@@ -210,9 +210,9 @@ Priority = risk (what breaks) × frequency (how often) × cost (tokens/minutes).
 
 1. **Launch correctly — in the terminal, not in Claude:**
    ```bash
-   cd "/Users/C5408360/Downloads/sap-pipeline-v2" && claude
+   "/Users/C5408360/Downloads/sap-pipeline-v2/bin/sap-v2"
    ```
-   The first assistant turn must show the `<workflow-contract-directive>` block. If it does not, stop: the gates are off.
+   The first assistant turn must show `✅ SAP pipeline v2 — project hooks ACTIVE`. If it does not, stop: the gates are off.
 2. **Same prompt as Run A** (Purchase Order Overview: 6 filters, 7 columns, status badges, search/sort/drill-down, save to the same Figma file). Fresh session. Answer the wireframe question with one word: `approve`.
 3. **Measure:**
    ```bash
@@ -223,6 +223,35 @@ Priority = risk (what breaks) × frequency (how often) × cost (tokens/minutes).
 5. **Then the same prompt on version 1**, launched from its own folder, measured with the same script. That is the comparison you asked for — later, and only after v2 is fixed.
 
 ---
+
+## 8. Status after Part C (2026-09-01, same day — "fix first, then re-test")
+
+Implemented in v2, tested by `build/test-gates.sh` (28 synthetic-payload checks) and `build/test-build.sh`:
+
+| # | Delivered | Where |
+|---|---|---|
+| P0 | `bin/sap-v2` launcher; `✅ … project hooks ACTIVE` line at every session start; `global-gates-off-warning.sh` (warns when a SAP build is requested outside a project — needs one global registration, see below); CLAUDE.md launch block corrected (it pointed at version 1's folder) | `bin/sap-v2`, `.claude/hooks/load-workflow-contract.sh`, `.claude/hooks/global-gates-off-warning.sh`, `CLAUDE.md` |
+| P0' | `build/gate-status.sh` — every precondition on one screen with the exact command for each; injected into every build prompt by `enforce-wireframe-first.sh`; `guard-chain.sh` runs all 8 use_figma gates and reports every failure in one message; gate messages now name the sanctioned `record-reuse-decision.js` (they told the agent to `echo >` a marker that the marker guard blocks — a contradiction that cost Run B 25 Bash calls) | `build/gate-status.sh`, `.claude/hooks/guard-chain.sh`, `.claude/hooks/enforce-wireframe-first.sh`, `.claude/hooks/guard-reuse-gate.sh`, `CLAUDE.md` |
+| P1 | `guard-api-gotchas.sh` — blocks `'HUG'`/`'FILL'` on sizing modes, `'STRETCH'`, `individualStrokeWeights`, FILL-before-append (by character offset), FILL into a `createFrame()` parent with no `layoutMode`, FILL on a page-level frame | `.claude/hooks/guard-api-gotchas.sh` |
+| P3 | `guard-figma-code.sh` Block 2 (a `createFrame/createText` variable named after any of the 152 registry components, or a checkbox glyph in `characters`) and Block 3 (more frames than instances, ≥6, unless `// layout-only: N`); `guard-workflow-contract.sh` scoped to builds like every other gate | `.claude/hooks/guard-figma-code.sh`, `.claude/hooks/guard-workflow-contract.sh` |
+| P5 | `guard-screenshot-budget.sh` (1 + one per completed build; the user's own words grant one more via `capture-approvals.sh`) + `count-build.sh` | `.claude/hooks/guard-screenshot-budget.sh`, `.claude/hooks/count-build.sh`, `.claude/hooks/capture-approvals.sh` |
+| P6 | `guard-scoped-metadata.sh` — blocks `get_metadata` on `0:1`; flags any result > 20 KB with the scoped alternative | `.claude/hooks/guard-scoped-metadata.sh` |
+| P9 | `build/measure-build.sh` (delivered earlier), `build/test-gates.sh` (new) wired into `build/test-build.sh` | `build/` |
+
+Still proposed (each needs a separate decision):
+
+| # | Item | Why not yet |
+|---|---|---|
+| P2 | Zone-by-zone build as the default | Guidance only for now (`gate-status` READY text + directive). A hard cap on build-code size is possible but should be sized from the re-test numbers. |
+| P4 | Context diet (duplicate MCP servers, `CLAUDE.md` 44 KB → ≤10 KB) | Measure the exact split first (§7 step 4); a dropped hard rule is a regression. |
+| P7 | Retire/rename the global legacy `SAP-Figma-screen-creator` skill | Lives in `~/.claude/skills` — your machine, your call. |
+| P0 (global) | Register the gates-off warning globally | One command, your global settings: |
+
+```bash
+jq '.hooks.UserPromptSubmit += [{"hooks":[{"type":"command","command":"\"/Users/C5408360/Downloads/sap-pipeline-v2/.claude/hooks/global-gates-off-warning.sh\""}]}]' ~/.claude/settings.json > /tmp/s.json && mv /tmp/s.json ~/.claude/settings.json
+```
+
+Expected effect on the re-test (§7): the five-refusal loop cannot recur (all preconditions are listed before any code is written, and one refusal lists everything); the two API-trap deaths cannot recur; a native-heavy or glyph-checkbox build is refused before it reaches Figma; screenshots stop at the budget. Time/tokens are now measured the same way every run — that number, not a feeling, decides the comparison with version 1.
 
 ## Appendix — evidence pointers
 

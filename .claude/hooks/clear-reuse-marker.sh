@@ -48,6 +48,7 @@ if [ "$EVENT" = "SessionStart" ]; then
         "$PROJ/.claude/.architect-approved" "$PROJ/.claude/.reference-selected" \
         "$PROJ/.claude/.inspect-done" "$PROJ/.claude/.canonical-selected" \
         "$PROJ/.claude/.agent-turn1" "$PROJ/.claude/.last-build-node" \
-        "$PROJ/.claude/.wireframe-pending" 2>/dev/null
+        "$PROJ/.claude/.wireframe-pending" \
+        "$PROJ/.claude/.screenshots-taken" "$PROJ/.claude/.builds-count" "$PROJ/.claude/.screenshot-requested" 2>/dev/null
 fi
 exit 0

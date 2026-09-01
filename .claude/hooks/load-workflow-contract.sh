@@ -37,4 +37,9 @@ existing non-compliant screen, run /sap-fix <nodeId>.
 </workflow-contract-directive>
 EOF
 
+# Visible proof that THIS project's hooks are alive (AUDIT-V2 P0). If this line is absent at
+# session start, the session was launched outside the project and every gate is OFF.
+N=$(grep -c '"command"' "$PROJ/.claude/settings.json" 2>/dev/null || echo '?')
+echo "✅ SAP pipeline v2 — project hooks ACTIVE in $PROJ ($N hook commands). Before any build code: bash build/gate-status.sh"
+
 exit 0

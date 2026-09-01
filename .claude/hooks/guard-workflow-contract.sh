@@ -22,6 +22,12 @@ echo "$TOOL" | grep -qi "use_figma" || exit 0
 PROJ="${CLAUDE_PROJECT_DIR:-$(cd "$(dirname "$0")/../.." && pwd)}"
 MARKER="$PROJ/.claude/.workflow-loaded"
 
+# Scoped to BUILD calls (2026-09-01). Read-only use_figma inspection gains nothing from a
+# refusal to "read the contract first" — every other gate lets reads through; this one now too.
+CODE=$(echo "$INPUT" | jq -r '.tool_input.code // ""')
+source "$(dirname "$0")/lib-build-detect.sh"
+is_build "$CODE" || exit 0
+
 if [ ! -f "$MARKER" ]; then
   echo "⛔ WORKFLOW CONTRACT NOT BOOTSTRAPPED for this session." >&2
   echo "" >&2

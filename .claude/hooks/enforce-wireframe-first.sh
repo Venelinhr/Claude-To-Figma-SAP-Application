@@ -72,6 +72,7 @@ Keep it tight — a label fix or resize should be 2-3 lines, then build. Reuse t
 For a genuinely NEW screen or a new reference image, the full Gate 0→3 still applies.
 </wireframe-edit-gate>
 SHORTFORM
+  echo "<gate-status>"; bash "$PROJ/build/gate-status.sh" 2>/dev/null; echo "</gate-status>"
   exit 0
 fi
 
@@ -128,8 +129,13 @@ propose anything else before the 4 sections + STOP.
 
 The .wireframe-approved marker is written ONLY by the user's approval words.
 You cannot write it yourself.
+
+⚡ COST RULE (AUDIT-V2 P0'): do NOT write build code until EVERY line of the gate status
+below is ✓. Satisfy all of them in one pass, then ONE use_figma build call (zone by zone
+for 8+ components). Re-check any time with:  bash build/gate-status.sh
 </wireframe-first-gate>
 DIRECTIVE
+  echo "<gate-status>"; bash "$PROJ/build/gate-status.sh" 2>/dev/null; echo "</gate-status>"
 fi
 
 exit 0
