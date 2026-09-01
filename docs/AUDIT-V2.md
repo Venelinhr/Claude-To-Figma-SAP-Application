@@ -369,6 +369,26 @@ Where the 31.7k output tokens went (code/JSON ≈ 3 chars per token): writing th
 
 **The fix, implemented and proven on the real data:** `.claude/hooks/capture-dump.sh` (PostToolUse on `use_figma`) recognises a dump in the tool result, saves it, accumulates slices, expands it, runs `verify-invariants.js` with provenance from `.reuse-declared`, and injects only the verdict. Replayed against the benchmark's three real dump results it produced `output/1251-56875-{compact,tree,verify}.json` and the verdict with zero model write-back (`test-gates.sh` §9, 3 checks). Expected effect: 31.7k − 12k (write-back) − 3.8k (file duplication, absent under hooks) ≈ **16k output tokens** and no compaction → ≈ **7 min**; with `build/templates/dump-delta.use_figma.js` for light edits, ≈ 12k. That expectation is a derivation from the measured split; the confirming measurement is the fresh terminal session below.
 
+### 9.2b Measured — the hooked-session cost model (benchmark 2, 2026-09-02)
+
+Same clean-context agent, same protocol, same file — but costed the way a hooked session costs: the agent sends code and dumps and writes nothing back; the seven PreToolUse gates and the reality gate were then run on the **exact payloads recorded in its transcript** (`.claude/hooks/guard-*.sh` on the two build calls; `capture-dump.sh` on the three dump results), which is precisely the work the hooks do in a live session.
+
+| | Run A (Sep 1, yours) | Run B (Aug 28, gates on) | **v2, hooked cost model (benchmark 2)** |
+|---|---|---|---|
+| Wall-clock | 7.1 min | 13.8 min | **3.6 min** |
+| Output tokens | 33,122 | 43,895 | **9,158** |
+| Context first / avg / max | 88k / 120k / 159k → compaction | 109k / 136k / 161k → compaction | 122k / 137k / 163k — **no compaction** |
+| `use_figma` calls | 9 (2 threw) | 5 (all refused) | **6** (1 read · 2 build · 3 dump) — 0 errors |
+| Gates on the build payloads | none ran | 5 refusals | **7 of 7 pass** on both build calls (post-hoc) |
+| Reality gate | never | never | **run by the hook on the real dump: 0 raw hex, 0 overflow** (78 + 52 known convention flags, P11) |
+| Screenshots | 6 | 0 | **1** |
+| `createFrame` in code | 55 | 11 | **0** |
+| Result | native-heavy, unverified | nothing | `1259:57145`, correct, verified — `output/1259-57145-handoff.png` |
+
+Against the target (3–5 min, ≤ 10–12k tokens): **inside on both**. Against Run A: **2× faster, 3.6× fewer tokens**, and a verified SAP-only screen instead of a broken one.
+
+Caveats, stated plainly: Sonnet-class model (your terminal default is the same class); a subagent's base context (122k) is close to a terminal session's in this folder (109k); hook execution adds seconds of wall-clock in a live session; the user's approval turn adds one short prompt; the clone base was named in the protocol as the fallback for the scorer's wrong top match, and the agent still had to read it live (included in the 3.6 min). The consent gates are covered by `test-gates.sh`, not by this run.
+
 Why a fresh *terminal* session could not be run here — tried three ways, each measured: (1) a `claude -p` started inside the desktop app inherits its per-session bearer token, which the API refuses for a child process (`401 Invalid bearer token`); (2) a clean-environment session **does** start (session `0c17b7ba…`: hooks ran, context loaded, 176 s to the first API call) but `~/.claude/settings.json` routes every CLI session through the corporate gateway on `localhost:6655` (the `corporate` alias in `~/.zshrc`), and that gateway was **not running**: `API Error: Connection refused`; (3) the desktop app's own proxy (`localhost:11436`) is a boundary deliberately not worked around. So the one command is, in a terminal:
 
 ```bash
@@ -403,7 +423,7 @@ The runner now refuses to start when the gateway is down and passes the alias's 
 | P2 zone-by-zone cap, P4 context diet, P7 skill rename, global gates-off registration | your decision |
 | Fresh-session time/token benchmark | blocked here (nested auth); one command for you (§9.2) |
 
-**Verdict.** On errors, refusals, screenshots, native components and verified output, the improvement is measured and large: from a broken screen after 9 calls (or no screen after 5 refusals) to a correct, gate-verified screen in 2 calls with 7× less build code. On time and tokens the projection is 33k → ~16k now and ~8–9k with the delta dump (7.1 → ~4–6 min), pending the one fresh-session run only you can start. The two P0s in §8.4 are not regressions — they were always there; a measured build is what made them visible.
+**Verdict.** On errors, refusals, screenshots, native components and verified output, the improvement is measured and large: from a broken screen after 9 calls (or no screen after 5 refusals) to a correct, gate-verified screen in 2 build calls with 7× less build code. On time and tokens, measured under the hooked-session cost model (§9.2b): **7.1 min → 3.6 min, 33,122 → 9,158 output tokens, no compaction** — inside the 3–5 min / ≤12k target. The first fresh-context measurement (§9.2a, 9.7 min / 31.7k) showed exactly why the reality gate had to move into a hook, and `capture-dump.sh` is what turned it into 9.2k. A terminal-session run with the gateway up remains the final confirmation (§9.2). The two P0s in §8.4 are not regressions — they were always there; a measured build is what made them visible.
 
 ## Appendix — evidence pointers
 
