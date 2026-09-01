@@ -52,6 +52,9 @@ if [ "$IS_NEW_SCREEN" = "true" ]; then EDIT_ON_EXISTING=false; fi
 
 # ── Branch: short-form for edits on existing builds ─────────────────────────
 if [ "$IS_BUILD" = "true" ] && [ "$EDIT_ON_EXISTING" = "true" ] && [ "$IS_NEW_SCREEN" = "false" ]; then
+  # Same proof-of-demand stamp as the full gate below — a short-form mini-ASCII
+  # still requires something to have been shown before "go"/"yes" can approve it.
+  echo "pending $(date -u +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || echo session)" > "$PROJ/.claude/.wireframe-pending" 2>/dev/null
   cat << 'SHORTFORM'
 <wireframe-edit-gate>
 ✎ EDIT ON AN EXISTING SCREEN — SHORT-FORM GATE (F-3, RC-4).
@@ -73,6 +76,12 @@ SHORTFORM
 fi
 
 if [ "$IS_BUILD" = "true" ]; then
+  # F-11 (2026-09-01): stamp proof that the mandatory wireframe was actually demanded
+  # THIS turn, before any approval word can be accepted for it. Closes the gap found
+  # live: capture-approvals.sh could write .wireframe-approved off approval-shaped
+  # words alone, even if no wireframe had ever been shown — "approved... of what?"
+  # was never asked. Cleared at SessionStart alongside the other gate markers.
+  echo "pending $(date -u +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || echo session)" > "$PROJ/.claude/.wireframe-pending" 2>/dev/null
   cat << 'DIRECTIVE'
 <wireframe-first-gate>
 ⛔ HARD RULE — MANDATORY GATE 3 (RULE 19) — SHOW WIREFRAME BEFORE ANYTHING ELSE.

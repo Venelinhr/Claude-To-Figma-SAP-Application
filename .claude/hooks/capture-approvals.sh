@@ -40,20 +40,36 @@ fi
 #   STRONG — unambiguous, accepted standalone.
 #   WEAK   — everyday phrases, accepted ONLY alongside build/wireframe context.
 # A negation anywhere in the prompt ("don't approve", "not approved") vetoes both.
+#
+# TIGHTENED AGAIN 2026-09-01 (F-11). The regex above answers "did the user say an
+# approval-shaped word?" but never asked "was there a wireframe to approve?". Live
+# failure: a user's ordinary reply ("yeah go ahead") satisfied WEAK+CONTEXT and
+# wrote .wireframe-approved even though enforce-wireframe-first.sh's directive had
+# never actually been shown back — Claude skipped straight to building, no ASCII,
+# no VDI table, no approval question asked. The hard gate then passed correctly
+# per ITS OWN rule (a marker existed) while the actual promise — "show it, THEN
+# ask" — was broken upstream. Fix: require .wireframe-pending (stamped by
+# enforce-wireframe-first.sh the moment it decides a wireframe is mandatory) to
+# exist BEFORE any approval phrase can convert into .wireframe-approved. No
+# pending stamp = nothing was ever demanded this turn = an approval-shaped word
+# is almost certainly about something else entirely (approving a PR, a plan, an
+# unrelated idea) — write nothing, let the next build's gate still block honestly.
+if [ -f "$PROJ/.claude/.wireframe-pending" ]; then
+  STRONG='(approve|approved|lgtm|ship it|build it|yes,? build)'
+  WEAK='(go ahead|looks good|proceed|do it|make it)'
+  CONTEXT='(wireframe|layer structure|layer tree|floorplan|layout|screen|build|gate|mockup|design)'
+  NEGATION='(do ?n.?t|do not|never|not) +(approve|approved|build|proceed|go ahead)|no,? +(approve|build)'
 
-STRONG='(approve|approved|lgtm|ship it|build it|yes,? build)'
-WEAK='(go ahead|looks good|proceed|do it|make it)'
-CONTEXT='(wireframe|layer structure|layer tree|floorplan|layout|screen|build|gate|mockup|design)'
-NEGATION='(do ?n.?t|do not|never|not) +(approve|approved|build|proceed|go ahead)|no,? +(approve|build)'
-
-if echo "$PROMPT" | grep -qE "$NEGATION"; then
-  :   # explicit refusal — write nothing
-elif echo "$PROMPT" | grep -qE "(^|[^a-z])$STRONG([^a-z]|$)" \
-   || { echo "$PROMPT" | grep -qE "(^|[^a-z])$WEAK([^a-z]|$)" && echo "$PROMPT" | grep -qE "$CONTEXT"; } \
-   || echo "$PROMPT" | grep -qE "wireframe.*(approve|ok|good|yes)|(approve|ok|yes).*wireframe" \
-   || echo "$PROMPT" | grep -qE "layer structure.*(approve|ok|good|yes)|(approve|ok|yes).*layer structure"; then
-  echo "{\"approvedBy\":\"user-prompt\",\"at\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || echo session)\"}" > "$PROJ/.claude/.wireframe-approved"
-  echo "<approval-captured marker=\".wireframe-approved\">User approval detected — the ASCII-wireframe gate (RULE 19 / Gate 3) is satisfied for the next build. If this was NOT a wireframe approval, ignore; the marker clears at session end.</approval-captured>"
+  if echo "$PROMPT" | grep -qE "$NEGATION"; then
+    :   # explicit refusal — write nothing, leave .wireframe-pending in place
+  elif echo "$PROMPT" | grep -qE "(^|[^a-z])$STRONG([^a-z]|$)" \
+     || { echo "$PROMPT" | grep -qE "(^|[^a-z])$WEAK([^a-z]|$)" && echo "$PROMPT" | grep -qE "$CONTEXT"; } \
+     || echo "$PROMPT" | grep -qE "wireframe.*(approve|ok|good|yes)|(approve|ok|yes).*wireframe" \
+     || echo "$PROMPT" | grep -qE "layer structure.*(approve|ok|good|yes)|(approve|ok|yes).*layer structure"; then
+    echo "{\"approvedBy\":\"user-prompt\",\"at\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || echo session)\"}" > "$PROJ/.claude/.wireframe-approved"
+    rm -f "$PROJ/.claude/.wireframe-pending" 2>/dev/null
+    echo "<approval-captured marker=\".wireframe-approved\">User approval detected — the ASCII-wireframe gate (RULE 19 / Gate 3) is satisfied for the next build. If this was NOT a wireframe approval, ignore; the marker clears at session end.</approval-captured>"
+  fi
 fi
 
 # ── Explicit consent to build from scratch (pure Figma frames, no canonical) ──

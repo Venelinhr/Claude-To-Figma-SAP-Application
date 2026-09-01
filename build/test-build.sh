@@ -252,5 +252,46 @@ if [ "$hook_fail" -ne 0 ]; then exit 1; fi
 echo "  ✓ every hook registered in settings.json exists and is executable"
 
 echo ""
+echo "$(printf '─%.0s' {1..60})"
+echo "Wireframe-pending gate (F-11 — approval requires a demand, not just a word)"
+echo "$(printf '─%.0s' {1..60})"
+# ADDED 2026-09-01. Live failure: an ordinary reply ("yeah go ahead") satisfied
+# capture-approvals.sh's WEAK+CONTEXT regex and wrote .wireframe-approved even
+# though no wireframe had been shown this turn — the build then skipped straight
+# past Gate 3 with no error. Fix: enforce-wireframe-first.sh stamps
+# .wireframe-pending the instant it demands a wireframe; capture-approvals.sh may
+# only convert an approval phrase into .wireframe-approved while that stamp exists.
+wf_fail=0
+rm -f "$PROJECT_ROOT/.claude/.wireframe-pending" "$PROJECT_ROOT/.claude/.wireframe-approved" 2>/dev/null
+
+# Case 1: approval-shaped words with NO prior demand this turn — must NOT approve.
+echo '{"prompt":"yeah go ahead and build it"}' | bash "$PROJECT_ROOT/.claude/hooks/capture-approvals.sh" >/dev/null 2>&1
+if [ -f "$PROJECT_ROOT/.claude/.wireframe-approved" ]; then
+  echo -e "  ${RED}✗ approval was granted with no .wireframe-pending stamp — F-11 regression${NC}"; wf_fail=1
+else
+  echo "  ✓ approval-shaped words alone (no demand this turn) correctly do NOT approve"
+fi
+rm -f "$PROJECT_ROOT/.claude/.wireframe-approved" 2>/dev/null
+
+# Case 2: demand fires first (stamps pending), then approval — must succeed and clear pending.
+echo '{"prompt":"build me a SAP screen for purchase orders"}' | bash "$PROJECT_ROOT/.claude/hooks/enforce-wireframe-first.sh" >/dev/null 2>&1
+if [ ! -f "$PROJECT_ROOT/.claude/.wireframe-pending" ]; then
+  echo -e "  ${RED}✗ enforce-wireframe-first.sh did not stamp .wireframe-pending on a build request${NC}"; wf_fail=1
+else
+  echo "  ✓ a build request correctly stamps .wireframe-pending"
+fi
+echo '{"prompt":"yeah go ahead and build it"}' | bash "$PROJECT_ROOT/.claude/hooks/capture-approvals.sh" >/dev/null 2>&1
+if [ ! -f "$PROJECT_ROOT/.claude/.wireframe-approved" ]; then
+  echo -e "  ${RED}✗ approval was refused even though .wireframe-pending was present${NC}"; wf_fail=1
+elif [ -f "$PROJECT_ROOT/.claude/.wireframe-pending" ]; then
+  echo -e "  ${RED}✗ .wireframe-pending was not cleared after conversion to .wireframe-approved${NC}"; wf_fail=1
+else
+  echo "  ✓ approval with a prior demand correctly succeeds and clears the pending stamp"
+fi
+rm -f "$PROJECT_ROOT/.claude/.wireframe-pending" "$PROJECT_ROOT/.claude/.wireframe-approved" 2>/dev/null
+
+if [ "$wf_fail" -ne 0 ]; then exit 1; fi
+
+echo ""
 echo "All specs within baseline. Pipeline is clean."
 exit 0

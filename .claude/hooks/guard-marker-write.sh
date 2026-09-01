@@ -11,18 +11,25 @@
 #      built the path at runtime and sailed straight through. The agent used exactly
 #      that to write its own .reuse-declared, twice.
 #
-# TWO TIERS. They are not the same thing and must not share one rule:
+# THREE TIERS. They are not the same thing and must not share one rule:
 #
 #   TIER 1 — CONSENT markers. Proof the USER said yes. Only capture-approvals.sh,
 #            fired by a real user prompt, may write these. The agent never may.
 #   TIER 2 — DECISION markers. The agent records these by design, but ONLY through
 #            the audited build/record-*.js scripts, never by raw shell.
+#   TIER 3 — HOOK-OWNED bookkeeping. Written only by a specific hook script as part
+#            of the gate machinery itself (e.g. .wireframe-pending, stamped by
+#            enforce-wireframe-first.sh the instant it demands a wireframe, and
+#            consumed by capture-approvals.sh). The agent may never write these
+#            directly either — doing so would let it fake "a wireframe was just
+#            demanded" and immediately self-satisfy it in the same turn.
 #
 # Reads are always allowed. Exit 2 blocks; exit 0 permits.
 
 TIER1='wireframe-approved|scratch-approved|architect-approved'
 TIER2='reference-selected|reuse-declared|workflow-loaded|last-build-node'
-ALL="$TIER1|$TIER2"
+TIER3='wireframe-pending'
+ALL="$TIER1|$TIER2|$TIER3"
 
 INPUT=$(cat)
 TOOL=$(echo "$INPUT" | jq -r '.tool_name // empty' 2>/dev/null)
@@ -36,6 +43,8 @@ deny() {
   echo "" >&2
   echo "Decision markers (.reference-selected, .reuse-declared) are written ONLY by their" >&2
   echo "scripts:  node build/record-reference.js …   /   node build/record-reuse-decision.js …" >&2
+  echo "" >&2
+  echo ".wireframe-pending is hook-owned bookkeeping — only enforce-wireframe-first.sh writes it." >&2
   exit 2
 }
 

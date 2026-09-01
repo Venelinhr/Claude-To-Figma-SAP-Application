@@ -322,12 +322,31 @@ for (const t of texts) { t.visible = false; }
 **Context:** Real sap.f DPH ships heavy at 1440px with breadcrumbs, KPIs, toolbar rows. At 320px narrow it needs ~40–52 sublayer hides to clean to a simple title+subtitle header.
 
 ### ✅ CORRECT method
+
+**Same silent-fail trap as the Form Field FILL fix below — apply the same 3-level guard.**
+`dph.layoutSizingHorizontal = 'FILL'` SILENTLY no-ops if `screen` (the parent) is HUG-width
+(`counterAxisSizingMode='AUTO'` / `primaryAxisSizingMode='AUTO'`). The header then stays at
+its cloned source width instead of spanning the page — reported live 2026-09-01 as "Dynamic
+Page Header wasn't perfectly fit wide and some components were hidden and not presented good."
 ```js
 // Clone from clean existing DPH (do NOT import fresh — the clone already has SAP tokens)
 const srcDPH = figma.getNodeById('601:36910'); // clean yanatest DPH
 const dph = srcDPH.clone();
+
+// Level 1: screen must be FIXED width (gives the header a concrete width to fill into)
+screen.layoutSizingHorizontal = 'FIXED';
+screen.resize(screenWidth, screen.height);
+
 screen.insertChild(0, dph);
+
+// Level 2: strip min/max, then FILL the now-fixed parent
+dph.minWidth = null;
+dph.maxWidth = null;
 dph.layoutSizingHorizontal = 'FILL';
+
+// Level 3: read back — a silent no-op leaves the overflow bug invisible until screenshot
+console.assert(dph.layoutSizingHorizontal === 'FILL', 'DPH FILL rejected — check screen sizing mode');
+console.assert(Math.abs(dph.width - screenWidth) < 2, `DPH width ${dph.width} != screen ${screenWidth} — FILL silently failed`);
 ```
 
 ### Strip steps (at 320px narrow)
@@ -339,6 +358,7 @@ dph.layoutSizingHorizontal = 'FILL';
 6. Set H1 text → your title
 7. Set subtitle text node
 8. **Set `Title Area itemSpacing = 4`** — SAP standard rhythm. Default is 0 → causes title/subtitle overlap
+9. **Read back after stripping** — `dph.findAll(n => n.visible !== false).some(n => n.width > dph.width)` must be `false`. A visible sublayer wider than the now-FILLed header means a hide step was missed or ran before the width settled; it renders clipped/overlapping rather than hidden cleanly. Fix the specific step, don't re-run the whole strip.
 
 ### Overflow menu (three-dots top-right)
 `appendChild` into a DPH instance throws: `"Cannot move node inside of an instance"`. The DPH's internals are locked.
