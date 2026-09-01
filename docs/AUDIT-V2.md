@@ -311,6 +311,73 @@ It also reported **130 flags that are not defects**: 78 `FAIL_FAKE_COMPONENT` (f
 | **P10** | **Canonical ids drift; the scorer's top match resolves to the wrong screen.** `score-canonical.js` ranks "Outage List Overview" first (84.5) with `figNode 750:174925`; in the live file that id is **"Schedule Operation — State D EndOnly", a 560×430 dialog**. `docs/NODE-ID-CONFLICTS.md` already lists it. The manifest names the desktop List Report under three different ids (`750:174925`, `30:2741`, and the confirmed table's) and calls `804:44859` "1440px" while it is 320 px live. A Level-2 clone by id would have built a list report from a dialog, silently. | live reads in this session; `docs/NODE-ID-CONFLICTS.md:106`; `SAP_BUILD_MANIFEST.md:22,168,197` | Done: `record-reference.js` requires `--name` read live; gate messages, `gate-status`, CLAUDE.md and `/sap-screen` say read-then-assert; the clone code asserts `src.name` and width. To do: resolve canonicals by **name + width in the live file** (`figma.currentPage.query('FRAME[name=…]')`), never by index id; re-key `canonical-index.json` and `SAP_BUILD_MANIFEST.md §3b` against the live file and delete the conflicting rows. | **P0** — a wrong clone is a silent total failure |
 | **P11** | **The reality gate rejects the pipeline's own gold standard.** INV 1's allowlist (`Row$`, `Header$`, `Block$` …) and INV 3's `[typo:role]` tags do not match the confirmed canonicals' names (`… Cell`, `HDR …`, `Row <id>`, `Filter Area`, untagged styled texts), so every clone-first build fails 100+ flags by construction and the only genuine findings are buried. | §8.3: 37 flags on the canonical's own 58 nodes; 28 rejected names verbatim canonical | Provenance-aware verification: when `basedOnCanonical` is set, dump the canonical too and verify the **delta** (nodes added or renamed by the build) at full strictness, while nodes inherited unchanged from a confirmed canonical pass INV 1/INV 3 by provenance; keep INV 2/INV 5 on everything (they found the three real defects). Add the canonicals' container patterns to the allowlist for from-scratch builds; make INV 3 accept a text whose live font is `72` at a role size. | **P0** — until then the gate cannot be made mandatory on the default path |
 
+## 9. Verdict, projection, and where the tokens go now
+
+### 9.1 What is measured (not projected)
+
+| Dimension | Before (Run A, your run) | Before (Run B, gates on) | **v2 flow, live build** | Verdict |
+|---|---|---|---|---|
+| Errors from Figma | 2 of 3 full builds threw | 0 (nothing ran) | **0 of 2** | ✓ measured |
+| Gate refusals | — | 5 (one gate per refusal) | **0** (readiness listed before code; one refusal lists everything) | ✓ measured |
+| Screens produced | 1, native-heavy | **0** | 1, correct | ✓ measured |
+| "Only SAP components" | `createFrame` ×55, checkbox = text `☐` | (code was fine) | `createFrame` **0**, 109 kit instances, 6 real Checkbox instances | ✓ measured |
+| Code written to build the screen | 56 KB (21.7 + 18.1 + 16.3 KB) ≈ 22k tokens | 75 KB ≈ 35k tokens, never ran | **8.2 KB (4.0 + 4.2 KB) ≈ 2.4k tokens** — 7× less, because a clone adapts instead of assembling | ✓ measured |
+| Screenshots | 6 | 0 | **1** | ✓ measured |
+| Header width / hidden content | broken | — | full width; the one clipped badge was caught by INV 5 and fixed | ✓ measured |
+| Reality gate run on the result | never | never | **yes** — 3 inherited defects found and fixed; 0 raw hex, 0 overflow | ✓ measured |
+| Replay of your run through the new gates | — | — | all 3 full builds refused pre-flight, line named | ✓ measured |
+
+### 9.2 Time and tokens — projection for a fresh session (to be confirmed by one run)
+
+Derived from measured parts (base context 109k in the v2 folder; the live build's actual call sizes; the dump/verify sizes from this session):
+
+| Step | Turns | Output tokens | Notes |
+|---|---|---|---|
+| Wireframe + VDI presentation | 1–2 | ~2.5k | unchanged |
+| Decisions: score → read node live → record ×2 → gate-status | 4 (Bash) | ~1k | new, replaces the 5-refusal loop (Run B: ~26k) |
+| Build: clone + adapt | 2 `use_figma` | ~2.5k | measured 8.2 KB of code |
+| Reality gate: dump 204 nodes (3 slices ≈ 15k in) + write back (≈9k out) + verify | 4 | ~9k | **the largest remaining cost** — see 9.3 |
+| Fixes | 0–2 | ~1k | 3 inherited fixes today |
+| Hand-off: 1 screenshot + URL | 1 | ~0.5k | budgeted |
+| **Total, today's flow** | ~13 | **~16k** | vs 33k (Run A, broken) / 44k (Run B, nothing) |
+| **Total with the delta dump (9.3)** | ~11 | **~8–9k** | inside the ≤12k target |
+
+Wall-clock: ~13 turns at roughly 20–30 s each on a 110–140k context ≈ **4–6 min** (≈ 3–4 min with the delta dump), vs 7.1 min (Run A) and 13.8 min (Run B). Every number in this table is a derivation, not a measurement; the confirming measurement is one fresh session:
+
+```bash
+cd "/Users/C5408360/Downloads/sap-pipeline-v2" && bash build/retest-headless.sh     # or: bin/sap-v2, build by hand, then: bash build/measure-build.sh --latest
+```
+
+Why it could not be produced here: a `claude -p` started inside the desktop app inherits a per-session bearer token that the API refuses for a child process (`401 Invalid bearer token`), and a clean environment has no credentials. That boundary is deliberate; it was not worked around.
+
+### 9.3 Token levers, ranked by what they save per build
+
+| Lever | Saves (per build) | Status |
+|---|---|---|
+| Readiness before code + all refusals in one message (P0') | ~26k tokens, ~8 min when the loop would have happened (Run B) | done |
+| Clone-first with a live-verified canonical (P10) | ~19k tokens of build code vs assembling from parts (22k → 2.4k) | done (process); index re-key pending |
+| **Delta dump for the reality gate** — dump only nodes added/changed vs the canonical (plus their parents for INV 5), instead of all 204 | ~15k in + ~8k out → ~2k + ~1k: **≈ −20k** | proposed (P11 companion) |
+| Context diet (P4): duplicate MCP servers + 44 KB CLAUDE.md | ~40–60k **per turn** (88–109k base → ~50k); no compaction inside a build; faster turns | proposed — measure the exact split first (§7 step 4) |
+| API-trap lint (P1) | ~7k + 2 Figma round-trips when it fires (fired twice in Run A) | done |
+| Screenshot budget (P5) | ~7k, 5 round-trips (Run A) | done |
+| Scoped metadata (P6) | ~10k (Run A's whole-page dump) | done |
+| Legacy skill detour (P7) | ~3.5k + 1 min | proposed (global skill, your machine) |
+
+### 9.4 The plan you approved, and where each item stands
+
+| Plan item | Status |
+|---|---|
+| Part A — audit with proof (this document, §0–§5) | done |
+| Part B — `measure-build.sh` + re-test protocol | done; protocol in §7; headless runner added |
+| Part C — P0 launcher/ACTIVE line, P0' readiness + chain, P1 lint, P3 native block, P5 budget, P6 scoped metadata | done, tested (31 gate checks + regression suite) |
+| Replay of real history through the new gates | done (§8.1) |
+| Live build with the v2 flow + reality gate | done (§8.3) |
+| New P0s found by the live build: P10 canonical-id drift, P11 verifier vs canonical | P10 process fix done; index re-key and P11 design need your decision (§8.4) |
+| P2 zone-by-zone cap, P4 context diet, P7 skill rename, global gates-off registration | your decision |
+| Fresh-session time/token benchmark | blocked here (nested auth); one command for you (§9.2) |
+
+**Verdict.** On errors, refusals, screenshots, native components and verified output, the improvement is measured and large: from a broken screen after 9 calls (or no screen after 5 refusals) to a correct, gate-verified screen in 2 calls with 7× less build code. On time and tokens the projection is 33k → ~16k now and ~8–9k with the delta dump (7.1 → ~4–6 min), pending the one fresh-session run only you can start. The two P0s in §8.4 are not regressions — they were always there; a measured build is what made them visible.
+
 ## Appendix — evidence pointers
 
 - Run A log: `~/.claude/projects/-Users-C5408360/e4549909-ade8-422e-b77f-afa752ab57b4.jsonl` (Sep 1 entries).
