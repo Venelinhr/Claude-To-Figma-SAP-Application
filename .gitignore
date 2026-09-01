@@ -56,6 +56,7 @@ semantic-models/project-knowledge-*.md
 .claude/.workflow-loaded
 .claude/.agent-turn1
 .claude/.wireframe-pending
+.claude/.architect-approved
 .claude/.screenshots-taken
 .claude/.builds-count
 .claude/.screenshot-requested
