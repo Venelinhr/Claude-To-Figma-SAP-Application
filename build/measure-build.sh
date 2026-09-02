@@ -19,6 +19,16 @@
 #
 # Targets (CLAUDE.md, "ADAPTIVE EXECUTION"): 3–5 min and ≤10–12k output tokens per build.
 # Read-only. Never writes anything.
+#
+# NATIVE RATIO caveat (AUDIT-V2, 2026-09-02): createFrame/createInstance counts below are a
+# raw source-text regex over the sent code. Every legitimate layout wrapper (table cell, row,
+# filter-field group) is built with createFrame() too, so a screen with a real table can show
+# createFrame >> createInstance and still be 100% real SAP components underneath — a build with
+# 116 real instances / 0 fake components / overallPass:true was once flagged "native-heavy" by
+# this exact line. If a reality-gate verify.json exists for the node this session built (see
+# capture-dump.sh — it walks the LIVE tree and tells fake components apart from allowlisted
+# layout containers per INV1), this script also prints its REALITY GATE verdict below GATES —
+# trust that line over NATIVE RATIO whenever both are present.
 # ─────────────────────────────────────────────────────────────────────────────
 set -euo pipefail
 
@@ -99,7 +109,7 @@ def k: (. / 1000 | floor);
   "OUTPUT TOKENS \($out)",
   "CONTEXT       first turn \(($ctx | first // 0) | k)k (cost before the first word) · avg \((($ctx | add // 0) / (($ctx | length) | if . == 0 then 1 else . end)) | k)k/turn · max \(($ctx | max // 0) | k)k",
   "USE_FIGMA     \($uf | length) calls · \($ufr | map(select(.txt | test("hook error"))) | length) blocked by gates · \($ufr | map(select((.txt | test("hook error") | not) and (.txt | test("^\\[?\\{?\"?(type\":\"text\",\"text\":\")?Error|^Error")))) | length) API errors · \(($codes | map(length) | add // 0) / 1024 | floor) KB code generated",
-  "NATIVE RATIO  createFrame \($cf) : createInstance \($ci) (+\($imp) imports, \($cl) clones)  \(if $ci == 0 and $cf > 0 then "⛔ NO SAP INSTANCES" elif $cf > 2 * ($ci + $cl) then "⚠ native-heavy" else "✓" end)",
+  "NATIVE RATIO  createFrame \($cf) : createInstance \($ci) (+\($imp) imports, \($cl) clones)  \(if $ci == 0 and $cf > 0 then "⛔ NO SAP INSTANCES" elif $cf > 2 * ($ci + $cl) then "⚠ createFrame-heavy — check REALITY GATE below before calling this a defect" else "✓" end)",
   "SCREENSHOTS   \($shots)  (rule: 1 at hand-off)  · \($shotB / 1024 | floor) KB",
   "READS         get_metadata \($metaB / 1024 | floor) KB · Read \($readB / 1024 | floor) KB",
   "SKILLS        \($skills | join(", "))",
@@ -113,4 +123,22 @@ echo "GATES         $GATES   (wireframe-first=$WF approval-captured=$AP contract
 if [ "$GATES" = "DORMANT" ]; then
   echo "              ⛔ No SAP gate fired in this session. Was Claude launched from the project folder?"
   echo "                 cd \"$PROJECT_ROOT\" && claude     (in the terminal, not inside Claude)"
+fi
+
+# The NATIVE RATIO line above is a raw source-text regex (createFrame() vs createInstance()
+# counted in the sent code) — it cannot tell a legitimate layout wrapper (table cell, row,
+# filter group) from an actual fake-SAP-component frame, so it false-positives "native-heavy"
+# on any screen with a real table (dozens of legitimate per-cell frames). capture-dump.sh's
+# verify.json walks the LIVE Figma tree and already makes that distinction correctly (INV1).
+# If a verify.json exists for a node this session built, print its real verdict too.
+NODE_ID=$(printf '%s' "$LINES" | grep -oE 'node-id=[0-9]+-[0-9]+' | tail -1 | sed 's/node-id=//; s/-/:/')
+if [ -n "$NODE_ID" ]; then
+  VJ="$PROJECT_ROOT/output/$(printf '%s' "$NODE_ID" | tr ':' '-')-verify.json"
+  if [ -f "$VJ" ]; then
+    jq -r '
+      "REALITY GATE  \(.rootId): overallPass=\(.overallPass) · " +
+      "\(.summary.instances) real instances : \(.summary.containers) allowlisted layout containers " +
+      "(this is the trustworthy component count — ignore NATIVE RATIO above when this line is present)"
+    ' "$VJ" 2>/dev/null || true
+  fi
 fi

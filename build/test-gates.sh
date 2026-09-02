@@ -93,7 +93,10 @@ HEAVY=$(for i in $(seq 17); do printf 'const f%d = figma.createFrame(); ' "$i"; 
 rc=$(pl mcp__figma__use_figma "$HEAVY" | run "$F")
 [ "$rc" -eq 2 ] && grep -q "native-heavy" "$ERR" && ok "createFrame ×17 vs createInstance ×3 → blocked (Run A's final build)" || bad "native-heavy not caught (rc=$rc)"
 rc=$(pl mcp__figma__use_figma "$HEAVY // layout-only: 17" | run "$F")
-[ "$rc" -eq 0 ] && ok "declared layout-only frames are subtracted" || bad "layout-only override ignored (rc=$rc)"
+[ "$rc" -eq 2 ] && grep -q "no self-declaration escape hatch" "$ERR" && ok "a fake '// layout-only: N' declaration is IGNORED — no longer an escape hatch (2026-09-02 fix)" || bad "self-declaration exploit still works (rc=$rc)"
+NAMED=$(for i in $(seq 17); do printf 'const f%d = figma.createFrame(); f%d.name = "Table Row %d";' "$i" "$i" "$i"; done; for i in 1 2 3; do printf 'const i%d = set.defaultVariant.createInstance(); ' "$i"; done)
+rc=$(pl mcp__figma__use_figma "$NAMED" | run "$F")
+[ "$rc" -eq 0 ] && ok "createFrame ×17 all properly named 'Table Row N' (allowlist match) passes with NO declaration needed" || { bad "properly-named layout frames still blocked (rc=$rc)"; sed 's/^/      /' "$ERR"; }
 BAL=$(for i in 1 2 3; do printf 'const f%d = figma.createFrame(); ' "$i"; done; for i in $(seq 9); do printf 'const i%d = set.defaultVariant.createInstance(); ' "$i"; done)
 rc=$(pl mcp__figma__use_figma "$BAL" | run "$F")
 [ "$rc" -eq 0 ] && ok "createFrame ×3 vs createInstance ×9 passes (Run B's code shape)" || { bad "balanced code blocked (rc=$rc)"; sed 's/^/      /' "$ERR"; }

@@ -78,19 +78,65 @@ if [ -n "$FAKES" ]; then
   exit 2
 fi
 
-# Block 3 — native-heavy code (added 2026-09-01, AUDIT-V2 P3). Block 1 only fired at ZERO
-# instances; the 2026-09-01 build shipped createFrame ×17 against createInstance ×3 and passed.
-# A screen is layout containers (few) + kit instances (many). More frames than instances means
-# table rows / cells / fields / badges were drawn by hand. Declare genuine layout-only frames
-# with a comment `// layout-only: N` and they are subtracted.
-LAYOUT_ONLY=$(printf '%s\n' "$CODE" | grep -oE "//[[:space:]]*layout-only:[[:space:]]*[0-9]+" | grep -oE "[0-9]+$" | head -1); LAYOUT_ONLY=${LAYOUT_ONLY:-0}
-EFF=$((CF - LAYOUT_ONLY)); [ "$EFF" -lt 0 ] && EFF=0
-if [ "$CF" -ge 6 ] && [ "$EFF" -gt "$INST" ] && [ "$IS_PRESENTATION" = "false" ]; then
+# Block 3 — native-heavy code (added 2026-09-01, AUDIT-V2 P3; rewritten 2026-09-02 after a
+# gate-integrity failure). Block 1 only fired at ZERO instances; the 2026-09-01 build shipped
+# createFrame ×17 against createInstance ×3 and passed. A screen is layout containers (few) +
+# kit instances (many). More frames than instances means table rows / cells / fields / badges
+# were drawn by hand.
+#
+# ORIGINAL DESIGN (retired): a free-text `// layout-only: N` comment was subtracted from the
+# frame count, self-declared by the same agent being gated. AUDIT-V2 2026-09-02: an agent wrote
+# `// layout-only: 120` when the code had only 7 real createFrame() calls, unconditionally
+# zeroing the excess and passing the gate with zero verification. A cap at the real createFrame
+# count does not fix this either — `// layout-only: <anything >= CF>` still zeroes EFF every
+# time; the self-declaration itself is the hole, not its size.
+#
+# NEW DESIGN: don't trust a declaration at all. Reuse the SAME source of truth the post-build
+# verifier already trusts — build/native-frame-allowlist.json's containerNamePatterns (legit
+# layout-container names: Wrapper$, Row$, Header$, Section$, …) and forbiddenContainerNames
+# (component names that must NEVER be a bare frame, e.g. Button, Table, Input). For each
+# `const x = figma.createFrame()` in the code, look at that variable's later `x.name = "…"`
+# assignment: matches an allowlist pattern and not a forbidden name → legitimate layout frame,
+# subtracted for free, no declaration needed. Anything else (no name set yet, or a name that
+# matches neither list) counts as unexplained and must be covered by real instances/clones.
+ALLOWLIST="$PROJ/build/native-frame-allowlist.json"
+if [ -f "$ALLOWLIST" ]; then
+  PATTERNS=$(node -e "const a=require('$ALLOWLIST'); console.log((a.containerNamePatterns||[]).join('|'))" 2>/dev/null)
+  FORBIDDEN=$(node -e "const a=require('$ALLOWLIST'); console.log((a.forbiddenContainerNames||[]).join('|'))" 2>/dev/null)
+else
+  PATTERNS=""; FORBIDDEN=""
+fi
+UNEXPLAINED=$(printf '%s\n' "$CODE" | PATTERNS="$PATTERNS" FORBIDDEN="$FORBIDDEN" perl -e '
+  binmode(STDIN, ":encoding(UTF-8)");
+  my $pat = $ENV{PATTERNS} // ""; my $forb = $ENV{FORBIDDEN} // "";
+  # Split on statement boundaries, not newlines — model-generated code is multi-line, but
+  # test payloads and minified code can put several statements on one line. Splitting on `;`
+  # (real JS statement terminator here) makes the var/name association work regardless.
+  my @l = split /;/, do { local $/; <STDIN> };
+  my %frameVar; # var => declared (0/1)
+  for my $i (0..$#l) {
+    if ($l[$i] =~ /(?:const|let|var)\s+([\w\$]+)\s*=\s*figma\.createFrame\(\)/) { $frameVar{$1} = 0; }
+  }
+  for my $i (0..$#l) {
+    if ($l[$i] =~ /([\w\$]+)\.name\s*=\s*[\x27"`]([^\x27"`]*)[\x27"`]/ && exists $frameVar{$1}) {
+      my ($v, $n) = ($1, $2); (my $bare = $n) =~ s/\s*\[[^\]]*\]//g; $bare =~ s/^\s+|\s+$//g;
+      my $ok = 0;
+      if ($forb ne "" && $bare =~ /^(?:$forb)$/i) { $ok = 0; }
+      elsif ($pat ne "" && $bare =~ /(?:$pat)/) { $ok = 1; }
+      $frameVar{$v} = $ok;
+    }
+  }
+  my $unexplained = 0;
+  $unexplained += (1 - $_) for values %frameVar;
+  print $unexplained;
+' 2>/dev/null)
+UNEXPLAINED=${UNEXPLAINED:-$CF}
+if [ "$CF" -ge 6 ] && [ "$UNEXPLAINED" -gt "$INST" ] && [ "$IS_PRESENTATION" = "false" ]; then
   {
-    echo "⛔ GATE 5 BLOCKED (INVARIANT 1) — native-heavy build: createFrame ×$CF vs SAP instance/clone calls ×$INST."
+    echo "⛔ GATE 5 BLOCKED (INVARIANT 1) — native-heavy build: $UNEXPLAINED of $CF createFrame() calls have no name matching a legitimate layout-container pattern, vs SAP instance/clone calls ×$INST."
     echo "Rows, cells, filter fields, checkboxes, badges and buttons must each be a kit instance (createInstance / .clone)."
-    echo "Layout containers (root, rows, columns) are the only legitimate createFrame() uses."
-    echo "If the extra frames really are layout containers, declare them:  // layout-only: <N>   and resend the same code."
+    echo "A createFrame() only counts as legitimate layout if its .name matches build/native-frame-allowlist.json's containerNamePatterns (e.g. ends in Row/Header/Section/Wrapper) and is not a forbiddenContainerNames component name."
+    echo "There is no self-declaration escape hatch — name the frame correctly (it also has to pass verify-invariants.js post-build) and resend."
   } >&2
   exit 2
 fi
