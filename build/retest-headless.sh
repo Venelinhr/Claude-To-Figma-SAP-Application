@@ -7,12 +7,19 @@
 # then the approval turn(s) a user would give, then build/measure-build.sh on the log.
 #
 # Usage:  bash build/retest-headless.sh [figma-file-url]
-#   default file = the one the 2026-09-01 run saved to.
+#   default file = p7zm5EMBk5DRRZdxNeJ4f5, the SAME file every canonical in
+#   skill/references/canonical-index.json lives in. Figma's Plugin API cannot .clone() a
+#   node across files — a 2026-09-02 terminal run targeting a different ("Untitled") file
+#   hit "Cross-file canonical cloning blocked by Figma API limitation", fell back to a
+#   from-scratch Level-5 build every time regardless of how good the index is (12 min /
+#   52,757 tokens). Testing in the canonicals' own file is what makes clone-based reuse
+#   possible to test at all. Pass a different file explicitly if you want to measure the
+#   from-scratch path on purpose.
 # Bounded: at most 1 build prompt + 3 approval/continue turns. Writes only to output/.
 # ─────────────────────────────────────────────────────────────────────────────
 set -uo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"; cd "$ROOT"
-FILE_URL="${1:-https://www.figma.com/design/mkBWOYmvUpdMlC5P6Tw2mK/Untitled}"
+FILE_URL="${1:-https://www.figma.com/design/p7zm5EMBk5DRRZdxNeJ4f5/SAP-application-builder}"
 STAMP=$(date +%Y%m%d-%H%M%S)
 LOG="output/retest-$STAMP.log"; mkdir -p output
 TOOLS='Bash,Read,Write,Edit,Glob,Grep,Skill,mcp__figma__use_figma,mcp__figma__get_metadata,mcp__figma__get_screenshot,mcp__figma__get_design_context,mcp__figma__get_variable_defs,mcp__figma__search_design_system'
