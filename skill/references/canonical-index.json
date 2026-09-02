@@ -42,7 +42,7 @@
       },
       {
         "id": "shipped-schedule-op-daily",
-        "name": "Schedule Operation — Daily",
+        "name": "Schedule Operation \u2014 Daily",
         "floorplan": "Dialog",
         "width": 375,
         "density": "Cozy",
@@ -68,11 +68,12 @@
         ],
         "referenceImage": "docs/canonical-screens/02-schedule-operation-form.png",
         "specFile": "docs/canonical-screens/02-schedule-operation-form.md",
-        "figNode": "727:42563"
+        "figNode": "727:42563",
+        "figNodeNote": "UNVERIFIED / LIKELY WRONG (2026-09-02) \u2014 live-verified 727:42563 is actually 'Schedule Operation \u2014 State C End Date', not 'Daily'. Names/states have drifted; re-verify live before cloning. See AUDIT-V2 P10."
       },
       {
         "id": "shipped-schedule-op-monthly-end",
-        "name": "Schedule Operation — Monthly with End Date",
+        "name": "Schedule Operation \u2014 Monthly with End Date",
         "floorplan": "Dialog",
         "width": 375,
         "density": "Cozy",
@@ -104,11 +105,12 @@
         ],
         "referenceImage": "docs/canonical-screens/07-schedule-operation-monthly-end-date.png",
         "specFile": "docs/canonical-screens/07-schedule-operation-monthly-end-date.md",
-        "figNode": "750:174786"
+        "figNode": "750:174786",
+        "figNodeNote": "UNVERIFIED / LIKELY WRONG (2026-09-02) \u2014 live-verified 750:174786 is actually 'Schedule Operation \u2014 State A Collapsed', not 'Monthly with End Date'. Re-verify live before cloning. See AUDIT-V2 P10."
       },
       {
         "id": "shipped-schedule-op-full",
-        "name": "Schedule Operation — Full / Collapsed",
+        "name": "Schedule Operation \u2014 Full / Collapsed",
         "floorplan": "Dialog",
         "width": 375,
         "density": "Cozy",
@@ -133,7 +135,8 @@
         ],
         "referenceImage": "docs/canonical-screens/09-schedule-operation-form-full.png",
         "specFile": "docs/canonical-screens/09-schedule-operation-form-full.md",
-        "figNode": "750:174866"
+        "figNode": "750:174866",
+        "figNodeNote": "UNVERIFIED / LIKELY WRONG (2026-09-02) \u2014 live-verified 750:174866 is actually 'Schedule Operation \u2014 State C End Date' (duplicate of shipped-schedule-op-daily's real target). Re-verify live before cloning. See AUDIT-V2 P10."
       },
       {
         "id": "shipped-outage-list",
@@ -166,11 +169,48 @@
         ],
         "referenceImage": "docs/canonical-screens/10-outage-list-overview.png",
         "specFile": "docs/canonical-screens/10-outage-list-overview.md",
-        "figNode": "750:174925"
+        "figNode": "750:174556",
+        "figNodeNote": "Corrected 2026-09-02 \u2014 live-verified: 750:174925 is actually 'Schedule Operation \u2014 State D EndOnly' (a Dialog), and the real 'Outage List Overview' List Report lives at 750:174556 (previously mis-indexed under shipped-yanatest-steps). See AUDIT-V2 P10. ALWAYS re-read name+width live before .clone() \u2014 ids drift, names do not."
+      },
+      {
+        "id": "shipped-purchase-order-overview",
+        "name": "Purchase Order Overview",
+        "floorplan": "List Report",
+        "width": 1440,
+        "density": "Compact",
+        "regions": [
+          "ShellBar",
+          "IconTabBar",
+          "DynamicPageHeader",
+          "FilterArea",
+          "ResponsiveTable"
+        ],
+        "keyComponents": [
+          "ShellBar",
+          "IconTabBar",
+          "DynamicPageHeader",
+          "Button",
+          "Select",
+          "SearchField",
+          "ResponsiveTable",
+          "CheckBox",
+          "ObjectStatus"
+        ],
+        "businessDomain": [
+          "procurement",
+          "purchase-order",
+          "list-report",
+          "approval",
+          "desktop"
+        ],
+        "referenceImage": null,
+        "specFile": null,
+        "figNode": "1239:56605",
+        "figNodeNote": "Added 2026-09-02 \u2014 live-verified 'Purchase Order Overview', 1440x818: ShellBar + IconTabBar + DynamicPageHeader (title + Create Purchase Order button) + two-row Filter Area (Supplier, Company Code, Purchasing Org, Purchasing Group, Creation Date, Status + Search) + ResponsiveTable (Checkbox, PO Number, Creation Date, Supplier, Status/ObjectStatus, Company Code, Currency, Total Amount, row actions). Was missing from the index entirely, causing score-canonical.js to find nothing >=60 for Purchase Order requests and fall back to from-scratch (AUDIT-V2, 2026-09-02 terminal retest: 12 min / 52,757 tokens). This is a Level-2 clone of 889:45857 'Orders List Report'; see also 804:44859 'Purchase Orders' (narrow, secondary fit) in SAP_BUILD_MANIFEST.md's confirmed-canonicals table."
       },
       {
         "id": "shipped-governance-fcl",
-        "name": "Design System Governance — FCL Variant",
+        "name": "Design System Governance \u2014 FCL Variant",
         "floorplan": "FCL",
         "width": 1440,
         "density": "Compact",
@@ -195,7 +235,8 @@
         ],
         "referenceImage": "docs/canonical-screens/11-design-system-governance-fcl.png",
         "specFile": "docs/canonical-screens/11-design-system-governance-fcl.md",
-        "figNode": "750:174960"
+        "figNode": "750:174960",
+        "figNodeNote": "UNVERIFIED / LIKELY WRONG (2026-09-02) \u2014 live-verified 750:174960 is actually 'Schedule Operation \u2014 State B1 Hourly' (a dialog), not the FCL governance variant. Re-verify live before cloning. See AUDIT-V2 P10."
       },
       {
         "id": "shipped-flight-result-card",
@@ -224,7 +265,7 @@
       },
       {
         "id": "shipped-sidenav",
-        "name": "Side Navigation — Full Tree",
+        "name": "Side Navigation \u2014 Full Tree",
         "floorplan": "SideNavigation",
         "width": 224,
         "density": "Compact",
@@ -242,11 +283,12 @@
         ],
         "referenceImage": null,
         "specFile": "docs/canonical-screens/03-side-navigation.md",
-        "figNode": "750:174158"
+        "figNode": "750:174158",
+        "figNodeNote": "PARTIAL MATCH (2026-09-02) \u2014 live-verified 750:174158 is named 'Menu' and contains a Side Navigation instance (wrapper renamed, not the bare SideNavigation itself). Usable but confirm live before cloning."
       },
       {
         "id": "shipped-yanatest-steps",
-        "name": "yanatest Steps — Object Page Narrow",
+        "name": "yanatest Steps \u2014 Object Page Narrow",
         "floorplan": "Object Page",
         "width": 320,
         "density": "Compact",
@@ -273,11 +315,12 @@
         ],
         "referenceImage": null,
         "specFile": "docs/canonical-screens/04-schedule-operation-daily.md",
-        "figNode": "750:174556"
+        "figNode": "750:174556",
+        "figNodeNote": "UNVERIFIED / LIKELY WRONG (2026-09-02) \u2014 live-verified 750:174556 is actually 'Outage List Overview' (List Report), now correctly re-pointed under shipped-outage-list. This entry's real node is unknown; do NOT clone from 750:174556 for this entry. Needs a fresh score-canonical.js + live name/width read before use. See AUDIT-V2 P10."
       },
       {
         "id": "shipped-activities-view",
-        "name": "Activities View — List Report with Progress",
+        "name": "Activities View \u2014 List Report with Progress",
         "floorplan": "List Report",
         "width": 320,
         "density": "Compact",
@@ -301,7 +344,8 @@
         ],
         "referenceImage": null,
         "specFile": "docs/canonical-screens/06-activities-view.md",
-        "figNode": "750:174442"
+        "figNode": "750:174442",
+        "figNodeNote": "UNVERIFIED / LIKELY WRONG (2026-09-02) \u2014 live-verified 750:174442 is actually 'Validate System' (a dialog), not the Activities List Report. Re-verify live before cloning. See AUDIT-V2 P10."
       },
       {
         "id": "shipped-validate-system",
@@ -329,7 +373,8 @@
         ],
         "referenceImage": null,
         "specFile": "docs/canonical-screens/08-validate-system-log-panel.md",
-        "figNode": "750:174814"
+        "figNode": "750:174814",
+        "figNodeNote": "UNVERIFIED / LIKELY WRONG (2026-09-02) \u2014 live-verified 750:174814 is actually 'Schedule Operation \u2014 State B Recurring', not the Validate System Log Panel. Re-verify live before cloning. See AUDIT-V2 P10."
       }
     ],
     "tier2": [],
