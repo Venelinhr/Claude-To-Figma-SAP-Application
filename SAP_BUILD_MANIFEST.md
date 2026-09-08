@@ -130,6 +130,7 @@ Real instances only. Layout containers (DynamicPage, Column, ObjectPageLayout, F
 | IconTabBar | `4aafcbf55528c439876b314d155438884b614722` | |
 | Avatar | `71a3389ecbd47822b3184700766e30963fc2f220` | |
 | SegmentedButton | `308476a5285b5a132241dc1c118d09ecf8d82273` | Enable 3rd/4th Button booleans before injecting extra labels |
+| SideNavigation | `d680af6d72f9421fe3f8712bf0ce171308963d3a` | ⛔ SLOT-INJECTION COMPOSITE — do not `importComponentSetByKeyAsync` this key directly for a full sidebar (slot injection is unreliable in MCP, same class of issue as Dialog above). **Clone instead** — primary gold-standard source **§3b "Menu / Side Navigation" node `68:3262`** (file `E083sNBH7JNEOBFrG7Bqge`, width 260); secondary sources `701:119633` (full, p7zm5EMBk5DRRZdxNeJ4f5) or prototype `699:37890`. NEVER `figma.createFrame()` for the sidebar shell — every screen with a left nav needs one of these clones. Added 2026-09-03: a build's `K` component-key object omitted this component entirely (it wasn't in this table to copy from) and the sidebar was hand-drawn as native frames — see AUDIT-V2 "Software Hub Product Search" investigation. |
 
 **Icon keys (harvested — use plugin Harvest Icon Keys for others):**
 | Icon | Key |

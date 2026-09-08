@@ -141,4 +141,21 @@ if [ "$CF" -ge 6 ] && [ "$UNEXPLAINED" -gt "$INST" ] && [ "$IS_PRESENTATION" = "
   exit 2
 fi
 
+# Block 4 — a sidebar/nav region built without the SAP SideNavigation component (added
+# 2026-09-03, AUDIT-V2 "Software Hub Product Search" investigation). Root cause there was
+# upstream: SAP_BUILD_MANIFEST.md §3 did not list SideNavigation, so the model's own `K`
+# component-key object never had a key for it and hand-drew the whole sidebar as native
+# frames — Block 1/2/3 above all missed it because the SAME call also created plenty of
+# real instances elsewhere (ShellBar, Button, Input…), so the whole-call instance count was
+# never zero. §3 now lists SideNavigation (clone-only, like Dialog) — this block is a second
+# line of defense: if the code clearly intends a left-nav region (a frame/const named for
+# one) but the code has neither `SideNavigation` in a key/import string nor a `.clone(` call
+# anywhere, flag it. Heuristic, so it warns rather than hard-blocks — a screen legitimately
+# without a sidebar (e.g. a dialog) must not be forced to add one.
+if echo "$CODE" | grep -qiE '\b(const|let|var)\s+\w*(sideNav|sidenav|leftNav|navPanel|navRail)\w*\s*=' ; then
+  if ! echo "$CODE" | grep -qiE 'SideNavigation|d680af6d72f9421fe3f8712bf0ce171308963d3a|68:3262|701:119633|699:37890'; then
+    echo "⚠ GATE 5 WARNING (not blocking) — this code names a sidebar/left-nav variable but never references the real SAP SideNavigation component (key d680af6d72f9421fe3f8712bf0ce171308963d3a, or clone 68:3262 / 701:119633 / 699:37890 — see SAP_BUILD_MANIFEST.md §3). If this sidebar is being hand-built with createFrame(), stop and clone the real component instead (RULE 28)." >&2
+  fi
+fi
+
 exit 0
