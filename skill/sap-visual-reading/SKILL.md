@@ -245,11 +245,24 @@ This stage is mandatory. Interaction model is what developers implement. Without
 
 ### Stage 7 — Layout reconstruction + token loop
 
-Infer the layout system. State all measurements as estimated unless directly confirmed.
+**Read `references/vd-scan-measurement.md` before this stage on any screen with a filter row,
+card grid, multi-column layout, or a repair (`/sap-fix`).** It defines the measured / calculated /
+inferred / design-system tagging discipline and the component-boundary / standalone-vs-composite
+classification this stage depends on — added 2026-09-08 after a build forced 6 unequal-content
+filter columns to equal widths and used guessed round-number gaps instead of real SAP spacing
+tokens. On simple single-column screens the short version below is enough.
+
+Infer the layout system. State all measurements as estimated unless directly confirmed — tag each
+one measured / calculated / inferred / design-system, never present an inference as a direct
+measurement.
 
 - Grid system: SimpleForm / Grid / CSSGrid / HBox+VBox
-- Column count and breakpoints (S/M/L/XL)
-- Spacing: SAP spacing tokens only — never raw px values
+- Column count and breakpoints (S/M/L/XL) — size each column to its actual content; do not force
+  equal widths when the reference's content clearly needs different widths (e.g. a toggle control
+  next to a dropdown with a long placeholder)
+- Spacing: SAP spacing tokens only — never raw px values. Look up the real token
+  (`mcp__sap-design__getFoundation` name `spacing`, or `get_tokens_for` the specific component)
+  before choosing a gap; do not invent a round number
 - Visual rhythm: section separators, dividers, grouping logic
 - Density: Cozy (default) or Compact — flag if context suggests Compact
 - Responsive behavior: what collapses, what stacks, at which breakpoint
@@ -395,6 +408,21 @@ Successful patterns extracted from completed outputs. Read before running to avo
 **Why:** Visual analysis reads layout, not behavior. Behavior requires an explicit additional stage.
 **Fix applied:** Stage 6 (Interaction model) added as mandatory stage with trigger/target/binding format.
 **Rule update:** Interaction model is now a required output section.
+
+### Failure 004 — Guessed spacing + forced-equal layout (2026-09-08)
+**What failed:** A rebuild used round-number gaps with no source (not a real SAP spacing token),
+and forced 6 filter-row columns (1 toggle + 5 dropdowns) to equal width even though a toggle is
+visually and functionally much narrower than a dropdown with a long placeholder. Separately, a
+component's default sample text ("Typed Text", "Label:") shipped as final content because nothing
+explicitly set `.characters` after `createInstance()`, and elements were positioned at raw
+page-absolute coordinates before a real parent frame existed.
+**Why:** No measurement-confidence discipline — inferred/guessed values got treated the same as
+directly measured ones, and no component-boundary pass ran before deciding how to lay things out.
+**Fix applied:** `references/vd-scan-measurement.md` — measured/calculated/inferred/design-system
+tagging, spacing-token lookup requirement, component-boundary + standalone-vs-composite
+classification (§3–4), and a measurement QA pass (§10) before accepting layout numbers.
+**Rule update:** Stage 7 now points to this reference for any screen with a filter row, card grid,
+multi-column layout, or repair.
 
 ---
 

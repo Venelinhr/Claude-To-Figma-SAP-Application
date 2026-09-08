@@ -23,7 +23,12 @@ sap-visual-reading/
 │   ├── tokens.md                     SAP Horizon typography, color, spacing tokens
 │   ├── states.md                     field states, validation, empty, loading, error
 │   ├── image-quality.md              Tier 1–4 reading strategy per image type
-│   └── prompt-template.md            copy-paste prompt templates for any new screen
+│   ├── prompt-template.md            copy-paste prompt templates for any new screen
+│   └── vd-scan-measurement.md        VD Scan engine — measured/calculated/inferred/design-system
+│                                      tagging, spacing-token lookup, component boundary detection,
+│                                      standalone-vs-composite classification. Run before filling
+│                                      in the zone table below when precision matters (repairs,
+│                                      anything with a filter row, card grid, or multi-column layout).
 │
 ├── examples/
 │   ├── schedule-dialog.md            Dialog — conditional sections, CheckBox toggle
