@@ -1,0 +1,6 @@
+[
+  { "id":"4:1","name":"Form Field Column","type":"FRAME","visible":true,"layoutMode":"VERTICAL","childCount":1,
+    "width":200,"absoluteBoundingBox":{"x":0,"y":0,"width":200,"height":48},"clipsContent":true },
+  { "id":"4:2","name":"DatePicker","type":"INSTANCE","visible":true,"mainComponentKey":"abc123",
+    "parentId":"4:1","width":272,"absoluteBoundingBox":{"x":0,"y":0,"width":272,"height":26} }
+]

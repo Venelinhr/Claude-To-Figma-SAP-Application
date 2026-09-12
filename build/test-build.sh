@@ -206,6 +206,27 @@ if node build/verify-invariants.js test-fixtures/invariants/instance-rawhex-over
 else
   echo "  ✓ raw-hex override on a SAP instance correctly FAILS (INV 2 instance-override hole closed)"
 fi
+# INV 5 (sizing/overflow) — a correctly full-width DPH passes; a narrower-than-parent DPH
+# and a child overflowing a clipping parent both correctly FAIL. Proves the
+# layoutSizingHorizontal='FILL'-no-op bug class (DPH hidden-content report) is caught.
+if node build/verify-invariants.js test-fixtures/invariants/dph-width-ok.json --pre-bind >/dev/null 2>&1; then
+  echo "  ✓ full-width DynamicPageHeader passes INV 5"
+else
+  echo -e "${RED}verify-invariants.js rejected a correctly full-width DynamicPageHeader — INV 5 is mis-calibrated${NC}"
+  exit 1
+fi
+if node build/verify-invariants.js test-fixtures/invariants/dph-width-mismatch.json --pre-bind >/dev/null 2>&1; then
+  echo -e "${RED}verify-invariants.js PASSED a DynamicPageHeader narrower than its parent — INV 5 header-width hole is open${NC}"
+  exit 1
+else
+  echo "  ✓ DynamicPageHeader narrower than its parent correctly FAILS (INV 5 header-width check)"
+fi
+if node build/verify-invariants.js test-fixtures/invariants/child-overflow-clipped.json --pre-bind >/dev/null 2>&1; then
+  echo -e "${RED}verify-invariants.js PASSED a child overflowing a clipping parent — INV 5 overflow hole is open${NC}"
+  exit 1
+else
+  echo "  ✓ child overflowing a clipsContent parent correctly FAILS (INV 5 overflow check)"
+fi
 
 echo ""
 echo "$(printf '─%.0s' {1..60})"

@@ -2,7 +2,7 @@
   "_meta": {
     "description": "Single lookup table: component → variant properties + allowed values + defaults. Generated from knowledge/components/registry/*.json. Do NOT edit manually — re-run generate-property-reference.js.",
     "source": "knowledge/components/registry/*.json",
-    "generated": "2026-07-21",
+    "generated": "2026-09-02",
     "components": 152
   },
   "AIButton": {

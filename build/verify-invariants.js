@@ -7,7 +7,7 @@
  *   This script is the one gate that reads the produced frame tree and is ALLOWED TO RETURN FAIL.
  *
  * It ingests a serialized frame dump (output/<node>-tree.json) produced by a use_figma walk of
- * root.findAll(() => true), then enforces the five build invariants with a ONE-FAIL-FAILS verdict:
+ * root.findAll(() => true), then enforces the six build invariants with a ONE-FAIL-FAILS verdict:
  *
  *   INV 1  Zero native frames outside allowlist  — every node is a kit INSTANCE, a PASS_CONTAINER,
  *          or a PASS_PRIMITIVE_EXCEPTION. One fake component fails the build. No ratio.
@@ -17,11 +17,22 @@
  *          tag at the role's size (±1px).
  *   INV 4  Clone-first provenance                — if a canonical was applicable, the frame must
  *          carry basedOnCanonical provenance (checked when --canonical <id> is passed).
+ *   INV 5  Sizing / overflow                     — (a) no visible child extends past a
+ *          clipsContent:true parent's absoluteBoundingBox, and (b) a page-level header component
+ *          (DynamicPageHeader/DynamicPageTitle/ObjectPageHeader) matches its parent's width within
+ *          ±2px. Catches the layoutSizingHorizontal='FILL' silent-no-op (parent still HUG-width)
+ *          that hides sibling content — see figma-build-patterns.md "Form Field FILL Fix".
  *   INV 8  Layer naming                          — names satisfy layer-naming.json deny rules.
  *
  * Input node shape (each element of root.findAll(()=>true) mapped to):
  *   { "id","name","type","visible","layoutMode","childCount","mainComponentKey",
  *     "fontFamily","fontSize",
+ *     "width","absoluteBoundingBox":{"x","y","width","height"},
+ *     "layoutSizingHorizontal","clipsContent":<bool>,   // sizing/overflow (INV 5)
+ *     "parentId",   // id of this node's parent — REQUIRED for INV 5 on a flat-array dump, since
+ *                   // findAll(()=>true).map(...) loses parent linkage; set from nd.parent.id.
+ *                   // Omit only when the dump is a nested tree with children[] (parentId is then
+ *                   // backfilled during flattening from the children[] edge).
  *     "overriddenFills":<bool>,"overriddenStrokes":<bool>,   // node-level: are paints locally overridden?
  *     "fills":[{"type","hex","boundVariable","overridden":<bool>}],   // per-paint: is THIS paint a local override?
  *     "strokes":[{"type","hex","boundVariable","overridden":<bool>}] }
@@ -29,6 +40,8 @@
  * main component, or use node.overriddenFields). Without it, an unbound raw-hex OVERRIDE on an instance
  * is treated as inherited and passes — the exact hole this closes. For non-instance nodes the flags are ignored.
  * Accepts either a flat array of nodes OR a nested tree with children[] (it flattens).
+ * INV 5 is skipped per-node whenever the widened fields (absoluteBoundingBox/width/parentId) are
+ * absent — an older dump without them still passes INV 1-4/8 unchanged (no false positives).
  *
  * Usage:
  *   node build/verify-invariants.js output/804-44859-tree.json
@@ -58,6 +71,7 @@ const TYPO_ROLES = {
   heading: 20, title: 16, subtitle: 14, label: 14,
   'label-emphasized': 14, labelbold: 14, body: 14, bodytext: 14,
   caption: 12, tableheader: 13, toolbartitle: 16,
+  kpi: 28, display: 28,
 };
 
 function parseArgs(argv) {
@@ -77,18 +91,30 @@ function parseArgs(argv) {
 // Flatten either a nested tree (children[]) or accept a flat array.
 function flatten(dump) {
   const nodes = [];
-  const visit = (n, depth) => {
+  const visit = (n, depth, parentId) => {
     if (!n || typeof n !== 'object') return;
-    if (depth >= 0) nodes.push(n);
-    for (const k of (n.children || [])) visit(k, depth + 1);
+    if (depth >= 0) {
+      // A nested tree's children[] carries the real parent-child edge; only backfill
+      // parentId when the node doesn't already declare one (flat-array dumps set it themselves).
+      if (n.parentId === undefined && parentId !== undefined) n.parentId = parentId;
+      nodes.push(n);
+    }
+    for (const k of (n.children || [])) visit(k, depth + 1, n.id);
   };
-  if (Array.isArray(dump)) { for (const n of dump) visit(n, 0); }
-  else visit(dump, -1); // skip synthetic root wrapper if it's the whole-frame object at depth -1... but include real root
+  if (Array.isArray(dump)) { for (const n of dump) visit(n, 0, undefined); }
+  else visit(dump, -1, undefined); // skip synthetic root wrapper if it's the whole-frame object at depth -1... but include real root
   // If we skipped a real root (dump was a single frame object), re-add it:
   if (!Array.isArray(dump) && dump && dump.type) nodes.unshift(dump);
   // de-dupe by id
   const seen = new Set();
   return nodes.filter(n => { if (!n.id || seen.has(n.id)) return !n.id; seen.add(n.id); return true; });
+}
+
+// Build id -> node map for parent lookups used by INV 5 (sizing/overflow).
+function buildParentMap(nodes) {
+  const byId = new Map();
+  for (const n of nodes) if (n.id) byId.set(n.id, n);
+  return byId;
 }
 
 function matchesAny(name, patterns) {
@@ -119,8 +145,17 @@ function classifyNode(n, isRoot) {
   }
 
   if (type === 'FRAME') {
-    // Fake component: a FRAME named after a SAP component
-    if ((allowlist.forbiddenContainerNames || []).some(c => name === c || name.startsWith(c + ' ') || name.endsWith(' ' + c))) {
+    // Fake component: a FRAME named after a SAP component (but not a legitimate layout name)
+    // Only flag when the name IS the component name, ends with the component name,
+    // or matches "ComponentName (variant)" — NOT "ComponentName Row" or "ComponentName — Something"
+    if ((allowlist.forbiddenContainerNames || []).some(c => {
+      if (name === c) return true;
+      // "ComponentName (something)" variant suffix
+      if (name.startsWith(c + ' (') && name.endsWith(')')) return true;
+      // ends with " ComponentName" (e.g. layout named after the component at end)
+      if (name.endsWith(' ' + c)) return true;
+      return false;
+    })) {
       return { verdict: 'FAIL_FAKE_COMPONENT', invariant: 1, why: `FRAME named after SAP component: '${name}' — must be a kit INSTANCE` };
     }
     // Pure layout container
@@ -141,7 +176,7 @@ function classifyNode(n, isRoot) {
   return { verdict: 'PASS_OTHER', invariant: 1 };
 }
 
-function checkFills(n) {
+function checkFills(n, preBind) {
   // INV 2: every visible SOLID fill/stroke must bind a SAP variable — no raw hex.
   //
   // Instance paints are USUALLY owned by the library (inherited from the main component) and are
@@ -150,6 +185,11 @@ function checkFills(n) {
   // ONLY when they are inherited (not a local override). The serializer marks a local override with
   // p.overridden === true (or n.overriddenFills === true for the node). An unbound OVERRIDE fails;
   // an inherited paint (or a bound override) passes.
+  //
+  // --pre-bind exemption: non-instance nodes with unbound fills are expected pre-bind —
+  // the Bind plugin resolves all [sap*] tagged names. Skip INV 2 for all non-instance
+  // nodes when --pre-bind is set. Instance OVERRIDE failures are still checked.
+  if (preBind && (n.type || '') !== 'INSTANCE') return [];
   const isInstance = (n.type || '') === 'INSTANCE';
   const nodeOverridesFills = n.overriddenFills === true || n.overriddenStrokes === true;
   const fails = [];
@@ -190,6 +230,52 @@ function checkTypo(n) {
   return null;
 }
 
+// Page-level header components that must span their parent's full width — a header
+// narrower than its container is the DynamicPageHeader-FILL-no-op failure mode
+// (RULE: figma-build-patterns.md "DynamicPageHeader (DPH) — Clone and Strip Pattern").
+const PAGE_HEADER_NAME_RE = /\b(DynamicPageHeader|DynamicPageTitle|ObjectPageHeader)\b/i;
+const WIDTH_TOLERANCE_PX = 2;
+
+function boundsOverflow(childBox, parentBox) {
+  if (!childBox || !parentBox) return false;
+  const eps = 0.5; // sub-pixel rounding noise
+  return (
+    childBox.x < parentBox.x - eps ||
+    childBox.y < parentBox.y - eps ||
+    (childBox.x + childBox.width) > (parentBox.x + parentBox.width) + eps ||
+    (childBox.y + childBox.height) > (parentBox.y + parentBox.height) + eps
+  );
+}
+
+function checkSizing(n, parentMap) {
+  // INV 5a: a visible child that extends past a clipsContent:true parent's bounds is
+  // either invisibly clipped (content hidden from the user) or proof the parent never
+  // got FIXED-width before a child's layoutSizingHorizontal='FILL' was set (silent no-op
+  // — see figma-build-patterns.md "Form Field FILL Fix"). Either way it is a build defect.
+  const fails = [];
+  if (n.visible === false) return fails;
+  const parentId = n.parentId;
+  const parent = parentId ? parentMap.get(parentId) : null;
+  if (parent && parent.clipsContent === true && n.absoluteBoundingBox && parent.absoluteBoundingBox) {
+    if (boundsOverflow(n.absoluteBoundingBox, parent.absoluteBoundingBox)) {
+      fails.push({ verdict: 'FAIL_CHILD_OVERFLOW', invariant: 5,
+        why: `'${n.name}' (${JSON.stringify(n.absoluteBoundingBox)}) overflows clipping parent '${parent.name}' (${JSON.stringify(parent.absoluteBoundingBox)}) — content is either invisibly clipped or the parent never became FIXED-width before a child FILL was set (Form Field FILL Fix pattern)` });
+    }
+  }
+
+  // INV 5b: a page-level header component whose width doesn't match its parent's width
+  // is the DynamicPageHeader-narrower-than-screen bug — layoutSizingHorizontal='FILL' was
+  // set on the header while its parent was still HUG-width, so FILL silently no-op'd and
+  // the header (and everything inside it) rendered too narrow, hiding sibling content.
+  if (PAGE_HEADER_NAME_RE.test(n.name || '') && parent && typeof n.width === 'number' && typeof parent.width === 'number') {
+    if (Math.abs(n.width - parent.width) > WIDTH_TOLERANCE_PX) {
+      fails.push({ verdict: 'FAIL_HEADER_WIDTH_MISMATCH', invariant: 5,
+        why: `page-header '${n.name}' width ${n.width} != parent '${parent.name}' width ${parent.width} (±${WIDTH_TOLERANCE_PX}px) — layoutSizingHorizontal='FILL' likely no-op'd because the parent wasn't FIXED-width yet; verify with the Form Field FILL Fix guard (figma-build-patterns.md) before setting FILL` });
+    }
+  }
+  return fails;
+}
+
 function checkName(n, preBind) {
   const name = n.name || '';
   const skips = preBind ? (layerNaming._denyExceptions?.preBindSkips || []) : [];
@@ -212,6 +298,7 @@ function main() {
   } catch (e) { console.error('✗ Could not read/parse dump:', e.message); process.exit(3); }
 
   const nodes = flatten(dump);
+  const parentMap = buildParentMap(nodes);
   const fails = [];
   const summary = { instances: 0, containers: 0, primitives: 0, text: 0, other: 0, hidden: 0, fails: 0 };
   const rootNode = Array.isArray(dump) ? nodes[0] : (dump && dump.type ? dump : nodes[0]);
@@ -227,9 +314,11 @@ function main() {
     else fails.push({ id: n.id, name: n.name, ...c });
 
     // INV 2 fills
-    for (const f of checkFills(n)) fails.push({ id: n.id, name: n.name, ...f });
+    for (const f of checkFills(n, args.preBind)) fails.push({ id: n.id, name: n.name, ...f });
     // INV 3 typo
     const t = checkTypo(n); if (t) fails.push({ id: n.id, name: n.name, ...t });
+    // INV 5 sizing/overflow
+    for (const s of checkSizing(n, parentMap)) fails.push({ id: n.id, name: n.name, ...s });
     // INV 8 names
     const nm = checkName(n, args.preBind); if (nm) fails.push({ id: n.id, name: n.name, ...nm });
   }

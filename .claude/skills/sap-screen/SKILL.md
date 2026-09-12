@@ -385,9 +385,21 @@ return {
    const t = root.findAll(()=>true).concat(root).map(nd => ({
      id:nd.id, name:nd.name, type:nd.type, visible:nd.visible!==false,
      layoutMode:nd.layoutMode||null, childCount:(nd.children||[]).length,
+     // parentId — findAll(()=>true) loses parent linkage once flattened, so it MUST be
+     // captured here from nd.parent while it's still a live node reference. Required for
+     // INV 5 (sizing/overflow) to look up a node's parent in the flat dump. Root's parent
+     // is the page, not a frame in this dump — leave it null so INV 5 skips the root.
+     parentId: (nd.parent && nd.parent.id && nd.id !== root.id) ? nd.parent.id : null,
      mainComponentKey: nd.type==='INSTANCE' ? (nd.mainComponent&&nd.mainComponent.key)||'' : undefined,
      fontFamily: nd.type==='TEXT'&&nd.fontName&&nd.fontName.family || undefined,
      fontSize: nd.type==='TEXT'&&typeof nd.fontSize==='number' ? nd.fontSize : undefined,
+     // sizing/overflow fields (INV 5) — width + absoluteBoundingBox for overflow math,
+     // layoutSizingHorizontal for diagnosing a FILL no-op, clipsContent to know whether
+     // an overflowing child is actually hidden from the user or just visually spilling.
+     width: typeof nd.width==='number' ? nd.width : undefined,
+     absoluteBoundingBox: nd.absoluteBoundingBox ? { x:nd.absoluteBoundingBox.x, y:nd.absoluteBoundingBox.y, width:nd.absoluteBoundingBox.width, height:nd.absoluteBoundingBox.height } : undefined,
+     layoutSizingHorizontal: nd.layoutSizingHorizontal || undefined,
+     clipsContent: typeof nd.clipsContent==='boolean' ? nd.clipsContent : undefined,
      fills: Array.isArray(nd.fills)? nd.fills.map(paint):[],
      strokes: Array.isArray(nd.strokes)? nd.strokes.map(paint):[]
    }));

@@ -1015,6 +1015,14 @@ const _rgbToTokenIndex = (() => {
     ['#003E87', 'sapShell_SubBrand_TextColor'],
     // selection bg / interactive bg
     ['#EFF1F2', 'sapShell_InteractiveBackground'],
+    // off-white alternating row (SAP Fiori has no zebra striping — map to sapList_Background)
+    ['#FAFAFA', 'sapList_Background'],
+    // positive / success colors
+    ['#1E8F56', 'sapPositiveTextColor'],
+    ['#1F8F57', 'sapPositiveTextColor'],
+    // critical / warning colors
+    ['#DF7B01', 'sapCriticalTextColor'],
+    ['#E07B00', 'sapCriticalTextColor'],
   ];
   for (const [hex, tok] of LEGACY_RGB_TO_TOKEN) {
     const rgb = hexToRgb(hex);
