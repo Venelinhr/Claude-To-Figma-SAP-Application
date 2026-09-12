@@ -272,6 +272,8 @@ All states: 560px · `border-radius: 8px` · Labels ABOVE fields · Required `*`
 
 Surface any matches before executing.
 
+Full catalog: `docs/SAP-SUGGESTION-CATALOG.md` (organized by category, cross-referenced to the rule that enforces each). Quick-reference table below; when in doubt, check the full catalog rather than guessing.
+
 | Trigger | Suggest | Why |
 |---|---|---|
 | Status as plain text / custom pill | **ObjectStatus** + correct Semantic | Theme-bound, Bind-clean |
@@ -281,11 +283,19 @@ Surface any matches before executing.
 | Custom hex fill anywhere | **[sapToken] name tag** | Must bind to SAP variable |
 | Native frame as any UI component | **Real Kit instance from Assets** | Bind will reject native shapes |
 | Free-text Input for fixed values | **Select** | Constrains to valid options |
-| Select with many options | **ComboBox** | Type-ahead over long lists |
+| Select with many options / typing | **ComboBox** | Type-ahead over long lists |
+| Reference to another entity (customer, order, product) | **Value Help** | Standard SAP entity picker, not a bare text field |
+| One field needing multiple values | **MultiInput** | Tokenized multi-value entry, not comma-separated text |
+| Grid/plain table for read-mostly enterprise data | **Responsive Table** | SAP default; adapts across breakpoints |
+| Table with all columns equal priority | **Column priority + hide low-priority at narrow widths** | Focus on what matters at each width |
+| Table with no way to narrow results | **Filters / sort / group** | Findability at scale |
+| Bulk work needed on a table | **Selection checkboxes + mass actions** | Efficiency for queues, not one-row-at-a-time |
 | Irreversible action without guard | **Confirmation Dialog** | Safety for destructive operations |
 | Screen with no next step | **Add next logical action** | Guide the workflow |
+| Status changes with no history | **Activity timeline / audit trail** | Traceability for approval-shaped processes |
+| Derivable values entered by hand | **Calculated field** | Reduce manual entry and drift |
 | Per-row work needed | **Row actions + Tertiary IconButtons** | Direct manipulation, compact |
-| Placeholder "Tab Text" labels | **Real meaningful labels** | Placeholder = broken screen |
+| Placeholder "Tab Text" / "Page Title" labels | **Real meaningful labels** | Placeholder = broken screen (see the property-order rule above — check that before assuming the label logic is missing) |
 | Generic section names | **Business-oriented terminology** | Domain fit |
 
 ---
