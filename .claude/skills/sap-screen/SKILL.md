@@ -82,34 +82,27 @@ Building composites from scratch loses internal `⿻` slot frames → `setProper
 ```
 node build/record-reference.js --node "<id>" --score <n> --rationale "<one line>" --effort "<low/med/high + what changes>"
 ```
-The build is blocked until `.reference-selected` exists. If nothing scores ≥60, record the low score AND get the user's OK (`.scratch-approved`) first. **When unsure which reference, use the curated gold set below / default anchor `9-1550` for dialogs.**
+The build is blocked until `.reference-selected` exists. If nothing scores ≥60, record the low score AND get the user's OK (`.scratch-approved`) first.
 
-**⭐ PRIMARY gold-standard clone sources — file `E083sNBH7JNEOBFrG7Bqge` (user-confirmed 2026-07-22):**
-| Screen | Node | Use for | Width |
-|---|---|---|---|
-| Side Navigation | `68-3262` | left nav rail / shell | 260 |
-| Yanatest Steps | `68-2578` | Object Page narrow (DPH + IconTabBar) | 320 |
-| Activities View | `68-2928` | narrow List Report (Progress Row) | 320 |
-| Validate System | `42-2348` | Log / message / severity panel | 678 |
-| Schedule Op — State A/B/C/D/B2 | `9-1470`/`9-1498`/`9-1550`/`9-1609`/`9-1696` | any Define/Schedule/recurrence dialog (**default anchor `9-1550`**) | 560 |
-| Outage List Overview | `30-2741` | desktop List Report (8-col table) | 1440 |
-| Flight Result Card | `2-5355` | card | 751 |
-| Multi-Source Selection (MCP config) | `219-120887` (p7zm5) | config screen w/ MultiComboBox source-type | 1711 |
-| Select API Dialog | `1114-136067` (p7zm5) | detail screen: ShellBar+SideNav+IconTabBar+Table | 1711 |
+**⛔ Node IDs are NOT used to pick a reference (changed 2026-09-12).** A live audit (`docs/AUDIT-V2.md` §8.8) found that hardcoded canonical node IDs drift — the same id that was "Outage List Overview, 1440px List Report" for months resolved live to "Schedule Operation — State D EndOnly, a 560×430 dialog." A clone by id silently builds the wrong floorplan; nothing errors. **Resolve every reference by NAME + WIDTH, read live, every time — never from memory, never from this file's prose.**
 
-**Legacy clone sources** (file `p7zm5EMBk5DRRZdxNeJ4f5` — historical mirrors, prefer the E083 gold set above):
-| Screen | Node | Use for | Native width |
-|---|---|---|---|
-| Schedule Operation dialog (PERFECT) | `727:42563` | Any Define/Schedule/recurrence **dialog** | 560 |
-| Schedule Operation Monthly | `750:174290` | Dialog + RadioButton panel | 560 |
-| Outage List Overview | `750:174925` | Desktop List Report | 1440 |
-| Governance Console | `750:177443` | FCL + SideNav + nested tables | 1440 |
-| Validate System Log | `750:174814` | Log / message panel | 678 |
-| Schedule Activated | `850:45411` | Confirmation / success state | 560 |
-| Activities View | `615:36810` | Narrow List Report | 320 |
-| yanatest Steps | `560:36552` | Object Page narrow | 320 |
-| Purchase Orders | `804:44859` | Desktop List Report (approvals) | 1440 |
-| SideNavigation | `701:119633` | SideNavigation full tree | 260 |
+**Gold PATTERNS to recognize (structure, not addresses) — use `figma.currentPage.findAll(n => n.name === '<name>' && Math.abs(n.width - <width>) <= 2)` in the target file to find a live match before cloning:**
+
+| Pattern | Recognize by name/shape | Typical width |
+|---|---|---|
+| Side Navigation | layer named "Side Navigation" or "SideNavigation", flat list of Navigation Item instances | 224-260 |
+| Object Page narrow | DynamicPageHeader + IconTabBar, single-entity detail, no filter bar | 320 |
+| Narrow List Report / Worklist | ShellBar+SideNav shell, narrow content, one metric + status per row | 320 |
+| Log / message / severity panel | filter row (Message + Severity) above a colored-severity message list | 660-680 |
+| Schedule / recurrence dialog | ~560px modal, Start date/time fields, a Recurrence checkbox revealing a pattern sub-panel — see `sap-figma-agent/SKILL.md` "MEMORIZED COMPOSITION PATTERNS" for the full spec (checkbox matrix, not separate screens per state) | 560 |
+| Desktop List Report | ShellBar+SideNav shell, full-width multi-column table, filter bar above it | 1440 |
+| Card (e.g. result/summary card) | self-contained bordered block, avatar/icon + title + 1-2 stat rows + primary action | varies |
+| Config screen w/ MultiComboBox | stacked Select/MultiComboBox rows, may include a script/code input area | varies, often 1700+ |
+| FCL / Governance dashboard | Sidebar + DynamicPageHeader + SegmentedButton/IconTabBar + main table (~70%) + side support panel (~30%, Panel-Header/Panel-Content cards) | 1440 |
+
+**If a canonical of the right pattern is already open in the target file:** search Layers/Assets by name, confirm width live, then clone it (state the confirmed name+width, not a remembered id). **If none exists in this file:** build fresh from the Kit using the pattern description — see `sap-figma-agent/SKILL.md` for the detailed compositions (Schedule dialog states, List Report table structure, WizardStep, Form Item + RadioButton, AppLayout/dashboard shape). That file is the single source for pattern detail; do not restate it here.
+
+**⚠ Not every screen in a shared file is SAP gold.** Confirm real Kit instances + Horizon Light tokens + `[typo:role]`/`[sapToken]` naming before treating anything as a reference — a file can also contain unrelated work (a different product's mockup, an old prototype) that looks polished but isn't SAP Fiori.
 
 ---
 
@@ -174,7 +167,7 @@ The wireframe must state the **locked width** (from STEP 4) and use **real SAP c
 
 Every component must have a key below. **Trust these keys — they are harvested from the live kit and verified. Do NOT call `use_figma` to inspect property keys for listed components.** Inspect the live kit ONLY for a component that is NOT in this table and NOT in `knowledge/SAP-COMPONENT-REGISTRY.md`.
 
-> **Dialog build path (single rule, no exceptions):** A screen-level dialog is built by **cloning canonical `727:42563`** (RULE 28). If no clone applies, the dialog **surface** (the outer container with border + cornerRadius:8 + shadow) is the ONE native-frame exception to HARD RULE B — everything *inside* it is still real SAP instances. **NEVER** `importComponentSetByKeyAsync` the Dialog component itself — slot injection into a Dialog instance fails in MCP.
+> **Dialog build path (single rule, no exceptions):** A screen-level dialog is built by **cloning a canonical Schedule/recurrence dialog** if one exists live in the target file (resolve by name+width, per Gate 0.7 above — never a remembered id, which drifts). If no clone applies, the dialog **surface** (the outer container with border + cornerRadius:8 + shadow) is the ONE native-frame exception to HARD RULE B — everything *inside* it is still real SAP instances. **NEVER** `importComponentSetByKeyAsync` the Dialog component itself — slot injection into a Dialog instance fails in MCP.
 
 ### VERIFIED COMPONENT KEYS + PROPERTY KEYS (harvested 2026-07-21 from `SILcWzK5uFghKun9jx6D7c`)
 
@@ -254,7 +247,9 @@ Every component must have a key below. **Trust these keys — they are harvested
 ### Pattern A — CLONE (Level 1–3, score ≥ 60) — the gate REQUIRES `.clone(` in your code
 ```js
 // Clone the canonical, then swap content. The reuse gate blocks L1-3 builds with no .clone().
-const src = await figma.getNodeByIdAsync('727:42563');   // baseCanonical from .reuse-declared
+// baseCanonicalId comes from THIS session's live name+width lookup (Gate 0.7) — never a
+// remembered id from a prior session or from this file's prose; ids drift, see AUDIT-V2 §8.8.
+const src = await figma.getNodeByIdAsync(baseCanonicalId);
 const root = src.clone();
 root.name = "◆SAP-UNBOUND/Screen Name";
 root.x = 15200; root.y = 200;                            // place beside originals
