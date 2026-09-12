@@ -343,6 +343,51 @@ function checkSizing(n, parentMap) {
   return fails;
 }
 
+// INV 5c: forced-equal-width siblings of DIFFERENT component types in a row (added 2026-09-12,
+// full audit "Spacing/Padding Rules" root cause #1). Concrete documented failure this closes
+// (vd-scan-measurement.md "Concrete failure this section exists to prevent"): a 6-item filter
+// row (1 toggle + 5 dropdowns) was built with all 6 columns forced to equal width — the toggle
+// is visually/functionally much narrower than a dropdown with placeholder text. That fix was
+// markdown-only prose with zero mechanical check; this is the check.
+//
+// Scope deliberately narrow to avoid false positives on legitimate equal-width layouts (a data
+// table's repeated cells, a grid of identical cards): only fires when (a) 3+ siblings under the
+// same parent share the same rounded width, AND (b) at least two distinct `mainComponentKey`
+// values are present among them (i.e. they are visibly different SAP components, not repeats of
+// the same one). Same-key repeats (identical cells/cards) never trigger this.
+const EQUAL_WIDTH_TOLERANCE_PX = 1;
+function checkForcedEqualWidth(nodes) {
+  const fails = [];
+  const byParent = new Map();
+  for (const n of nodes) {
+    if (n.visible === false) continue;
+    if (!n.parentId || typeof n.width !== 'number' || !n.mainComponentKey) continue;
+    if (!byParent.has(n.parentId)) byParent.set(n.parentId, []);
+    byParent.get(n.parentId).push(n);
+  }
+  for (const [parentId, siblings] of byParent) {
+    if (siblings.length < 3) continue;
+    const widthGroups = new Map();
+    for (const s of siblings) {
+      const key = Math.round(s.width / EQUAL_WIDTH_TOLERANCE_PX) * EQUAL_WIDTH_TOLERANCE_PX;
+      if (!widthGroups.has(key)) widthGroups.set(key, []);
+      widthGroups.get(key).push(s);
+    }
+    for (const [w, group] of widthGroups) {
+      if (group.length < 3) continue;
+      const distinctKeys = new Set(group.map(g => g.mainComponentKey));
+      if (distinctKeys.size < 2) continue; // same component repeated — legitimate, not flagged
+      const names = group.map(g => g.name).slice(0, 6).join(', ');
+      fails.push({
+        id: parentId, name: `(parent of: ${names})`,
+        verdict: 'FAIL_FORCED_EQUAL_WIDTH', invariant: 5,
+        why: `${group.length} sibling instances of ${distinctKeys.size} DIFFERENT SAP components under the same parent all share width ${w}px (±${EQUAL_WIDTH_TOLERANCE_PX}px): ${names}. Different component types (e.g. a toggle vs a dropdown with long placeholder text) rarely need identical width — check whether each column was sized to its actual content, or whether widths were divided evenly by construction (vd-scan-measurement.md §5, the documented 6-column filter-row defect).`,
+      });
+    }
+  }
+  return fails;
+}
+
 function checkName(n, preBind) {
   const name = n.name || '';
   const skips = preBind ? (layerNaming._denyExceptions?.preBindSkips || []) : [];
@@ -423,6 +468,10 @@ function main() {
     // INV 8 names
     const nm = checkName(n, args.preBind); if (nm) fails.push({ id: n.id, name: n.name, ...nm });
   }
+
+  // INV 5c forced-equal-width siblings — whole-dump pass (needs sibling grouping, unlike the
+  // per-node checkSizing calls above). Provenance never suppresses this, same as INV 5a/5b.
+  for (const w of checkForcedEqualWidth(nodes)) fails.push(w);
 
   // INV 4 provenance (only when a canonical was declared applicable via --canonical,
   // sourced from .reuse-declared baseCanonical). The MCP-first builder cannot call

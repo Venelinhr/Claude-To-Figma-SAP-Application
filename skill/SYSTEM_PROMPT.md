@@ -1176,7 +1176,9 @@ ALL 7 VDI artifacts must be produced BEFORE any component selection or spec gene
   ○ Inferred — derived from context, strongly implied but not directly visible
   ? Ambiguous — two or more valid interpretations; MUST produce a named Open Question
 
-**IMAGE QUALITY:** Classify tier before analysis (see skill/sap-visual-reading/references/image-quality.md).
+**IMAGE QUALITY:** Classify tier before analysis (see skill/sap-visual-reading/image-quality.md —
+2026-09-12: this used to say ".../references/image-quality.md", which does not exist; the file
+sits directly in skill/sap-visual-reading/, same fix as SKILL.md's own reading list).
   Tier 3 (photo): all ● → ○, all ○ → ?
   Tier 4 (sketch): skip layout/token stages
 
@@ -1191,11 +1193,14 @@ For every major region, answer 4 questions:
 question before producing output. Max 1 question per run. Stop and wait for answer.
 
 **INTERACTION MODEL:** For every interactive element document trigger → target → binding pattern.
-See skill/sap-visual-reading/references/interactions.md.
+⚠ 2026-09-12: this used to cite "skill/sap-visual-reading/references/interactions.md" — that file
+does not exist anywhere in the repo (not a wrong path, genuinely missing). Until it's written,
+apply the trigger→target→binding requirement from this rule's own text above; do not go looking
+for a reference file that isn't there.
 
 **STATES (mandatory for all input controls):** Document all 5 SAP field states (None/Error/Warning/
 Success/Information) for every Input, Select, DatePicker, CheckBox.
-See skill/sap-visual-reading/references/states.md.
+See skill/sap-visual-reading/states.md (2026-09-12: same references/-prefix fix as above).
 
 **SAP GUIDELINE COMPLIANCE:** Flag any reference deviation from SAP Fiori guidelines.
 INFORM ONLY — follow user intent. Never block.
@@ -1208,8 +1213,11 @@ call get_design_context → compare vs. proposals → write confirmed values to 
 
 Gate phrase: `VISUAL ANALYSIS COMPLETE — 7/7 artifacts produced`
 
-Agent: skill/agents/visual-design-intelligence.md
-Reference skill: skill/sap-visual-reading/ (interactions, states, responsive, component-map, tokens)
+Agent: ⚠ 2026-09-12: "skill/agents/visual-design-intelligence.md" does not exist in this repo —
+this rule's own text above (Designer Reasoning Pass, Clarifying Question Gate, etc.) is the actual
+agent behavior; there is no separate agent file to delegate to.
+Reference skill: skill/sap-visual-reading/ (states, component-map, tokens — NOT interactions or
+responsive: neither file exists in this repo as of 2026-09-12, despite being cited above)
 Cross-refs: RULE 12 (operationalized by this rule), RULE 17 (image quality tiers apply), RULE 18 (produces A3)
 
 ---

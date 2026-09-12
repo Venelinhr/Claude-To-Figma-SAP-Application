@@ -107,6 +107,16 @@ rc=$(pl mcp__figma__use_figma 'const t = figma.createText(); t.characters = "☐
 rc=$(pl mcp__figma__use_figma 'const cb = set.defaultVariant.createInstance(); cb.name = "CheckBox [sapContent_LabelColor]"; const w = figma.createFrame(); w.name = "Filter Row";' | run "$F")
 [ "$rc" -eq 0 ] && ok "a real instance named 'CheckBox' + a layout frame named 'Filter Row' pass" || { bad "legit instance/layout frame blocked (rc=$rc)"; sed 's/^/      /' "$ERR"; }
 
+# Block 5 — 32px side-padding hard rule (full audit 2026-09-12, Spacing/Padding root cause #3).
+# CLAUDE.md Rule 1 had zero mechanical enforcement before this.
+PAD_INST="const c = await figma.importComponentByKeyAsync('k'); const i = c.createInstance();"
+rc=$(pl mcp__figma__use_figma "const pageHeader = figma.createFrame(); pageHeader.name = 'Page Header'; pageHeader.paddingLeft = 32; pageHeader.paddingRight = 32; $PAD_INST" | run "$F")
+[ "$rc" -eq 0 ] && ok "correct 32px side padding on a page-level container passes" || { bad "correct 32px padding blocked (rc=$rc)"; sed 's/^/      /' "$ERR"; }
+rc=$(pl mcp__figma__use_figma "const filterArea = figma.createFrame(); filterArea.name = 'Filter Area'; filterArea.paddingLeft = 48; filterArea.paddingRight = 48; $PAD_INST" | run "$F")
+[ "$rc" -eq 2 ] && grep -q "GATE 5 BLOCKED" "$ERR" && grep -q "48" "$ERR" && ok "48px side padding on a page-level container is blocked (Rule 1: NEVER 48px)" || bad "wrong 48px padding not caught (rc=$rc)"
+rc=$(pl mcp__figma__use_figma "const card = figma.createFrame(); card.name = 'Product Card'; card.paddingLeft = 16; card.paddingRight = 16; $PAD_INST" | run "$F")
+[ "$rc" -eq 0 ] && ok "16px internal padding on a non-root-named container (card) is NOT flagged" || { bad "unrelated card padding wrongly blocked (rc=$rc)"; sed 's/^/      /' "$ERR"; }
+
 # Block 6 — build-payload size cap (P2 zone-by-zone). Sized from the measured baseline:
 # Run A's monoliths were 21.7/18.1/16.3 KB (two died on one API trap); the clone-first build
 # that worked was 8.2 KB across TWO calls. Warn >12 KB, block >20 KB.

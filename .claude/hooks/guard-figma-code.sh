@@ -192,4 +192,28 @@ elif [ "$CODE_BYTES" -gt 12000 ]; then
   echo "⚠ GATE 6 WARNING (not blocking) — build payload is ${CODE_BYTES} bytes. The measured clone-first build was 8.2 KB across TWO calls; payloads above ~12 KB are the monolithic shape that lost ~15.5k tokens to single API errors in the baseline (AUDIT-V2 §2). Consider splitting into zones (skeleton → header → filters → table) so one error costs one zone." >&2
 fi
 
+# Block 5 — wrong side-padding value on a root/page-level container (added 2026-09-12, full
+# audit "Spacing/Padding Rules" root cause #3). CLAUDE.md Rule 1 ("Side padding ALWAYS 32px
+# (NEVER 48px)") had ZERO mechanical enforcement — validate-lesson.sh only checked lesson TEXT
+# being saved to memory, never the actual paddingLeft/paddingRight values in submitted build
+# code. Scope: only a root-ish container name (page/header/filter/table/wrapper/shell), so this
+# does not fire on legitimate internal padding for cards, form fields, or table cells, which
+# follow a different (correct) convention.
+if echo "$CODE" | grep -qiE '\.(name)\s*=\s*["'"'"'][^"'"'"']*(page|header|filter|table|wrapper|shell)[^"'"'"']*["'"'"']' ; then
+  WRONG_PAD=$(echo "$CODE" | grep -oE '\.(paddingLeft|paddingRight)\s*=\s*[0-9]+' | grep -vE '=\s*32$' | head -3)
+  if [ -n "$WRONG_PAD" ]; then
+    {
+      echo "⛔ GATE 5 BLOCKED — non-32px side padding found on what looks like a root/page-level container:"
+      echo "$WRONG_PAD"
+      echo ""
+      echo "CLAUDE.md Rule 1: side padding is ALWAYS 32px on page header / filter area / table wrapper"
+      echo "containers — never 48px, never any other value. Set paddingLeft = paddingRight = 32."
+      echo "(If this genuinely is NOT a root/page-level container — e.g. a card or form-field internal"
+      echo "padding, which follows its own convention — rename the variable so it doesn't match"
+      echo "page/header/filter/table/wrapper/shell, since that name pattern is what triggered this check.)"
+    } >&2
+    exit 2
+  fi
+fi
+
 exit 0

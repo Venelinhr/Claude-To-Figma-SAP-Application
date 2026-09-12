@@ -31,17 +31,27 @@ The skill handles all three inputs — image, document, text — together or sep
 
 ## What to read before running
 
+⛔ **Path fix, 2026-09-12 (full audit, root cause #1):** every path below was previously written
+as `references/<file>.md`. That is WRONG — this repo has three separate `references/` folders
+(`skill/references/`, `skill/sap-visual-reading/references/`, top-level `references/`) and these
+7 files live directly beside THIS file, with no `references/` prefix at all. A literal path
+resolution from `references/confidence-system.md` etc. fails outright, which means every build
+may have been silently skipping this entire reading list and falling back to unguided model
+memory instead — a very plausible explanation for the inconsistent component/floorplan/token
+picks documented elsewhere in this audit. Paths below are now correct, verified against the
+actual file layout in this directory.
+
 Always read these reference files before producing output:
 
-1. `references/confidence-system.md` — mandatory for every output
-2. `references/screen-types.md` — classify the screen before anything else
-3. `references/component-map.md` — visual pattern → SAP component lookup
-4. `references/tokens.md` — Horizon token reference for typography, color, spacing
-5. `references/states.md` — field states, validation, empty, loading, error patterns
-6. `references/prompt-template.md` — output structure template
+1. `confidence-system.md` — mandatory for every output
+2. `screen-types.md` — classify the screen before anything else
+3. `component-map.md` — visual pattern → SAP component lookup
+4. `tokens.md` — Horizon token reference for typography, color, spacing
+5. `states.md` — field states, validation, empty, loading, error patterns
+6. `prompt-template.md` — output structure template
 
 For image inputs also read:
-7. `references/image-quality.md` — reading strategy per image type
+7. `image-quality.md` — reading strategy per image type
 
 ---
 
@@ -155,7 +165,7 @@ Map extracted items to SAP floorplan candidates before selecting one.
 
 ### Stage 4 — Screen classification + floorplan scoring
 
-Classify using `references/screen-types.md`.
+Classify using `screen-types.md`.
 
 **Floorplan scoring (L2 loop) — score all candidates, pick highest:**
 
@@ -169,7 +179,7 @@ State:
 - Why the runner-up was not chosen
 - Any constraints that override the score (mobile viewport, modal context, etc.)
 
-**Then score canonical-screen similarity** (RULE 28 clone target): run `references/canonical-similarity-rubric.md` — score each candidate canonical screen (floorplan 50% + region 30% + component 20%), pick the highest, and cite the canonical by **name + width**, never by a node id (e.g. "Outage List Overview 96% → clone `name="Outage List Overview"`, width 1440"). ≥85% = clone directly; 60–84% = clone + note deltas; <60% = combine two or build fresh (flag it).
+**Then score canonical-screen similarity** (RULE 28 clone target): run `../references/canonical-similarity-rubric.md` (2026-09-12: this used to say `references/canonical-similarity-rubric.md` — wrong; the file lives at `skill/references/`, one level above this skill's own folder, not inside it) — score each candidate canonical screen (floorplan 50% + region 30% + component 20%), pick the highest, and cite the canonical by **name + width**, never by a node id (e.g. "Outage List Overview 96% → clone `name="Outage List Overview"`, width 1440"). ≥85% = clone directly; 60–84% = clone + note deltas; <60% = combine two or build fresh (flag it).
 
 ⛔ **Never write a clone target as a bare node id.** Resolve it live and assert before `.clone()`:
 ```js
@@ -280,9 +290,9 @@ For every visual property, resolve to a SAP Horizon token:
 - If token uncertain → flag as ? and direct to SAP Web UI Kit Figma
 - If no token exists → flag as non-standard, propose closest token, note deviation
 
-Typography tokens → see `references/tokens.md`
-Color tokens → see `references/tokens.md`
-Spacing tokens → see `references/tokens.md`
+Typography tokens → see `tokens.md`
+Color tokens → see `tokens.md`
+Spacing tokens → see `tokens.md`
 
 ---
 

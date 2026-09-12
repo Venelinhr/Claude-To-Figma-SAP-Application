@@ -1,0 +1,11 @@
+[
+  { "_comment":"INV 5c must NOT fire here: only 2 siblings share a width (below the 3-sibling threshold) — two components sitting at the same width is common and not by itself suspicious. Expected: exit 0." },
+
+  { "id":"3:1","name":"Toolbar Row","type":"FRAME","visible":true,"layoutMode":"HORIZONTAL","childCount":2,
+    "width":300,"absoluteBoundingBox":{"x":0,"y":0,"width":300,"height":32},"clipsContent":false },
+
+  { "id":"3:2","name":"Search Field","type":"INSTANCE","visible":true,"mainComponentKey":"search-key","width":150,
+    "absoluteBoundingBox":{"x":0,"y":0,"width":150,"height":32},"parentId":"3:1" },
+  { "id":"3:3","name":"Sort Button","type":"INSTANCE","visible":true,"mainComponentKey":"button-key","width":150,
+    "absoluteBoundingBox":{"x":150,"y":0,"width":150,"height":32},"parentId":"3:1" }
+]

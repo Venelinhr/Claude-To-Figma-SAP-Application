@@ -227,6 +227,28 @@ if node build/verify-invariants.js test-fixtures/invariants/child-overflow-clipp
 else
   echo "  ✓ child overflowing a clipsContent parent correctly FAILS (INV 5 overflow check)"
 fi
+# INV 5c (forced-equal-width siblings, full audit 2026-09-12) — the documented 6-column
+# filter-row defect (1 toggle + 5 dropdowns, all forced equal width) had zero mechanical
+# check before this. Scoped to 3+ siblings of 2+ DIFFERENT component types at the same
+# width, so repeated identical cells/cards never false-positive.
+if node build/verify-invariants.js test-fixtures/invariants/forced-equal-width-filter-row.json --pre-bind >/dev/null 2>&1; then
+  echo -e "${RED}verify-invariants.js PASSED a 6-column filter row (toggle+5 dropdowns) forced to equal width — INV 5c hole is open${NC}"
+  exit 1
+else
+  echo "  ✓ forced-equal-width filter row (mixed component types) correctly FAILS (INV 5c)"
+fi
+if node build/verify-invariants.js test-fixtures/invariants/equal-width-same-component-pass.json --pre-bind >/dev/null 2>&1; then
+  echo "  ✓ repeated same-component cells at equal width correctly PASS (INV 5c does not false-positive on legitimate repeats)"
+else
+  echo -e "${RED}verify-invariants.js REJECTED repeated identical table cells at equal width — INV 5c is over-triggering${NC}"
+  exit 1
+fi
+if node build/verify-invariants.js test-fixtures/invariants/two-different-components-pass.json --pre-bind >/dev/null 2>&1; then
+  echo "  ✓ 2 different components sharing a width (below the 3-sibling threshold) correctly PASS"
+else
+  echo -e "${RED}verify-invariants.js REJECTED 2 siblings at the same width — INV 5c threshold is mis-set${NC}"
+  exit 1
+fi
 
 # ── Provenance-aware verification (AUDIT-V2 §8.4 P11) ──────────────────────────────────
 # The default build path is CLONE-FIRST (RULE 28), but INV 1's allowlist and INV 3's

@@ -1,0 +1,15 @@
+[
+  { "_comment":"INV 5c must NOT fire here: 4 identical Table Cell instances (same mainComponentKey) at the same width is a normal repeated-cell pattern, not the forced-equal-width defect. Expected: exit 0." },
+
+  { "id":"2:1","name":"Column","type":"FRAME","visible":true,"layoutMode":"VERTICAL","childCount":4,
+    "width":135,"absoluteBoundingBox":{"x":0,"y":0,"width":135,"height":128},"clipsContent":false },
+
+  { "id":"2:2","name":"Table Cell 001","type":"INSTANCE","visible":true,"mainComponentKey":"cell-key","width":135,
+    "absoluteBoundingBox":{"x":0,"y":0,"width":135,"height":32},"parentId":"2:1" },
+  { "id":"2:3","name":"Table Cell 002","type":"INSTANCE","visible":true,"mainComponentKey":"cell-key","width":135,
+    "absoluteBoundingBox":{"x":0,"y":32,"width":135,"height":32},"parentId":"2:1" },
+  { "id":"2:4","name":"Table Cell 003","type":"INSTANCE","visible":true,"mainComponentKey":"cell-key","width":135,
+    "absoluteBoundingBox":{"x":0,"y":64,"width":135,"height":32},"parentId":"2:1" },
+  { "id":"2:5","name":"Table Cell 004","type":"INSTANCE","visible":true,"mainComponentKey":"cell-key","width":135,
+    "absoluteBoundingBox":{"x":0,"y":96,"width":135,"height":32},"parentId":"2:1" }
+]
