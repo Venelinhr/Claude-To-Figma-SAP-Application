@@ -180,6 +180,37 @@ Every component must have a key below. **Trust these keys — they are harvested
 
 `setProperties` requires the **full hashed key** (short names like `✏️ Text` fail). Use these exactly:
 
+> ### ⛔ HARD RULE — NEVER GUESS A PROPERTY KEY, NEVER DETACH (added 2026-09-12, from a real live failure)
+>
+> **`setProperties` with a wrong key is a SILENT NO-OP.** Figma does not throw. The call
+> "succeeds", the property never changes, and the screenshot looks unchanged — indistinguishable
+> from a rendering delay. Guessing burns turns you will not get back.
+>
+> **1 — Resolve the key from the table below, or derive it at runtime. Never type a bare name.**
+> ```js
+> // Derive the hashed key instead of hardcoding it (this is what builder.ts already does):
+> const props = inst.componentProperties;
+> const key = Object.keys(props).find(k => k.startsWith('Icon Left#'));
+> if (!key) throw new Error('No "Icon Left" property on this component — wrong component or wrong variant.');
+> inst.setProperties({ [key]: true });
+> ```
+> `'Icon Left'` ❌ → `'Icon Left#112533:293'` ✅. Same for `Icon#112533:487`, `✏️ Text#145508:461`.
+>
+> **2 — Verify the write, do not assume it.** `use_figma` returns nothing on success, so a no-op
+> and a success look identical. Re-read the one property you set (cheap), or fold a count into the
+> build call's return text. Do NOT reach for a screenshot to answer "did that property apply?".
+>
+> **3 — ⛔ NEVER `detachInstance()` to work around a locked child.** It converts the node to a
+> plain FRAME: the layer stops being a kit instance, loses library-update inheritance, and
+> `verify-invariants.js` hard-fails it (exit 2). If a child is locked, that is the kit telling you
+> the change belongs in a **component property**, not in direct node manipulation. Find the
+> property. If no property exists, the design needs a different component — not a detach.
+>
+> *Live cost of ignoring this rule: a Quick Order button was detached to swap its icon, silently
+> became a FRAME, shipped, was caught in review ("STILL FRAME, NOT BUTTON"), and cost ~10 turns
+> to reverse-engineer a key that was already written on this very line.*
+
+
 | Component | Set Key | TEXT key (exact) | Key VARIANT props |
 |---|---|---|---|
 | **Button** | `91805fa199b1fd247d76a9c08bbe0982b49065c4` | `✏️ Text#145508:461` | `Form Factor`=Compact · `Type`=Primary/Secondary/Accept/Reject/Attention/Tertiary · `Icon Left#112533:293`(bool) · `Icon#112533:487`(swap) |
