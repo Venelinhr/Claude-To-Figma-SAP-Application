@@ -228,6 +228,61 @@ else
   echo "  ✓ child overflowing a clipsContent parent correctly FAILS (INV 5 overflow check)"
 fi
 
+# ── Provenance-aware verification (AUDIT-V2 §8.4 P11) ──────────────────────────────────
+# The default build path is CLONE-FIRST (RULE 28), but INV 1's allowlist and INV 3's
+# [typo:role] convention were written for from-scratch builds. Measured on the live
+# 204-node build: 3 genuine defects and 130 FALSE flags (78 FAIL_FAKE_COMPONENT +
+# 52 FAIL_TYPO_TAG), and the PM-confirmed canonical FAILED ITS OWN GATE. These checks
+# prove the reconciliation: inherited nodes pass INV 1/INV 3 by provenance, the delta
+# stays strict, and INV 2 / INV 5 are NEVER weakened (they found all 3 real defects).
+CANON=test-fixtures/invariants/clone-canonical-source.json
+if node build/verify-invariants.js test-fixtures/invariants/clone-inherited-pass.json --pre-bind --canonical 6:1 --canonical-dump "$CANON" >/dev/null 2>&1; then
+  echo "  ✓ clone-first build: nodes inherited unchanged from a confirmed canonical PASS INV 1/INV 3 by provenance"
+else
+  echo -e "${RED}verify-invariants.js rejected a clone-first build whose nodes are verbatim the confirmed canonical's — P11 false-flag regression${NC}"
+  exit 1
+fi
+if node build/verify-invariants.js test-fixtures/invariants/clone-delta-bad-name.json --pre-bind --canonical 6:1 --canonical-dump "$CANON" >/dev/null 2>&1; then
+  echo -e "${RED}verify-invariants.js PASSED a clone-first build whose NEWLY ADDED nodes are a fake component and a non-SAP font — the delta is not strict${NC}"
+  exit 1
+else
+  echo "  ✓ clone-first build: NEWLY ADDED/renamed nodes are still verified at FULL strictness (delta is strict)"
+fi
+# The load-bearing one: provenance must never leak into INV 2 / INV 5. All three genuine
+# defects in the live build were on nodes inherited from the canonical.
+if node build/verify-invariants.js test-fixtures/invariants/clone-inherited-inv2-inv5-still-fire.json --canonical 6:1 --canonical-dump "$CANON" >/dev/null 2>&1; then
+  echo -e "${RED}provenance SUPPRESSED INV 2/INV 5 on inherited nodes — the gate is now blind to the stray-stroke and overflow defects it actually found${NC}"
+  exit 1
+else
+  echo "  ✓ INV 2 (raw hex) + INV 5 (overflow) still FIRE on inherited nodes — provenance never weakens them"
+fi
+if node build/verify-invariants.js test-fixtures/invariants/clone-inherited-header-width.json --pre-bind --canonical 6:1 --canonical-dump "$CANON" >/dev/null 2>&1; then
+  echo -e "${RED}provenance SUPPRESSED INV 5b header-width on an inherited node — the FILL-no-op bug class is no longer caught${NC}"
+  exit 1
+else
+  echo "  ✓ INV 5b (page-header width) still FIRES on an inherited node"
+fi
+# INV 3 relaxation: font '72' at a role size is real SAP-styled text, tag or no tag.
+if node build/verify-invariants.js test-fixtures/invariants/typo-font72-role-size.json --pre-bind >/dev/null 2>&1; then
+  echo "  ✓ untagged TEXT in SAP font '72' at a role size passes INV 3 (no [typo:role] tag needed)"
+else
+  echo -e "${RED}verify-invariants.js rejected untagged text already styled in SAP font '72' at a role size — INV 3 relaxation missing${NC}"
+  exit 1
+fi
+if node build/verify-invariants.js test-fixtures/invariants/typo-font72-bad-size.json --pre-bind >/dev/null 2>&1; then
+  echo -e "${RED}verify-invariants.js PASSED untagged text at a non-role size / non-SAP font — the INV 3 relaxation is too wide${NC}"
+  exit 1
+else
+  echo "  ✓ untagged TEXT at a NON-role size or in a non-SAP font still correctly FAILS INV 3 (relaxation is narrow)"
+fi
+# The pipeline's own gold standard must pass its own reality gate — the P11 headline defect.
+if node build/verify-invariants.js "$CANON" --pre-bind >/dev/null 2>&1; then
+  echo "  ✓ the confirmed canonical passes its OWN reality gate (P11 headline defect closed)"
+else
+  echo -e "${RED}the reality gate REJECTS the pipeline's own confirmed canonical — AUDIT-V2 P11 has regressed${NC}"
+  exit 1
+fi
+
 echo ""
 echo "$(printf '─%.0s' {1..60})"
 echo "Instance-ratio detector (silent native-frame fallback)"

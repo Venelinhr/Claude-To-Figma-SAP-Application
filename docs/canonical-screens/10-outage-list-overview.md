@@ -1,5 +1,7 @@
 # 10 - Outage List Overview / Schedule Operation Form (End-Only State D)
 
+> ⚠ **The Node ID below is historical and unverified — never clone by it.** Resolve canonicals live by name + width (`skill/references/canonical-index.json` → `resolution`); evidence in `docs/NODE-ID-CONFLICTS.md`.
+
 **Node ID:** 750:174925  
 **File Key:** p7zm5EMBk5DRRZdxNeJ4f5  
 **Screenshot:** 10-outage-list-overview.png  

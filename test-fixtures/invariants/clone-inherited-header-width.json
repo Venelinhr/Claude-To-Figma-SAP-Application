@@ -1,0 +1,10 @@
+[
+  { "_comment":"Companion to clone-inherited-inv2-inv5-still-fire.json, covering INV 5b specifically. 'DynamicPageHeader' is present by name+type in clone-canonical-source.json, so provenance waives INV 1 for it — but this clone's header width no longer matches its parent's (the layoutSizingHorizontal='FILL' no-op that hid content in the live build). PROVES INV 5b fires on an INHERITED node. Verify with --canonical-dump clone-canonical-source.json. Expected: exit 2 with FAIL_HEADER_WIDTH_MISMATCH." },
+
+  { "id":"12:1","name":"Orders List Report","type":"FRAME","visible":true,"layoutMode":"VERTICAL","childCount":1,
+    "basedOnCanonical":"6:1",
+    "width":1440,"absoluteBoundingBox":{"x":0,"y":0,"width":1440,"height":600},"clipsContent":false },
+  { "id":"12:2","name":"DynamicPageHeader","type":"INSTANCE","visible":true,"mainComponentKey":"dph-key-1","childCount":0,
+    "parentId":"12:1","width":1180,"absoluteBoundingBox":{"x":0,"y":0,"width":1180,"height":80},
+    "layoutSizingHorizontal":"FILL","clipsContent":false }
+]

@@ -1,7 +1,49 @@
 # Canonical Node ID Conflicts
 
-**Generated:** 2026-08-28 · **Scope:** `/Users/C5408360/Downloads/sap-pipeline-v2/`
-**Status:** REPORT ONLY — no conflicting value in this repo was changed.
+**Generated:** 2026-08-28 · **Updated:** 2026-09-12 · **Scope:** `/Users/C5408360/Downloads/sap-pipeline-v2/`
+**Status:** PARTIALLY RESOLVED — see "Resolution status" below. The report body is unchanged; it is
+the historical evidence. The resolution table records what was settled and what still needs live Figma.
+
+---
+
+## ⛔ Resolution status (2026-09-12 · AUDIT-V2 §8.4 P10)
+
+**The structural fix landed: canonical resolution no longer uses node ids at all.**
+`skill/references/canonical-index.json` is now keyed by **`name` + `width`**, `build/score-canonical.js`
+emits a `liveQuery` (`findAll(n => n.name === … && Math.abs(n.width - …) <= 2)`) with every match, and
+`SAP_BUILD_MANIFEST.md` §3b was re-keyed the same way. Stored ids survive only as `hintNodeId`
+(`hintNodeIdAuthoritative: false`) and MUST be asserted against the live name+width before `.clone()`.
+**This means the conflicts below are no longer load-bearing** — a wrong id can no longer silently
+select a wrong screen, because nothing clones by id any more.
+
+| Conflict | Status | Resolution |
+|---|---|---|
+| `750:174925` — "Outage List Overview" vs "State D EndOnly" (§1) | ✅ **RESOLVED** | Live: **`Schedule Operation — State D EndOnly`**, 560×430 dialog. The "Outage List Overview / Desktop List Report" label is **deleted** from `SAP_BUILD_MANIFEST.md` §3b and from `canonical-index.json`. |
+| "Outage List Overview" claimed by `30:2741` · `750:174556` · `750:174925` (§2) | ✅ **RESOLVED for file `p7zm5EMBk5DRRZdxNeJ4f5`** | The real List Report is **`750:174556`**, now the `hintNodeId` of `shipped-outage-list`. `750:174925` deleted (it is the dialog). `30:2741` **withdrawn** — it lives in file `E083sNBH7JNEOBFrG7Bqge` and was never read live; marked WITHDRAWN in §3b rather than claimed. |
+| `804:44859` called "1440px List Report" | ✅ **RESOLVED** | It is **320px** live and named `Purchase Orders`, not "Purchase Orders List Report". The width claim is corrected in `SAP_BUILD_MANIFEST.md`; the row is demoted to narrow/secondary fit. |
+| `750:174556` — 4 labels (§1) | ✅ **RESOLVED** | Live: **`Outage List Overview`**. The "yanatest Steps" / "Activities View" / "Schedule Operation Form" labels on this id are deleted. |
+| `750:174442` — 3 labels (§1) | ✅ id→name resolved | Live: **`Validate System`**. "Activities View (List Report)" deleted. |
+| `750:174786` — 4 labels (§1) | ✅ id→name resolved | Live: **`Schedule Operation — State A Collapsed`**. "Monthly + End date / fully-expanded" deleted (it was the opposite state). |
+| `750:174814` — 2 labels (§1) | ✅ id→name resolved | Live: **`Schedule Operation — State B Recurring`**. "Validate System Log Panel" deleted. |
+| `750:174866` — 3 labels (§1) | ✅ id→name resolved | Live: **`Schedule Operation — State C End Date`**. "Form (base) / collapsed" deleted. |
+| `750:174960` — 4 labels (§1) | ✅ id→name resolved | Live: **`Schedule Operation — State B1 Hourly`**. "Design System Governance (worklist/FCL)" deleted. |
+| `750:174158` — SideNavigation | ⚠ **PARTIAL** | Live name is **`Menu`** (it *contains* a Side Navigation instance). A name match on "Side Navigation" will not find it. Width also disagrees: 224 in the index vs 260 in §3b — unreconciled. |
+| `727:42563` — "full recurrence" vs "Daily" (§1) | ⚠ **PARTIAL** | Live: **`Schedule Operation — State C End Date`** — so **both** old labels were wrong. The node for a "Daily" state is unknown. |
+| `750:174290` — 2 labels (§1) | ❌ **UNRESOLVED** | Never read live. Both labels deleted from the index/manifest rather than guessed. |
+| The four id families — which is the Schedule dialog gold standard (§2) | ❌ **UNRESOLVED** | `9:1xxx` vs `448:162xxx` vs `750:174xxx` still all claim `State A/B/B1/B2/C/D`. `CLAUDE.md` anchors `9:1550` and separately names `448:162293`. Needs live reads in both files. |
+| "yanatest Steps" — `560:36552` · `750:174190` · `750:174556` (§2) | ❌ **UNRESOLVED** | `750:174556` is eliminated (it is the Outage List). The other two were never read live in this file. `shipped-yanatest-steps` now carries **no** `hintNodeId`. |
+| "Activities View" — 5 ids (§2) | ❌ **UNRESOLVED** | `750:174442` and `750:174556` eliminated. `68:2928` · `615:36810` · `750:174290` unread. `shipped-activities-view` carries **no** `hintNodeId`. |
+| "Side Navigation" · "Validate System (Log Panel)" — multi-id (§2) | ❌ **UNRESOLVED** | Remaining candidates unread live. |
+| `750:177443` · `472:34431` (Governance Console, Flight Result Card) | ❌ **UNVERIFIED** | Not in the conflict report, but never confirmed live either. Marked `unverified: true` in the index. Flight Result Card width disagrees: 751 (§3b) vs 760 (index). |
+
+**Rule now in force:** an index entry with `"unverified": true` has **no trustworthy node id**. Resolve
+it by name+width live; if no live frame matches, treat the canonical as ABSENT — score it, never clone
+it by id.
+
+---
+
+**Original report (2026-08-28) follows unchanged — historical evidence.**
+**Status of the original:** REPORT ONLY — no conflicting value in this repo was changed at that time.
 
 This file records every Figma node ID that carries **more than one screen label**, and every
 screen label that is claimed by **more than one node ID**. Both directions are a
@@ -210,6 +252,11 @@ canonical-index ↔ CANONICAL-SCREENS ↔ manifest ↔ CONTRIBUTING node IDs.
 ---
 
 ## RESOLUTION NEEDED — requires checking live Figma
+
+> **Superseded in part by the Resolution status table at the top (2026-09-12).** The *structural*
+> problem is fixed — nothing resolves canonicals by id any more, so an unresolved id no longer
+> causes a wrong clone. The items below that are still ❌ are the ones a live Figma session must
+> finish. Items 1 (partly), 3 and 4 are addressed above.
 
 Nothing above can be resolved from the repo alone: every candidate is asserted by at least one
 file, and the files contradict each other symmetrically. **Do not pick a winner from this

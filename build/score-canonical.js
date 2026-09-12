@@ -16,6 +16,15 @@
  *   node build/score-canonical.js --json '{"floorplan":"List Report","regions":[...],"components":[...]}'
  *
  * Output: ranked JSON of matches with score breakdown + recommended reuse level.
+ *
+ * ⛔ RESOLUTION IS BY NAME + WIDTH, NEVER BY NODE ID (AUDIT-V2 §8.4 P10).
+ * Every match carries `resolveBy:"name+width"`, the live-file query to run, and `hintNodeId`
+ * (NON-AUTHORITATIVE). The id is a hint you must ASSERT against the live name+width before
+ * `.clone()`. Why: this scorer used to rank "Outage List Overview" first with figNode
+ * 750:174925; in the live file that id is "Schedule Operation — State D EndOnly", a 560×430
+ * dialog — a Level-2 clone by id would have silently built a list report from a dialog.
+ * Entries flagged `unverified:true` have NO trustworthy id at all: resolve them live or do not
+ * clone them. See docs/NODE-ID-CONFLICTS.md.
  */
 
 const fs = require('fs');
@@ -59,18 +68,42 @@ function overlapScore(requestArr, canonicalArr, weight) {
   return (matched / req.length) * weight;
 }
 
+// P10: the live-file resolver. A canonical is identified by NAME + WIDTH, never by id.
+const WIDTH_TOLERANCE_PX = 2;
+
+function liveQuery(name, width) {
+  if (!name) return null;
+  const w = Number(width);
+  if (!Number.isFinite(w)) {
+    return `figma.currentPage.findAll(n => n.name === ${JSON.stringify(name)})  // ⚠ width unknown — confirm the match by hand`;
+  }
+  return `figma.currentPage.findAll(n => n.name === ${JSON.stringify(name)} && Math.abs(n.width - ${w}) <= ${WIDTH_TOLERANCE_PX})`;
+}
+
 function scoreCanonical(request, canonical) {
   const fp = floorplanScore(request.floorplan, canonical.floorplan);
   const rg = overlapScore(request.regions, canonical.regions, 30);
   const cp = overlapScore(request.components, canonical.keyComponents || canonical.components, 20);
   const total = Math.round((fp + rg + cp) * 10) / 10;
+  // hintNodeId is NON-AUTHORITATIVE — kept only so a human can check the hint against the live
+  // name+width. figNode/figmaNode are deprecated aliases for the same hint.
+  const hint = canonical.hintNodeId || canonical.figNode || canonical.figmaNode || null;
+  const unverified = canonical.unverified === true || canonical.liveVerified === false;
   return {
     id: canonical.id,
     name: canonical.name,
-    figNode: canonical.figNode || canonical.figmaNode || null,
+    width: canonical.width ?? null,
+    resolveBy: 'name+width',
+    liveQuery: liveQuery(canonical.name, canonical.width),
+    hintNodeId: hint,
+    hintNodeIdAuthoritative: false,
+    unverified,
+    // Deprecated alias — older callers read `figNode`. Never clone by it.
+    figNode: hint,
     floorplan: canonical.floorplan || null,
     score: total,
     breakdown: { floorplan: fp, regions: Math.round(rg * 10) / 10, components: Math.round(cp * 10) / 10 },
+    ...(canonical.hintNote ? { hintNote: canonical.hintNote } : {}),
   };
 }
 
@@ -171,7 +204,13 @@ function main() {
     return {
       id: t2.figmaNode || t2.id,
       name: t2.name,
-      figmaNode: t2.figmaNode,
+      // P10: width is half the resolution key. Inherit the parent's when the Tier 2 record
+      // (written by record-canonical.js) did not capture one.
+      width: t2.width ?? parent.width ?? null,
+      hintNodeId: t2.hintNodeId || t2.figmaNode || null,
+      // Tier 2 rows are written from a build the user confirmed in their own live file, so the
+      // id was real at write time — but it still must be asserted live before .clone().
+      unverified: t2.unverified === true,
       floorplan: t2.floorplan || parent.floorplan,
       regions: t2.regions || parent.regions,
       keyComponents: t2.keyComponents || parent.keyComponents,
@@ -192,14 +231,33 @@ function main() {
   const result = {
     request,
     tierUsed: tier2Full.length ? 2 : 1,
+    // P10 contract, restated on every run so no caller can miss it.
+    resolution: {
+      policy: 'name+width',
+      rule: 'Resolve the chosen canonical in the LIVE Figma file by NAME + WIDTH. hintNodeId is a HINT ONLY — assert the live name and width before .clone().',
+      widthTolerancePx: WIDTH_TOLERANCE_PX,
+      hintNodeIdAuthoritative: false,
+      why: 'AUDIT-V2 §8.4 P10 — this scorer once ranked "Outage List Overview" first with id 750:174925, which is live a 560x430 "Schedule Operation — State D EndOnly" dialog. Cloning by id builds the wrong screen silently.',
+      conflictsDoc: 'docs/NODE-ID-CONFLICTS.md',
+    },
     topMatches: top,
     recommendation: best ? {
       baseCanonical: best.id,
       baseCanonicalName: best.name,
-      figNode: best.figNode,
+      baseCanonicalWidth: best.width,
+      resolveBy: 'name+width',
+      liveQuery: best.liveQuery,
+      hintNodeId: best.hintNodeId,
+      hintNodeIdAuthoritative: false,
+      unverified: best.unverified,
+      // Deprecated alias — do not clone by this.
+      figNode: best.hintNodeId,
       similarityScore: best.score,
       reuseLevel: rec.level,
       action: rec.action,
+      nextStep: best.unverified
+        ? `⚠ UNVERIFIED canonical — its stored id is known-wrong or unknown. Resolve LIVE first: ${best.liveQuery}. If nothing matches, do NOT clone; score again or build new with .scratch-approved.`
+        : `Read it live first: ${best.liveQuery} → then: node build/record-reference.js --node "<live id>" --name "${best.name}" --score ${best.score} --rationale "…" --effort "…"  → assert src.name === ${JSON.stringify(best.name)} and src.width ≈ ${best.width} in the clone code.`,
     } : null,
   };
 

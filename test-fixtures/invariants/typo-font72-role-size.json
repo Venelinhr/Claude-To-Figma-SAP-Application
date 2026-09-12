@@ -1,0 +1,25 @@
+[
+  { "_comment":"INV 3 RELAXATION — FROM-SCRATCH build (no basedOnCanonical, no --canonical-dump), so provenance plays no part. PROVES a TEXT whose LIVE font is the SAP kit font '72' at a known role size is accepted without an explicit [typo:role] tag: it is already SAP-styled, which is exactly what the tag exists to request. Sizes cover the registry: 20 heading · 16 title · 14 body/label · 13 tableHeader · 12 caption · 28 kpi, plus 21 (within the ±1 tolerance of 20). Expected: exit 0." },
+
+  { "id":"9:1","name":"Order Summary","type":"FRAME","visible":true,"layoutMode":"VERTICAL","childCount":7,
+    "width":400,"absoluteBoundingBox":{"x":0,"y":0,"width":400,"height":300},"clipsContent":false },
+
+  { "id":"9:2","name":"Heading Untagged","type":"TEXT","visible":true,"fontFamily":"72","fontSize":20,"parentId":"9:1",
+    "width":200,"absoluteBoundingBox":{"x":0,"y":0,"width":200,"height":26} },
+  { "id":"9:3","name":"Title Untagged","type":"TEXT","visible":true,"fontFamily":"72","fontSize":16,"parentId":"9:1",
+    "width":200,"absoluteBoundingBox":{"x":0,"y":26,"width":200,"height":22} },
+  { "id":"9:4","name":"Body Untagged","type":"TEXT","visible":true,"fontFamily":"72","fontSize":14,"parentId":"9:1",
+    "width":200,"absoluteBoundingBox":{"x":0,"y":48,"width":200,"height":18} },
+  { "id":"9:5","name":"Table Header Untagged","type":"TEXT","visible":true,"fontFamily":"72","fontSize":13,"parentId":"9:1",
+    "width":200,"absoluteBoundingBox":{"x":0,"y":66,"width":200,"height":18} },
+  { "id":"9:6","name":"Caption Untagged","type":"TEXT","visible":true,"fontFamily":"72","fontSize":12,"parentId":"9:1",
+    "width":200,"absoluteBoundingBox":{"x":0,"y":84,"width":200,"height":16} },
+  { "id":"9:7","name":"KPI Untagged","type":"TEXT","visible":true,"fontFamily":"72","fontSize":28,"parentId":"9:1",
+    "width":200,"absoluteBoundingBox":{"x":0,"y":100,"width":200,"height":34} },
+  { "_comment":"21px is heading(20) within the documented ±1 tolerance — same rule the tagged path uses.",
+    "id":"9:8","name":"Heading Off By One","type":"TEXT","visible":true,"fontFamily":"72","fontSize":21,"parentId":"9:1",
+    "width":200,"absoluteBoundingBox":{"x":0,"y":134,"width":200,"height":26} },
+  { "_comment":"A plainly-named text at a role size — the ordinary delivered-frame case this relaxation exists for. A [typo:role]-TAGGED name is deliberately NOT tested here: tags are stripped at Bind, so on a delivered (post-bind) frame INV 8 correctly rejects a surviving tag. The tagged path is covered by the --pre-bind fixtures." },
+  { "id":"9:9","name":"Total","type":"TEXT","visible":true,"fontFamily":"72","fontSize":14,"parentId":"9:1",
+    "width":200,"absoluteBoundingBox":{"x":0,"y":160,"width":200,"height":18} }
+]

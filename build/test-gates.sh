@@ -107,6 +107,21 @@ rc=$(pl mcp__figma__use_figma 'const t = figma.createText(); t.characters = "☐
 rc=$(pl mcp__figma__use_figma 'const cb = set.defaultVariant.createInstance(); cb.name = "CheckBox [sapContent_LabelColor]"; const w = figma.createFrame(); w.name = "Filter Row";' | run "$F")
 [ "$rc" -eq 0 ] && ok "a real instance named 'CheckBox' + a layout frame named 'Filter Row' pass" || { bad "legit instance/layout frame blocked (rc=$rc)"; sed 's/^/      /' "$ERR"; }
 
+# Block 6 — build-payload size cap (P2 zone-by-zone). Sized from the measured baseline:
+# Run A's monoliths were 21.7/18.1/16.3 KB (two died on one API trap); the clone-first build
+# that worked was 8.2 KB across TWO calls. Warn >12 KB, block >20 KB.
+        # pad line is 64 bytes, so: 230 lines ≈ 14.7 KB (warn band), 400 lines ≈ 25.6 KB (block band)
+pad_kb() { printf '%0.s// xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n' $(seq 1 "$1"); }
+SMALL="const c = await figma.importComponentByKeyAsync('k'); const i = c.createInstance();"
+rc=$(pl mcp__figma__use_figma "$SMALL" | run "$F")
+[ "$rc" -eq 0 ] && ok "a small clone-first payload passes the size cap" || { bad "small payload blocked by size cap (rc=$rc)"; sed 's/^/      /' "$ERR"; }
+BIG=$(printf '%s\n%s' "$SMALL" "$(pad_kb 230)")
+rc=$(pl mcp__figma__use_figma "$BIG" | run "$F")
+[ "$rc" -eq 0 ] && grep -q "GATE 6 WARNING" "$ERR" && ok "a ~15 KB payload WARNS about the monolith shape but still runs" || bad "15 KB payload: expected warn+pass (rc=$rc)"
+HUGE=$(printf '%s\n%s' "$SMALL" "$(pad_kb 400)")
+rc=$(pl mcp__figma__use_figma "$HUGE" | run "$F")
+[ "$rc" -eq 2 ] && grep -q "GATE 6 BLOCKED" "$ERR" && ok "a >20 KB monolithic payload is blocked with the zone-split instruction" || bad "oversized payload not blocked (rc=$rc)"
+
 echo "5. guard-screenshot-budget.sh + count-build.sh"
 rm -f "$M/.screenshots-taken" "$M/.builds-count" "$M/.screenshot-requested"
 S="$H/guard-screenshot-budget.sh"

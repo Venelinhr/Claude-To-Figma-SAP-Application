@@ -244,8 +244,8 @@ Still proposed (each needs a separate decision):
 
 | # | Item | Why not yet |
 |---|---|---|
-| P2 | Zone-by-zone build as the default | Guidance only for now (`gate-status` READY text + directive). A hard cap on build-code size is possible but should be sized from the re-test numbers. |
-| P4 | Context diet (duplicate MCP servers, `CLAUDE.md` 44 KB → ≤10 KB) | Measure the exact split first (§7 step 4); a dropped hard rule is a regression. |
+| ~~P2~~ | ~~Zone-by-zone build as the default~~ | **Done 2026-09-12** — see §8.5. |
+| ~~P4~~ | ~~Context diet (`CLAUDE.md` 44 KB → ≤10 KB)~~ | **Re-scoped 2026-09-12 — the original premise was wrong.** See §8.6. |
 | P7 | Retire/rename the global legacy `SAP-Figma-screen-creator` skill | Lives in `~/.claude/skills` — your machine, your call. |
 | P0 (global) | Register the gates-off warning globally | One command, your global settings: |
 
@@ -311,6 +311,103 @@ It also reported **130 flags that are not defects**: 78 `FAIL_FAKE_COMPONENT` (f
 |---|---|---|---|---|
 | **P10** | **Canonical ids drift; the scorer's top match resolves to the wrong screen.** `score-canonical.js` ranks "Outage List Overview" first (84.5) with `figNode 750:174925`; in the live file that id is **"Schedule Operation — State D EndOnly", a 560×430 dialog**. `docs/NODE-ID-CONFLICTS.md` already lists it. The manifest names the desktop List Report under three different ids (`750:174925`, `30:2741`, and the confirmed table's) and calls `804:44859` "1440px" while it is 320 px live. A Level-2 clone by id would have built a list report from a dialog, silently. | live reads in this session; `docs/NODE-ID-CONFLICTS.md:106`; `SAP_BUILD_MANIFEST.md:22,168,197` | Done: `record-reference.js` requires `--name` read live; gate messages, `gate-status`, CLAUDE.md and `/sap-screen` say read-then-assert; the clone code asserts `src.name` and width. To do: resolve canonicals by **name + width in the live file** (`figma.currentPage.query('FRAME[name=…]')`), never by index id; re-key `canonical-index.json` and `SAP_BUILD_MANIFEST.md §3b` against the live file and delete the conflicting rows. | **P0** — a wrong clone is a silent total failure |
 | **P11** | **The reality gate rejects the pipeline's own gold standard.** INV 1's allowlist (`Row$`, `Header$`, `Block$` …) and INV 3's `[typo:role]` tags do not match the confirmed canonicals' names (`… Cell`, `HDR …`, `Row <id>`, `Filter Area`, untagged styled texts), so every clone-first build fails 100+ flags by construction and the only genuine findings are buried. | §8.3: 37 flags on the canonical's own 58 nodes; 28 rejected names verbatim canonical | Provenance-aware verification: when `basedOnCanonical` is set, dump the canonical too and verify the **delta** (nodes added or renamed by the build) at full strictness, while nodes inherited unchanged from a confirmed canonical pass INV 1/INV 3 by provenance; keep INV 2/INV 5 on everything (they found the three real defects). Add the canonicals' container patterns to the allowlist for from-scratch builds; make INV 3 accept a text whose live font is `72` at a role size. | **P0** — until then the gate cannot be made mandatory on the default path |
+
+### 8.5 P2 delivered — build-payload size cap (2026-09-12)
+
+`guard-figma-code.sh` **Block 6**. The threshold is derived from this audit's own measurements, not picked:
+
+| Payload | Outcome in the baseline |
+|---|---|
+| 21.7 KB (Run A call 1) | **died** on `primaryAxisSizingMode … 'HUG'` |
+| 18.1 KB (Run A call 2) | **died** on FILL-before-append |
+| 16.3 KB (Run A call 3) | ran → the native-heavy screen |
+| **8.2 KB total, as 4.0 + 4.2 KB** (live v2 clone-first build, §8.3) | **both landed first time** |
+
+One bad line throws away the whole payload, so payload size *is* retry cost. Warn above **12 KB**, block above **20 KB**, with the refusal naming the zone split (skeleton → header → filters → table) and reminding the agent that a clone-first call should be an *adapt*, not a re-assembly. A clone-and-adapt call never legitimately reaches 20 KB.
+
+Covered by `build/test-gates.sh` §4 (3 new checks: small passes, ~15 KB warns-but-runs, >20 KB blocked). Suite now **39/39**.
+
+### 8.6 P4 re-scoped — the "cut CLAUDE.md to an index" premise was wrong (2026-09-12)
+
+The plan assumed CLAUDE.md could be slimmed 44 KB → ~8 KB because "rules already live in `WORKFLOW-CONTRACT.md` / `SYSTEM_PROMPT.md`". **Measured, that is false:**
+
+- `skill/WORKFLOW-CONTRACT.md` **does not exist** at that path.
+- Section-by-section overlap against `skill/SYSTEM_PROMPT.md` + `SAP_BUILD_MANIFEST.md`: **1% verbatim-duplicated** (596 of 44,165 bytes).
+- Three hard rules exist **only** in CLAUDE.md: *NEVER USE RAW FONT FAMILY '72'*, *NEVER PLACE A FRAME BELOW EXISTING CONTENT*, *NEVER ADD TOKEN TAGS TO TRANSPARENT LAYOUT FRAMES*. Of those, only the font rule is mechanically enforced (INV 3, `verify-invariants.js:222`); the other two are prose-only.
+
+Gutting the file would have deleted live rules to save context. **Not done.**
+
+What *was* wrong: the 7.7 KB `## Current State (2026-07-23)` section had drifted badly and was actively misleading —
+
+| Claim in the stale section | Reality (verified 2026-09-12) |
+|---|---|
+| "The 5 build invariants" | **6** — INV 5 (sizing/overflow) was added 2026-09-11 |
+| 4 separate `use_figma` gates (`guard-wireframe/reuse/figma-code/manifest-drift`) | consolidated into **`guard-chain.sh`**, which runs **8** gates and reports all failures in one message |
+| hook list omitted 8 registered hooks | `capture-dump.sh`, `guard-chain.sh`, `guard-api-gotchas.sh`, `guard-screenshot-budget.sh`, `guard-scoped-metadata.sh`, `guard-marker-write.sh`, `enforce-wireframe-first.sh`, `recall-vdi.sh` |
+| "both remotes at `7c87500`" / July open-gaps list | stale; current work is on `pipeline-v2`, unpushed |
+| `clear-reuse-marker.sh` "clears gate markers at SessionStart" | fixed 2026-09-02 — full reset only on a *fresh* start; markers survive resume/compact |
+
+That section is now rewritten from live state and leads with the measured §9.2b benchmark and the launch warning. Net: 45,070 → 43,604 bytes, **all 13 hard rules intact** (verified by grep before/after). The real context win is `capture-dump.sh` (−12k tokens per build, already shipped), not deleting rules.
+
+### 8.7 P11 delivered — provenance-aware verification (2026-09-12)
+
+The reality gate no longer rejects the pipeline's own gold standard.
+
+**How.** `verify-invariants.js` gains `--canonical-dump <file>`. With a `basedOnCanonical` root it matches nodes by **`(type, name)`** — not id, since a Figma clone gets fresh ids — and waives **INV 1 / INV 3 only** for nodes inherited verbatim from a confirmed canonical. Everything the build **added or renamed** (the delta) stays at full strictness. **INV 2 and INV 5 are byte-identical and run on every node** — verified by `git diff` showing no change to `checkFills()`/`checkSizing()`, and by two fixtures that fail loudly if provenance ever leaks into them.
+
+**INV 3 relaxation:** a TEXT whose live font is the SAP kit font `72` at a size within ±1 of a known role passes without an explicit `[typo:role]` tag — it is already SAP-styled, which is what the tag exists to request. Deliberately narrow: wrong font or a non-role size still fails.
+
+**Fails safe:** a missing or unreadable canonical dump *disables* provenance and verifies everything at full strictness, printing why. It can only make the gate stricter, never weaker.
+
+**Measured on the real dumps** (not fixtures):
+
+| Dump | Before | After |
+|---|---|---|
+| Canonical `889:45857` (58 nodes) — *it failed its own gate* | 15 flags | **0 — overallPass** |
+| Live build `1239:56605` (204 nodes), from-scratch strictness | 54 flags (52 `FAIL_TYPO_TAG`, 2 `FAIL_FAKE_COMPONENT`) | **0 — overallPass** |
+| Live build with provenance | — | **0** · 83 of 191 nodes inherited, 108 in the delta at full strictness |
+
+*Correction to §8.4:* the **130**-flag figure is preserved in `output/1239-56605-verify.json`, but re-running today gives **54** — 76 had already been absorbed by later allowlist edits (`Area$`, `^HDR `, `^Row `, ` Cell$`). All 52 untagged texts were font `72` at size 14, exactly the relaxation's target.
+
+**Also fixed en route:** `flatten()` kept annotation-only objects, so `rootNode` could resolve to a `_comment` — silently breaking both `isRoot` and the provenance lookup.
+
+7 new fixtures (`clone-*`, `typo-font72-*`) wired into `build/test-build.sh`. One had to be corrected during review: it asserted that a `[typo:role]`-**tagged** name passes on a *delivered* frame, but tags are stripped at Bind, so INV 8 correctly rejects a surviving tag post-bind — the tagged path belongs to the `--pre-bind` fixtures. Suite: **39/39**.
+
+**P11 is now closed, so the reality gate can be made mandatory on the default clone-first path** — which was the blocker stated in §8.4.
+
+### 8.8 P10 delivered — canonicals resolve by name+width (2026-09-12)
+
+`skill/references/canonical-index.json` gains a top-level `resolution` contract:
+
+```js
+figma.currentPage.findAll(n => n.name === entry.name && Math.abs(n.width - entry.width) <= 2)
+// hintNodeIdIsAuthoritative: false — assert name+width live before any .clone()
+```
+
+All 12 Tier-1 entries are re-keyed by `name` + `width`; `figNode` survives only as a deprecated alias so `validate-delta-spec.js` / `check-reuse-integrity.js` still resolve. `score-canonical.js` now returns `resolveBy`, a ready-to-run `liveQuery`, a non-authoritative `hintNodeId`, and refuses with a `nextStep` when a canonical is unverified.
+
+**Rows deleted** (each id resolves live to a different screen):
+
+| Row | Why |
+|---|---|
+| `750:174925` = "Outage List Overview / Desktop List Report" | **The single most dangerous row in the repo.** Live it is `Schedule Operation — State D EndOnly`, a 560×430 dialog. |
+| `750:174814` = "Validate System / Log panel" | Live it is `State B Recurring`. |
+| `750:174556` = "Yanatest Steps" | Live it is `Outage List Overview` — now the verified hint for the desktop List Report. |
+| `750:174442` = "Activities View" | Live it is `Validate System`. |
+| `30:2741` = "Outage List Overview" 1440 | Marked **WITHDRAWN** — different file, never read live. |
+| `804:44859` "1440px List Report" | Width corrected to **320**; live name is `Purchase Orders`. |
+| `750:174786` · `750:174866` · `750:174960` · `750:174290` | Each resolves to a different Schedule dialog state. |
+
+Seven entries now carry **no hint id at all** — a wrong hint invites an id-based clone, so forcing a live name lookup is safer than keeping a plausible-looking number.
+
+**Found during review, beyond the agent's own report:** the wrong ids were still live in files that *directly drive builds* and had not been swept — `skill/SYSTEM_PROMPT.md`, `skill/references/canonical-similarity-rubric.md`, `skill/references/figma-build-patterns.md`, `.claude/memory/rule_reuse_approved_screens.md`, `.claude/skills/sap-figma-agent/SKILL.md`, `.claude/skills/sap-screen/SKILL.md`, `.claude/memory/rule_29_visual_recovery_protocol.md`, `skill/sap-visual-reading/SKILL.md`, `skill/references/delta-spec-schema.json`. Fixing the index alone would have left every build path still pointing at the dialog. All are now name+width with the drift warning inline. `CONTRIBUTING.md` needed no change — it already listed `750:174925` correctly as "Schedule Op — State D".
+
+**Still open — needs live Figma reads, not guessable from the repo:**
+1. The Schedule dialog gold standard: three disjoint id families (`9:1xxx`, `448:162xxx`, `750:174xxx`) all claim `State A/B/B1/B2/C/D`.
+2. Real nodes for `yanatest Steps` and `Activities View` are **unknown** — every claimed id was eliminated.
+3. `750:177443` (Governance Console) and `472:34431` (Flight Result Card) never confirmed live — marked `unverified`.
+4. Two width disagreements that make name+width ambiguous: Flight Result Card 751 vs 760; Side Navigation 224 vs 260.
+5. `750:174158` live name is `Menu`, not "Side Navigation — Full Tree" — a name match on the index value will not find it.
 
 ## 9. Verdict, projection, and where the tokens go now
 
@@ -420,7 +517,9 @@ The runner now refuses to start when the gateway is down and passes the alias's 
 | Replay of real history through the new gates | done (§8.1) |
 | Live build with the v2 flow + reality gate | done (§8.3) |
 | New P0s found by the live build: P10 canonical-id drift, P11 verifier vs canonical | P10 process fix done; index re-key and P11 design need your decision (§8.4) |
-| P2 zone-by-zone cap, P4 context diet, P7 skill rename, global gates-off registration | your decision |
+| P2 zone-by-zone cap | **done 2026-09-12** (§8.5) — payload cap in `guard-figma-code.sh` Block 6, 3 new gate checks |
+| P4 context diet | **re-scoped 2026-09-12** (§8.6) — premise measured false; stale section rewritten instead, no rule lost |
+| P7 skill rename, global gates-off registration | your decision (both live in `~/.claude`, outside this project) |
 | Fresh-session time/token benchmark | blocked here (nested auth); one command for you (§9.2) |
 
 **Verdict.** On errors, refusals, screenshots, native components and verified output, the improvement is measured and large: from a broken screen after 9 calls (or no screen after 5 refusals) to a correct, gate-verified screen in 2 build calls with 7× less build code. On time and tokens, measured under the hooked-session cost model (§9.2b): **7.1 min → 3.6 min, 33,122 → 9,158 output tokens, no compaction** — inside the 3–5 min / ≤12k target. The first fresh-context measurement (§9.2a, 9.7 min / 31.7k) showed exactly why the reality gate had to move into a hook, and `capture-dump.sh` is what turned it into 9.2k. A terminal-session run with the gateway up remains the final confirmation (§9.2). The two P0s in §8.4 are not regressions — they were always there; a measured build is what made them visible.

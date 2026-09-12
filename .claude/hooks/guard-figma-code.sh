@@ -158,4 +158,38 @@ if echo "$CODE" | grep -qiE '\b(const|let|var)\s+\w*(sideNav|sidenav|leftNav|nav
   fi
 fi
 
+# Block 6 — oversized build payload (added 2026-09-12, AUDIT-V2 P2 "zone-by-zone").
+# Sized from measured history, not a guess:
+#   Run A's three monolithic builds were 21.7 KB, 18.1 KB, 16.3 KB — the first two DIED on a
+#   documented API trap, taking ~15.5k output tokens and ~2.5 min with them. One error in a
+#   20 KB payload costs the whole payload.
+#   The clone-first build that worked was 8.2 KB TOTAL across two calls (4.0 + 4.2 KB).
+# So: a single call over ~12 KB is a monolith, and a monolith is what makes a retry expensive.
+# Warn at 12 KB, block at 20 KB. A clone-and-adapt call never legitimately reaches 20 KB;
+# if the screen truly needs that much code, it needs to be split into zones (skeleton →
+# header → filters → table), which also makes a failure cost one zone instead of everything.
+CODE_BYTES=$(printf '%s' "$CODE" | wc -c | tr -d ' ')
+if [ "$CODE_BYTES" -gt 20000 ]; then
+  {
+    echo "⛔ GATE 6 BLOCKED — build payload is ${CODE_BYTES} bytes (cap 20000)."
+    echo ""
+    echo "Why this is blocked: in the measured baseline (docs/AUDIT-V2.md §2) the three"
+    echo "monolithic builds were 21.7 KB / 18.1 KB / 16.3 KB and TWO of them died on a single"
+    echo "documented API trap — ~15.5k output tokens and ~2.5 min lost, because one bad line"
+    echo "throws away the entire payload. The clone-first build that succeeded was 8.2 KB total"
+    echo "across two calls."
+    echo ""
+    echo "Split this into zones and send them as separate use_figma calls:"
+    echo "  1. skeleton (root frame + layout)   2. header   3. filters   4. table/content"
+    echo "Each zone verifies before the next is sent, so one API error costs one zone."
+    echo ""
+    echo "If you are cloning a canonical (RULE 28 / the default path), this payload should be"
+    echo "an ADAPT of the clone — not a re-assembly of the screen from parts. Re-check that you"
+    echo "cloned instead of rebuilding."
+  } >&2
+  exit 2
+elif [ "$CODE_BYTES" -gt 12000 ]; then
+  echo "⚠ GATE 6 WARNING (not blocking) — build payload is ${CODE_BYTES} bytes. The measured clone-first build was 8.2 KB across TWO calls; payloads above ~12 KB are the monolithic shape that lost ~15.5k tokens to single API errors in the baseline (AUDIT-V2 §2). Consider splitting into zones (skeleton → header → filters → table) so one error costs one zone." >&2
+fi
+
 exit 0

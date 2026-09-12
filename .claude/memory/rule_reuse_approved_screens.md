@@ -61,21 +61,33 @@ Always start at Level 1 and move down only when necessary.
 - Table columns, form fields, navigation items
 - Actions, images, business data
 
-## Canonical Node Reference (file `p7zm5EMBk5DRRZdxNeJ4f5`)
+## Canonical Reference (file `p7zm5EMBk5DRRZdxNeJ4f5`)
 
-| Screen | Node | Use for |
-|--------|------|---------|
-| Design System Governance Console | `750:177443` | FCL + SideNav + nested tables |
-| Activities View (List Report) | `750:174556` | List Report with progress rows |
-| Side Navigation | `750:174158` | Full SideNav tree |
-| Schedule Op — dialog | `727:42563` | Dialog/form, date+time, full recurrence |
-| Schedule Op — Monthly | `750:174290` | Dialog with recurrence pattern |
-| Schedule Op — Activities | `750:174442` | List Report variant |
-| Schedule Op — State B2 | `750:174786` | Dialog variant |
-| Validate System | `750:174814` | Log panel, severity pills |
-| Schedule Op — State D | `750:174866` | Dialog end-date variant |
-| Outage List Overview | `750:174925` | Desktop List Report, 8 columns |
-| Schedule Op — State E | `750:174960` | Dialog final state |
+⛔ **Resolve by NAME + WIDTH in the live file. A node id is a HINT ONLY.**
+```js
+figma.currentPage.findAll(n => n.name === "<name>" && Math.abs(n.width - <width>) <= 2)
+```
+Assert the resolved node's name and width **before** `.clone()`. The authoritative contract is
+`skill/references/canonical-index.json` → `resolution`.
+
+**Why (AUDIT-V2 §8.4, P10):** the id table that used to sit here was wrong. `750:174925` was
+labelled "Outage List Overview — Desktop List Report" but live it is **`Schedule Operation —
+State D EndOnly`, a 560×430 dialog**. A clone-by-id would have built a list report out of a
+dialog, silently. Several other rows were wrong the same way (`750:174814` is live `State B
+Recurring`, not `Validate System`; `750:174442` is live `Validate System`, not Activities View).
+
+| Screen (match on this name) | Width | Use for | Hint id — verify before use |
+|---|---:|---|---|
+| Design System Governance Console | — | FCL + SideNav + nested tables | `750:177443` ⚠ unverified |
+| Outage List Overview | 1440 | Desktop List Report, status pills, filter bar | `750:174556` ✅ live-verified |
+| Validate System | — | Log panel, severity pills, SegmentedButton filter | `750:174442` ✅ live-verified |
+| Side Navigation | 224 | Full SideNav tree | `750:174158` ⚠ live name is `Menu` |
+| Schedule Operation (dialog) | 560 | Dialog/form, date+time, recurrence | `727:42563` — state family unreconciled |
+| Activities View | — | List Report with progress rows | *none — every claimed id resolved elsewhere* |
+| yanatest Steps | 320 | Object Page narrow, DPH + IconTabBar | *none — unverified* |
+
+Rows with no hint id are deliberate: a wrong hint invites an id-based clone, so it is safer to
+force a live name lookup than to keep a plausible-looking number.
 
 ## Exceptions — build new only when
 - No approved reference exists

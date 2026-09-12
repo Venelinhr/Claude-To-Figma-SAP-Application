@@ -1306,13 +1306,20 @@ RULE 29 — Visual Recovery Protocol: when lost, check the .fig file first (mand
 
    | If building... | Read this node |
    |---|---|
-   | List Report / list items / progress rows | `615:36810` (Activities View) |
-   | Object Page narrow / DPH / IconTabBar | `560:36552` (yanatest Steps) |
-   | SideNavigation | `699:37890` |
-   | Dialog / Form / date+time fields | `727:42563` (Schedule Op dialog) |
-   | Log panel / severity pills / segmented filter | `750:174814` (Validate System) |
-   | Desktop List Report / status pills | `750:174925` (Outage List) |
-   | Full app shell / FCL + SideNav | `750:177443` (Governance Console) |
+   | List Report / list items / progress rows | name `Activities View` |
+   | Object Page narrow / DPH / IconTabBar | name `yanatest Steps` |
+   | SideNavigation | name `Side Navigation` |
+   | Dialog / Form / date+time fields | name `Schedule Operation` (dialog, 560 wide) |
+   | Log panel / severity pills / segmented filter | name `Validate System` |
+   | Desktop List Report / status pills | name `Outage List Overview` (1440 wide) |
+   | Full app shell / FCL + SideNav | name `Governance Console` |
+
+   ⛔ **Resolve by NAME + WIDTH in the live file — never by a stored node id.**
+   `figma.currentPage.findAll(n => n.name === "<name>" && Math.abs(n.width - <width>) <= 2)`
+   Node ids in this repo are hints only and have drifted: `750:174925` was documented as the
+   desktop "Outage List Overview" but live it is **`Schedule Operation — State D EndOnly`, a
+   560×430 dialog** — cloning it by id builds a list report out of a dialog, silently.
+   See `skill/references/canonical-index.json` → `resolution`, and AUDIT-V2 §8.4 (P10).
 
 3. **Also check the reference PNGs** in `docs/canonical-screens/`:
    Read the PNG of the closest screen — these are the approved pixel-perfect references.

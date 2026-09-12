@@ -1,0 +1,33 @@
+[
+  { "_comment":"CLONE-FIRST BUILD whose DELTA is bad. Same inherited spine as clone-inherited-pass.json, PLUS three nodes this build ADDED or RENAMED — none of them present in clone-canonical-source.json, so provenance does NOT cover them and they are verified at FULL strictness. PROVES the relaxation is scoped to inherited nodes only: a clone-first build cannot smuggle a fake component or an untagged non-SAP text past the gate. Expected: exit 2 with FAIL_FAKE_COMPONENT ×2 and FAIL_FONT ×1." },
+
+  { "id":"8:1","name":"Purchase Order Overview","type":"FRAME","visible":true,"layoutMode":"VERTICAL","childCount":3,
+    "basedOnCanonical":"6:1",
+    "width":1440,"absoluteBoundingBox":{"x":0,"y":0,"width":1440,"height":776},"clipsContent":false },
+
+  { "id":"8:2","name":"Filter Area","type":"FRAME","visible":true,"layoutMode":"HORIZONTAL","childCount":1,"parentId":"8:1",
+    "width":1440,"absoluteBoundingBox":{"x":0,"y":0,"width":1440,"height":60},"clipsContent":false },
+  { "id":"8:3","name":"Supplier Filter","type":"FRAME","visible":true,"layoutMode":"VERTICAL","childCount":1,"parentId":"8:2",
+    "width":200,"absoluteBoundingBox":{"x":0,"y":0,"width":200,"height":60},"clipsContent":false },
+  { "id":"8:4","name":"Supplier","type":"TEXT","visible":true,"fontFamily":"72","fontSize":14,"parentId":"8:3",
+    "width":80,"absoluteBoundingBox":{"x":0,"y":0,"width":80,"height":18} },
+
+  { "id":"8:5","name":"Responsive Table","type":"FRAME","visible":true,"layoutMode":"VERTICAL","childCount":1,"parentId":"8:1",
+    "width":1440,"absoluteBoundingBox":{"x":0,"y":60,"width":1440,"height":400},"clipsContent":false },
+  { "id":"8:6","name":"HDR Order","type":"FRAME","visible":true,"layoutMode":"HORIZONTAL","childCount":1,"parentId":"8:5",
+    "width":200,"absoluteBoundingBox":{"x":0,"y":60,"width":200,"height":44},"clipsContent":false },
+  { "id":"8:7","name":"Col Order","type":"TEXT","visible":true,"fontFamily":"72","fontSize":14,"parentId":"8:6",
+    "width":60,"absoluteBoundingBox":{"x":0,"y":60,"width":60,"height":18} },
+
+  { "_comment":"DELTA 1 — NEWLY ADDED fake component: a FRAME named after a keyed SAP component. Not in the canonical → strict → FAIL_FAKE_COMPONENT.",
+    "id":"8:20","name":"ShellBar","type":"FRAME","visible":true,"layoutMode":"HORIZONTAL","childCount":1,"parentId":"8:1",
+    "width":1440,"absoluteBoundingBox":{"x":0,"y":460,"width":1440,"height":52},"clipsContent":false },
+
+  { "_comment":"DELTA 2 — NEWLY ADDED frame with no layout and an unrecognised name. Not in the canonical → strict → FAIL_FAKE_COMPONENT.",
+    "id":"8:21","name":"Untitled Thing","type":"FRAME","visible":true,"layoutMode":"NONE","childCount":0,"parentId":"8:1",
+    "width":100,"absoluteBoundingBox":{"x":0,"y":512,"width":100,"height":40},"clipsContent":false },
+
+  { "_comment":"DELTA 3 — NEWLY ADDED text in a NON-SAP font. Not in the canonical → strict → FAIL_FONT (the font-72 relaxation cannot help: the family is wrong).",
+    "id":"8:22","name":"New Caption","type":"TEXT","visible":true,"fontFamily":"Inter","fontSize":14,"parentId":"8:1",
+    "width":90,"absoluteBoundingBox":{"x":0,"y":552,"width":90,"height":18} }
+]

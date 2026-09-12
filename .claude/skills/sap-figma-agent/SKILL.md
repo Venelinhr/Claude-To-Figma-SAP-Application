@@ -116,15 +116,19 @@ If the Agent creates ANY layer named "Frame", "Frame 1", "Group", "Rectangle", o
 
 ## FLOORPLAN DECISION RULES — CLASSIFY FIRST, NEVER DEFAULT
 
-| Task shape | Floorplan | Clone base |
-|---|---|---|
-| Persistent object with identity + many facets | **Object Page** + IconTabBar | `560:36552` |
-| Browse / filter / act on many items | **List Report** | `750:174925` |
-| Short linear creation with ordered dependencies | **Wizard-in-a-Dialog** | `1023:133810` |
-| Single discrete commit-or-cancel action | **Dialog** | `448:162293` |
-| Tune item while keeping full context visible | **Docked Drawer** ⛔ NEVER Dialog | — |
-| Scan KPI numbers, then drill | **Analytical Overview** | — |
-| Config where order/flow is the meaning | **Flow canvas** + docked drawer | — |
+> ⛔ **Clone bases resolve by NAME + WIDTH, never by a stored id.** Every id in the "Clone base" column is a HINT. Find the node live and assert its name and width before `.clone()`:
+> `figma.currentPage.findAll(n => n.name === "<name>" && Math.abs(n.width - <width>) <= 2)`
+> Ids have drifted — `750:174925` is live a 560×430 `Schedule Operation` dialog, NOT the Outage List Overview list report. Cloning it by id builds a list report out of a dialog, silently. Contract: `skill/references/canonical-index.json` → `resolution`. See AUDIT-V2 §8.4 (P10).
+
+| Task shape | Floorplan | Clone base (resolve by name + width) | Hint id (verify before use) |
+|---|---|---|---|
+| Persistent object with identity + many facets | **Object Page** + IconTabBar | `yanatest Steps` · 320 | `560:36552` |
+| Browse / filter / act on many items | **List Report** | `Outage List Overview` · 1440 | `750:174556` |
+| Short linear creation with ordered dependencies | **Wizard-in-a-Dialog** | `Create MCP Server` · 994 | `1023:133810` |
+| Single discrete commit-or-cancel action | **Dialog** | `Schedule State C` · 560 | `448:162293` |
+| Tune item while keeping full context visible | **Docked Drawer** ⛔ NEVER Dialog | — | — |
+| Scan KPI numbers, then drill | **Analytical Overview** | — | — |
+| Config where order/flow is the meaning | **Flow canvas** + docked drawer | — | — |
 
 **Create = modal & linear. Edit = immersive & non-linear. Context config = Drawer, not Dialog.**
 
@@ -166,26 +170,33 @@ The Kit provides components. Canonicals provide proven business compositions. Us
 - **Form Item RadioButton:** `Label` instance at ~33% width + multiple `Radio Button` instances in a row. Selected radio has filled inner circle `[sapContent_Selected_ForegroundColor]`. Font: 14px Regular `[sapField_TextColor]`.
 - **Form Item general:** always use the SAP Form Item component from the Kit — it has the correct Label/Input layout grid (33%/67% split). Never build label+input rows with native frames.
 
-| For this... | Clone | Node |
-|---|---|---|
-| Wizard step — current state | WizardStep Current ✅ | `219:124511` |
-| Wizard step — inactive state | WizardStep Inactive ✅ | `219:124513` |
-| Script / code input area | Script Input ✅ | `219:124635` |
-| Form Item with RadioButton (Create/Upload toggle) | Form Item RadioButton ✅ | `219:124204` |
-| Wizard + Dialog (creation flow) | Create MCP Server ✅ PM | `1023:133810` |
-| Wizard Page Header only | Wizard Header | `1023:133814` |
-| Schedule form — Monthly + End Date | Schedule State C ✅ PM | `448:162293` |
-| Schedule form — Collapsed | Schedule State A | `448:162213` |
-| Schedule form — Hourly/Daily | Schedule State B1 | `448:162391` |
-| Schedule form — End Date only | Schedule State D | `448:162352` |
-| Schedule confirmation | Schedule Activated ✅ | `850:45411` |
-| Narrow List Report / Worklist | Activities View ✅ | `615:36810` |
-| Object Page narrow | yanatest Steps ✅ | `560:36552` |
-| Desktop List Report | Outage List ✅ | `750:174925` |
-| FCL + SideNav | Governance Console | `750:177443` |
-| Purchase Orders List Report | Purchase Orders ✅ | `804:44859` |
+⛔ **Resolve every row below by NAME + WIDTH in the live file. The hint id is a hint, not an address.**
+```js
+const [src] = figma.currentPage.findAll(n => n.name === "Outage List Overview" && Math.abs(n.width - 1440) <= 2);
+if (!src) throw new Error("canonical not found live — do NOT fall back to the hint id");
+```
+Assert `src.name` and `src.width` before `.clone()`. Ids drift: `750:174925` resolves live to a 560×430 `Schedule Operation` dialog, not the Outage List Overview. Contract: `skill/references/canonical-index.json` → `resolution`. See AUDIT-V2 §8.4 (P10).
 
-**Clone rule:** Select node → Cmd+D → place BESIDE source at y=200 (never maxY below) → clear content → inject new → rename every layer.
+| For this... | Clone (name) | Width | Hint id (verify before use) |
+|---|---|---|---|
+| Wizard step — current state | WizardStep Current ✅ | — | `219:124511` |
+| Wizard step — inactive state | WizardStep Inactive ✅ | — | `219:124513` |
+| Script / code input area | Script Input ✅ | — | `219:124635` |
+| Form Item with RadioButton (Create/Upload toggle) | Form Item RadioButton ✅ | — | `219:124204` |
+| Wizard + Dialog (creation flow) | Create MCP Server ✅ PM | 994 | `1023:133810` |
+| Wizard Page Header only | Wizard Header | 994 | `1023:133814` |
+| Schedule form — Monthly + End Date | Schedule State C ✅ PM | 560 | `448:162293` |
+| Schedule form — Collapsed | Schedule State A | 560 | `448:162213` |
+| Schedule form — Hourly/Daily | Schedule State B1 | 560 | `448:162391` |
+| Schedule form — End Date only | Schedule State D | 560 | `448:162352` |
+| Schedule confirmation | Schedule Activated ✅ | 560 | `850:45411` |
+| Narrow List Report / Worklist | Activities View ✅ | 320 | `615:36810` |
+| Object Page narrow | yanatest Steps ✅ | 320 | `560:36552` |
+| Desktop List Report | Outage List Overview ✅ | 1440 | `750:174556` |
+| FCL + SideNav | Governance Console | 1440 | `750:177443` |
+| Purchase Orders List Report | Purchase Orders ✅ | 1440 | `804:44859` |
+
+**Clone rule:** Resolve by name+width → assert name and width → Cmd+D → place BESIDE source at y=200 (never maxY below) → clear content → inject new → rename every layer.
 
 ---
 

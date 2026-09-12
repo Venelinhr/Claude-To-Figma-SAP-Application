@@ -1,0 +1,21 @@
+[
+  { "_comment":"THE LOAD-BEARING TEST for AUDIT-V2 §8.4 P11. Every node here is inherited VERBATIM from clone-canonical-source.json, so INV 1 / INV 3 are waived by provenance — but the three GENUINE defects the live build actually had are reproduced on those same inherited nodes. PROVES provenance NEVER suppresses INV 2 or INV 5: those two found all 3 real defects in the live 204-node build (AUDIT-V2 §8.3), and all 3 were inherited from the canonical. If provenance ever leaked into INV 2 or INV 5, this fixture would pass and the gate would be blind to real defects. Expected: exit 2 with FAIL_RAW_HEX (stray unbound #000000 stroke) and FAIL_CHILD_OVERFLOW (badge past its clipping cell)." },
+
+  { "id":"11:1","name":"Purchase Order Overview","type":"FRAME","visible":true,"layoutMode":"VERTICAL","childCount":1,
+    "basedOnCanonical":"6:1",
+    "width":1440,"absoluteBoundingBox":{"x":0,"y":0,"width":1440,"height":776},"clipsContent":false },
+
+  { "id":"11:2","name":"Responsive Table","type":"FRAME","visible":true,"layoutMode":"VERTICAL","childCount":1,"parentId":"11:1",
+    "width":1440,"absoluteBoundingBox":{"x":0,"y":60,"width":1440,"height":400},"clipsContent":false },
+
+  { "_comment":"DEFECT 1 (INV 2) — the stray unbound #000000 stroke found on row 1 of the live build. 'Row 4500012345' IS in the canonical, so INV 1 is waived for it; the unbound stroke must STILL fail.",
+    "id":"11:3","name":"Row 4500012345","type":"FRAME","visible":true,"layoutMode":"HORIZONTAL","childCount":1,"parentId":"11:2",
+    "width":1440,"absoluteBoundingBox":{"x":0,"y":104,"width":1440,"height":44},"clipsContent":false,
+    "strokes":[{"type":"SOLID","hex":"#000000","boundVariable":null}] },
+
+  { "_comment":"DEFECT 2 (INV 5a) — the 'Pending Approval' badge overflowing its 136px clipping cell by 2px. 'Actions Cell' IS in the canonical → INV 1 waived; the overflow must STILL fail.",
+    "id":"11:4","name":"Actions Cell","type":"FRAME","visible":true,"layoutMode":"HORIZONTAL","childCount":1,"parentId":"11:3",
+    "width":136,"absoluteBoundingBox":{"x":48,"y":104,"width":136,"height":44},"clipsContent":true },
+  { "id":"11:5","name":"Order ID","type":"TEXT","visible":true,"fontFamily":"72","fontSize":14,"parentId":"11:4",
+    "width":138,"absoluteBoundingBox":{"x":48,"y":104,"width":138,"height":18} }
+]

@@ -315,6 +315,9 @@ bar.cornerRadius = 6;
 ---
 
 ## Screen 09 — Validate System Log Panel
+
+> ⚠ **Historical, unverified.** The Node line below is an archived hint, not a clone address — live it resolves to `Schedule Operation — State B Recurring`. Resolve by name + width instead (see the Summary table). Evidence: `docs/NODE-ID-CONFLICTS.md`.
+
 **Node:** `750:174814`
 **Figma:** https://www.figma.com/design/p7zm5EMBk5DRRZdxNeJ4f5/SAP-application-builder?node-id=750-174814
 **Floorplan:** Dialog / Object Page detail panel
@@ -355,6 +358,9 @@ Panel/Dialog (full width)
 ---
 
 ## Screen 10 — Outage List Overview
+
+> ⚠ **Historical, unverified.** The Node line below is an archived hint, not a clone address — live it resolves to `Schedule Operation — State D EndOnly`, a 560×430 dialog. Resolve by name + width instead (see the Summary table). Evidence: `docs/NODE-ID-CONFLICTS.md`.
+
 **Node:** `750:174925`
 **Figma:** https://www.figma.com/design/p7zm5EMBk5DRRZdxNeJ4f5/SAP-application-builder?node-id=750-174925
 **Floorplan:** List Report (desktop 1440px, SideNavigation + FCL)
@@ -560,18 +566,24 @@ Products Inventory (1440px)
 
 ## Summary — Clone sources by floorplan
 
-| You're building... | Clone from screen | Node |
-|---|---|---|
-| SideNavigation (any) | Screen 06 | `750:174158` or `699:37890` |
-| Dialog / Form | Screen 02-05 | `727:42563` |
-| List Report (narrow) | Screen 08 (Activities View) | `615:36810` |
-| Object Page (narrow) | Screen 07 (yanatest) | `560:36552` |
-| Log/Message panel | Screen 09 | `750:174814` |
-| Full desktop List Report | Screen 10 or 13 | `750:174925` or `889:45857` |
-| Inventory List Report | Screen 14 (EMA Products) | `907:46070` |
-| FCL + SideNav + Table | Screen 01 | `750:177443` |
-| Confirmation / Success state | Screen 12 | `850:45411` |
-| Purchase Orders List Report | Screen confirmed Jul 16 | `804:44859` |
+> ⛔ **Resolve every clone source by NAME + WIDTH in the live file — never by a stored id.**
+> ```js
+> const [src] = figma.currentPage.findAll(n => n.name === "Outage List Overview" && Math.abs(n.width - 1440) <= 2);
+> ```
+> Assert `src.name` and `src.width` before `.clone()`. The hint-id column is a hint only and has drifted: live-verified 2026-09-02, `750:174925` is a 560×430 `Schedule Operation — State D EndOnly` **dialog**, not the desktop List Report, and `750:174814` is `State B Recurring`, not the log panel. Cloning either by id silently builds the wrong floorplan. Contract: `skill/references/canonical-index.json` → `resolution`. Evidence: `docs/NODE-ID-CONFLICTS.md`. See AUDIT-V2 §8.4 (P10).
+
+| You're building... | Clone source (name) | Width | Hint id (verify before use) |
+|---|---|---|---|
+| SideNavigation (any) | SideNavigation | 260 | `750:174158` or `699:37890` |
+| Dialog / Form | Schedule Operation | 560 | `727:42563` |
+| List Report (narrow) | Activities View | 320 | `615:36810` |
+| Object Page (narrow) | yanatest Steps | 320 | `560:36552` |
+| Log/Message panel | Validate System | 678 | `750:174442` |
+| Full desktop List Report | Outage List Overview | 1440 | `750:174556` |
+| Inventory List Report | EMA Products | 1440 | `907:46070` |
+| FCL + SideNav + Table | Governance Console | 1440 | `750:177443` |
+| Confirmation / Success state | Schedule Activated | 560 | `850:45411` |
+| Purchase Orders List Report | Purchase Orders | 1440 | `804:44859` |
 
 ---
 

@@ -33,12 +33,18 @@ Prioritize reuse, but do not get blocked by it. Decide fast, fail fast.
 | Building... | Read this node first |
 |---|---|
 | List Report / list items / progress | `615:36810` Activities View |
-| Object Page narrow / DPH / IconTabBar | `560:36552` yanatest Steps |
-| SideNavigation | `699:37890` |
-| Dialog / Form / date+time fields | `727:42563` Schedule Op dialog |
-| Log panel / severity pills | `750:174814` Validate System |
-| Desktop List Report / status pills | `750:174925` Outage List |
-| Full app / FCL + SideNav + Table | `750:177443` Governance Console |
+| Object Page narrow / DPH / IconTabBar | name `yanatest Steps` (320) |
+| SideNavigation | name `Side Navigation` (224) |
+| Dialog / Form / date+time fields | name `Schedule Operation` (560) |
+| Log panel / severity pills | name `Validate System` |
+| Desktop List Report / status pills | name `Outage List Overview` (1440) |
+| Full app / FCL + SideNav + Table | name `Governance Console` |
+
+⛔ **Resolve by name + width, never by a stored id.** Ids here have drifted: `750:174925` was
+documented as "Outage List" but live it is a 560×430 `Schedule Operation` dialog, and `750:174814`
+is live `State B Recurring`, not `Validate System`. Use
+`figma.currentPage.findAll(n => n.name === "<name>" && Math.abs(n.width - <width>) <= 2)` and assert
+before `.clone()`. Contract: `skill/references/canonical-index.json` → `resolution`; AUDIT-V2 §8.4 P10.
 
 **The .fig file IS the answer. Reading it takes 30 seconds. Re-building wrong takes 30 minutes.**
 

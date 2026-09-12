@@ -58,7 +58,21 @@
     "^Filter Buttons",
     "^Filter Field",
     "^Header Cell",
-    "^◆SAP-UNBOUND/"
+    "^◆SAP-UNBOUND/",
+    "^Table Area$",
+    "^Responsive Table$",
+    "^Chk Cell$",
+    "^Col ",
+    "^Filter Area$"
+  ],
+  "_emptyContainerComment": "AUDIT-V2 P11: a table HEADER ROW legitimately contains empty spacer/selection columns — the confirmed canonical 889:45857 ships 'HDR 9', an empty 246px HORIZONTAL frame that reserves the Actions column width. An empty frame is normally a fake stand-in, so this is scoped to names that are header/spacer cells AND already match containerNamePatterns. Everything else still needs >=1 child.",
+  "emptyContainerNamePatterns": [
+    "^HDR ",
+    "^Header Cell",
+    " Cell$",
+    "^Cell-",
+    "^TH",
+    "^Col "
   ],
   "containerRequires": {
     "layoutModeNot": "NONE",

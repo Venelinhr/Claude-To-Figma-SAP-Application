@@ -169,7 +169,13 @@ State:
 - Why the runner-up was not chosen
 - Any constraints that override the score (mobile viewport, modal context, etc.)
 
-**Then score canonical-screen similarity** (RULE 28 clone target): run `references/canonical-similarity-rubric.md` — score each candidate canonical screen (floorplan 50% + region 30% + component 20%), pick the highest, cite the % (e.g. "Outage List 96% → clone `750:174925`"). ≥85% = clone directly; 60–84% = clone + note deltas; <60% = combine two or build fresh (flag it).
+**Then score canonical-screen similarity** (RULE 28 clone target): run `references/canonical-similarity-rubric.md` — score each candidate canonical screen (floorplan 50% + region 30% + component 20%), pick the highest, and cite the canonical by **name + width**, never by a node id (e.g. "Outage List Overview 96% → clone `name="Outage List Overview"`, width 1440"). ≥85% = clone directly; 60–84% = clone + note deltas; <60% = combine two or build fresh (flag it).
+
+⛔ **Never write a clone target as a bare node id.** Resolve it live and assert before `.clone()`:
+```js
+const [src] = figma.currentPage.findAll(n => n.name === "Outage List Overview" && Math.abs(n.width - 1440) <= 2);
+```
+Stored ids are hints and have drifted — `750:174925` is live a 560×430 `Schedule Operation` dialog, so "clone `750:174925`" would build a list report out of a dialog, silently. Contract: `skill/references/canonical-index.json` → `resolution`. See AUDIT-V2 §8.4 (P10).
 
 ---
 

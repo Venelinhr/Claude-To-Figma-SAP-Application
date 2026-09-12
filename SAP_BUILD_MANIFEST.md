@@ -12,15 +12,25 @@
 This `.fig` file ships with the repo and is the ONLY approved ground truth.
 Open it in Figma + connect SAP Web UI Kit library → clone from it for every build.
 
-| Need to build... | Clone from |
-|---|---|
-| List Report (any width) | Activities View — node `615:36810` |
-| Object Page narrow | yanatest Steps — node `560:36552` |
-| SideNavigation | node `699:37890` (proto source) |
-| Dialog / Form | Schedule Operation — node `727:42563` |
-| Log / Message panel | Validate System — node `750:174814` |
-| Desktop List Report | Outage List — node `750:174925` |
-| FCL + SideNav + Table | Governance Console — node `750:177443` |
+> ⛔ **RESOLVE BY NAME + WIDTH, NEVER BY NODE ID** (AUDIT-V2 §8.4 P10). Every node id below is a
+> **HINT ONLY**. Before any `.clone()`, find the node in the LIVE file by name + width and assert both:
+> ```js
+> const [src] = figma.currentPage.findAll(n => n.name === "<Name>" && Math.abs(n.width - <Width>) <= 2);
+> if (!src) throw new Error('canonical "<Name>" @<Width>px not found live — do not clone by id');
+> ```
+> Why: `750:174925` was documented here as the desktop "Outage List Overview"; live it is
+> **"Schedule Operation — State D EndOnly", a 560×430 dialog**. A clone by id builds a list report
+> from a dialog, silently. Ids drift; names + widths read live do not. See `docs/NODE-ID-CONFLICTS.md`.
+
+| Need to build... | Resolve by NAME | Width | Hint id (non-authoritative) |
+|---|---|---|---|
+| List Report (any width) | `Activities View` | 320 | `615:36810` |
+| Object Page narrow | `yanatest Steps` | 320 | `560:36552` |
+| SideNavigation | `Side Navigation` (proto source) | 224 | `699:37890` |
+| Dialog / Form | ⚠ see §3b — the Schedule dialog state names conflict | 560 | — |
+| Log / Message panel | `Validate System` | 678 | ⛔ **NOT `750:174814`** — that id is live "Schedule Operation — State B Recurring". Real id unknown. |
+| Desktop List Report | `Outage List Overview` | 1440 | `750:174556` ✅ live-verified 2026-09-02 |
+| FCL + SideNav + Table | `Design System Governance Console` | 1440 | `750:177443` (unverified) |
 
 > This file overrides any other pattern reference. If anything conflicts — the `.fig` file wins.
 
@@ -162,11 +172,15 @@ Text = native `figma.createText()` with family `72`, tagged `[typo:role]` (see �
 >
 > | Screen | Node | Width | Clone for |
 > |---|---|---|---|
+> **⛔ Resolve every row below by NAME + WIDTH read live. The `Node` column is a HINT ONLY** (P10):
+> `figma.currentPage.findAll(n => n.name === <Name> && Math.abs(n.width - <Width>) <= 2)` — then assert
+> `src.name` and `src.width` in the clone code. A row marked ⛔ has a known-wrong or unconfirmed id.
+>
 > | Menu / Side Navigation | `68:3262` | 260 | left nav rail — real `Side Navigation` instance + N `Navigation Item` in `⿻ Navigation Items` slot |
 > | Yanatest Steps | `68:2578` | 320 | Object Page narrow — DPH + IconTabBar + Filter Bar + ObjectStatus/ObjectAttribute list item |
 > | Activities View | `68:2928` | 320 | List Report narrow — DPH + Filter Bar + Progress-Row Meta Block list items |
 > | Validate System | `42:2348` | 678 | Log/message panel — Message Toolbar, Filter Bar in `⿻ Header Area`, SegmentedButton toggle, Log Entry (Severity/Code/Time/Body) |
-> | Outage List Overview | `30:2741` | 1440 | Desktop List Report — AppLayout(SideNav 224 + Content) + DPH + Filter Bar + native Table (8 cols, Link + ObjectStatus cells) |
+> | ~~Outage List Overview~~ ⛔ **WITHDRAWN** | ~~`30:2741`~~ | 1440 | **Three-way id conflict, unresolved for this file** (`docs/NODE-ID-CONFLICTS.md` §2 "Outage List Overview": `30:2741` · `750:174556` · `750:174925`). Only one of the three was live-verified: `750:174556` in file `p7zm5EMBk5DRRZdxNeJ4f5`. Whether `30:2741` in file `E083sNBH7JNEOBFrG7Bqge` is the same screen was never read live. **Do not clone by this id.** Resolve by name `Outage List Overview` @1440 live; if the live file is `p7zm5EMBk5DRRZdxNeJ4f5`, use the confirmed §3b row below. |
 > | Flight Result Card | `2:5355` | 751 | Card — Zone A Legs + vert-sep + Zone B Price |
 > | Schedule Op — State A Collapsed | `9:1470` | 560 | schedule dialog, both toggles off |
 > | Schedule Op — State B2 Daily | `9:1696` | 560 | recurrence on + Daily, Monthly panel hidden |
@@ -195,26 +209,51 @@ Clone these — don't build from scratch. These nodes carry correct SAP tokens a
 | Schedule Activated Confirmation | `850:45411` | Confirmation/success state, ObjectStatus, Horizon Light — confirmed Jul 18 "Bravo" |
 | Schedule Operation Dialog (PERFECT) | `727:42563` | ⭐ Define/Schedule/recurrence dialog — confirmed Jul 21 "perfect result, expected every time". CLONE for any schedule/recurrence dialog. Select fields 80px, SegmentedButton HUG, disabled row via opacity 0.45, "Recurrence type" label, Monthly Pattern panel sapBackgroundColor |
 | Schedule Activated (clone source) | `853:135938` | Clone source for Schedule Activated variants |
-| Purchase Orders List Report | `804:44859` | 1440px List Report, approval actions, ObjectStatus — confirmed Jul 16 "Bravo" |
+| Purchase Orders (narrow) | `804:44859` | ⛔ **WIDTH CORRECTED 2026-09-02 — this is 320px live, NOT 1440px.** The "1440px List Report" claim was wrong and made this row a false match for desktop List Report requests (AUDIT-V2 §8.4 P10). Live name is `Purchase Orders`, not "Purchase Orders List Report". Secondary/narrow fit only. For a 1440 desktop List Report use `Orders List Report` @1440 (`889:45857`) or `Purchase Order Overview` @1440 (`1239:56605`). Approval actions, ObjectStatus — confirmed Jul 16 "Bravo" at its real width. |
 | Orders List Report | `889:45857` | 1440px List Report, full desktop pattern — confirmed Jul 19 |
 | Products Inventory | `907:46070` | 1440px Inventory List Report, EMA product data — confirmed Jul 19 |
 
 **750:174xxx benchmark screens (in the .fig file — the mandated quality bar):**
 
-| Screen | Node | Clone for |
+> ⛔⛔ **THIS TABLE WAS RE-KEYED 2026-09-02 (P10). Every label in the old table was wrong for at
+> least half its rows.** `docs/NODE-ID-CONFLICTS.md` §1 shows eight of these ids each carrying 2–4
+> incompatible labels: `CONTRIBUTING.md:154-163` and this table listed **the same eight ids in the
+> same order under two completely different name sets** — a rename applied to filenames but never
+> reconciled with the tables. The **LIVE name** column below is the authority; the **id** column is a
+> hint only. Resolve with `findAll(n => n.name === <Live name> && Math.abs(n.width - <Width>) <= 2)`.
+
+| LIVE name (authoritative key) | Width | Hint id | Old label in this table — **WRONG** | Clone for |
+|---|---|---|---|---|
+| `Outage List Overview` | 1440 | `750:174556` ✅ live-verified | was labelled "Yanatest Steps" | Desktop List Report — status pills, inline filter bar |
+| `Validate System` | unverified | `750:174442` ✅ live-verified id→name | was labelled "Activities View (List Report)" | Log/message panel, severity pills, SegmentedButton filter |
+| `Schedule Operation — State A Collapsed` | 560 | `750:174786` ✅ live-verified id→name | was labelled "Monthly + End date / fully-expanded" (the **opposite** state) | Collapsed dialog base state |
+| `Schedule Operation — State B Recurring` | 560 | `750:174814` ✅ live-verified id→name | was labelled "Validate System Log Panel" | Dialog, recurrence on |
+| `Schedule Operation — State C End Date` | 560 | `750:174866` ✅ live-verified id→name | was labelled "Schedule Operation Form (base) / collapsed" | Dialog, recurrence + end date |
+| `Schedule Operation — State D EndOnly` | 560 (×430) | `750:174925` ✅ live-verified id→name | ⛔ was labelled **"Outage List Overview — Desktop List Report"**. This is the P10 headline defect: the scorer ranked it first at 84.5 and a Level-2 clone by id would have built a 1440 list report from a 560×430 dialog. | Dialog, end date only |
+| `Schedule Operation — State B1 Hourly` | 560 | `750:174960` ✅ live-verified id→name | was labelled "Design System Governance (worklist)" | Dialog, hourly recurrence, no pattern box |
+| `Menu` (contains a `Side Navigation` instance) | 224 | `750:174158` ⚠ partial | was labelled "Side Navigation (full 20-item tree)" — the **wrapper** was renamed, so a name match on "Side Navigation" will not find it | Any SideNavigation |
+| `Design System Governance Console` | 1440 | `750:177443` ⚠ unverified | — | FCL + SideNav + nested Table + DynamicSideContent |
+| `Schedule Operation — State C End Date` (dup) | 560 | `727:42563` ⚠ | was labelled "Schedule Operation — dialog (PERFECT), full recurrence" and separately "Daily" in `canonical-index.json` | Dialog / Form — but see the conflict note below |
+| `Flight Result Card` | 751 / 760 ⚠ | `472:34431` ⚠ unverified | width disagrees between this manifest (751) and `canonical-index.json` (760) — unreconciled | Card build — spec in knowledge/, node here |
+
+**Rows DELETED from this table (no live node backs them):**
+
+| Deleted row | Old id | Why deleted |
 |---|---|---|
-| Design System Governance Console | `750:177443` | FCL + SideNav + nested Table + DynamicSideContent |
-| Side Navigation (full 20-item tree) | `750:174158` | Any SideNavigation |
-| Schedule Operation — dialog (PERFECT) | `727:42563` | Dialog / Form, full recurrence + SegmentedButton — CLONE for any dialog |
-| Yanatest Steps | `750:174556` | Object Page narrow 320px: DPH + IconTabBar + Filter Bar + List |
-| Schedule Operation — Monthly pattern | `750:174290` | Dialog with Panel + RadioButton pattern |
-| Activities View (List Report) | `750:174442` | List Report + Progress Rows |
-| Schedule Operation — Monthly + End date | `750:174786` | Fully-expanded dialog state |
-| Validate System Log Panel | `750:174814` | Log/message panel, severity pills, SegmentedButton filter |
-| Schedule Operation Form (base) | `750:174866` | Collapsed dialog base state |
-| Outage List Overview | `750:174925` | Desktop List Report, status pills, inline filter bar |
-| Design System Governance (worklist) | `750:174960` | Worklist variant |
-| Flight Result Card (cross-ref) | `472:34431` | Card build — spec in knowledge/, node here |
+| ~~Yanatest Steps~~ | ~~`750:174556`~~ | That id is live `Outage List Overview`. The real node for a 320px "yanatest Steps" Object Page is **UNKNOWN**. `docs/NODE-ID-CONFLICTS.md` §2 shows the label claimed by three ids (`560:36552` · `750:174190` · `750:174556`); none was confirmed in this file. Do not clone until read live. |
+| ~~Schedule Operation — Monthly pattern~~ | ~~`750:174290`~~ | 2 conflicting labels (§1). Never live-verified. The live state names are the `State A/B/B1/C/D` set above; "Monthly pattern" is not among them. |
+| ~~Activities View (List Report)~~ | ~~`750:174442`~~ | That id is live `Validate System`. The real Activities View node is **UNKNOWN** — §2 shows five ids claiming the label. |
+| ~~Schedule Operation — Monthly + End date~~ | ~~`750:174786`~~ | That id is live `State A Collapsed` — the opposite state. |
+| ~~Validate System Log Panel~~ | ~~`750:174814`~~ | That id is live `State B Recurring`. |
+| ~~Schedule Operation Form (base)~~ | ~~`750:174866`~~ | That id is live `State C End Date`. |
+| ~~Outage List Overview~~ | ~~`750:174925`~~ | That id is live `State D EndOnly`, a dialog. **The single most dangerous row in the repo** — removed. |
+| ~~Design System Governance (worklist)~~ | ~~`750:174960`~~ | That id is live `State B1 Hourly`. |
+
+⚠ **Unresolved without live Figma access — the Schedule dialog "gold standard".** Three disjoint id
+families (`9:1xxx`, `448:162xxx`, `750:174xxx`) carry the same `State A/B/B1/B2/C/D` names
+(`docs/NODE-ID-CONFLICTS.md` §2 "The four families"). `CLAUDE.md` anchors dialogs at `9:1550` while
+also naming `448:162293` as the PM-approved clone source. Do **not** pick a winner from documents —
+resolve by name + width in whichever file you are building in.
 
 ---
 

@@ -205,59 +205,48 @@ It ships with the repo. Every build clones from it. No exceptions.
 
 ---
 
-## Current State (2026-07-23)
+## Current State (2026-09-12)
 
-> **COMPLETED 2026-07-23 — both remotes at `7c87500`:**
-> 1. **Performance Recovery (F-1..F-10)** — 10 structural fixes. Target: 3-5 min / ≤12k tokens. See `docs/PERFORMANCE-RECOVERY.md`.
-> 2. **Gate 0 — Canonical Reference Selection** — hard-blocking gate before every build. 13 gold nodes in memory + skills. Default anchor: `9-1550`. Spec: `docs/superpowers/specs/2026-07-22-gate0-canonical-reference-selection-design.md`.
-> 3. **Wizard header fix** — screen `1026-51156` at 834px. Lesson: clone from reference with exact step count.
-> 4. **Session banner** — SAP + FIGMA ASCII logos + description + separator line. Ships via `install.sh`. Edit `.claude/hooks/.sap-session-banner.txt` to customise.
-> 5. **guard-figma-code.sh** — presentation-mode bypass added (pitch slides are legitimate native-frame builds).
->
-> **⚠ Two manual steps required on restart:**
-> 1. **Restart Claude Code** → activates all new hooks (Gate 0 + F-1..F-10)
-> 2. **Re-upload `sap-figma-agent` skill to Figma** → Figma Agent gets Gate 0.7 + 13-node gold table
->
-> **NEXT TASK (not started): Figma Make Compatibility**
+> **Measured benchmark (docs/AUDIT-V2.md §9.2b) — v2 hooked-session cost model:**
+> **3.6 min · 9,158 output tokens · 0 Figma errors · 0 gate refusals · 1 screenshot · `createFrame` 0.**
+> Baseline before v2: 7.1 min / 33,122 tokens / native-heavy broken screen. Target 3–5 min, ≤12k. **Inside target.**
+> Measure any build with `bash build/measure-build.sh --latest`.
 
+> ⚠ **Launch from the project folder or NO gate runs.** In a terminal:
+> `cd "/Users/C5408360/Downloads/sap-pipeline-v2" && claude` — or `bin/sap-v2`.
+> Typing `cd …` *into* Claude does not load this file or the hooks. The first turn must print
+> `✅ … project hooks ACTIVE`; `measure-build.sh` reports `GATES DORMANT` when it did not.
 
->
-> **COMPLETED 2026-07-20:** Workflow enforcement system fully shipped — `WORKFLOW-CONTRACT.md`, SessionStart auto-load hook (`load-workflow-contract.sh`), pre-edit gate (`guard-workflow-contract.sh`), `/sap-fix` skill, wireframe-first enforcement (`enforce-wireframe-first.sh`), SAP Suggestion Catalog, Order Detail `936:48470` fixed.
-
-### Remotes (both at `b9d717e` — v2-free, 2026-07-21)
+### Remotes
 - `github` = `github.com/Venelinhr/Claude-To-Figma-SAP-Application`
 - `origin` = `github.tools.sap/C5408360/sap-fiori-ai-designer`
-- ⛔ **Figma Plugin v2 (`plugin/figma-builder-v2/`) is OUT of GitHub** (user: "I want plugin v2 out of GitHub"). It was pushed as `aa5e32c`, then force-removed; both remotes reset to `b9d717e`. v2 source preserved on **local branch `agent-v2-wip`** (`git checkout agent-v2-wip` to restore). Do NOT commit v2 to `main` or push it. The rest of the S807–S816 audit work (enforcement, MCP security, doc hierarchy, `validateBuildRules` gate) IS on both remotes.
-
-### Open gaps (verified 2026-07-21 — most prior entries were stale)
-- **Node ID `750:174190` label conflict — ✅ FIXED 2026-07-21.** Verified live: `750:174190` = "Yanatest Steps" (Object Page 320px). The Schedule Operation dialog is `727:42563`. All docs corrected to point dialog/form clones to `727:42563`.
-- **install.sh Figma token validation — ✅ FIXED 2026-07-21.** Installer now warns if `YOUR_FIGMA_TOKEN_HERE` placeholder is unreplaced.
-- **`bridge/` not committed** — still uncommitted (v2 agent bridge, intentionally local until stable). Not covered by install.sh.
-- Hardcoded absolute MCP paths — only in the machine-local **global** `~/.claude/settings.json` (correct to be absolute there); project `.claude/settings.json` is clean.
-- ~~`reuse-outcomes-ledger.md` gitignored but required~~ — FALSE: `check-reuse-integrity.js` treats it as optional (`.claude/memory/reuse-outcomes-ledger.md`); passes clean on fresh clone.
-- ~~`build-registry-bundle.js` missing~~ — FALSE: exists at `build/build-registry-bundle.js` (18KB).
+- Current work is on branch **`pipeline-v2`** — not pushed. `main` is untouched.
+- ⛔ **Figma Plugin v2 (`plugin/figma-builder-v2/`) stays OUT of GitHub** (user's instruction). Source is preserved on local branch `agent-v2-wip`. Do not commit it to `main` or push it.
+- Run `git rev-parse --short HEAD` for the current commit — never quote a hardcoded hash, it drifts.
 
 ### Plugin state
-- `plugin/figma-builder/code.js`: MCP-bind-only. **Fail-closed (2026-07-18):** bind handler posts `type:'error'` (not unconditional success) when any fill/stroke/text fails to bind a SAP variable. `code.bundled.js` rebuilt.
+- `plugin/figma-builder/code.js`: MCP-bind-only. **Fail-closed:** the bind handler posts `type:'error'` (not unconditional success) when any fill/stroke/text fails to bind a SAP variable.
 - Three tools only: bind-mcp-frame, harvest-icon-keys, export-variable-keys
 
 ### Execution paths
 - **RULE 25 (DEFAULT):** Claude builds via `use_figma` with real SAP instances + name-tags → plugin binds tokens
 - **Legacy path:** JSON spec → plugin `Build Screen` (retained for bulk standard floorplans)
 
-### Automation hooks (need Claude Code restart to activate)
-**use_figma PreToolUse gate chain (order matters — wireframe→reuse→code→drift):**
-- `guard-wireframe-gate.sh` — **BLOCKS** build unless `.wireframe-approved` exists (Gate 3, RULE 19)
-- `guard-reuse-gate.sh` — **BLOCKS** with no reuse decision; L1-4 require `.clone(` (clone-first); L5 requires `.scratch-approved` (ask-before-scratch)
-- `guard-figma-code.sh` — **BLOCKS** createFrame-with-zero-instances (native-frame wireframe)
-- `guard-manifest-drift.sh` — **BLOCKS** key-import build on manifest drift (Gate 4)
+### Automation hooks (restart Claude Code after editing settings.json)
+Registered in `.claude/settings.json` — run `bash build/gate-status.sh` to see every precondition and its exact command.
 
-**UserPromptSubmit:** `capture-approvals.sh` — writes `.wireframe-approved`/`.scratch-approved` from the USER's own words (anti-self-echo); `feedback-learn.sh`; `recall-lessons.sh`
-**Stop:** `lint-on-stop.sh` — Gate 7, blocks hand-off on failing/missing `verify.json`; `clear-reuse-marker.sh` clears gate markers at SessionStart
-**Other:** `block-codejs-read.sh`, `block-generated-files.sh`, `guard-private-screens.sh`, `registry-rebuild.sh`, `manifest-sync-check.sh`, `verify-learnings.sh`, `surface-canonical-record.sh`, `surface-learnings.sh`, `validate-lesson.sh`
+**PreToolUse — `guard-chain.sh` runs all 8 `use_figma` gates and reports every failure in ONE message**
+(`wireframe` → `reuse` → `reference` → `architect` → `figma-code` → `api-gotchas` → `manifest-drift` → `workflow-contract`).
+Also registered: `block-codejs-read.sh`, `block-generated-files.sh`, `guard-marker-write.sh`, `guard-private-screens.sh`, `guard-scoped-metadata.sh`, `guard-screenshot-budget.sh`.
 
-### The 5 build invariants (docs/SAP-INVARIANT-ARCHITECTURE.md) — enforced by build/verify-invariants.js
-1. Zero native frames outside allowlist · 2. Zero raw hex (incl. instance paint overrides) · 3. Zero non-SAP typography · 4. Clone-first when a canonical exists · 5. Fail-closed on any SAP resource error. **verify-invariants.js reads the real frame tree and returns exit 2 on any violation** — success only if the frame proves it. Registries: `native-frame-allowlist.json`, `primitive-exceptions.json`, `layer-naming.json`, `keyless-components-allowlist.json`.
+**PostToolUse:** `capture-dump.sh` (runs the reality gate on the `use_figma` result — the model never writes the tree back, −12k tokens), `count-build.sh`, `mark-build.sh`, `guard-scoped-metadata.sh`, `manifest-sync-check.sh`, `registry-rebuild.sh`, `validate-lesson.sh`
+**UserPromptSubmit:** `capture-approvals.sh` (writes `.wireframe-approved`/`.scratch-approved` from the USER's own words — anti-self-echo), `enforce-wireframe-first.sh`, `feedback-learn.sh`, `recall-lessons.sh`, `recall-vdi.sh`
+**SessionStart:** `load-workflow-contract.sh`, `clear-reuse-marker.sh` (full reset only on a *fresh* start — markers survive resume/compact), `surface-learnings.sh`
+**Stop:** `lint-on-stop.sh` (Gate 7 — blocks hand-off on failing/missing `verify.json`), `clear-reuse-marker.sh`, `surface-canonical-record.sh`, `verify-learnings.sh`
+
+### The 6 build invariants (docs/SAP-INVARIANT-ARCHITECTURE.md) — enforced by build/verify-invariants.js
+1. Zero native frames outside allowlist · 2. Zero raw hex (incl. instance paint overrides) · 3. Zero non-SAP typography (family `72` + valid `[typo:role]`) · 4. Clone-first provenance when a canonical applies · **5. Sizing/overflow — no visible child past a clipping parent, and a page-level header must match its parent's width (±2px)** · 8. Layer naming per `layer-naming.json`.
+**verify-invariants.js reads the real frame tree and returns a non-zero exit on any violation** — success only if the frame proves it. Registries: `native-frame-allowlist.json`, `primitive-exceptions.json`, `layer-naming.json`, `keyless-components-allowlist.json`.
 
 ### Reuse-First enforcement (RULE 31 — mechanical since 2026-07-17)
 - **Score:** `node build/score-canonical.js --floorplan "<fp>" --regions <r> --components <c>` — deterministic, use it

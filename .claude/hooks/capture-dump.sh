@@ -50,17 +50,36 @@ fi
 BASE=$(jq -r 'select((.level // 5) >= 1 and (.level // 5) <= 4) | .baseCanonical // empty' "$PROJ/.claude/.reuse-declared" 2>/dev/null)
 [ "$BASE" = "none" ] && BASE=""
 EXP=""; VER="--pre-bind --out output/$ID-verify.json"
-if [ -n "$BASE" ]; then EXP="--based-on $BASE"; VER="--canonical $BASE $VER"; fi
+if [ -n "$BASE" ]; then
+  EXP="--based-on $BASE"; VER="--canonical $BASE $VER"
+  # PROVENANCE-AWARE VERIFICATION (AUDIT-V2 §8.4 P11). A clone-first build reuses the confirmed
+  # canonical's own node names; without the canonical's dump to compare against, INV 1 / INV 3
+  # reject them and bury the genuine findings (measured: 130 false flags on a 204-node build).
+  # If this canonical has already been dumped (output/<id>-tree.json, e.g. from a previous
+  # dump-tree run or expand-tree-dump), hand it to the verifier so inherited nodes pass by
+  # provenance and only the delta is strict. INV 2 and INV 5 run on everything either way, so a
+  # missing canonical dump can only make the gate STRICTER, never weaker.
+  CID=${BASE//:/-}
+  for CAND in "$OUT/$CID-tree.json" "$OUT/$CID-compact.json"; do
+    [ -f "$CAND" ] || continue
+    if [ "$CAND" = "$OUT/$CID-compact.json" ]; then
+      node "$PROJ/build/expand-tree-dump.js" "$CAND" "$OUT/$CID-tree.json" >/dev/null 2>&1 || continue
+      CAND="$OUT/$CID-tree.json"
+    fi
+    VER="$VER --canonical-dump ${CAND#"$PROJ/"}"
+    break
+  done
+fi
 if ! node "$PROJ/build/expand-tree-dump.js" "$C" "$OUT/$ID-tree.json" $EXP >/dev/null 2>&1; then
   echo "<reality-gate status=\"error\" node=\"$ROOT\">the dump was captured to output/$ID-compact.json but could not be expanded — run: node build/expand-tree-dump.js output/$ID-compact.json output/$ID-tree.json $EXP</reality-gate>"
   exit 0
 fi
 ( cd "$PROJ" && node build/verify-invariants.js "output/$ID-tree.json" $VER >/dev/null 2>&1 )
-SUMMARY=$(jq -r '"overallPass=\(.overallPass) · nodes=\(.summary.instances + .summary.containers + .summary.primitives + .summary.text + .summary.other) · hidden=\(.summary.hidden) · " + ((.fails | group_by(.verdict) | map("\(.[0].verdict)×\(length)") | join(" · ")) | if . == "" then "0 violations" else . end)' "$OUT/$ID-verify.json" 2>/dev/null)
+SUMMARY=$(jq -r '"overallPass=\(.overallPass) · nodes=\(.summary.instances + .summary.containers + .summary.primitives + .summary.text + .summary.other) · hidden=\(.summary.hidden)" + (if (.provenance.active // false) then " · provenance: clone of \(.provenance.declared), \(.summary.inherited // 0) inherited (INV 1/3 waived; INV 2/5 still applied)" else "" end) + " · " + ((.fails | group_by(.verdict) | map("\(.[0].verdict)×\(length)") | join(" · ")) | if . == "" then "0 violations" else . end)' "$OUT/$ID-verify.json" 2>/dev/null)
 [ -n "$SUMMARY" ] || SUMMARY="verifier produced no output/$ID-verify.json — run it by hand: node build/verify-invariants.js output/$ID-tree.json $VER"
 HARD=$(jq -r '[.fails[] | select(.verdict=="FAIL_RAW_HEX" or .verdict=="FAIL_CHILD_OVERFLOW" or .verdict=="FAIL_HEADER_WIDTH_MISMATCH")] | map("  • \(.verdict) \(.name): \(.why | .[0:140])") | join("\n")' "$OUT/$ID-verify.json" 2>/dev/null)
 echo "<reality-gate node=\"$ROOT\" verify=\"output/$ID-verify.json\">$SUMMARY
 Hard criteria (must be 0): FAIL_RAW_HEX, FAIL_CHILD_OVERFLOW, FAIL_HEADER_WIDTH_MISMATCH.${HARD:+
 $HARD}
-FAIL_FAKE_COMPONENT / FAIL_TYPO_TAG on names inherited unchanged from a confirmed canonical are a known calibration issue (AUDIT-V2 P11) — do not rebuild for them. The dump was saved by this hook; do not write it yourself.</reality-gate>"
+Verification is provenance-aware (AUDIT-V2 P11): on a clone-first build, nodes inherited unchanged from the confirmed canonical pass INV 1/INV 3 by provenance, while nodes this build ADDED or RENAMED are verified at full strictness. INV 2 and INV 5 apply to every node — a FAIL_RAW_HEX, FAIL_CHILD_OVERFLOW or FAIL_HEADER_WIDTH_MISMATCH is always a real defect, inherited or not. If the line above shows no 'Provenance:' note on a clone-first build, the canonical's own dump was not on disk and everything was checked at full strictness — any remaining FAIL_FAKE_COMPONENT / FAIL_TYPO_TAG on a verbatim canonical name is then calibration, not a defect. The dump was saved by this hook; do not write it yourself.</reality-gate>"
 exit 0

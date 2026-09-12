@@ -1,14 +1,15 @@
 {
   "version": "1.0",
-  "description": "Two-tier canonical index. Tier 1 = shipped with repo (works for any user). Tier 2 = personal confirmed builds (gitignored, per-user). Use Tier 2 when available; fall back to Tier 1.",
+  "description": "Two-tier canonical index. Tier 1 = shipped with repo (works for any user). Tier 2 = personal confirmed builds (gitignored, per-user). Use Tier 2 when available; fall back to Tier 1. RESOLUTION IS BY name + width READ LIVE (see resolution field) — NEVER by node id.",
   "scoringFormula": "floorplan(50%) + regions(30%) + components(20%). Threshold: >=85 clone direct, 60-84 clone+delta, <60 new build.",
   "tiers": {
     "tier1": [
       {
         "id": "shipped-governance-console",
         "name": "Design System Governance Console",
-        "floorplan": "FCL + SideNav",
         "width": 1440,
+        "resolveBy": "name+width",
+        "floorplan": "FCL + SideNav",
         "density": "Compact",
         "regions": [
           "ShellBar",
@@ -38,13 +39,19 @@
         ],
         "referenceImage": "docs/canonical-screens/01-design-system-governance-console.png",
         "specFile": "docs/canonical-screens/01-design-system-governance-console.md",
-        "figNode": "750:177443"
+        "hintNodeId": "750:177443",
+        "hintNodeIdAuthoritative": false,
+        "figNode": "750:177443",
+        "unverified": true,
+        "liveVerified": false,
+        "hintNote": "Width 1440 is the documented design width, NOT a live read. hintNodeId never live-verified; docs/NODE-ID-CONFLICTS.md does not list 750:177443 as conflicting, but it was never confirmed either. Resolve by name+width live."
       },
       {
         "id": "shipped-schedule-op-daily",
-        "name": "Schedule Operation \u2014 Daily",
-        "floorplan": "Dialog",
+        "name": "Schedule Operation — Daily",
         "width": 375,
+        "resolveBy": "name+width",
+        "floorplan": "Dialog",
         "density": "Cozy",
         "regions": [
           "DialogHeader",
@@ -68,14 +75,18 @@
         ],
         "referenceImage": "docs/canonical-screens/02-schedule-operation-form.png",
         "specFile": "docs/canonical-screens/02-schedule-operation-form.md",
-        "figNode": "727:42563",
-        "figNodeNote": "UNVERIFIED / LIKELY WRONG (2026-09-02) \u2014 live-verified 727:42563 is actually 'Schedule Operation \u2014 State C End Date', not 'Daily'. Names/states have drifted; re-verify live before cloning. See AUDIT-V2 P10."
+        "hintNodeId": null,
+        "hintNodeIdAuthoritative": false,
+        "unverified": true,
+        "liveVerified": false,
+        "hintNote": "CONFLICT (docs/NODE-ID-CONFLICTS.md §1 727:42563 / §2 \"Dialog gold standard\"). Live read 2026-09-02: 727:42563 is \"Schedule Operation — State C End Date\", NOT \"Daily\". The hint is REMOVED: a Daily-state node id is unknown. Resolve by name+width live; if no live frame matches name \"Schedule Operation — Daily\", this canonical does not exist and must not be cloned."
       },
       {
         "id": "shipped-schedule-op-monthly-end",
-        "name": "Schedule Operation \u2014 Monthly with End Date",
-        "floorplan": "Dialog",
+        "name": "Schedule Operation — Monthly with End Date",
         "width": 375,
+        "resolveBy": "name+width",
+        "floorplan": "Dialog",
         "density": "Cozy",
         "regions": [
           "DialogHeader",
@@ -105,14 +116,18 @@
         ],
         "referenceImage": "docs/canonical-screens/07-schedule-operation-monthly-end-date.png",
         "specFile": "docs/canonical-screens/07-schedule-operation-monthly-end-date.md",
-        "figNode": "750:174786",
-        "figNodeNote": "UNVERIFIED / LIKELY WRONG (2026-09-02) \u2014 live-verified 750:174786 is actually 'Schedule Operation \u2014 State A Collapsed', not 'Monthly with End Date'. Re-verify live before cloning. See AUDIT-V2 P10."
+        "hintNodeId": null,
+        "hintNodeIdAuthoritative": false,
+        "unverified": true,
+        "liveVerified": false,
+        "hintNote": "CONFLICT (docs/NODE-ID-CONFLICTS.md §1 750:174786 — 4 labels). Live read 2026-09-02: 750:174786 is \"Schedule Operation — State A Collapsed\", NOT \"Monthly with End Date\". Hint REMOVED. Resolve by name+width live."
       },
       {
         "id": "shipped-schedule-op-full",
-        "name": "Schedule Operation \u2014 Full / Collapsed",
-        "floorplan": "Dialog",
+        "name": "Schedule Operation — Full / Collapsed",
         "width": 375,
+        "resolveBy": "name+width",
+        "floorplan": "Dialog",
         "density": "Cozy",
         "regions": [
           "DialogHeader",
@@ -135,14 +150,18 @@
         ],
         "referenceImage": "docs/canonical-screens/09-schedule-operation-form-full.png",
         "specFile": "docs/canonical-screens/09-schedule-operation-form-full.md",
-        "figNode": "750:174866",
-        "figNodeNote": "UNVERIFIED / LIKELY WRONG (2026-09-02) \u2014 live-verified 750:174866 is actually 'Schedule Operation \u2014 State C End Date' (duplicate of shipped-schedule-op-daily's real target). Re-verify live before cloning. See AUDIT-V2 P10."
+        "hintNodeId": null,
+        "hintNodeIdAuthoritative": false,
+        "unverified": true,
+        "liveVerified": false,
+        "hintNote": "CONFLICT (docs/NODE-ID-CONFLICTS.md §1 750:174866 — 3 labels). Live read 2026-09-02: 750:174866 is \"Schedule Operation — State C End Date\" — the same live node shipped-schedule-op-daily wrongly claimed. Hint REMOVED. Resolve by name+width live."
       },
       {
         "id": "shipped-outage-list",
         "name": "Outage List Overview",
-        "floorplan": "List Report",
         "width": 1440,
+        "resolveBy": "name+width",
+        "floorplan": "List Report",
         "density": "Compact",
         "regions": [
           "ShellBar",
@@ -169,14 +188,18 @@
         ],
         "referenceImage": "docs/canonical-screens/10-outage-list-overview.png",
         "specFile": "docs/canonical-screens/10-outage-list-overview.md",
+        "hintNodeId": "750:174556",
+        "hintNodeIdAuthoritative": false,
         "figNode": "750:174556",
-        "figNodeNote": "Corrected 2026-09-02 \u2014 live-verified: 750:174925 is actually 'Schedule Operation \u2014 State D EndOnly' (a Dialog), and the real 'Outage List Overview' List Report lives at 750:174556 (previously mis-indexed under shipped-yanatest-steps). See AUDIT-V2 P10. ALWAYS re-read name+width live before .clone() \u2014 ids drift, names do not."
+        "liveVerified": true,
+        "hintNote": "RESOLVED 2026-09-02 by live read. The three-way conflict (750:174925 / 30:2741 / 804:44859, docs/NODE-ID-CONFLICTS.md §2 \"Outage List Overview\") is settled: 750:174925 is \"Schedule Operation — State D EndOnly\" (560x430 dialog) and must never be cloned as a List Report; the real Outage List Overview List Report is 750:174556. hintNodeId is still only a hint — assert name+width live before .clone()."
       },
       {
         "id": "shipped-purchase-order-overview",
         "name": "Purchase Order Overview",
-        "floorplan": "List Report",
         "width": 1440,
+        "resolveBy": "name+width",
+        "floorplan": "List Report",
         "density": "Compact",
         "regions": [
           "ShellBar",
@@ -205,14 +228,18 @@
         ],
         "referenceImage": null,
         "specFile": null,
+        "hintNodeId": "1239:56605",
+        "hintNodeIdAuthoritative": false,
         "figNode": "1239:56605",
-        "figNodeNote": "Added 2026-09-02 \u2014 live-verified 'Purchase Order Overview', 1440x818: ShellBar + IconTabBar + DynamicPageHeader (title + Create Purchase Order button) + two-row Filter Area (Supplier, Company Code, Purchasing Org, Purchasing Group, Creation Date, Status + Search) + ResponsiveTable (Checkbox, PO Number, Creation Date, Supplier, Status/ObjectStatus, Company Code, Currency, Total Amount, row actions). Was missing from the index entirely, causing score-canonical.js to find nothing >=60 for Purchase Order requests and fall back to from-scratch (AUDIT-V2, 2026-09-02 terminal retest: 12 min / 52,757 tokens). This is a Level-2 clone of 889:45857 'Orders List Report'; see also 804:44859 'Purchase Orders' (narrow, secondary fit) in SAP_BUILD_MANIFEST.md's confirmed-canonicals table."
+        "liveVerified": true,
+        "hintNote": "Live-verified 2026-09-02 (AUDIT-V2 §8.3): \"Purchase Order Overview\", 1440x818, built as a Level-2 clone of 889:45857 \"Orders List Report\". ShellBar + IconTabBar + DynamicPageHeader + 3+3 Filter Area + ResponsiveTable (Checkbox, PO Number, Creation Date, Supplier, ObjectStatus, Company Code, Currency, Total Amount, row actions). Was missing from the index entirely, so the scorer found nothing >=60 for Purchase Order requests and fell back to from-scratch."
       },
       {
         "id": "shipped-governance-fcl",
-        "name": "Design System Governance \u2014 FCL Variant",
-        "floorplan": "FCL",
+        "name": "Design System Governance — FCL Variant",
         "width": 1440,
+        "resolveBy": "name+width",
+        "floorplan": "FCL",
         "density": "Compact",
         "regions": [
           "ShellBar",
@@ -235,14 +262,18 @@
         ],
         "referenceImage": "docs/canonical-screens/11-design-system-governance-fcl.png",
         "specFile": "docs/canonical-screens/11-design-system-governance-fcl.md",
-        "figNode": "750:174960",
-        "figNodeNote": "UNVERIFIED / LIKELY WRONG (2026-09-02) \u2014 live-verified 750:174960 is actually 'Schedule Operation \u2014 State B1 Hourly' (a dialog), not the FCL governance variant. Re-verify live before cloning. See AUDIT-V2 P10."
+        "hintNodeId": null,
+        "hintNodeIdAuthoritative": false,
+        "unverified": true,
+        "liveVerified": false,
+        "hintNote": "CONFLICT (docs/NODE-ID-CONFLICTS.md §1 750:174960 — 4 labels). Live read 2026-09-02: 750:174960 is \"Schedule Operation — State B1 Hourly\" (a dialog), NOT the FCL governance variant. Hint REMOVED. Resolve by name+width live."
       },
       {
         "id": "shipped-flight-result-card",
         "name": "Flight Result Card",
-        "floorplan": "Card",
         "width": 760,
+        "resolveBy": "name+width",
+        "floorplan": "Card",
         "density": "Cozy",
         "regions": [
           "FlightLegZone",
@@ -261,13 +292,19 @@
         ],
         "referenceImage": "docs/canonical-screens/12-flight-result-card.png",
         "specFile": "docs/canonical-screens/12-flight-result-card.md",
-        "figNode": "E083sNBH7JNEOBFrG7Bqge:2:5355"
+        "hintNodeId": "E083sNBH7JNEOBFrG7Bqge:2:5355",
+        "hintNodeIdAuthoritative": false,
+        "figNode": "E083sNBH7JNEOBFrG7Bqge:2:5355",
+        "unverified": true,
+        "liveVerified": false,
+        "hintNote": "Cross-file hint (file E083sNBH7JNEOBFrG7Bqge, node 2:5355). Width 760 in this index vs 751 in SAP_BUILD_MANIFEST.md §3b — unreconciled, so width tolerance alone may not resolve it. Read name+width live before cloning."
       },
       {
         "id": "shipped-sidenav",
-        "name": "Side Navigation \u2014 Full Tree",
-        "floorplan": "SideNavigation",
+        "name": "Side Navigation — Full Tree",
         "width": 224,
+        "resolveBy": "name+width",
+        "floorplan": "SideNavigation",
         "density": "Compact",
         "regions": [
           "NavigationItems",
@@ -283,14 +320,19 @@
         ],
         "referenceImage": null,
         "specFile": "docs/canonical-screens/03-side-navigation.md",
+        "hintNodeId": "750:174158",
+        "hintNodeIdAuthoritative": false,
         "figNode": "750:174158",
-        "figNodeNote": "PARTIAL MATCH (2026-09-02) \u2014 live-verified 750:174158 is named 'Menu' and contains a Side Navigation instance (wrapper renamed, not the bare SideNavigation itself). Usable but confirm live before cloning."
+        "unverified": true,
+        "liveVerified": false,
+        "hintNote": "PARTIAL (2026-09-02): 750:174158 is live-named \"Menu\" and CONTAINS a Side Navigation instance — the wrapper was renamed, so a name match on \"Side Navigation — Full Tree\" will NOT find it. Match on \"Menu\" at width 224, or descend into the wrapper. Width 224 here vs 260 for \"Menu / Side Navigation\" in SAP_BUILD_MANIFEST.md §3b — unreconciled."
       },
       {
         "id": "shipped-yanatest-steps",
-        "name": "yanatest Steps \u2014 Object Page Narrow",
-        "floorplan": "Object Page",
+        "name": "yanatest Steps — Object Page Narrow",
         "width": 320,
+        "resolveBy": "name+width",
+        "floorplan": "Object Page",
         "density": "Compact",
         "regions": [
           "DynamicPageHeader",
@@ -315,14 +357,18 @@
         ],
         "referenceImage": null,
         "specFile": "docs/canonical-screens/04-schedule-operation-daily.md",
-        "figNode": "750:174556",
-        "figNodeNote": "UNVERIFIED / LIKELY WRONG (2026-09-02) \u2014 live-verified 750:174556 is actually 'Outage List Overview' (List Report), now correctly re-pointed under shipped-outage-list. This entry's real node is unknown; do NOT clone from 750:174556 for this entry. Needs a fresh score-canonical.js + live name/width read before use. See AUDIT-V2 P10."
+        "hintNodeId": null,
+        "hintNodeIdAuthoritative": false,
+        "unverified": true,
+        "liveVerified": false,
+        "hintNote": "CONFLICT (docs/NODE-ID-CONFLICTS.md §1 750:174556 — 4 labels; §2 \"yanatest Steps\" claimed by 560:36552 / 750:174190 / 750:174556). Live read 2026-09-02: 750:174556 is \"Outage List Overview\" and is now correctly keyed under shipped-outage-list. The real node for this entry is UNKNOWN. Hint REMOVED. Do not clone until a live name+width read finds it."
       },
       {
         "id": "shipped-activities-view",
-        "name": "Activities View \u2014 List Report with Progress",
-        "floorplan": "List Report",
+        "name": "Activities View — List Report with Progress",
         "width": 320,
+        "resolveBy": "name+width",
+        "floorplan": "List Report",
         "density": "Compact",
         "regions": [
           "DynamicPageHeader",
@@ -344,14 +390,18 @@
         ],
         "referenceImage": null,
         "specFile": "docs/canonical-screens/06-activities-view.md",
-        "figNode": "750:174442",
-        "figNodeNote": "UNVERIFIED / LIKELY WRONG (2026-09-02) \u2014 live-verified 750:174442 is actually 'Validate System' (a dialog), not the Activities List Report. Re-verify live before cloning. See AUDIT-V2 P10."
+        "hintNodeId": null,
+        "hintNodeIdAuthoritative": false,
+        "unverified": true,
+        "liveVerified": false,
+        "hintNote": "CONFLICT (docs/NODE-ID-CONFLICTS.md §1 750:174442 — 3 labels). Live read 2026-09-02: 750:174442 is \"Validate System\" (a dialog), NOT the Activities List Report. Hint REMOVED. Resolve by name+width live."
       },
       {
         "id": "shipped-validate-system",
         "name": "Validate System Log Panel",
-        "floorplan": "Log Panel",
         "width": 320,
+        "resolveBy": "name+width",
+        "floorplan": "Log Panel",
         "density": "Compact",
         "regions": [
           "DialogHeader",
@@ -373,11 +423,24 @@
         ],
         "referenceImage": null,
         "specFile": "docs/canonical-screens/08-validate-system-log-panel.md",
-        "figNode": "750:174814",
-        "figNodeNote": "UNVERIFIED / LIKELY WRONG (2026-09-02) \u2014 live-verified 750:174814 is actually 'Schedule Operation \u2014 State B Recurring', not the Validate System Log Panel. Re-verify live before cloning. See AUDIT-V2 P10."
+        "hintNodeId": null,
+        "hintNodeIdAuthoritative": false,
+        "unverified": true,
+        "liveVerified": false,
+        "hintNote": "CONFLICT (docs/NODE-ID-CONFLICTS.md §1 750:174814 — 2 labels, widely cited). Live read 2026-09-02: 750:174814 is \"Schedule Operation — State B Recurring\", NOT the Validate System Log Panel. Hint REMOVED. Width 320 here vs 678 for \"Validate System\" in SAP_BUILD_MANIFEST.md §3b — unreconciled. Resolve by name+width live."
       }
     ],
     "tier2": [],
     "_tier2Note": "Personal Tier 2 canonicals live in the gitignored canonical-index-tier2.json (per-user, not shipped). score-canonical.js merges it automatically when present."
+  },
+  "resolution": {
+    "policy": "name+width",
+    "rule": "Resolve every canonical in the LIVE Figma file by NAME + WIDTH. A stored node id is a HINT ONLY and must be asserted against the live name+width before any .clone().",
+    "query": "figma.currentPage.findAll(n => n.name === entry.name && Math.abs(n.width - entry.width) <= 2)",
+    "widthToleranceP": 2,
+    "hintNodeIdIsAuthoritative": false,
+    "why": "AUDIT-V2 §8.4 P10. The index previously ranked \"Outage List Overview\" first with figNode 750:174925; live, that id is \"Schedule Operation — State D EndOnly\", a 560x430 dialog. A Level-2 clone by id would have silently built a list report from a dialog. Ids drift between files, duplicates and renames; names + widths read live do not.",
+    "onUnverified": "An entry with \"unverified\": true has NO trustworthy node id. Resolve it by name+width live. If no live frame matches, treat the canonical as ABSENT — score it, but never clone it by id.",
+    "conflictsDoc": "docs/NODE-ID-CONFLICTS.md"
   }
 }

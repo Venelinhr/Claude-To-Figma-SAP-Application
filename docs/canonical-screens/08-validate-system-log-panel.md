@@ -3,6 +3,8 @@
 > Screenshot is kept private (local only). This .md is the source of truth — node ID, components, tokens, and layer structure are all here.
 
 
+> ⚠ **The Node ID below is historical and unverified — never clone by it.** Resolve canonicals live by name + width (`skill/references/canonical-index.json` → `resolution`); evidence in `docs/NODE-ID-CONFLICTS.md`.
+
 **Node ID:** 750:174814  
 **File Key:** p7zm5EMBk5DRRZdxNeJ4f5  
 **Screenshot:** 08-validate-system-log-panel.png  

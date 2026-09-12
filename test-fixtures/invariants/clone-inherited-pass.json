@@ -1,0 +1,38 @@
+[
+  { "_comment":"CLONE-FIRST BUILD — every node is inherited VERBATIM from clone-canonical-source.json (fresh ids, identical name+type). PROVES: with --canonical-dump the canonical's own container names ('Filter Area', 'Responsive Table', 'HDR 9', 'Row 4500012345', 'Chk Cell', 'Actions Cell') and its untagged texts PASS INV 1 / INV 3 by provenance instead of producing the 130 false flags measured in AUDIT-V2 §8.3. Note the deliberately NON-role font size 17 on 'Legacy Note': it proves the pass comes from PROVENANCE, not from the font-72-at-role-size relaxation. Expected: exit 0." },
+
+  { "id":"7:1","name":"Purchase Order Overview","type":"FRAME","visible":true,"layoutMode":"VERTICAL","childCount":2,
+    "basedOnCanonical":"6:1",
+    "width":1440,"absoluteBoundingBox":{"x":0,"y":0,"width":1440,"height":776},"clipsContent":false },
+
+  { "id":"7:2","name":"Filter Area","type":"FRAME","visible":true,"layoutMode":"HORIZONTAL","childCount":1,"parentId":"7:1",
+    "width":1440,"absoluteBoundingBox":{"x":0,"y":0,"width":1440,"height":60},"clipsContent":false },
+  { "id":"7:3","name":"Supplier Filter","type":"FRAME","visible":true,"layoutMode":"VERTICAL","childCount":1,"parentId":"7:2",
+    "width":200,"absoluteBoundingBox":{"x":0,"y":0,"width":200,"height":60},"clipsContent":false },
+  { "id":"7:4","name":"Supplier","type":"TEXT","visible":true,"fontFamily":"72","fontSize":14,"parentId":"7:3",
+    "width":80,"absoluteBoundingBox":{"x":0,"y":0,"width":80,"height":18} },
+
+  { "id":"7:5","name":"Responsive Table","type":"FRAME","visible":true,"layoutMode":"VERTICAL","childCount":2,"parentId":"7:1",
+    "width":1440,"absoluteBoundingBox":{"x":0,"y":60,"width":1440,"height":400},"clipsContent":false },
+  { "id":"7:6","name":"HDR Order","type":"FRAME","visible":true,"layoutMode":"HORIZONTAL","childCount":1,"parentId":"7:5",
+    "width":200,"absoluteBoundingBox":{"x":0,"y":60,"width":200,"height":44},"clipsContent":false },
+  { "id":"7:7","name":"Col Order","type":"TEXT","visible":true,"fontFamily":"72","fontSize":14,"parentId":"7:6",
+    "width":60,"absoluteBoundingBox":{"x":0,"y":60,"width":60,"height":18} },
+  { "id":"7:8","name":"HDR 9","type":"FRAME","visible":true,"layoutMode":"HORIZONTAL","childCount":0,"parentId":"7:5",
+    "width":246,"absoluteBoundingBox":{"x":200,"y":60,"width":246,"height":44},"clipsContent":true },
+
+  { "id":"7:9","name":"Row 4500012345","type":"FRAME","visible":true,"layoutMode":"HORIZONTAL","childCount":2,"parentId":"7:5",
+    "width":1440,"absoluteBoundingBox":{"x":0,"y":104,"width":1440,"height":44},"clipsContent":false },
+  { "id":"7:10","name":"Chk Cell","type":"FRAME","visible":true,"layoutMode":"HORIZONTAL","childCount":1,"parentId":"7:9",
+    "width":48,"absoluteBoundingBox":{"x":0,"y":104,"width":48,"height":44},"clipsContent":false },
+  { "id":"7:11","name":"Check Box","type":"INSTANCE","visible":true,"mainComponentKey":"chk-key-1","parentId":"7:10",
+    "width":24,"absoluteBoundingBox":{"x":0,"y":104,"width":24,"height":24} },
+  { "id":"7:12","name":"Actions Cell","type":"FRAME","visible":true,"layoutMode":"HORIZONTAL","childCount":1,"parentId":"7:9",
+    "width":136,"absoluteBoundingBox":{"x":48,"y":104,"width":136,"height":44},"clipsContent":true },
+  { "id":"7:13","name":"Order ID","type":"TEXT","visible":true,"fontFamily":"72","fontSize":14,"parentId":"7:12",
+    "width":100,"absoluteBoundingBox":{"x":48,"y":104,"width":100,"height":18} },
+
+  { "_comment":"Inherited text at a NON-role size (17). Only provenance can pass it — the font-72 relaxation cannot.",
+    "id":"7:14","name":"Legacy Note","type":"TEXT","visible":true,"fontFamily":"72","fontSize":17,"parentId":"7:12",
+    "width":90,"absoluteBoundingBox":{"x":48,"y":104,"width":90,"height":18} }
+]

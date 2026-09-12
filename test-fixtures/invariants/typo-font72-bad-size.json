@@ -1,0 +1,13 @@
+[
+  { "_comment":"NEGATIVE CONTROL for the INV 3 relaxation. Proves the relaxation is NARROW: font '72' alone is not a free pass — the size must match a role in TYPO_ROLES (±1). Untagged text at 17px (no role) and untagged text in a non-SAP font both still FAIL. Expected: exit 2 with FAIL_TYPO_TAG (17px) and FAIL_FONT (Inter)." },
+
+  { "id":"10:1","name":"Order Summary","type":"FRAME","visible":true,"layoutMode":"VERTICAL","childCount":2,
+    "width":400,"absoluteBoundingBox":{"x":0,"y":0,"width":400,"height":100},"clipsContent":false },
+
+  { "_comment":"font 72 but 17px is not a role size and there is no tag → still FAIL_TYPO_TAG.",
+    "id":"10:2","name":"Odd Size Untagged","type":"TEXT","visible":true,"fontFamily":"72","fontSize":17,"parentId":"10:1",
+    "width":200,"absoluteBoundingBox":{"x":0,"y":0,"width":200,"height":22} },
+  { "_comment":"role size 14 but the wrong family → still FAIL_FONT; the relaxation never accepts a non-SAP font.",
+    "id":"10:3","name":"Wrong Font Untagged","type":"TEXT","visible":true,"fontFamily":"Inter","fontSize":14,"parentId":"10:1",
+    "width":200,"absoluteBoundingBox":{"x":0,"y":22,"width":200,"height":18} }
+]

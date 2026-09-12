@@ -8,11 +8,11 @@
   "properties": {
     "baseCanonical": {
       "type": "string",
-      "description": "ID from canonical-index.json (Tier 2 node ID preferred, Tier 1 shipped ID as fallback). Example: '750:174925' or 'shipped-outage-list'"
+      "description": "Stable canonical identifier from canonical-index.json — prefer the Tier 1 shipped id (e.g. 'shipped-outage-list'). A raw Figma node id is a HINT ONLY and must never be used to locate the node: resolve the canonical LIVE by baseCanonicalName + width and assert both before .clone(). Stored ids have drifted (live 2026-09-02, '750:174925' is a 560x430 'Schedule Operation' dialog, not the Outage List Overview list report). Contract: canonical-index.json -> resolution. See AUDIT-V2 section 8.4 (P10)."
     },
     "baseCanonicalName": {
       "type": "string",
-      "description": "Human-readable name of the chosen canonical. Example: 'Outage List Overview'"
+      "description": "Exact LIVE frame name of the chosen canonical — this plus the width is what actually resolves the node (figma.currentPage.findAll(n => n.name === baseCanonicalName && Math.abs(n.width - width) <= 2)). Example: 'Outage List Overview'"
     },
     "reuseLevel": {
       "type": "integer",
@@ -101,7 +101,7 @@
   },
   "examples": [
     {
-      "baseCanonical": "750:174925",
+      "baseCanonical": "shipped-outage-list",
       "baseCanonicalName": "Outage List Overview",
       "reuseLevel": 1,
       "similarityScore": 94,
@@ -115,8 +115,9 @@
       "add": ["FilterBar"],
       "remove": [],
       "swapComponents": [],
+      "widthChange": { "canonicalWidth": 1440, "targetWidth": 1440, "breakpoint": "desktop-1440" },
       "newWork": 6,
-      "notes": "High similarity — only content and filter bar differ"
+      "notes": "High similarity — only content and filter bar differ. Resolve the base LIVE by name 'Outage List Overview' + width 1440 and assert both before .clone() — never clone by a stored node id."
     },
     {
       "baseCanonical": "shipped-outage-list",

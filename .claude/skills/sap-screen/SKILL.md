@@ -98,13 +98,21 @@ The build is blocked until `.reference-selected` exists. If nothing scores ≥60
 | Select API Dialog | `1114-136067` (p7zm5) | detail screen: ShellBar+SideNav+IconTabBar+Table | 1711 |
 
 **Legacy clone sources** (file `p7zm5EMBk5DRRZdxNeJ4f5` — historical mirrors, prefer the E083 gold set above):
-| Screen | Node | Use for | Native width |
+
+> ⛔ **Resolve by NAME + WIDTH live — never by a stored id.** The hint-id column is a hint only and has drifted.
+> ```js
+> const [src] = figma.currentPage.findAll(n => n.name === "Outage List Overview" && Math.abs(n.width - 1440) <= 2);
+> if (!src) throw new Error("canonical absent live — score it, but never clone by hint id");
+> ```
+> Assert `src.name` and `src.width` before `.clone()`. Live-verified 2026-09-02: `750:174925` is a 560×430 `Schedule Operation — State D EndOnly` **dialog**, not the list report — cloning it by id silently builds a list report out of a dialog. Likewise `750:174814` is `State B Recurring`, not the Validate System log panel. Contract: `skill/references/canonical-index.json` → `resolution`. See AUDIT-V2 §8.4 (P10).
+
+| Screen (resolve by this name) | Hint id (verify before use) | Use for | Native width |
 |---|---|---|---|
 | Schedule Operation dialog (PERFECT) | `727:42563` | Any Define/Schedule/recurrence **dialog** | 560 |
 | Schedule Operation Monthly | `750:174290` | Dialog + RadioButton panel | 560 |
-| Outage List Overview | `750:174925` | Desktop List Report | 1440 |
+| Outage List Overview | `750:174556` | Desktop List Report | 1440 |
 | Governance Console | `750:177443` | FCL + SideNav + nested tables | 1440 |
-| Validate System Log | `750:174814` | Log / message panel | 678 |
+| Validate System Log | `750:174442` | Log / message panel | 678 |
 | Schedule Activated | `850:45411` | Confirmation / success state | 560 |
 | Activities View | `615:36810` | Narrow List Report | 320 |
 | yanatest Steps | `560:36552` | Object Page narrow | 320 |
