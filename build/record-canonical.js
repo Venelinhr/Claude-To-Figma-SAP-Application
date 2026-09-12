@@ -8,8 +8,12 @@
  *
  * Usage:
  *   node build/record-canonical.js \
- *     --node "804:44859" --name "Purchase Orders" --file "p7zm5EMBk5DRRZdxNeJ4f5" \
+ *     --node "804:44859" --name "Purchase Orders" --width 320 --file "p7zm5EMBk5DRRZdxNeJ4f5" \
  *     --base "shipped-outage-list" --level 1 --score 94 --outcome "Bravo"
+ *
+ * --width is REQUIRED (added AUDIT-V2 P10, 2026-09-12): canonicals resolve live by name+width,
+ * never by a stored node id — ids drift (see canonical-index.json → `resolution`). Read the
+ * node's width live via use_figma/get_metadata before calling this; do not guess it.
  *
  * Effects (idempotent — re-running with the same --node updates rather than duplicates):
  *   1. Adds/updates a Tier 2 entry in skill/references/canonical-index.json
@@ -45,6 +49,12 @@ function main() {
   const name = requireArg(a, 'name');
   const file = a.file || 'p7zm5EMBk5DRRZdxNeJ4f5';
   const base = a.base || null;
+  // width is required (not optional) since AUDIT-V2 P10: canonicals resolve live by
+  // name+width, never by a stored node id (ids drift — see canonical-index.json →
+  // `resolution`). A Tier 2 entry without a width can never be matched by that query.
+  const widthRaw = requireArg(a, 'width');
+  const width = parseFloat(widthRaw);
+  if (Number.isNaN(width)) { console.error(`✗ --width must be a number, got "${widthRaw}"`); process.exit(1); }
   const level = a.level || '?';
   const score = a.score || '—';
   const outcome = a.outcome || 'confirmed';
@@ -60,6 +70,7 @@ function main() {
   const entry = {
     id: node,
     name,
+    width,
     figmaNode: node,
     fileKey: file,
     approvedDate: date,

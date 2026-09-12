@@ -24,7 +24,21 @@ source "$(dirname "$0")/lib-build-detect.sh"
 is_build "$CODE" || exit 0
 
 mkdir -p "$PROJ/.claude" 2>/dev/null
-printf 'build %s\n' "$(date -u 2>/dev/null || echo session)" > "$PROJ/.claude/.last-build-node" 2>/dev/null
+# 2026-09-12 fix: this used to write the literal string "build <timestamp>" — never a real
+# node id — so surface-canonical-record.sh's reminder always quoted a broken
+# `--node "build"` command, and the flywheel it exists to close silently never worked.
+# The tool_response for a use_figma build carries the resulting node's id (see
+# capture-dump.sh / count-build.sh, which already read .tool_response the same way). Capture
+# it here so the marker is actually usable downstream.
+NODE_ID=$(echo "$INPUT" | jq -r '.tool_response.id // .tool_response.nodeId // empty' 2>/dev/null)
+if [ -n "$NODE_ID" ]; then
+  printf '%s\n' "$NODE_ID" > "$PROJ/.claude/.last-build-node" 2>/dev/null
+else
+  # No node id in the response (e.g. a dump/read call that still counted as a mutation, or a
+  # response shape this hook doesn't recognise yet) — fall back to a marker that is at least
+  # honest about not being a node id, so a reader downstream doesn't silently treat it as one.
+  printf 'unknown-node %s\n' "$(date -u 2>/dev/null || echo session)" > "$PROJ/.claude/.last-build-node" 2>/dev/null
+fi
 
 # Nudge the agent to run the reality gate now, while the tree is fresh.
 echo "<build-marked>A use_figma BUILD ran. Gate 9 (lint-on-stop) will now BLOCK hand-off unless output/<node>-verify.json shows overallPass:true. Before you finish: dump the built frame tree and run \`node build/verify-invariants.js output/<node>-tree.json --pre-bind [--canonical <id>] --out output/<node>-verify.json\`. This is the reality gate that proves 0 native frames / 0 raw hex / SAP typography.</build-marked>"
