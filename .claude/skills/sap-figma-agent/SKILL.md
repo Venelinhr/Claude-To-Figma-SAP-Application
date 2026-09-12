@@ -102,6 +102,16 @@ If the Agent creates ANY layer named "Frame", "Frame 1", "Group", "Rectangle", o
 - **Verify the change landed** — look at the instance after setting a property, don't assume the panel accepted it. A value that silently reverted to default means it was invalid for this variant/component.
 - **Never work around a locked/uneditable part by detaching the instance.** Detaching converts it to a plain frame/group: it stops being a Kit instance, stops receiving library updates, and Bind will reject it as a native frame standing in for a component. If a part seems locked, that means the change belongs in a component **property**, not direct manipulation — find the property, or ask if the composition needs a different Kit component instead.
 
+### ⛔ SET PROPERTIES BEFORE YOU READ SUBLAYERS, NOT AFTER (from 28 confirmed repair patterns, docs/REPAIR-PATTERNS.md)
+
+**Calling `setProperties` on an instance can invalidate its own sublayer references.** If you then search inside that instance for a text node or icon to fill in (e.g. "find the label inside this Button and set its text"), the search can silently fail to find anything — not by erroring loudly, but by returning nothing, so your injection step quietly does nothing and the placeholder text/icon stays on screen. This produced the exact "I set everything and nothing changed" symptom in 28 documented cases.
+
+- **Find and read what you need INSIDE an instance BEFORE changing that instance's own variant properties.** If you need both — e.g. set the Button's `Type` to Primary AND set its label text — read/locate the label text node first, change the variant second, then set the text last.
+- **If a fill-in step appears to silently do nothing** (placeholder text/icon unchanged, no error shown), suspect this ordering issue before assuming the component doesn't support what you're trying to do. Re-open the instance and search again from scratch rather than reusing a reference obtained before the property change.
+- **Two of the most common resulting symptoms to recognize, so you don't chase the wrong cause:**
+  - A page/dialog title still shows generic placeholder copy ("Page Title", default heading text) after you tried to inject the real title — usually this ordering issue, not a broken Title component.
+  - An IconTabBar shows generic "Tab Text" on every tab after you tried to set real labels — usually the same cause, occasionally the labels were set via the wrong slot; if property-order isn't the cause, confirm you're setting the actual tab item's own text property, not a property on the IconTabBar parent.
+
 ### ⚠ NOT EVERYTHING IN A SHARED FILE IS A GOLD SAP REFERENCE (added 2026-09-12)
 
 A Figma file can contain unrelated work alongside SAP screens — a consumer flight-booking mockup, a marketing page, an old prototype. Before treating ANY screen in a file as a pattern to learn from or clone, confirm it is actually SAP Fiori: real Kit component instances, Horizon Light tokens, `[typo:role]`/`[sapToken]` naming conventions, ShellBar + SideNav shell. A screen with native icon frames, non-SAP colors (e.g. brand orange/red), or copy in a style that doesn't match SAP's voice is not a gold reference regardless of how good it looks — it's a different product's design living in the same file.
