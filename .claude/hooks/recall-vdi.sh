@@ -15,8 +15,10 @@ PROJ="${CLAUDE_PROJECT_DIR:-$(cd "$(dirname "$0")/../.." && pwd)}"
 
 [ -n "$PROMPT" ] || exit 0
 
-# Only fire on image/build prompts (same triggers as the wireframe gate).
-echo "$PROMPT" | grep -qiE "image|screenshot|reference|photo|sketch|wireframe|\.png|\.jpg|\.jpeg|\.webp|build|create.*screen|design.*screen|clone|floorplan" || exit 0
+# Only fire on image/build prompts (shared definition — lib-prompt-classify.sh — so this
+# never drifts from enforce-wireframe-first.sh's own classification again).
+source "$(dirname "$0")/lib-prompt-classify.sh"
+is_image_or_build_prompt "$PROMPT" || exit 0
 
 MODELS_DIR="$PROJ/semantic-models"
 [ -d "$MODELS_DIR" ] || exit 0

@@ -20,13 +20,15 @@ if [ -f "$PROJ/.claude/.wireframe-approved" ]; then
   exit 0
 fi
 
+source "$(dirname "$0")/lib-prompt-classify.sh"
+
 IS_BUILD=false
 IS_NEW_SCREEN=false
 IS_EDIT=false
 
 # ── HARD RULE: reference image present → ALWAYS mandatory (new screen) ───────
 # Any image attachment or image reference in a build/design context = full gate.
-echo "$PROMPT" | grep -qiE "image|screenshot|reference|photo|sketch|wireframe|\.png|\.jpg|\.jpeg|\.webp" && { IS_BUILD=true; IS_NEW_SCREEN=true; }
+is_image_prompt "$PROMPT" && { IS_BUILD=true; IS_NEW_SCREEN=true; }
 
 # ── New-screen build verbs → full Gate 0→3 ──────────────────────────────────
 echo "$PROMPT" | grep -qiE "build|create.*screen|make.*screen|design.*screen|implement|generate.*screen|new screen|sap screen" && { IS_BUILD=true; IS_NEW_SCREEN=true; }
