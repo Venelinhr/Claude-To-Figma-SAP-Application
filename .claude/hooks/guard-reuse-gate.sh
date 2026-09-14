@@ -49,6 +49,8 @@ Before building you MUST:
 3. For Level 1-4, write a delta-spec and validate it:  node build/validate-delta-spec.js <spec.json>
 4. Record the decision with the sanctioned script (raw writes to the marker are blocked):
    node build/record-reuse-decision.js --level <N> --score <S> --base \"<node-id>\" [--delta <path>]
+   (if Gate 0's record-reference.js already ran for the SAME node this session, --score/--base
+   are OPTIONAL — they default from .reference-selected, so you only need --level)
 
 If this is a genuine Level 5 (no canonical scored >=60):
    node build/record-reuse-decision.js --level 5 --score <S> --base none

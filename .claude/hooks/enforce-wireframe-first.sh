@@ -117,6 +117,8 @@ Your FIRST and ONLY output before user approval MUST be ALL 4 SECTIONS in this e
      guard-reference-gate.sh hard-blocks the build until this is recorded. Gold set + default
      anchor 9:1550 (dialogs) → memory reference_gold_standard_screen_set.md.
   6. Gate 1 — Canonical search: CLONE (with node ID) or BUILD. Never skip.
+     RULE 31's record-reuse-decision.js --score/--base default from step 5's .reference-selected
+     when you name the SAME node — pass only --level if it's the same canonical.
   7. Gate 2 — State the exact width.
   8. ⚡ Suggestions — applicable entries from docs/SAP-SUGGESTION-CATALOG.md.
   9. STOP. WAIT for the user to type explicit approval.
