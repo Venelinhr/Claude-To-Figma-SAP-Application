@@ -348,121 +348,25 @@ Full doc: `docs/SAP-FIORI-DEFAULT-METHODOLOGY.md` | Memory: `feedback_sap_method
 
 ---
 
-## ⛔⛔⛔ ABSOLUTE HARD RULE — AUTO-SAVE ALL FEEDBACK, ALWAYS, WITHOUT BEING ASKED
+## ⛔ RULES DEFINED IN skill/SYSTEM_PROMPT.md (do not restate here — read there)
 
-**The system saves ALL feedback automatically. Claude must NEVER ask "should I save this?" — just save it.**
+The following hard rules live in full, with their FAIL conditions and enforcing hooks, in
+`skill/SYSTEM_PROMPT.md`. This file only points to them so they are never edited in two
+places and drift apart. **If this pointer ever disagrees with SYSTEM_PROMPT.md, SYSTEM_PROMPT.md wins.**
 
-- **Positive feedback** (bravo / great / nice / I like it / good work / 👍 / ❤️) → auto-saved to memory
-- **Negative feedback** (bad / wrong / wtf / not good / it's not SAP / only SAP / never do this) → auto-saved to memory as a hard rule
-- **Hard rules** (hard rule / never / always / save this / remember this / add to memory) → auto-saved immediately
-- The `feedback-learn.sh` hook fires on EVERY user message and detects these signals automatically
-- After saving, Claude applies the lesson immediately without being asked
-- User must NEVER be told "I'll save that" — it must already be saved
+| Rule | Section in `skill/SYSTEM_PROMPT.md` |
+|---|---|
+| Always build in SAP Horizon Light | `## ⛔ ABSOLUTE HARD RULE #0 — ALWAYS BUILD IN SAP HORIZON LIGHT THEME` |
+| Always end with a validated Figma URL to the exact node | `## ⛔ ABSOLUTE HARD RULE #1 — ALWAYS END WITH A VALIDATED FIGMA URL TO THE EXACT NODE` |
+| Auto-save all feedback, never ask first | `## ⛔⛔⛔ ABSOLUTE HARD RULE — AUTO-SAVE ALL FEEDBACK WITHOUT BEING ASKED` |
+| Always full horizontal width (FILL) | `## ⛔ ABSOLUTE HARD RULE #3 — ALWAYS FULL HORIZONTAL WIDTH (FILL)` |
+| Never raw font '72' — always `[typo:role]` tags | `## ⛔ ABSOLUTE HARD RULE #4 — NEVER USE RAW FONT '72' — ALWAYS [typo:role] TAGS` |
+| 5 mandatory build rules (padding, IconButton type, 2-line center-align, dividers, Compact form factor) | `## ⛔⛔⛔ 5 MANDATORY BUILD RULES (confirmed 2026-07-19 — NEVER SKIP)` |
+| Mandatory 10-step build flow | `## ⭐⭐⭐ THE MANDATORY 10-STEP BUILD FLOW — NEVER SKIP ANY STEP` |
 
----
-
-## ⛔ ABSOLUTE HARD RULE — ALWAYS FULL HORIZONTAL WIDTH (FILL)
-
-**EVERY element, container, group, and row must fill its full horizontal space. No orphaned fixed widths.**
-- Root frame + all section containers → `primaryAxisSizingMode='FIXED'`, full width
-- SAP instances (ShellBar, Input, Button, Select) → `layoutSizingHorizontal='FILL'` **AFTER** appendChild
-- Table rows + header → `resize(tableWidth, rowHeight)` — all cells must sum to full table width
-- Text nodes in FILL containers → `layoutSizingHorizontal='FILL'` after append
-- NEVER set FILL before appendChild → error; always append first, then set FILL
-- Groups inside containers → wrap in FILL frame if they need to stretch
-
----
-
-## ⛔ ABSOLUTE HARD RULE — NEVER USE RAW FONT FAMILY '72' ON TEXT NODES
-
-**ALWAYS add `[typo:role]` name tag to every text node. NEVER leave text as bare "72" font family.**
-- Raw `fontName: {family:'72'}` = NOT a SAP token = fails typography binding = user sees "72" in panel
-- Every text node name MUST include `[typo:role]` tag so Bind plugin applies the SAP library text style
-- Roles: `[typo:heading]` · `[typo:body]` · `[typo:label]` · `[typo:labelBold]` · `[typo:caption]`
-- Example: `t.name = 'Date [typo:label] [sapContent_LabelColor]'`
-- This applies to EVERY text node in EVERY build. No exceptions.
-
----
-
-## ⛔⛔⛔ 5 MANDATORY BUILD HARD RULES (confirmed 2026-07-19)
-
-**Rule 1 — Side padding ALWAYS 32px (NEVER 48px)**
-- `paddingLeft = paddingRight = 32` on ALL containers (page header, filter area, table wrapper)
-- 48px = WRONG. Always use 32.
-
-**Rule 2 — IconButtons ALWAYS Type:Tertiary**
-- ANY action icon button (view/edit/delete, toolbar, nav) → `setProperties({ 'Type': 'Tertiary' })`
-- Never leave as Primary/Secondary for icon-only buttons
-
-**Rule 3 — Two-line stacked text ALWAYS center-aligned (vertically)**
-- Frame with label+value or title+subtitle stacked → `counterAxisAlignItems = 'CENTER'`
-- Never MIN (top) or MAX (bottom) — ALWAYS CENTER for visual balance
-- **This includes table cells with price+sub-currency, amount+currency, name+variant** — any 2-line vertical stack
-- Apply this DURING BUILD, not as a fix after. Verified wrong = top-aligned price cell 2026-07-19.
-
-**Rule 4 — Dividers: strokes on new builds, keep them in cloned canonicals**
-- NEW builds: 1px lines = stroke on the parent (`strokeBottomWeight=1`), never `createFrame()`.
-  `node.strokes = [{type:'SOLID', color:...}]` + `node.strokeBottomWeight = 1` (or top/left/right)
-- EXCEPTION — cloned canonical/gold-standard nodes (e.g. the Schedule dialog) KEEP their existing
-  1px native `Divider` frames: PM-approved, never convert to strokes. `/sap-fix` may flag them,
-  never remove them.
-
-**Rule 5 — Default Form Factor is ALWAYS Compact**
-- ALL SAP instances → `'Form Factor': 'Compact'` — no exceptions without explicit user instruction
-- **NEVER switch to Cozy to fix a11y tap target warnings** — Compact is correct for back-office desktop. The plugin's 4 too-small warning is acceptable and expected on desktop screens.
-- Button, IconButton, Input, Select, Label, CheckBox, ShellBar — ALL Compact by default
-- Violated 2026-07-19: switched to Cozy to suppress a11y warning — WRONG. Revert to Compact.
-
----
-
-## ⛔ ABSOLUTE HARD RULE — ALWAYS BUILD IN SAP HORIZON LIGHT THEME
-
-**ALWAYS build in SAP Horizon Light (white background). NEVER build in dark theme.**
-- Reference is dark → ignore the dark colors, build in Horizon Light anyway.
-- Reference is light → build in Horizon Light.
-- Only exception: user explicitly writes "dark theme" or "dark mode" in their message.
-- Dark hex (#1d2d3e, #1b3346, #162433…) has NO SAP variable → guaranteed Bind failure.
-- Correct token hex: `sapBackgroundColor=#f5f6f7`, `sapShellColor=#ffffff`, `sapList_BorderColor=#e5e5e5`.
-
----
-
-## ⛔ ABSOLUTE HARD RULE — ALWAYS END WITH VALIDATED FIGMA URL TO THE EXACT NODE
-
-**At the end of EVERY build, provide a Figma URL to the EXACT built frame node. No exceptions.**
-- Format: `https://www.figma.com/design/<fileKey>/SAP-application-builder?node-id=<id-HYPHEN>`
-- Node ID HYPHEN not colon: `850:45411` → `850-45411`
-- Confirm node exists via `get_metadata` BEFORE giving URL
-- Link to the FRAME — never to a parent group, section, or the file root
-- This applies after every build, every fix, every iteration
-
----
-
-## ⛔ ABSOLUTE HARD RULE — SHARE FIGMA URL WITH DIRECT NODE AT END OF EVERY BUILD
-
-**This is the same rule stated differently for emphasis — it is MANDATORY, not optional.**
-- User must NEVER have to hunt for the built frame
-- The URL must open Figma and zoom directly to the built screen
-- Validate node exists → format with hyphen → share immediately after build completes
-- Applies even when Bind is still pending or the build is partial
-
----
-
-## ⭐⭐⭐ MANDATORY 10-STEP BUILD FLOW — NEVER SKIP ANY STEP
-
-User confirmed 2026-07-19: "great workflow and rules! DO not skip any of these!"
-
-```
-STEP 1  Receive requirement (screenshot / ticket / description)
-STEP 2  Gate 0  — Analyze reference (VDI sector-by-sector). Map every element to real SAP component.
-STEP 3  Gate 1  — Search canonical screens first. Match → CLONE. Never rebuild from scratch.
-STEP 4  Gate 2  — Measure width. User override always wins.
-STEP 5  Gate 3  — ASCII wireframe + L1-L5 layer tree → HARD STOP. Wait for user approval.
-STEP 6  Gate 4  — Verify SAP library + component keys. FAIL-CLOSED: never createFrame() fallback.
-STEP 7  Gate 5  — Build. Real SAP instances. Horizon Light tokens. L1-L5 naming. Zero native UI frames.
-STEP 8  Gate 6  — Verify: instances, fills, fonts, no raw hex. Fix before handoff.
-STEP 9  Bind    — User runs Bind SAP Tokens. FAIL → diagnose + fix + re-bind. Never hand off on FAIL.
-STEP 10 URL     — Share validated Figma URL to exact node. ⛔ MANDATORY LAST ACTION EVERY TIME.
-```
+Rules that are **NOT** duplicated (unique to this file, stay here): frame-placement
+(never below existing content), no token tags on transparent layout frames, SAP Fiori
+methodology mandatory, Schedule Dialog gold standard.
 
 ---
 

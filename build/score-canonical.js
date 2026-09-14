@@ -46,7 +46,50 @@ const ADJACENCY = {
   'SideNavigation':['FCL + SideNav'],
 };
 
-function norm(s) { return String(s || '').trim().toLowerCase(); }
+// ── Component name aliasing (2026-09-14 fix) ──────────────────────────────────
+// overlapScore() used to be exact-string match only: norm('ObjectStatus') !==
+// norm('Object Status'), so a VDI read that wrote the spaced-out form scored 0
+// against a canonical that had the PascalCase form, even though it is the SAME
+// component. This is spelling/spacing drift on ONE component, never a claim
+// that two DIFFERENT components (e.g. ObjectStatus vs ObjectMarker — verified
+// distinct in knowledge/components/registry/, different componentCategory) are
+// interchangeable. Scope stays narrow on purpose: collapse whitespace/case so
+// "Object Status", "object-status", "ObjectStatus" all key to the same alias
+// bucket; do NOT invent cross-component synonyms.
+const COMPONENT_ALIASES = {
+  // canonical registry name -> extra surface forms VDI/free-text output uses
+  ObjectStatus: ['object status', 'status'],
+  ObjectNumber: ['object number'],
+  ObjectAttribute: ['object attribute'],
+  DynamicPageHeader: ['dynamic page header', 'page header'],
+  DynamicPageTitle: ['dynamic page title', 'page title'],
+  ResponsiveTable: ['responsive table', 'table'],
+  SearchField: ['search field', 'search'],
+  SegmentedButton: ['segmented button'],
+  SideNavigation: ['side navigation', 'side nav'],
+  IconTabBar: ['icon tab bar', 'tab bar'],
+  FilterBar: ['filter bar'],
+  DatePicker: ['date picker'],
+  TimePicker: ['time picker'],
+  CheckBox: ['checkbox', 'check box'],
+};
+const ALIAS_TO_CANONICAL = (() => {
+  const map = new Map();
+  for (const [canonicalName, aliases] of Object.entries(COMPONENT_ALIASES)) {
+    const key = canonicalName.toLowerCase();
+    map.set(key, key);
+    for (const a of aliases) map.set(a.toLowerCase(), key);
+  }
+  return map;
+})();
+
+function norm(s) {
+  const base = String(s || '').trim().toLowerCase();
+  // Collapse hyphens/underscores/extra spaces to single spaces so "search-field",
+  // "search_field", "search  field" all reach the same lookup key.
+  const collapsed = base.replace(/[-_]+/g, ' ').replace(/\s+/g, ' ').trim();
+  return ALIAS_TO_CANONICAL.get(collapsed) || collapsed;
+}
 
 function floorplanScore(requestFp, canonicalFp) {
   const r = norm(requestFp), c = norm(canonicalFp);
