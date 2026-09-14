@@ -19,9 +19,9 @@
 > you MUST run the full Gate 0→3 pipeline and show ALL FOUR MANDATORY SECTIONS in this exact order BEFORE writing anything else:
 >
 > **1. Gate 0 — VDI Sector Analysis TABLE** (`| Zone | Content | SAP Component | Key properties |` — every visible zone A/B/C… mapped to a real SAP component)
-> **2. Floorplan recommendation TREE** (use `sap.x.ComponentName` tree notation with `└─ ├─ │` branch characters — NOT the "L1–L5 prefix" format. Show every component, container, and relationship.)
+> **2. Floorplan recommendation TREE** (use `sap.x.ComponentName` tree notation with `└─ ├─ │` branch characters for THIS artifact specifically — not L1–L5 prefixes. Show every component, container, and relationship. This is a separate artifact from #4's layer tree, not an alternative to it — SYSTEM_PROMPT.md's Gate 3 still requires the L1–L5 layer tree there.)
 > **3. Confidence table** (`| Area | Conf.% | Notes |` — all major areas rated with % and a concrete note)
-> **4. ASCII wireframe** (full box-drawing layout)
+> **4. ASCII wireframe + L1–L5 layer tree** (full box-drawing layout, per SYSTEM_PROMPT.md Gate 3/RULE 19 — see there for the canonical definition)
 >
 > Then Gate 1 (clone/build), Gate 2 (width), HARD STOP waiting for approval.
 > No exceptions — not for clones, not for "same screen", not for "obvious" layouts.
@@ -315,9 +315,9 @@ Exception: cloning → place beside the clone source (`frame.x = source.x + sour
 
 EVERY wireframe presentation (image attached, build request, clone, edit, improvement) MUST show ALL 4 sections in this exact order:
 1. **Gate 0 — VDI Sector Analysis TABLE** `| Zone | Content | SAP Component | Key properties |`
-2. **Floorplan recommendation TREE** (sap.x.ComponentName with └─ ├─ │ — NOT L1–L5 prefix format)
+2. **Floorplan recommendation TREE** (sap.x.ComponentName with └─ ├─ │ — this artifact only, not the layer tree in #4)
 3. **Confidence table** `| Area | Conf.% | Notes |`
-4. **ASCII wireframe**
+4. **ASCII wireframe + L1–L5 layer tree** (see SYSTEM_PROMPT.md Gate 3/RULE 19)
 
 Then Gate 1 (clone/build) → Gate 2 (width) → ⚡ Suggestions → HARD STOP.
 

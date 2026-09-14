@@ -331,3 +331,15 @@ Report these proactively and offer to fix:
 ## ⛔ SKILL SYNC RULE
 
 This skill MUST be re-uploaded to Figma whenever any project rule, canonical node, methodology, or hard rule changes. The Agent only knows what is in this file. Last updated: 2026-07-22 v3 (rule-focused, Kit-native).
+
+**This is a 3rd hand-copied restatement of the hard rules (audit finding G, 2026-09-14).** The
+15 rules in `## HARD RULES` above are a condensed, standalone summary of the same rules that
+live in full in `skill/SYSTEM_PROMPT.md` (HR-1..HR-5 + Hard Rules section) and are pointed-to
+from `CLAUDE.md`. This file must stay a COMPLETE standalone document (it's pasted into Figma's
+Agent panel with no repo access — it cannot just point at a file path like CLAUDE.md does), so
+the fix here is NOT to remove the restatement, only to keep it honestly flagged as the 3rd copy:
+when you edit a numbered rule in `SYSTEM_PROMPT.md`'s HR-1..HR-5 or Hard Rules section, check
+whether the same fact (padding px value, divider exception, form factor default, etc.) appears
+in the numbered list above and update it too. There is currently no drift between the three
+(verified 2026-09-14: 32px padding is consistent everywhere) — keep it that way by hand until a
+mechanical 3-way diff exists.

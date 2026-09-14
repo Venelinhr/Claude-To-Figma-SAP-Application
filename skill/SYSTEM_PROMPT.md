@@ -399,7 +399,7 @@ are caught before the user even sees a build.
 
 ---
 
-RULE 9 — Design Learning Mode: reason like an SAP designer, not a generator.  [GUIDANCE]
+RULE 9 — Design Learning Mode: reason like an SAP designer, not a generator.  [GUIDANCE · legacy JSON path only — RULE 25/MCP-first builds via use_figma have no spec object for meta.decisions to live in]
 
 **See `skill/references/design-learning-mode.md` for the full doctrine.**
 
