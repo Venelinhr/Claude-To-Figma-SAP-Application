@@ -23,6 +23,12 @@
  *          ±2px. Catches the layoutSizingHorizontal='FILL' silent-no-op (parent still HUG-width)
  *          that hides sibling content — see figma-build-patterns.md "Form Field FILL Fix".
  *   INV 8  Layer naming                          — names satisfy layer-naming.json deny rules.
+ *   INV 9  Variant property values (2026-09-14, audit finding C) — an INSTANCE's variant values
+ *          (e.g. Button.Type, ObjectStatus.Semantic) must be in the registry's supportedVariants
+ *          for that componentName. Catches "right component, wrong variant" (Button.Type=
+ *          'Emphasized', a UI5 vocabulary value the kit doesn't expose). OPTIONAL — a complete
+ *          no-op unless the dump carries componentName + componentProperties on the node (see the
+ *          input shape below); every existing dump without them is unaffected.
  *
  * PROVENANCE-AWARE VERIFICATION (AUDIT-V2 §8.4 P11, added 2026-09-12)
  *   The default build path is CLONE-FIRST (RULE 28): the build clones a PM-confirmed canonical and
@@ -57,13 +63,20 @@
  *                   // backfilled during flattening from the children[] edge).
  *     "overriddenFills":<bool>,"overriddenStrokes":<bool>,   // node-level: are paints locally overridden?
  *     "fills":[{"type","hex","boundVariable","overridden":<bool>}],   // per-paint: is THIS paint a local override?
- *     "strokes":[{"type","hex","boundVariable","overridden":<bool>}] }
+ *     "strokes":[{"type","hex","boundVariable","overridden":<bool>}],
+ *     "componentName","componentProperties":{"<Property>":"<value>"|{"value":"<value>"}} }  // INV 9, OPTIONAL
  * The serializer MUST set overridden/overriddenFills for INSTANCE nodes (Figma: compare paint to the
  * main component, or use node.overriddenFields). Without it, an unbound raw-hex OVERRIDE on an instance
  * is treated as inherited and passes — the exact hole this closes. For non-instance nodes the flags are ignored.
+ * For INV 9, componentName is the SAP component's name as it appears in knowledge/components/registry/
+ * (e.g. "Button", "ObjectStatus") — NOT the Figma mainComponentKey, which is a per-VARIANT key and
+ * does not match the registry's per-COMPONENT-SET figmaComponentId. componentProperties is Figma's
+ * own instance.componentProperties object (property name -> value, or {value} for VARIANT-type
+ * props). Omit both fields entirely if the serializer doesn't produce them yet — INV 9 becomes a
+ * silent no-op, exactly like INV 5 below when its own fields are absent.
  * Accepts either a flat array of nodes OR a nested tree with children[] (it flattens).
  * INV 5 is skipped per-node whenever the widened fields (absoluteBoundingBox/width/parentId) are
- * absent — an older dump without them still passes INV 1-4/8 unchanged (no false positives).
+ * absent — an older dump without them still passes INV 1-4/8/9 unchanged (no false positives).
  *
  * Usage:
  *   node build/verify-invariants.js output/804-44859-tree.json
@@ -97,6 +110,32 @@ const TYPO_ROLES = {
   caption: 12, tableheader: 13, toolbartitle: 16,
   kpi: 28, display: 28,
 };
+
+// ── INV 9 (2026-09-14, audit finding C): variant property values ──────────────────────────
+// Registry entries are keyed by componentName, loaded here once and indexed for lookup by
+// checkVariant(). This deliberately does NOT try to match by mainComponentKey: the registry's
+// figmaComponentId is the COMPONENT-SET key, but a dumped instance's mainComponentKey is a
+// specific VARIANT's key within that set — the two are different values in Figma's data model,
+// so key-matching would silently never match. Instead this matches by an explicit componentName
+// field on the dumped node (new, optional) — the serializer must additionally emit the SAP
+// component name (e.g. via getMainComponentAsync() then .parent.name for a variant, or a
+// name tag already carried through the build) alongside componentProperties. Both fields are
+// OPTIONAL and this check is a complete no-op on any dump that doesn't carry them — matching the
+// same graceful-degradation contract as INV 5 (skipped per-node when width/parentId are absent).
+const REGISTRY_DIR = path.join(ROOT, 'knowledge', 'components', 'registry');
+const registryByName = (() => {
+  const map = new Map();
+  try {
+    for (const f of fs.readdirSync(REGISTRY_DIR)) {
+      if (!f.endsWith('.json')) continue;
+      try {
+        const j = JSON.parse(fs.readFileSync(path.join(REGISTRY_DIR, f), 'utf8'));
+        if (j.componentName) map.set(j.componentName, j);
+      } catch (e) { /* one malformed registry file must not crash verification */ }
+    }
+  } catch (e) { /* registry dir missing — check becomes a no-op below */ }
+  return map;
+})();
 
 function parseArgs(argv) {
   const a = { preBind: false, canonical: null, canonicalDump: null, out: null, input: null };
@@ -259,6 +298,36 @@ function checkFills(n, preBind) {
     } else {
       fails.push({ verdict: 'FAIL_RAW_HEX', invariant: 2,
         why: `unbound ${kind} ${p.hex || ''} on '${n.name}' — every color must bind a SAP variable` });
+    }
+  }
+  return fails;
+}
+
+// INV 9: an INSTANCE's variant property values must be in the registry's supportedVariants for
+// that componentName — catches "the right component, wrong variant" (e.g. ObjectStatus.State
+// instead of ObjectStatus.Semantic, or a Button.Type value the kit doesn't expose like
+// 'Emphasized'/'Transparent'). No-op unless the dump carries BOTH componentName and
+// componentProperties on the node — see the registryByName loader comment above for why this
+// can't be inferred from mainComponentKey alone.
+function checkVariant(n) {
+  if ((n.type || '') !== 'INSTANCE') return [];
+  const componentName = n.componentName || null;
+  const props = n.componentProperties || null;
+  if (!componentName || !props || typeof props !== 'object') return []; // dump doesn't carry it — no-op, not a fail
+  const entry = registryByName.get(componentName);
+  if (!entry) return []; // unknown component name — a naming/registry gap, not this check's job
+  const supported = entry.supportedVariants || [];
+  const fails = [];
+  for (const [propName, propValue] of Object.entries(props)) {
+    // Figma componentProperties values can be {value:"X"} objects or bare strings depending on
+    // property type (VARIANT vs TEXT/BOOLEAN) — normalize to a comparable string.
+    const value = (propValue && typeof propValue === 'object' && 'value' in propValue) ? propValue.value : propValue;
+    const spec = supported.find(s => s.property === propName);
+    if (!spec) continue; // a property the registry doesn't document — not this check's job (could be a Figma-internal prop)
+    if (!Array.isArray(spec.values) || spec.values.length === 0) continue;
+    if (!spec.values.includes(value)) {
+      fails.push({ verdict: 'FAIL_WRONG_VARIANT', invariant: 9,
+        why: `${componentName} '${n.name}' has ${propName}="${value}" which is not a valid kit value — expected one of [${spec.values.join(', ')}] (SAP_BUILD_MANIFEST.md / knowledge/components/registry/${componentName}.json)` });
     }
   }
   return fails;
@@ -465,6 +534,10 @@ function main() {
     // INV 5 sizing/overflow — ALWAYS ON, provenance never suppresses it (it found the 2px badge
     // overflow and the FIXED-not-FILL Actions cell, both on nodes inherited from the canonical).
     for (const s of checkSizing(n, parentMap)) fails.push({ id: n.id, name: n.name, ...s });
+    // INV 9 variant values — no-op unless the dump carries componentName + componentProperties
+    // (optional fields, see checkVariant's own comment). ALWAYS ON when present — a wrong variant
+    // value on an inherited node is still wrong, provenance doesn't except it either.
+    for (const v of checkVariant(n)) fails.push({ id: n.id, name: n.name, ...v });
     // INV 8 names
     const nm = checkName(n, args.preBind); if (nm) fails.push({ id: n.id, name: n.name, ...nm });
   }

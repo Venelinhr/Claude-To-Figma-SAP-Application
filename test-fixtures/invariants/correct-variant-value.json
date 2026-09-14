@@ -1,0 +1,7 @@
+[
+  { "_comment":"INV 9 — a Button instance with Type='Primary', a real kit value. Expected: exit 0, PASS." },
+
+  { "id":"7:1","name":"Save Button","type":"INSTANCE","visible":true,"mainComponentKey":"91805fa199b1fd247d76a9c08bbe0982b49065c4",
+    "componentName":"Button","componentProperties":{"Type":"Primary","Form Factor":"Compact"},
+    "width":88,"absoluteBoundingBox":{"x":0,"y":0,"width":88,"height":32} }
+]

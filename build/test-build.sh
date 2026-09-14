@@ -250,6 +250,29 @@ else
   exit 1
 fi
 
+# INV 9 (variant property values, audit finding C, 2026-09-14) — verify-invariants.js only ever
+# checked that an INSTANCE has a non-null mainComponentKey, never whether its variant values (e.g.
+# Button.Type, ObjectStatus.Semantic) are real kit values. No-op unless the dump carries the new
+# optional componentName + componentProperties fields (backward compatible with every existing dump).
+if node build/verify-invariants.js test-fixtures/invariants/wrong-variant-value.json --pre-bind >/dev/null 2>&1; then
+  echo -e "${RED}verify-invariants.js PASSED a Button with Type=Emphasized (not a real kit value) — INV 9 hole is open${NC}"
+  exit 1
+else
+  echo "  ✓ Button instance with an invalid variant value (Type=Emphasized) correctly FAILS (INV 9)"
+fi
+if node build/verify-invariants.js test-fixtures/invariants/correct-variant-value.json --pre-bind >/dev/null 2>&1; then
+  echo "  ✓ Button instance with a valid variant value (Type=Primary) correctly PASSES (INV 9)"
+else
+  echo -e "${RED}verify-invariants.js REJECTED a Button with a REAL kit value (Type=Primary) — INV 9 is over-triggering${NC}"
+  exit 1
+fi
+if node build/verify-invariants.js test-fixtures/invariants/no-componentname-fixture-still-passes.json --pre-bind >/dev/null 2>&1; then
+  echo "  ✓ an INSTANCE with no componentName/componentProperties (older-style dump) correctly PASSES — INV 9 is a true no-op without the new fields"
+else
+  echo -e "${RED}verify-invariants.js REJECTED a dump with no componentName field — INV 9 broke backward compatibility${NC}"
+  exit 1
+fi
+
 # ── Provenance-aware verification (AUDIT-V2 §8.4 P11) ──────────────────────────────────
 # The default build path is CLONE-FIRST (RULE 28), but INV 1's allowlist and INV 3's
 # [typo:role] convention were written for from-scratch builds. Measured on the live

@@ -1,0 +1,6 @@
+[
+  { "_comment":"INV 9 — an INSTANCE with NO componentName/componentProperties (an older-style dump, before the serializer emits them). Expected: exit 0, PASS — this check must be a complete no-op, never a new false positive on existing dumps." },
+
+  { "id":"7:1","name":"Save Button","type":"INSTANCE","visible":true,"mainComponentKey":"91805fa199b1fd247d76a9c08bbe0982b49065c4",
+    "width":88,"absoluteBoundingBox":{"x":0,"y":0,"width":88,"height":32} }
+]
