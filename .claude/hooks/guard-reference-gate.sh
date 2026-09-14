@@ -17,11 +17,13 @@
 # The marker is written ONLY by record-reference.js (agent runs score-canonical.js, then records the
 # chosen node). Raw-Bash writes of the marker are blocked by the marker-write guard (settings.json),
 # so this cannot be self-forged.
-INPUT=$(cat)
-TOOL=$(echo "$INPUT" | jq -r '.tool_name // empty')
+# 2026-09-14: when run inside guard-chain.sh, INPUT/TOOL/CODE are already parsed and exported —
+# skip the duplicate cat+jq. Falls back to self-parsing when run standalone (unchanged behavior).
+INPUT="${GUARD_CHAIN_INPUT:-$(cat)}"
+TOOL="${GUARD_CHAIN_TOOL:-$(echo "$INPUT" | jq -r '.tool_name // empty')}"
 echo "$TOOL" | grep -qi "use_figma" || exit 0
 
-CODE=$(echo "$INPUT" | jq -r '.tool_input.code // ""')
+CODE="${GUARD_CHAIN_CODE:-$(echo "$INPUT" | jq -r '.tool_input.code // ""')}"
 PROJ="${CLAUDE_PROJECT_DIR:-$(cd "$(dirname "$0")/../.." && pwd)}"
 
 # Only gate BUILDS (node-creating / cloning). Read-only inspects pass silently.

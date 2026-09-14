@@ -15,11 +15,13 @@
 # This complements guard-reuse-gate.sh (reuse decision) and verify-invariants.js (post-build truth).
 #
 # Tool input arrives as JSON on stdin (.tool_name, .tool_input.code). exit 2 = block; exit 0 = allow.
-INPUT=$(cat)
-TOOL=$(echo "$INPUT" | jq -r '.tool_name // empty')
+# 2026-09-14: when run inside guard-chain.sh, INPUT/TOOL/CODE are already parsed and exported —
+# skip the duplicate cat+jq. Falls back to self-parsing when run standalone (unchanged behavior).
+INPUT="${GUARD_CHAIN_INPUT:-$(cat)}"
+TOOL="${GUARD_CHAIN_TOOL:-$(echo "$INPUT" | jq -r '.tool_name // empty')}"
 echo "$TOOL" | grep -qi "use_figma" || exit 0
 
-CODE=$(echo "$INPUT" | jq -r '.tool_input.code // ""')
+CODE="${GUARD_CHAIN_CODE:-$(echo "$INPUT" | jq -r '.tool_input.code // ""')}"
 
 # Only inspect calls that mutate the canvas (build calls).
 echo "$CODE" | grep -qE "createInstance|createFrame|importComponentSetByKeyAsync|\.clone\(" || exit 0

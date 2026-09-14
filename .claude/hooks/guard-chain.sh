@@ -27,8 +27,19 @@ GUARDS="
 "
 
 source "$HOOK_DIR/lib-build-detect.sh"
+TOOL_NAME=$(printf '%s' "$INPUT" | jq -r '.tool_name // empty' 2>/dev/null)
 CODE=$(printf '%s' "$INPUT" | jq -r '.tool_input.code // ""' 2>/dev/null)
 IS_BUILD=false; is_build "$CODE" && IS_BUILD=true
+
+# 2026-09-14 (audit finding A): each of the 8 sub-gates below used to re-run its own
+# `INPUT=$(cat)` + two `jq` calls on this SAME payload — 8 extra forks + 16 extra jq spawns per
+# use_figma call, parsing data this script already parsed above. Export the parsed values so
+# each sub-gate can skip its own parse; every sub-gate still falls back to self-parsing via
+# `${GUARD_CHAIN_INPUT:-$(cat)}` when run standalone (outside this chain, e.g. manual testing),
+# so nothing here changes sub-gate behavior — only removes duplicate parsing on the hot path.
+export GUARD_CHAIN_INPUT="$INPUT"
+export GUARD_CHAIN_TOOL="$TOOL_NAME"
+export GUARD_CHAIN_CODE="$CODE"
 
 TMPERR=$(mktemp)
 total=0; fails=0; names=""; OUT=""; ERR=""

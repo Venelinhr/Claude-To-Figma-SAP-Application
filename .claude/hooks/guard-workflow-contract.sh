@@ -15,8 +15,10 @@
 #
 # Registered under mcp__figma__use_figma AFTER guard-agent-turn1 and BEFORE guard-wireframe-gate.
 # Exit 2 blocks; stderr is the agent's feedback. Exit 0 passes.
-INPUT=$(cat)
-TOOL=$(echo "$INPUT" | jq -r '.tool_name // empty')
+# 2026-09-14: when run inside guard-chain.sh, INPUT/TOOL/CODE are already parsed and exported —
+# skip the duplicate cat+jq. Falls back to self-parsing when run standalone (unchanged behavior).
+INPUT="${GUARD_CHAIN_INPUT:-$(cat)}"
+TOOL="${GUARD_CHAIN_TOOL:-$(echo "$INPUT" | jq -r '.tool_name // empty')}"
 echo "$TOOL" | grep -qi "use_figma" || exit 0
 
 PROJ="${CLAUDE_PROJECT_DIR:-$(cd "$(dirname "$0")/../.." && pwd)}"
@@ -24,7 +26,7 @@ MARKER="$PROJ/.claude/.workflow-loaded"
 
 # Scoped to BUILD calls (2026-09-01). Read-only use_figma inspection gains nothing from a
 # refusal to "read the contract first" — every other gate lets reads through; this one now too.
-CODE=$(echo "$INPUT" | jq -r '.tool_input.code // ""')
+CODE="${GUARD_CHAIN_CODE:-$(echo "$INPUT" | jq -r '.tool_input.code // ""')}"
 source "$(dirname "$0")/lib-build-detect.sh"
 is_build "$CODE" || exit 0
 

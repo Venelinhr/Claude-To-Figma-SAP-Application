@@ -13,14 +13,16 @@
 # invalid → BLOCK (exit 2, stderr message to Claude). Read-only use_figma calls pass silently.
 #
 # Tool input arrives as JSON on stdin (.tool_name, .tool_input). exit 2 = block; exit 0 = allow.
-INPUT=$(cat)
-TOOL=$(echo "$INPUT" | jq -r '.tool_name // empty')
+# 2026-09-14: when run inside guard-chain.sh, INPUT/TOOL/CODE are already parsed and exported —
+# skip the duplicate cat+jq. Falls back to self-parsing when run standalone (unchanged behavior).
+INPUT="${GUARD_CHAIN_INPUT:-$(cat)}"
+TOOL="${GUARD_CHAIN_TOOL:-$(echo "$INPUT" | jq -r '.tool_name // empty')}"
 echo "$TOOL" | grep -qi "use_figma" || exit 0
 
 PROJ="${CLAUDE_PROJECT_DIR:-$(cd "$(dirname "$0")/../.." && pwd)}"
 MARKER="$PROJ/.claude/.reuse-declared"
 
-CODE=$(echo "$INPUT" | jq -r '.tool_input.code // ""')
+CODE="${GUARD_CHAIN_CODE:-$(echo "$INPUT" | jq -r '.tool_input.code // ""')}"
 
 # ── Detect a BUILD (vs a read-only inspect / tweak) ──
 # Includes .clone( — RULE 28's preferred clone-canonical path (was previously blind to it).

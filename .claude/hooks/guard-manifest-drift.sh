@@ -8,11 +8,13 @@
 #
 # Complements manifest-sync-check.sh (PostToolUse notice on manifest edit). This one is the hard
 # pre-build gate. Read-only use_figma calls pass silently.
-INPUT=$(cat)
-TOOL=$(echo "$INPUT" | jq -r '.tool_name // empty')
+# 2026-09-14: when run inside guard-chain.sh, INPUT/TOOL/CODE are already parsed and exported —
+# skip the duplicate cat+jq. Falls back to self-parsing when run standalone (unchanged behavior).
+INPUT="${GUARD_CHAIN_INPUT:-$(cat)}"
+TOOL="${GUARD_CHAIN_TOOL:-$(echo "$INPUT" | jq -r '.tool_name // empty')}"
 echo "$TOOL" | grep -qi "use_figma" || exit 0
 
-CODE=$(echo "$INPUT" | jq -r '.tool_input.code // ""')
+CODE="${GUARD_CHAIN_CODE:-$(echo "$INPUT" | jq -r '.tool_input.code // ""')}"
 PROJ="${CLAUDE_PROJECT_DIR:-$(cd "$(dirname "$0")/../.." && pwd)}"
 
 # Only gate builds that import SAP component keys (the drift-sensitive operation).

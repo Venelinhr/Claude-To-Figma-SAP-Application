@@ -9,10 +9,12 @@
 # pattern here fails in Figma 100% of the time — so a block never costs a good build.
 #
 # exit 2 = block (message names the line and the fix); exit 0 = allow.
-INPUT=$(cat)
-TOOL=$(printf '%s' "$INPUT" | jq -r '.tool_name // empty' 2>/dev/null)
+# 2026-09-14: when run inside guard-chain.sh, INPUT/TOOL/CODE are already parsed and exported —
+# skip the duplicate cat+jq. Falls back to self-parsing when run standalone (unchanged behavior).
+INPUT="${GUARD_CHAIN_INPUT:-$(cat)}"
+TOOL="${GUARD_CHAIN_TOOL:-$(printf '%s' "$INPUT" | jq -r '.tool_name // empty' 2>/dev/null)}"
 echo "$TOOL" | grep -qi "use_figma" || exit 0
-CODE=$(printf '%s' "$INPUT" | jq -r '.tool_input.code // ""' 2>/dev/null)
+CODE="${GUARD_CHAIN_CODE:-$(printf '%s' "$INPUT" | jq -r '.tool_input.code // ""' 2>/dev/null)}"
 [ -n "$CODE" ] || exit 0
 source "$(dirname "$0")/lib-build-detect.sh"
 is_build "$CODE" || exit 0
