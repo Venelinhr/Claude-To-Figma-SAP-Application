@@ -41,7 +41,7 @@ Hooks defined in `.claude/settings.json` (project-level) or `~/.claude/settings.
 
 ## block-codejs-read.sh — why it exists
 
-The plugin runtime `plugin/figma-builder/code.js` is ~45,000 tokens. Reading it wastes a full context budget and provides no useful information for `use_figma` builds — all component keys, token hexes, and build patterns live in `SAP_BUILD_MANIFEST.md` (~2k tokens).
+The plugin runtime `plugin/figma-builder/code.js` is ~132.5 KB (~33k tokens). Reading it wastes a full context budget and provides no useful information for `use_figma` builds — all component keys, token hexes, and build patterns live in `SAP_BUILD_MANIFEST.md` instead (~28.6 KB / ~7.1k tokens as of 2026-09-14 — re-check with `wc -c SAP_BUILD_MANIFEST.md` if this drifts; still ~4-5x cheaper than reading code.js).
 
 The hook cites **RULE 28** in its block message. If you see it fire, do NOT try to bypass it — use `SAP_BUILD_MANIFEST.md §3` for keys and `§4` for tokens instead.
 

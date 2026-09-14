@@ -150,7 +150,17 @@ function scoreCanonical(request, canonical) {
   };
 }
 
-function reuseLevel(score) {
+// unverified (2026-09-14 fix): an entry whose hintNodeId was never confirmed live can still
+// score 100 on floorplan/region/component text overlap — that text says nothing about whether
+// the id is real. Without this cap, an unverified 100-score entry got recommended as Level 1
+// "clone directly" — the exact 2026-09-02 incident (id 750:174925 resolved live to an unrelated
+// 560x430 dialog, not the list report it scored as). Cap unverified entries at Level 3 so live
+// name+width resolution is mandatory before any clone, regardless of how high the text score is.
+function reuseLevel(score, unverified) {
+  if (unverified) {
+    if (score >= 60) return { level: 3, action: 'clone + delta — UNVERIFIED hint: resolve live name+width before clone (never trust score alone)' };
+    return { level: 5, action: 'no strong match — build new (state explicitly)' };
+  }
   if (score >= 85) return { level: 1, action: 'clone directly, inject content only' };
   if (score >= 70) return { level: 2, action: 'clone + delta (similar screen)' };
   if (score >= 60) return { level: 3, action: 'clone + delta (floorplan reuse)' };
@@ -269,7 +279,7 @@ function main() {
 
   const top = scored.slice(0, 5);
   const best = top[0];
-  const rec = best ? reuseLevel(best.score) : { level: 5, action: 'no canonicals available' };
+  const rec = best ? reuseLevel(best.score, best.unverified) : { level: 5, action: 'no canonicals available' };
 
   const result = {
     request,

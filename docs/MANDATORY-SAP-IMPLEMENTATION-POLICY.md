@@ -77,7 +77,7 @@ Search Approved Screens  (Gate 1 · score-canonical.js)
                ▼
       Validate All SAP Requirements  (verify-invariants.js)
                │
-               ├── PASS → Deliver  (Gate 9)
+               ├── PASS → Deliver  (Gate 7)
                │
                └── FAIL
                       ▼
@@ -99,10 +99,10 @@ The success criterion is **a genuine SAP Fiori screen built from real SAP Web UI
 | Policy statement | Invariant / gate that enforces it | What happens if violated |
 |---|---|---|
 | Reuse before rebuild | INVARIANT 4 + Gate 1/2 (`guard-reuse-gate.sh` recomputes score) | Build blocked (exit 2) if a canonical exists and wasn't cloned |
-| SAP components only | INVARIANT 1 + Gate 5 (`guard-figma-code.sh`) + Gate 7 (`verify-invariants.js`) | Native-frame wireframe blocked pre-build; fake component fails post-build |
-| SAP tokens only | INVARIANT 2 (`verify-invariants.js`) | Any unbound fill → exit 2 |
-| SAP typography only | INVARIANT 3 (`verify-invariants.js`) | Any non-72 / untagged / wrong-size text → exit 2 |
+| SAP components only | INVARIANT 1 + Gate 5 (`guard-figma-code.sh`) + Gate 6 (`verify-invariants.js`) | Native-frame wireframe blocked pre-build; fake component fails post-build |
+| SAP tokens only | INVARIANT 2 (`verify-invariants.js`, Gate 6) | Any unbound fill → exit 2 |
+| SAP typography only | INVARIANT 3 (`verify-invariants.js`, Gate 6) | Any non-72 / untagged / wrong-size text → exit 2 |
 | No silent native fallback | INVARIANT 5 (plugin fail-closed) | Import/bind failure aborts with `type:'error'`, never createFrame |
-| Nothing ships unverified | Gate 9 (`lint-on-stop.sh`) | Hand-off blocked unless `verify.json` `overallPass:true` exists |
+| Nothing ships unverified | Gate 7 (`lint-on-stop.sh`) | Hand-off blocked unless `verify.json` `overallPass:true` exists |
 
 See `docs/SAP-INVARIANT-ARCHITECTURE.md` for the full check definitions and `skill/SYSTEM_PROMPT.md` (top) for THE CANONICAL GATE SEQUENCE.
