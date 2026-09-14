@@ -160,15 +160,27 @@ Wire into `settings.json` `PreToolUse` under matcher `mcp__figma__use_figma`, **
 
 ### 4.2 NEW — `build/verify-invariants.js` (post-build invariant linter, Gates 6/7/8)
 
-The reality gate. Ingests `output/<node>-tree.json` (a `use_figma`-serialized dump), walks it, and enforces INVARIANTS 1–5 with per-node verdicts. Replaces the orphan `lint-instance-ratio.js` "ratio" model with a **one-FAIL-fails** model.
+The reality gate. Ingests `output/<node>-tree.json` (a `use_figma`-serialized dump), walks it, and enforces INVARIANTS 1–5/8/9 with per-node verdicts. Replaces the orphan `lint-instance-ratio.js` "ratio" model with a **one-FAIL-fails** model.
 
 Node dump shape (each element from `root.findAll(()=>true)` mapped to):
 ```json
 { "id": "...", "name": "...", "type": "INSTANCE|FRAME|TEXT|RECTANGLE|...",
   "visible": true, "layoutMode": "HORIZONTAL|VERTICAL|NONE", "childCount": 3,
   "mainComponentKey": "…or null", "fontFamily": "72", "fontSize": 14,
-  "fills": [{ "type":"SOLID", "hex":"#…", "boundVariable": "…or null" }] }
+  "fills": [{ "type":"SOLID", "hex":"#…", "boundVariable": "…or null" }],
+  "componentName": "Button", "componentProperties": { "Type": "Primary", "Form Factor": "Compact" } }
 ```
+`componentName`/`componentProperties` are OPTIONAL (INV 9, 2026-09-14) — include them on every
+INSTANCE to get variant-value checking (wrong Button.Type, wrong ObjectStatus.Semantic, etc.);
+omit both to keep the old behavior exactly. Read them live via:
+```js
+const main = await n.getMainComponentAsync();
+const setNode = main?.parent?.type === 'COMPONENT_SET' ? main.parent : main;
+componentName = setNode?.name;              // the SAP registry name, e.g. "Button"
+componentProperties = n.componentProperties; // Figma's own instance property map
+```
+Do NOT use `mainComponentKey` for `componentName` lookup — it is a per-VARIANT key, not the
+per-component-set key the registry is indexed by; they will not match.
 Output `output/<node>-verify.json`:
 ```json
 { "node": "804:44859", "overallPass": false,
