@@ -1,0 +1,12 @@
+[
+  { "_comment":"Audit finding D (2026-09-14): guard-figma-code.sh's Block 3 can be bypassed by cloning the SAME small component N times to inflate the instance count past N unnamed/unrecognized hand-drawn FRAME siblings — confirmed exploitable at the code-text level (see guard-figma-code.sh's own comment on Block 3). This fixture proves the safety net: verify-invariants.js inspects the REAL built tree, not code call counts, so the unrecognized-name frames still fail INV 1 regardless of how many real clones happened elsewhere. Expected: exit 2, FAIL_FAKE_COMPONENT on both Custom Widget frames — proves the bypass never reaches a shipped screen even though the pre-build code gate misses it." },
+
+  { "id":"1:1","name":"Screen","type":"FRAME","visible":true,"layoutMode":"VERTICAL","childCount":3,
+    "width":1440,"absoluteBoundingBox":{"x":0,"y":0,"width":1440,"height":800},"clipsContent":false },
+  { "id":"1:2","name":"Icon Clone 1","type":"INSTANCE","visible":true,"mainComponentKey":"iconkey","width":24,
+    "absoluteBoundingBox":{"x":0,"y":0,"width":24,"height":24},"parentId":"1:1" },
+  { "id":"1:3","name":"Custom Widget A","type":"FRAME","visible":true,"layoutMode":"NONE","childCount":0,
+    "width":1440,"absoluteBoundingBox":{"x":0,"y":24,"width":1440,"height":100},"parentId":"1:1" },
+  { "id":"1:4","name":"Custom Widget B","type":"FRAME","visible":true,"layoutMode":"NONE","childCount":0,
+    "width":1440,"absoluteBoundingBox":{"x":0,"y":124,"width":1440,"height":100},"parentId":"1:1" }
+]

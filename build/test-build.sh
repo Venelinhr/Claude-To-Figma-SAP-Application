@@ -273,6 +273,21 @@ else
   exit 1
 fi
 
+# Audit finding D (2026-09-14) — the pre-build guard-figma-code.sh Block 3 heuristic (createFrame
+# count vs instance/clone count) is confirmed exploitable by cloning the same small component N
+# times to offset N unnamed hand-drawn frames (see guard-figma-code.sh's own documented-limitation
+# comment on Block 3 — deliberately NOT fixed there, since the only static fix tried also breaks
+# the documented/encouraged "clone one real table row N times" pattern). This asserts the actual
+# safety net: the POST-build reality gate still catches the exact same bypass, because it inspects
+# real built node names, not code-level call counts. If this ever starts passing, the defense-in-
+# depth claim in guard-figma-code.sh's comment is false and needs re-investigating.
+if node build/verify-invariants.js test-fixtures/invariants/clone-count-bypass-caught-postbuild.json --pre-bind >/dev/null 2>&1; then
+  echo -e "${RED}verify-invariants.js PASSED the clone-count-bypass fixture — the documented post-build safety net for guard-figma-code.sh's Block 3 gap is broken${NC}"
+  exit 1
+else
+  echo "  ✓ a build that bypasses guard-figma-code.sh's clone-count heuristic (D) still FAILS post-build (INV 1) — the safety net holds"
+fi
+
 # ── Provenance-aware verification (AUDIT-V2 §8.4 P11) ──────────────────────────────────
 # The default build path is CLONE-FIRST (RULE 28), but INV 1's allowlist and INV 3's
 # [typo:role] convention were written for from-scratch builds. Measured on the live

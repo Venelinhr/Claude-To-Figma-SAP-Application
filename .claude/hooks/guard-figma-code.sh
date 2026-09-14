@@ -86,6 +86,24 @@ fi
 # kit instances (many). More frames than instances means table rows / cells / fields / badges
 # were drawn by hand.
 #
+# KNOWN LIMITATION (audit finding D, 2026-09-14, investigated not just flagged): this is a
+# RAW CALL COUNT, not real coverage. Confirmed exploitable: code that clones the SAME small
+# component N times (e.g. `for (...) { const x = icon.clone(); ... }`) inflates INST by N,
+# which can outnumber N unnamed/unrecognized createFrame() calls that are the actual hand-drawn
+# screen skeleton — tested directly, this passes Block 3 with exit 0.
+# NOT FIXED HERE, on purpose: the obvious static fix (flag repeated .clone() of the same source
+# variable as suspicious) was tested against this exact bypass AND against
+# skill/references/figma-build-patterns.md's own documented, ENCOURAGED pattern ("Duplicate
+# rows, don't regenerate" — clone one real row N times to build a table) and cannot tell them
+# apart from code text alone: both are "the same variable .clone()'d in a loop". A fix here
+# needs real post-build subtree size, not a pre-build grep, and forcing a static heuristic would
+# either miss the bypass or break correct 20-row-table code — worse than the status quo.
+# WHY THIS IS NOT A SILENT-FAILURE RISK: verified directly — a dump matching this exact bypass
+# (real clones + unnamed FRAME siblings) is caught by verify-invariants.js INV 1 (FAIL_FAKE_COMPONENT
+# on the unrecognized-name frames, since it inspects the real built tree, not code call counts),
+# and lint-on-stop.sh (Gate 7) hard-blocks hand-off unless that check's overallPass:true. The
+# bypass costs a wasted pre-build pass (caught later than it could be), never a shipped bad screen.
+#
 # ORIGINAL DESIGN (retired): a free-text `// layout-only: N` comment was subtracted from the
 # frame count, self-declared by the same agent being gated. AUDIT-V2 2026-09-02: an agent wrote
 # `// layout-only: 120` when the code had only 7 real createFrame() calls, unconditionally
