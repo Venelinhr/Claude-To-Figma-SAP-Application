@@ -63,6 +63,7 @@ semantic-models/project-knowledge-*.md
 .claude/.bridge-token
 .claude/.manifest-sync-ok
 .claude/.reference-selected
+.claude/.registry-freshness-notified
 
 # Bridge runtime artifacts (source is committed; these are local/secret)
 bridge/*.bak.*

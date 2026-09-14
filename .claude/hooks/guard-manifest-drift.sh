@@ -56,4 +56,15 @@ fi
 # Passed — cache the current input signature so the next build skips the scan.
 echo "$CUR" > "$CACHE" 2>/dev/null
 
+# Advisory-only staleness note (2026-09-14, audit finding F): the registry has no mechanical
+# freshness check anywhere in the build path, so silent drift vs. the live (daily-changing) SAP
+# kit accumulates undetected. This never blocks — it only runs on a cache-MISS (i.e. same
+# frequency as the drift scan above, not every build) and only prints once per session via its
+# own cache file, so it costs nothing on the hot path.
+FRESH_CACHE="$PROJ/.claude/.registry-freshness-notified"
+if [ ! -f "$FRESH_CACHE" ]; then
+  node build/check-registry-freshness.js 2>/dev/null >&2
+  touch "$FRESH_CACHE" 2>/dev/null
+fi
+
 exit 0
