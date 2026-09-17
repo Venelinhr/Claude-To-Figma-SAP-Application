@@ -1,0 +1,6 @@
+{ "id":"4:1","name":"Table Row","type":"FRAME","visible":true,"layoutMode":"HORIZONTAL","childCount":1,
+  "children":[
+    { "id":"4:2","name":"Row Divider [sapList_BorderColor]","type":"FRAME","visible":true,"layoutMode":"NONE",
+      "fills":[],
+      "strokes":[{"type":"SOLID","hex":"#E5E5E5","boundVariable":"sapList_BorderColor"}] }
+  ] }

@@ -1,0 +1,6 @@
+{ "id":"3:1","name":"Table Row","type":"FRAME","visible":true,"layoutMode":"HORIZONTAL","childCount":1,
+  "children":[
+    { "id":"3:2","name":"Row Divider","type":"FRAME","visible":true,"layoutMode":"NONE",
+      "fills":[],
+      "strokes":[{"type":"SOLID","hex":"#E5E5E5","boundVariable":null}] }
+  ] }

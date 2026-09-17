@@ -115,6 +115,8 @@ Real instances only. Layout containers (DynamicPage, Column, ObjectPageLayout, F
 | CheckBox | `23b4a2ca030e4bd2ff3bdd5b97b70f646ec09071` | |
 | RadioButton | `9308f27ef27fbb28bc7d167c52494aa41a21610f` | |
 | DatePicker | `ad1f84e6293671f80ff8dd174b1da0cbacf0fa48` | |
+| SideNavigation | `d680af6d72f9421fe3f8712bf0ce171308963d3a` | variants: `Form Factor=Compact, Type=Expanded/Collapsed/Floating` |
+| NavigationItem | `9d0734a384e9b67475e7b5a357e8c32070a7c2ca` | variants: `Form Factor=Compact, Type=Navigation Item/Child Item, Selected=True/False` |
 | Label | `b38ac753648ad298c1e2dd02d71417566dd6095c` | Title = alias |
 | Link | `2e67b5399e9f05950c6f6ea6f244a1a9736c8a56` | |
 | Table | `03ea321822c4e99c27de4d9c2524bdec9c6e0972` | ResponsiveTable = alias |
@@ -289,6 +291,30 @@ Explicit stroke tag: `[stroke:sapTokenName]` when a border needs a different tok
 - **Icons:** drop a 16×16 placeholder frame named `◆ICON/<icon-name>` (e.g. `◆ICON/filter`, `◆ICON/sort`, `◆ICON/sys-enter-2`). The agent NEVER swaps icons and NEVER reads icon keys — the plugin's **Bind** button imports + swaps them.
 - **Root frame:** `◆SAP-UNBOUND/<ScreenName>` (L1). Position x ≥ 15000 (isolated) OR below existing content — never overlapping.
 - **DEMO pill:** small purple pill top-left of the section.
+
+## §7 — ⛔ BANNED JS PATTERNS (each causes a full retry ~5k tokens)
+
+| Banned | Replacement |
+|---|---|
+| `node.strokeDashes = [...]` | Remove — property does not exist on FRAME nodes |
+| `node.primaryAxisSizingMode = 'FILL'` | Invalid enum — only `'AUTO'` and `'FIXED'` are valid |
+| `node.layoutSizingHorizontal = 'FILL'` BEFORE appendChild | Always appendChild FIRST, then set FILL |
+| `figma.importNodeByKeyAsync(...)` | Does not exist — use `importComponentSetByKeyAsync` |
+| `node.strokeRightWeight` without `node.strokeWeight = 0` first | Set `strokeWeight = 0` before individual side weights |
+
+## §8 — Pre-build key probe (MANDATORY for any screen with ≥4 components)
+
+Run this as the FIRST `use_figma` call. Costs ~300 tokens. Saves a full retry (~5k) on any stale key.
+
+```js
+const keys = { ShellBar: '169c...', SideNav: 'd680...', Button: '9180...'/*, ...all needed */ };
+const results = await Promise.allSettled(Object.entries(keys).map(([n,k]) =>
+  figma.importComponentSetByKeyAsync(k).then(cs => ({name:n, csName:cs.name}))
+));
+const failed = results.filter(r=>r.status==='rejected').map((_,i)=>Object.keys(keys)[i]);
+return { ok: failed.length===0, failed };
+```
+If `failed.length > 0` → STOP. grep `SAP-COMPONENT-REGISTRY.md` for the component name → get fresh key → THEN build.
 
 | Layer | Name tag | Example |
 |---|---|---|

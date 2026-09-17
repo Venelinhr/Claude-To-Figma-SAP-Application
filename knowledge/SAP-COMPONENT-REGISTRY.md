@@ -304,8 +304,8 @@ Clone source: node 727:42563 in file p7zm5EMBk5DRRZdxNeJ4f5.
 | ⿻ Tabs Filter Compact | SLOT | `⿻ Tabs Filter Tabs, Non Semantic, Compact#426762:184` |
 
 ### SideNavigation
-**Key:** `a2c4e73b0d9f817f6e3b4a26f8d9e4c7b2a1c308`
-> Clone from node 701:119633 (p7zm5EMBk5DRRZdxNeJ4f5) — slot injection method
+⛔ DEAD KEY (404) — do not use: `a2c4e73b0d9f817f6e3b4a26f8d9e4c7b2a1c308`
+> Use manifest §3 live key instead. Clone from node 701:119633 (p7zm5EMBk5DRRZdxNeJ4f5) for slot injection.
 
 ### Panel
 **Key:** `4d19c2a24896033fe5b04bcc5dfdf43e9626283d`
