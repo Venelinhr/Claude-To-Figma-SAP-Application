@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "sap-design-cf-live": {
+      "type": "http",
+      "url": "https://sap-design-mcp.cfapps.us10-001.hana.ondemand.com/mcp"
+    }
+  }
+}

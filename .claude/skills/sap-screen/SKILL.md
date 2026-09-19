@@ -179,6 +179,12 @@ Every component must have a key below. **Trust these keys — they are harvested
 > "succeeds", the property never changes, and the screenshot looks unchanged — indistinguishable
 > from a rendering delay. Guessing burns turns you will not get back.
 >
+> **0 — Before resolving the key, confirm the variant/property itself is still current.** The
+> table below was harvested on 2026-07-21 and can drift. Per `docs/TIER-FALLBACK.md`, check
+> `mcp__sap-design-cf-live__get_design_spec(name)` alongside this table — if they disagree
+> (a property renamed, an option added/removed), the live server wins; surface the disagreement
+> before using the table's value, don't silently prefer the harvested one because it's local.
+>
 > **1 — Resolve the key from the table below, or derive it at runtime. Never type a bare name.**
 > ```js
 > // Derive the hashed key instead of hardcoding it (this is what builder.ts already does):

@@ -38,7 +38,7 @@ Detect and list, with node IDs:
 - IconTabBar tabs showing placeholder "Tab Text" (or wrong/missing active state)
 - Any heading/title text still showing generic placeholder copy ("Page Title", default component text) — root cause is usually a property-set/sublayer-read ordering bug (docs/REPAIR-PATTERNS.md P-001/P-023): `setProperties` on an instance can invalidate its own sublayer references, so a text-injection step that ran AFTER a variant-property change can silently find nothing and do nothing. Fix by re-locating the text node fresh (after the property change, not before) and setting it directly — don't assume the component is broken.
 - Action groups with >1 Emphasized button
-- Any component whose variant clearly didn't apply (e.g. a Button that should be a non-Primary type but renders Primary, an ObjectStatus that should be colored but renders as default Information/blue) — verify the REAL variant property name and options live on that instance (never assume UI5 vocabulary: Button uses `Type` with Primary/Secondary/Accept/Reject/Attention/Tertiary, no "Emphasized"/"Transparent"; ObjectStatus uses `Semantic`, not `State`) before concluding it's unfixable
+- Any component whose variant clearly didn't apply (e.g. a Button that should be a non-Primary type but renders Primary, an ObjectStatus that should be colored but renders as default Information/blue) — **before concluding it's unfixable, check `docs/TIER-FALLBACK.md`'s live+legacy routine**: call `mcp__sap-design-cf-live__get_design_spec(name)` to get the REAL variant property name/options, and cross-check `knowledge/sources/figma/_drift.json`-equivalent (`get_component_hub(name)`'s `conflicts[]`) in case this exact mismatch is already a known, recorded drift entry rather than a fresh bug (never assume UI5 vocabulary: Button uses `Type` with Primary/Secondary/Accept/Reject/Attention/Tertiary, no "Emphasized"/"Transparent"; ObjectStatus uses `Semantic`, not `State`)
 - Generic layer names ("Frame", "Group", "Rectangle")
 - Native frames standing in for SAP components (Card, Table, Breadcrumb, Header) — REPORT only, do not auto-replace structure unless asked
 
@@ -74,5 +74,7 @@ Real SAP instances only · [typo:role] on every text (never raw 72) · [sapToken
 (never raw hex) · no NEW Divider frames on fresh builds — strokes instead (cloned canonicals
 keep theirs) · Compact default (never Cozy for a11y) · two-line stacked text CENTER · 32px
 padding · Tertiary action icons · L1–L5 naming · Horizon Light · never guess a variant
-property name/value — read it live off the instance · end with a validated node URL + Bind
-reminder.
+property name/value — follow `docs/TIER-FALLBACK.md` (live server confirms, legacy runs in
+parallel, live wins on disagreement) · a component with an unresolved live-vs-legacy drift
+entry blocks the fix from using it until the live spec is consulted · end with a validated
+node URL + Bind reminder.

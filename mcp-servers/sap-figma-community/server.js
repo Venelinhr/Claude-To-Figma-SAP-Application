@@ -49,8 +49,14 @@ const __dirname = dirname(__filename);
 const REGISTRY_DIR = resolve(__dirname, '..', '..', 'knowledge', 'components', 'registry');
 const SYNC_STATE_FILE = resolve(__dirname, '.sync-state.json');
 
-// Known SAP Web UI Kit Figma Community file ID — the canonical source
-const SAP_FIGMA_FILE_ID = 'p7zm5EMBk5DRRZdxNeJ4f5';
+// Known SAP Web UI Kit Figma Community file ID — the canonical source.
+// Corrected 2026-09-19: this used to be 'p7zm5EMBk5DRRZdxNeJ4f5', which
+// disagreed with RULE 23 (CLAUDE.md) and every build-gating spot
+// (build/verify-invariants.js KIT_KEY, build/native-frame-allowlist.json
+// kitFileKey). Confirmed correct against the live SAP knowledge server's own
+// Figma adapter (sap-design-cf-live / figma-adapter.js FILE_KEY), which
+// independently hardcodes this same ID as the SAP Web UI Kit.
+const SAP_FIGMA_FILE_ID = 'SILcWzK5uFghKun9jx6D7c';
 
 // Staleness threshold — entries older than this are "stale"
 const STALENESS_DAYS = 30;
