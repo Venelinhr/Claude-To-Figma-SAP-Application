@@ -108,6 +108,20 @@ Open Claude Code in this project folder and describe what you want to build:
 Attach a screenshot or wireframe as reference if you have one. Claude analyses it, shows you an ASCII wireframe for approval, then builds the screen directly in Figma. Select the frame, run **Bind SAP Tokens** in the plugin — done.
 
 
+### Already installed? How to update
+
+`./install.sh` only runs once, on demand — nothing here auto-updates. To pick up new fixes:
+
+```bash
+cd Claude-To-Figma-SAP-Application
+git pull
+```
+
+That's enough for most changes (skill files, docs, hooks, registry data). Only re-run `./install.sh` if the update notes mention a **new or changed MCP server** — otherwise re-running it is unnecessary (it's safe either way, just redundant).
+
+If you loaded `plugin/figma-builder` into Figma (Step 3 above), Figma reads it live from your local repo folder — after `git pull`, just reopen the plugin in Figma and it picks up the change automatically, no re-import needed.
+
+
 ## How It Works — the full pipeline
 
 ```
