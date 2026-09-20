@@ -59,6 +59,11 @@ The installer adds a placeholder automatically. Replace it with your real token:
 
 ### Step 3 — Load the Figma plugin
 
+> ⚠️ **This plugin does not build SAP components.** It only binds design tokens onto a
+> screen Claude already built with `use_figma`. If you run it first — before Claude builds
+> anything — you will get plain shapes, not real SAP components, even with the SAP Web UI
+> Kit linked as a library. Do Step 6 (build with Claude) before you click **Bind SAP Tokens**.
+
 The plugin connects Claude's output to real SAP design tokens. After Claude builds the screen, you run the plugin once to bind live SAP variables, swap icons, and apply text styles.
 
 **Download and run the plugin locally:**

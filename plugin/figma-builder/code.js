@@ -1356,7 +1356,14 @@ async function bindMcpFrames(targetFrameId, options) {
   var targets = discoverMcpFrames(targetFrameId);
   if (targets.length === 0) {
     figma.ui.postMessage({ type: 'error', text:
-      'No frames to bind. Select an MCP-built frame, or name its root ' + MCP_UNBOUND_PREFIX + '<screen>.' });
+      'No frames to bind — this plugin does NOT build screens.\n\n' +
+      'This plugin only binds SAP tokens/icons onto frames that Claude Code already built ' +
+      'via the use_figma MCP tool. It does not create real SAP Web UI Kit component instances itself — ' +
+      'having the SAP Web UI Kit linked as a library here does not change that.\n\n' +
+      'To build a real SAP screen: use Claude Code with this repo\'s /sap-screen skill ' +
+      '(README.md → "How to Run the Skill"), THEN come back here and click Bind.\n\n' +
+      'If you already built with Claude Code, select the built frame here, or name its root ' +
+      MCP_UNBOUND_PREFIX + '<screen>, then try again.' });
     return;
   }
 
