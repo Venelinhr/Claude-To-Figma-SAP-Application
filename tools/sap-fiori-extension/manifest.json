@@ -1,27 +1,18 @@
 {
   "manifest_version": 3,
-  "name": "SAP Fiori → LLM",
-  "version": "1.0.0",
-  "description": "Extract structured SAP Fiori guidelines from any spec page — single click to clipboard or bulk download for 400+ pages.",
-  "permissions": ["activeTab", "scripting", "downloads", "clipboardWrite"],
-  "host_permissions": [
-    "https://www.sap.com/design-system/fiori-design-web/*",
-    "https://experience.sap.com/fiori-design-web/*"
-  ],
+  "name": "Copy Page → LLM",
+  "version": "2.0.0",
+  "description": "One-click copy any page as Markdown for Claude — works on any website. SAP Fiori pages get rich structured extraction (guidelines, API reference, samples).",
+  "permissions": ["clipboardWrite"],
+  "host_permissions": ["<all_urls>"],
   "content_scripts": [
     {
-      "matches": [
-        "https://www.sap.com/design-system/fiori-design-web/*",
-        "https://experience.sap.com/fiori-design-web/*"
-      ],
+      "matches": ["<all_urls>"],
       "js": ["content.js"],
+      "css": ["chip.css"],
       "run_at": "document_idle"
     }
   ],
-  "action": {
-    "default_popup": "popup.html",
-    "default_title": "SAP Fiori → LLM"
-  },
   "icons": {
     "16":  "icons/icon16.png",
     "48":  "icons/icon48.png",

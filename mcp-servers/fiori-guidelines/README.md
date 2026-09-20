@@ -2,7 +2,9 @@
 
 **MCP server exposing the local SAP Fiori Design Guidelines cache as runnable tools.**
 
-Wraps the JSON cache at `knowledge/guidelines/*.json` (28 Group A components) and exposes 5 tools via stdio MCP transport.
+Wraps the JSON cache at `knowledge/guidelines/*.json` and exposes 5 tools via stdio MCP transport.
+The server loads whatever `*.json` files exist in that directory at startup (no hardcoded count),
+so this count reflects disk state, not server logic — verify with `listComponents` if in doubt.
 
 ---
 
@@ -10,7 +12,7 @@ Wraps the JSON cache at `knowledge/guidelines/*.json` (28 Group A components) an
 
 - **Installed**: ✓ Registered with Claude Code as `sap-fiori-guidelines`
 - **Connected**: ✓ Health check passes
-- **Cache**: 28/28 Group A components loaded
+- **Cache**: 154 components loaded (verified 2026-09-14; was stale at "28/28 Group A" since 2026-06-25 — the cache grew well past the original Group A launch set)
 - **Tools**: 5 exposed
 
 ## Tools
@@ -21,7 +23,7 @@ Wraps the JSON cache at `knowledge/guidelines/*.json` (28 Group A components) an
 | `refreshGuideline` | `{ componentName }` | Instructions for re-fetching from SAP source |
 | `searchGuidelines` | `{ query }` | Top 10 fuzzy matches across all entries (ranked) |
 | `getPattern` | `{ patternName }` | All components participating in a UX pattern |
-| `listComponents` | `{}` | All 28 cached component names + last-checked dates |
+| `listComponents` | `{}` | All cached component names (154 as of 2026-09-14) + last-checked dates |
 
 ## Architecture
 
@@ -38,7 +40,7 @@ mcp-servers/fiori-guidelines/
 ├── Button.json        — guideline cache (one per component)
 ├── IconTabBar.json
 ├── Input.json
-└── …28 total Group A entries
+└── …154 total entries (2026-09-14)
 ```
 
 ## How it works

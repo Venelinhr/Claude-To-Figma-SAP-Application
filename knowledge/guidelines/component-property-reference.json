@@ -2,12 +2,12 @@
   "_meta": {
     "description": "Single lookup table: component → variant properties + allowed values + defaults. Generated from knowledge/components/registry/*.json. Do NOT edit manually — re-run generate-property-reference.js.",
     "source": "knowledge/components/registry/*.json",
-    "generated": "2026-09-02",
+    "generated": "2026-09-20",
     "components": 152
   },
   "AIButton": {
     "figmaComponentId": "6d9a69eec5a716375ccd5e7272c6193dbe8718ce",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Button",
     "variantProperties": {
       "Form Factor": {
@@ -42,7 +42,7 @@
   },
   "AIInput": {
     "figmaComponentId": "0098668d77c18b019e726dc9cce843cee360c4d5",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Input",
     "variantProperties": {
       "Form Factor": {
@@ -70,7 +70,7 @@
   },
   "AIMenuButton": {
     "figmaComponentId": "af7726506b902ae0a80daa2950f890d6b4c275c6",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Button",
     "variantProperties": {
       "Form Factor": {
@@ -95,7 +95,7 @@
   },
   "AIPromptInput": {
     "figmaComponentId": "73c83eecc6edcaf572bca3c411b7345a5d398b3c",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Input",
     "variantProperties": {
       "Form Factor": {
@@ -127,7 +127,7 @@
   },
   "AIRichTextEditor": {
     "figmaComponentId": "259171690780bc94b6900bc4975d6bb81d5a089f",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Input",
     "variantProperties": {
       "Form Factor": {
@@ -158,7 +158,7 @@
   },
   "AISplitMenuButton": {
     "figmaComponentId": "3eedca60790fbfc4a87e2cc2aaf9a7774c68b6ca",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Button",
     "variantProperties": {
       "Form Factor": {
@@ -183,7 +183,7 @@
   },
   "AITextArea": {
     "figmaComponentId": "b5bb525824429489a2f6e5657e91240a605014a8",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Input",
     "variantProperties": {
       "Form Factor": {
@@ -215,7 +215,7 @@
   },
   "ActionListItem": {
     "figmaComponentId": "063b8ffd9f963d3cf574092e4dd53809ecb3a5ee",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "List Item",
     "variantProperties": {
       "Form Factor": {
@@ -253,7 +253,7 @@
   },
   "AddDimensions": {
     "figmaComponentId": "c3564e4ca303313fb07aaac5da07480c871c97d1",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "EmptyState",
     "variantProperties": {
       "Form Factor": {
@@ -285,7 +285,7 @@
   },
   "AddPeopleToCalendar": {
     "figmaComponentId": "26306cac62e9ba9937807b7ab8cbcedf0bec3e65",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "EmptyState",
     "variantProperties": {
       "Form Factor": {
@@ -317,7 +317,7 @@
   },
   "App": {
     "figmaComponentId": null,
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Layout",
     "textProperties": [
       "width",
@@ -336,7 +336,7 @@
   },
   "Avatar": {
     "figmaComponentId": "71a3389ecbd47822b3184700766e30963fc2f220",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Display",
     "variantProperties": {
       "Form Factor": {
@@ -386,7 +386,7 @@
   },
   "AvatarGroup": {
     "figmaComponentId": "composed:Avatar[]",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Object Display",
     "variantProperties": {
       "Form Factor": {
@@ -424,7 +424,7 @@
   },
   "Banner": {
     "figmaComponentId": "64034a60b543539b407e8534b05454add9a49baf",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Container",
     "variantProperties": {
       "Form Factor": {
@@ -456,7 +456,7 @@
   },
   "Bar": {
     "figmaComponentId": "d4560b56c7b5aa9476e6b23bfaf869166b7fff47",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Layout",
     "variantProperties": {
       "Form Factor": {
@@ -507,7 +507,7 @@
   },
   "Breadcrumb": {
     "figmaComponentId": "5743166bac11fdf110a54fd7d85436fed186d3b2",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Navigation",
     "variantProperties": {
       "Type": {
@@ -553,7 +553,7 @@
   },
   "Breadcrumbs": {
     "figmaComponentId": "alias:Breadcrumb",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Navigation",
     "textProperties": [
       "currentLocationText"
@@ -583,7 +583,7 @@
   },
   "BusyDialog": {
     "figmaComponentId": "alias:Dialog",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Feedback",
     "variantProperties": {
       "Form Factor": {
@@ -621,7 +621,7 @@
   },
   "BusyIndicator": {
     "figmaComponentId": "e328630d6c564d1f312256254e0543d41bacbb84",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Feedback",
     "variantProperties": {
       "Form Factor": {
@@ -661,7 +661,7 @@
   },
   "Button": {
     "figmaComponentId": "91805fa199b1fd247d76a9c08bbe0982b49065c4",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Button",
     "variantProperties": {
       "Type": {
@@ -718,7 +718,7 @@
   },
   "Calendar": {
     "figmaComponentId": "16743cba69c57792417e8f6b51d347cc29bd2d95",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "DatePicker",
     "variantProperties": {
       "Form Factor": {
@@ -789,7 +789,7 @@
   },
   "Card": {
     "figmaComponentId": "76fbadb97db272943b14aff18ee5809d0360795f",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Container",
     "variantProperties": {
       "Form Factor": {
@@ -827,7 +827,7 @@
   },
   "Carousel": {
     "figmaComponentId": "bf174ffb841e4b27947d0be558656bb80238fe0d",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Container",
     "variantProperties": {
       "Form Factor": {
@@ -865,7 +865,7 @@
   },
   "CheckBox": {
     "figmaComponentId": "23b4a2ca030e4bd2ff3bdd5b97b70f646ec09071",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Selection",
     "variantProperties": {
       "Form Factor": {
@@ -925,7 +925,7 @@
   },
   "Column": {
     "figmaComponentId": null,
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Table",
     "textProperties": [
       "width"
@@ -952,7 +952,7 @@
   },
   "ColumnListItem": {
     "figmaComponentId": null,
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Table",
     "variantProperties": {
       "Form Factor": {
@@ -997,7 +997,7 @@
   },
   "ComboBox": {
     "figmaComponentId": "alias:Select",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Input",
     "variantProperties": {
       "Form Factor": {
@@ -1060,7 +1060,7 @@
   },
   "DatePicker": {
     "figmaComponentId": "ad1f84e6293671f80ff8dd174b1da0cbacf0fa48",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Input",
     "variantProperties": {
       "Form Factor": {
@@ -1116,7 +1116,7 @@
   },
   "DateRangePicker": {
     "figmaComponentId": "ad1f84e6293671f80ff8dd174b1da0cbacf0fa48",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Input",
     "variantProperties": {
       "Form Factor": {
@@ -1158,7 +1158,7 @@
   },
   "DateTimePicker": {
     "figmaComponentId": "377d76d309f4e5ee7e12132eba0df4e29686a4f7",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Input",
     "variantProperties": {
       "Form Factor": {
@@ -1200,7 +1200,7 @@
   },
   "Dialog": {
     "figmaComponentId": "5b965b1eda133ac521b42fa20b201e9491f4bf83",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Overlay",
     "variantProperties": {
       "Form Factor": {
@@ -1258,7 +1258,7 @@
   },
   "DropDown": {
     "figmaComponentId": "d74d4ae8eb549d3cc54b7d345e3b17f90c543817",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Input",
     "variantProperties": {
       "Form Factor": {
@@ -1286,7 +1286,7 @@
   },
   "DynamicPage": {
     "figmaComponentId": null,
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Page",
     "textProperties": [
       "title"
@@ -1315,7 +1315,7 @@
   },
   "DynamicPageHeader": {
     "figmaComponentId": "dc90c8dbf7714f165ed79357e9ba6ade5b3701ae",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Page",
     "otherProperties": [
       {
@@ -1338,7 +1338,7 @@
   },
   "DynamicPageTitle": {
     "figmaComponentId": null,
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Page",
     "otherProperties": [
       {
@@ -1370,7 +1370,7 @@
   },
   "DynamicSideContent": {
     "figmaComponentId": null,
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Layout",
     "variantProperties": {
       "Form Factor": {
@@ -1430,7 +1430,7 @@
   },
   "EmptyPlanningCalendar": {
     "figmaComponentId": "ac477531c451a7b1f76d1df712c92aa7e6d75868",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "EmptyState",
     "variantProperties": {
       "Form Factor": {
@@ -1462,7 +1462,7 @@
   },
   "FeedInput": {
     "figmaComponentId": "f1d392d8546edf20ef209cd39cb624ac7bd6b482",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Input",
     "variantProperties": {
       "Form Factor": {
@@ -1500,7 +1500,7 @@
   },
   "FeedListItem": {
     "figmaComponentId": "composed:ListItem+Avatar",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "List Item",
     "variantProperties": {
       "Form Factor": {
@@ -1538,7 +1538,7 @@
   },
   "FileUploader": {
     "figmaComponentId": "b7532a6da2cb7677348b5d4bbb81952c9224e984",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Input",
     "variantProperties": {
       "Form Factor": {
@@ -1582,7 +1582,7 @@
   },
   "FilterBar": {
     "figmaComponentId": null,
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Container",
     "booleanProperties": [
       "showFilterConfiguration",
@@ -1608,7 +1608,7 @@
   },
   "FlexBox": {
     "figmaComponentId": null,
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Layout",
     "textProperties": [
       "width",
@@ -1627,7 +1627,7 @@
   },
   "FlexibleColumnLayout": {
     "figmaComponentId": null,
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Layout",
     "otherProperties": [
       {
@@ -1664,7 +1664,7 @@
   },
   "Footer": {
     "figmaComponentId": "e563bc3291a07a5eb4d97b2083355cc54023c377",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Layout",
     "variantProperties": {
       "Form Factor": {
@@ -1692,7 +1692,7 @@
   },
   "Form": {
     "figmaComponentId": "6603eb3ebde2c1c763f2ae450df2cbb799ba640d",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Form",
     "variantProperties": {
       "Form Factor": {
@@ -1730,7 +1730,7 @@
   },
   "FormContainer": {
     "figmaComponentId": "alias:Form",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Forms",
     "variantProperties": {
       "Form Factor": {
@@ -1768,7 +1768,7 @@
   },
   "FormElement": {
     "figmaComponentId": "alias:Form",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Forms",
     "variantProperties": {
       "Form Factor": {
@@ -1806,7 +1806,7 @@
   },
   "FormattedText": {
     "figmaComponentId": "alias:Text",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Typography",
     "variantProperties": {
       "Form Factor": {
@@ -1844,7 +1844,7 @@
   },
   "GenericTag": {
     "figmaComponentId": "alias:Tag",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Display",
     "variantProperties": {
       "Design": {
@@ -1912,7 +1912,7 @@
   },
   "GroupHeaderListItem": {
     "figmaComponentId": "composed:ListItem-header",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "List Item",
     "variantProperties": {
       "Form Factor": {
@@ -1950,7 +1950,7 @@
   },
   "GroupingColumns": {
     "figmaComponentId": "1286a1119579e51cf54a9cd47c0e9d62d9d7bd05",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "EmptyState",
     "variantProperties": {
       "Form Factor": {
@@ -1982,7 +1982,7 @@
   },
   "HBox": {
     "figmaComponentId": null,
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Layout",
     "textProperties": [
       "width",
@@ -2001,7 +2001,7 @@
   },
   "HomepageHeroBanner": {
     "figmaComponentId": "6b540d39a63d837e652b82675136e991ebdd0192",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Container",
     "variantProperties": {
       "Form Factor": {
@@ -2027,7 +2027,7 @@
   },
   "IconButton": {
     "figmaComponentId": "c1ee1ca76974c720ecd4b1888e1e23ac8a36ec63",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Button",
     "variantProperties": {
       "Form Factor": {
@@ -2088,7 +2088,7 @@
   },
   "IconMenuButton": {
     "figmaComponentId": "c455c46ed2cea345c534193c1598e5459aaadd11",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Button",
     "variantProperties": {
       "Form Factor": {
@@ -2123,7 +2123,7 @@
   },
   "IconSplitButton": {
     "figmaComponentId": "9afdf08f8ae226b175d0a3be79f24454d4b12928",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Button",
     "variantProperties": {
       "Form Factor": {
@@ -2155,7 +2155,7 @@
   },
   "IconTabBar": {
     "figmaComponentId": "4aafcbf55528c439876b314d155438884b614722",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Navigation",
     "variantProperties": {
       "Form Factor": {
@@ -2214,7 +2214,7 @@
   },
   "IconTabFilter": {
     "figmaComponentId": null,
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Navigation",
     "variantProperties": {
       "Selected": {
@@ -2264,7 +2264,7 @@
   },
   "IconTabHeader": {
     "figmaComponentId": "alias:IconTabBar",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Navigation",
     "variantProperties": {
       "Form Factor": {
@@ -2302,7 +2302,7 @@
   },
   "IconTabSeparator": {
     "figmaComponentId": "a4bdf360217f604b116f179144b02ef74dee7dca",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Navigation",
     "variantProperties": {
       "Form Factor": {
@@ -2340,7 +2340,7 @@
   },
   "IllustratedMessage": {
     "figmaComponentId": "eba579505df21536654910797f94b3784248807b",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Feedback",
     "variantProperties": {
       "Form Factor": {
@@ -2378,7 +2378,7 @@
   },
   "Image": {
     "figmaComponentId": null,
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Display",
     "variantProperties": {
       "Mode": {
@@ -2414,7 +2414,7 @@
   },
   "InfoLabel": {
     "figmaComponentId": "alias:Tag",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Display",
     "variantProperties": {
       "ColorScheme": {
@@ -2475,7 +2475,7 @@
   },
   "Input": {
     "figmaComponentId": "0f4366cb3065919e8f3deb0462f1a5a3633d6b50",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Input",
     "variantProperties": {
       "Form Factor": {
@@ -2542,7 +2542,7 @@
   },
   "InputListItem": {
     "figmaComponentId": "composed:ListItem+Input",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "List Item",
     "variantProperties": {
       "Form Factor": {
@@ -2580,7 +2580,7 @@
   },
   "InputMessagePopover": {
     "figmaComponentId": "1acdc092cfb399b0c33d1d6484c77ae58fe75242",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Feedback",
     "variantProperties": {
       "Form Factor": {
@@ -2613,7 +2613,7 @@
   },
   "Item": {
     "figmaComponentId": null,
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "ListItem",
     "textProperties": [
       "key",
@@ -2635,7 +2635,7 @@
   },
   "Label": {
     "figmaComponentId": "b38ac753648ad298c1e2dd02d71417566dd6095c",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Typography",
     "variantProperties": {
       "Form Factor": {
@@ -2678,7 +2678,7 @@
   },
   "Legend": {
     "figmaComponentId": "f63dd9489c7cec0c2af11da655c58e86cee54771",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Display",
     "variantProperties": {
       "Form Factor": {
@@ -2711,7 +2711,7 @@
   },
   "Link": {
     "figmaComponentId": "2e67b5399e9f05950c6f6ea6f244a1a9736c8a56",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Display",
     "variantProperties": {
       "Form Factor": {
@@ -2769,7 +2769,7 @@
   },
   "List": {
     "figmaComponentId": "4fb0a3e2fc56fb58d9904d68eb4ac58b9fb1bd25",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "List",
     "variantProperties": {
       "Form Factor": {
@@ -2818,7 +2818,7 @@
   },
   "ListItem": {
     "figmaComponentId": "f7bc6526a9f16608747a4141800146ebd3f4e835",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "ListItem",
     "variantProperties": {
       "Form Factor": {
@@ -2854,7 +2854,7 @@
   },
   "MaskInput": {
     "figmaComponentId": "alias:MaskedInput",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Input",
     "textProperties": [
       "value",
@@ -2878,7 +2878,7 @@
   },
   "MaskedInput": {
     "figmaComponentId": "alias:Input",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Input",
     "variantProperties": {
       "Form Factor": {
@@ -2916,7 +2916,7 @@
   },
   "Menu": {
     "figmaComponentId": "ba51eb54cba79d6795057e5df5ff853d361ee799",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Popup",
     "variantProperties": {
       "Form Factor": {
@@ -2957,7 +2957,7 @@
   },
   "MenuButton": {
     "figmaComponentId": "1d667088d93c355c2bd9bafac57147286206e799",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Button",
     "variantProperties": {
       "Form Factor": {
@@ -3008,7 +3008,7 @@
   },
   "MenuListItem": {
     "figmaComponentId": "689013924aedb868b8d65be6f249643d45e00a44",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "List Item",
     "variantProperties": {
       "Form Factor": {
@@ -3072,7 +3072,7 @@
   },
   "MessageBox": {
     "figmaComponentId": "alias:Dialog",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Feedback",
     "variantProperties": {
       "Form Factor": {
@@ -3110,7 +3110,7 @@
   },
   "MessagePopover": {
     "figmaComponentId": "alias:Popover",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Feedback",
     "variantProperties": {
       "Form Factor": {
@@ -3148,7 +3148,7 @@
   },
   "MessagePopoverItem": {
     "figmaComponentId": null,
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "ListItem",
     "textProperties": [
       "key",
@@ -3175,7 +3175,7 @@
   },
   "MessageStrip": {
     "figmaComponentId": "f0e77f8888796e35c0e791ddc0b38535eda6ec31",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Feedback",
     "variantProperties": {
       "Type": {
@@ -3235,7 +3235,7 @@
   },
   "MessageToast": {
     "figmaComponentId": "alias:Toast",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Feedback",
     "variantProperties": {
       "Form Factor": {
@@ -3273,7 +3273,7 @@
   },
   "MultiComboBox": {
     "figmaComponentId": "cc0631141a7083096632c6161ee15448ced39ec3",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Input",
     "variantProperties": {
       "Form Factor": {
@@ -3330,7 +3330,7 @@
   },
   "MultiInput": {
     "figmaComponentId": "1dac6b2be28e60c6ff7a5752182d97f5033d3fc8",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Input",
     "variantProperties": {
       "Form Factor": {
@@ -3385,8 +3385,8 @@
     }
   },
   "NavigationItem": {
-    "figmaComponentId": null,
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaComponentId": "9d0734a384e9b67475e7b5a357e8c32070a7c2ca",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Navigation",
     "variantProperties": {
       "Type": {
@@ -3435,7 +3435,7 @@
   },
   "NoNotifications": {
     "figmaComponentId": "10a5a1ec70cdc2a5979563f9021c49d2363fb6d6",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "EmptyState",
     "variantProperties": {
       "Form Factor": {
@@ -3467,7 +3467,7 @@
   },
   "NotificationBanner": {
     "figmaComponentId": "aa8ef403a7c765acf86d2e6fc887a6cb496a3371",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Feedback",
     "variantProperties": {
       "Form Factor": {
@@ -3505,7 +3505,7 @@
   },
   "NotificationListItem": {
     "figmaComponentId": "6fe89ae5f6a512bebad2f9737ed134bccac1faed",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Feedback",
     "variantProperties": {
       "Form Factor": {
@@ -3544,7 +3544,7 @@
   },
   "Notifications": {
     "figmaComponentId": "af1b29be8db435ed790d87721cff4d7efe2217bd",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Feedback",
     "variantProperties": {
       "Form Factor": {
@@ -3577,7 +3577,7 @@
   },
   "ObjectAttribute": {
     "figmaComponentId": "080ead216322befe153704bf8f11373158fea34a",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Object Display",
     "variantProperties": {
       "Type": {
@@ -3615,7 +3615,7 @@
   },
   "ObjectHeader": {
     "figmaComponentId": "alias:ObjectPageHeader",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Container",
     "variantProperties": {
       "Form Factor": {
@@ -3672,7 +3672,7 @@
   },
   "ObjectIdentifier": {
     "figmaComponentId": "8e1e45c5a89b540f6ec53542279c7711d4020d81",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Display",
     "variantProperties": {
       "Form Factor": {
@@ -3710,7 +3710,7 @@
   },
   "ObjectListItem": {
     "figmaComponentId": "composed:ObjectIdentifier+ObjectStatus",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "List Item",
     "variantProperties": {
       "Form Factor": {
@@ -3748,7 +3748,7 @@
   },
   "ObjectMarker": {
     "figmaComponentId": "composed:MessageStrip-styled",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Object Display",
     "variantProperties": {
       "Form Factor": {
@@ -3786,7 +3786,7 @@
   },
   "ObjectNumber": {
     "figmaComponentId": "7b67d22ed19f246b708dc4664808a45f314a7414",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Display",
     "variantProperties": {
       "State": {
@@ -3841,7 +3841,7 @@
   },
   "ObjectPageHeader": {
     "figmaComponentId": "alias:DynamicPageHeader",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Page Layout",
     "variantProperties": {
       "Form Factor": {
@@ -3879,7 +3879,7 @@
   },
   "ObjectPageLayout": {
     "figmaComponentId": null,
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Page",
     "booleanProperties": [
       "showFooter",
@@ -3906,7 +3906,7 @@
   },
   "ObjectPageSection": {
     "figmaComponentId": "alias:Panel",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Page Layout",
     "variantProperties": {
       "Form Factor": {
@@ -3944,7 +3944,7 @@
   },
   "ObjectPageSubSection": {
     "figmaComponentId": "alias:Panel",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Page Layout",
     "variantProperties": {
       "Form Factor": {
@@ -3982,7 +3982,7 @@
   },
   "ObjectStatus": {
     "figmaComponentId": "748d609ead5d4a246d7cd7c144b94b518c467e58",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Status",
     "variantProperties": {
       "Semantic": {
@@ -4042,7 +4042,7 @@
   },
   "OverflowToolbar": {
     "figmaComponentId": null,
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Container",
     "variantProperties": {
       "Form Factor": {
@@ -4089,7 +4089,7 @@
   },
   "Page": {
     "figmaComponentId": null,
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Layout",
     "textProperties": [
       "width",
@@ -4108,7 +4108,7 @@
   },
   "Panel": {
     "figmaComponentId": "4d19c2a24896033fe5b04bcc5dfdf43e9626283d",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Container",
     "variantProperties": {
       "Form Factor": {
@@ -4157,7 +4157,7 @@
   },
   "Popover": {
     "figmaComponentId": "5f472d6482ed33c9967694fa411c675e3b214d39",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Overlay",
     "variantProperties": {
       "Form Factor": {
@@ -4195,7 +4195,7 @@
   },
   "ProductSwitch": {
     "figmaComponentId": "22a7c83b19c183e92577ec43dd01eaa188739cd9",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Shell",
     "variantProperties": {
       "Form Factor": {
@@ -4223,7 +4223,7 @@
   },
   "ProgressIndicator": {
     "figmaComponentId": "c355f86d77c4e5a8aa2366b83179896f7d172462",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Feedback",
     "variantProperties": {
       "Form Factor": {
@@ -4261,7 +4261,7 @@
   },
   "ProgressStep": {
     "figmaComponentId": "composed:Wizard-child",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Feedback",
     "variantProperties": {
       "Form Factor": {
@@ -4299,7 +4299,7 @@
   },
   "QuickView": {
     "figmaComponentId": "alias:Popover",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Overlay",
     "variantProperties": {
       "Form Factor": {
@@ -4337,7 +4337,7 @@
   },
   "RadioButton": {
     "figmaComponentId": "9308f27ef27fbb28bc7d167c52494aa41a21610f",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Selection",
     "variantProperties": {
       "Form Factor": {
@@ -4395,7 +4395,7 @@
   },
   "RadioButtonGroup": {
     "figmaComponentId": "composed:RadioButton[]",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Input",
     "variantProperties": {
       "Form Factor": {
@@ -4433,7 +4433,7 @@
   },
   "RangeSlider": {
     "figmaComponentId": "34d973fcb4c85d6517c8e5c3079e2b40d14d0fe8",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Input",
     "variantProperties": {
       "Form Factor": {
@@ -4472,7 +4472,7 @@
   },
   "RatingIndicator": {
     "figmaComponentId": "4e75dd8968be7061ba703e3f5fb4364b558acb04",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Display",
     "variantProperties": {
       "Form Factor": {
@@ -4525,7 +4525,7 @@
   },
   "ResponsiveTable": {
     "figmaComponentId": "alias:Table",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Data Display",
     "variantProperties": {
       "Form Factor": {
@@ -4563,7 +4563,7 @@
   },
   "Scrollbar": {
     "figmaComponentId": "ccf83f17bfdbce52e81e61d775c4eed5d41b2258",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Layout",
     "variantProperties": {
       "Form Factor": {
@@ -4591,7 +4591,7 @@
   },
   "SearchField": {
     "figmaComponentId": "alias:Input",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Input",
     "variantProperties": {
       "Form Factor": {
@@ -4634,7 +4634,7 @@
   },
   "SegmentedButton": {
     "figmaComponentId": "308476a5285b5a132241dc1c118d09ecf8d82273",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Input",
     "variantProperties": {
       "Form Factor": {
@@ -4672,7 +4672,7 @@
   },
   "SegmentedButtonItem": {
     "figmaComponentId": null,
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "ListItem",
     "textProperties": [
       "key",
@@ -4692,7 +4692,7 @@
   },
   "Select": {
     "figmaComponentId": "5ce369ff7fb0cce28984eec8dd9973ccde82facb",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Input",
     "variantProperties": {
       "Form Factor": {
@@ -4748,7 +4748,7 @@
   },
   "ShellBar": {
     "figmaComponentId": "169cfd74c0be329c56b4c79b9404c978ff10cb60",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Shell",
     "variantProperties": {
       "Size": {
@@ -4792,7 +4792,7 @@
   },
   "ShellSearch": {
     "figmaComponentId": "e60b0ec134635c92ca558125083fe11242997e98",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Shell",
     "variantProperties": {
       "Form Factor": {
@@ -4826,7 +4826,7 @@
   },
   "SideNavigation": {
     "figmaComponentId": "d680af6d72f9421fe3f8712bf0ce171308963d3a",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Navigation",
     "variantProperties": {
       "Type": {
@@ -4867,7 +4867,7 @@
   },
   "SimpleForm": {
     "figmaComponentId": "alias:Form",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Forms",
     "variantProperties": {
       "Form Factor": {
@@ -4905,7 +4905,7 @@
   },
   "Slider": {
     "figmaComponentId": "ee3b9995f1484c6d008bbac9dba2bd8a0026c160",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Input",
     "variantProperties": {
       "Form Factor": {
@@ -4947,7 +4947,7 @@
   },
   "SplitButton": {
     "figmaComponentId": "8aba512152f89d81e9c9b804d8da3114b1a83a93",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Button",
     "variantProperties": {
       "Form Factor": {
@@ -5014,7 +5014,7 @@
   },
   "StandardListItem": {
     "figmaComponentId": "f7bc6526a9f16608747a4141800146ebd3f4e835",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "List",
     "variantProperties": {
       "Form Factor": {
@@ -5056,7 +5056,7 @@
   },
   "StepInput": {
     "figmaComponentId": "69f0f7acf68766ac89890d0c119f64bfd50e693a",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Input",
     "variantProperties": {
       "Form Factor": {
@@ -5100,7 +5100,7 @@
   },
   "Switch": {
     "figmaComponentId": "c63509f642cdabbeb8c1878dd125ee006481631c",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Selection",
     "variantProperties": {
       "Form Factor": {
@@ -5155,7 +5155,7 @@
   },
   "Table": {
     "figmaComponentId": "03ea321822c4e99c27de4d9c2524bdec9c6e0972",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Table",
     "variantProperties": {
       "Form Factor": {
@@ -5216,7 +5216,7 @@
   },
   "TableCell": {
     "figmaComponentId": "e717737e98a40a8619e315ca1b4b04646b93b541",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Table",
     "variantProperties": {
       "Form Factor": {
@@ -5247,7 +5247,7 @@
   },
   "Tabs": {
     "figmaComponentId": "32b02147dfb27790749b83fe3c8b6e01975dab4e",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Navigation",
     "variantProperties": {
       "Form Factor": {
@@ -5285,7 +5285,7 @@
   },
   "Tag": {
     "figmaComponentId": "9b55bf702befd73b2e28f800ee4d0033bc0e0e95",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Display",
     "variantProperties": {
       "Color Scheme": {
@@ -5329,7 +5329,7 @@
   },
   "Text": {
     "figmaComponentId": "native:text",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Typography",
     "variantProperties": {
       "Weight": {
@@ -5378,7 +5378,7 @@
   },
   "TextArea": {
     "figmaComponentId": "bee4738dd5e5856a3b88eae341b47376a3269d87",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Input",
     "variantProperties": {
       "Form Factor": {
@@ -5437,7 +5437,7 @@
   },
   "TimePicker": {
     "figmaComponentId": "f07044ee64f4abfc857543051806986d49a54b68",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Input",
     "variantProperties": {
       "Form Factor": {
@@ -5479,7 +5479,7 @@
   },
   "Timeline": {
     "figmaComponentId": "ccfde6024cdc9d35a75755a5c070b062e75d714a",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Data Display",
     "variantProperties": {
       "Form Factor": {
@@ -5517,7 +5517,7 @@
   },
   "TimelineItem": {
     "figmaComponentId": "composed:Timeline-child",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Data Display",
     "variantProperties": {
       "Form Factor": {
@@ -5555,7 +5555,7 @@
   },
   "Title": {
     "figmaComponentId": "alias:Label",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Typography",
     "variantProperties": {
       "Level": {
@@ -5615,7 +5615,7 @@
   },
   "ToggleButton": {
     "figmaComponentId": "2e756084e95280f469617b07a64ea44a0b2415fa",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Button",
     "variantProperties": {
       "Form Factor": {
@@ -5653,7 +5653,7 @@
   },
   "Token": {
     "figmaComponentId": "5664972429518d07040a3cadfa2d5a28cf19b8a7",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Input",
     "variantProperties": {
       "Form Factor": {
@@ -5691,7 +5691,7 @@
   },
   "Tokenizer": {
     "figmaComponentId": "da76d0413ed1f1f40d6f23e7732c9aca0b17ef5b",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Input",
     "variantProperties": {
       "Form Factor": {
@@ -5729,7 +5729,7 @@
   },
   "Toolbar": {
     "figmaComponentId": "58a258bf5813e59cec4dfc684c8cdb2a6ca6721f",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Container",
     "variantProperties": {
       "Style": {
@@ -5778,7 +5778,7 @@
   },
   "ToolbarItems": {
     "figmaComponentId": "ad45e5bf267d83ee320902263db8887f71e97026",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Layout",
     "variantProperties": {
       "Form Factor": {
@@ -5806,7 +5806,7 @@
   },
   "ToolbarSpacer": {
     "figmaComponentId": null,
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Layout",
     "textProperties": [
       "width"
@@ -5824,7 +5824,7 @@
   },
   "Tree": {
     "figmaComponentId": "93fca87e34305e0a8e036acdd51e7cdc870d4e0d",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Data Display",
     "variantProperties": {
       "Form Factor": {
@@ -5862,7 +5862,7 @@
   },
   "TreeItem": {
     "figmaComponentId": "5142305385e26387daddd9af7b58a7da66a9f8fd",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Data Display",
     "variantProperties": {
       "Form Factor": {
@@ -5900,7 +5900,7 @@
   },
   "TwoMonthCalendar": {
     "figmaComponentId": "ad5ce462d34460d73eda13cd7ea3e2677fc27048",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "DatePicker",
     "variantProperties": {
       "Form Factor": {
@@ -5933,7 +5933,7 @@
   },
   "UnableToLoadImage": {
     "figmaComponentId": "2fd55933a857129cecd41af651432c541ce466f5",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "EmptyState",
     "variantProperties": {
       "Form Factor": {
@@ -5965,7 +5965,7 @@
   },
   "UserMenu": {
     "figmaComponentId": "c9bbc83c501d55048df4f68df50d920a9e85002c",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Popup",
     "variantProperties": {
       "Form Factor": {
@@ -5994,7 +5994,7 @@
   },
   "VBox": {
     "figmaComponentId": null,
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Layout",
     "textProperties": [
       "width",
@@ -6013,7 +6013,7 @@
   },
   "Wizard": {
     "figmaComponentId": "a1a11b0486b9b7e748ae57ff032d4d43bdd1389a",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Page Layout",
     "variantProperties": {
       "Form Factor": {
@@ -6051,7 +6051,7 @@
   },
   "WizardStep": {
     "figmaComponentId": "composed:Wizard-child",
-    "figmaLibraryFileId": "p7zm5EMBk5DRRZdxNeJ4f5",
+    "figmaLibraryFileId": "SILcWzK5uFghKun9jx6D7c",
     "componentCategory": "Page Layout",
     "variantProperties": {
       "Form Factor": {

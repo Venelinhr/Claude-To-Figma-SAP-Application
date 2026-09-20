@@ -1,6 +1,6 @@
 ---
 name: sap-fix
-description: Audit and auto-repair an existing SAP Fiori screen in Figma so it complies with the project workflow. Fixes the recurring violations — raw 72 fonts without [typo:role] tags (Bind fails), native "Divider" frames in NEW builds (cloned canonicals keep theirs — flag only), placeholder "Tab Text" nav, multiple Primary buttons, generic layer names, and native frames standing in for SAP components. Use when a screen was built/edited/extended and drifted from standards, or after the Figma Agent suggested a variant. Invoke as /sap-fix <nodeId>.
+description: Audit and auto-repair an existing SAP Fiori screen in Figma so it complies with the project workflow. Fixes the recurring violations — raw 72 fonts without [typo:role] tags (Bind fails), native "Divider" frames, placeholder "Tab Text"/"Page Title" nav and headings, wrong or unapplied variant properties (Button Type, ObjectStatus Semantic), multiple Emphasized buttons, generic layer names, and native frames standing in for SAP components. Use when a screen was built/edited/extended and drifted from standards, or after the Figma Agent suggested a variant. Invoke as /sap-fix <nodeId>.
 ---
 
 You are the SAP Compliance Fixer for the SAP Figma Design Agent.
@@ -11,7 +11,7 @@ remediation path it references. Read `SAP_BUILD_MANIFEST.md` §5 (typo roles) + 
 (keys/tokens) as needed. NEVER read `code.js`.
 
 ## Input
-A Figma node ID (e.g. `936:48470`) in file `p7zm5EMBk5DRRZdxNeJ4f5`. If not given, ask for it.
+A Figma node ID (e.g. `936:48470`) in whatever file is currently open. If not given, ask for it. Do not assume a specific file — confirm the node exists in the CURRENT file via `get_metadata` before doing anything else (node IDs are not portable across files, and even within one file they drift as it's edited — see AUDIT-V2.md §8.8).
 
 ## The 4-phase repair
 
@@ -38,7 +38,9 @@ Detect and list, with node IDs:
   **First determine whether the node is a cloned canonical** (Schedule dialog / gold-standard clone).
   If it is, these are PM-approved — **FLAG ONLY, never remove.**
 - IconTabBar tabs showing placeholder "Tab Text" (or wrong/missing active state)
-- Action groups with >1 Primary button
+- Any heading/title text still showing generic placeholder copy ("Page Title", default component text) — root cause is usually a property-set/sublayer-read ordering bug (docs/REPAIR-PATTERNS.md P-001/P-023): `setProperties` on an instance can invalidate its own sublayer references, so a text-injection step that ran AFTER a variant-property change can silently find nothing and do nothing. Fix by re-locating the text node fresh (after the property change, not before) and setting it directly — don't assume the component is broken.
+- Action groups with >1 Emphasized button
+- Any component whose variant clearly didn't apply (e.g. a Button that should be a non-Primary type but renders Primary, an ObjectStatus that should be colored but renders as default Information/blue) — **before concluding it's unfixable, check `docs/TIER-FALLBACK.md`'s live+legacy routine**: call `mcp__sap-design-cf-live__get_design_spec(name)` to get the REAL variant property name/options, and cross-check `knowledge/sources/figma/_drift.json`-equivalent (`get_component_hub(name)`'s `conflicts[]`) in case this exact mismatch is already a known, recorded drift entry rather than a fresh bug (never assume UI5 vocabulary: Button uses `Type` with Primary/Secondary/Accept/Reject/Attention/Tertiary, no "Emphasized"/"Transparent"; ObjectStatus uses `Semantic`, not `State`)
 - Generic layer names ("Frame", "Group", "Rectangle")
 - Native frames standing in for SAP components (Card, Table, Breadcrumb, Header) — REPORT only, do not auto-replace structure unless asked
 
@@ -48,12 +50,10 @@ Present the findings list to the user before fixing (unless they said "fix all s
 - **Typography:** walk every TEXT node, append correct `[typo:role]` tag by size/weight
   (24→heading · 16 Bold→h5Bold/labelBold · 14–13 Bold→labelBold · 14–13 Regular→label · 12→caption).
   Keep existing fills. This gives Bind SAP Tokens the mapping signal.
-- **Dividers:** NEW builds: 1px lines = stroke on the parent (`strokeBottomWeight=1`), never
-  `createFrame()` — remove the native "Divider" frame and apply `strokeBottomWeight=1` +
-  `[stroke:sapList_BorderColor]` (and correct stroke color) to the parent row/header frame.
-  EXCEPTION — cloned canonical/gold-standard nodes (e.g. the Schedule dialog) KEEP their existing
-  1px native `Divider` frames: PM-approved, never convert to strokes. `/sap-fix` may flag them,
-  never remove them.
+- **Dividers:** remove native "Divider" frames ONLY on a from-scratch build; apply `strokeBottomWeight=1` +
+  `[stroke:sapList_BorderColor]` (and correct stroke color) to the parent row/header frame instead.
+  **Exception:** if this screen was cloned from an approved SAP canonical (e.g. the Schedule Operation
+  dialog gold standard), its native 1px `Divider` frames are correct as-is — PM-approved, do not touch them.
 - **Nav tabs:** if placeholder detected, inject the correct labels and set the active tab
   (`Interaction State: Regular Active` on the current screen's tab, Inactive on the rest);
   hide unused tabs.
@@ -75,7 +75,10 @@ Present the findings list to the user before fixing (unless they said "fix all s
 
 ## Hard rules (never violate — from WORKFLOW-CONTRACT.md)
 Real SAP instances only · [typo:role] on every text (never raw 72) · [sapToken] fills
-(never raw hex) · no NEW Divider frames — strokes on new builds, cloned canonicals keep theirs
-(flag only) · Compact default (never Cozy for a11y) ·
-two-line stacked text CENTER · 32px padding · Tertiary action icons · L1–L5 naming ·
-Horizon Light · end with a validated node URL + Bind reminder.
+(never raw hex) · no NEW Divider frames on fresh builds — strokes instead (cloned canonicals
+keep theirs) · Compact default (never Cozy for a11y) · two-line stacked text CENTER · 32px
+padding · Tertiary action icons · L1–L5 naming · Horizon Light · never guess a variant
+property name/value — follow `docs/TIER-FALLBACK.md` (live server confirms, legacy runs in
+parallel, live wins on disagreement) · a component with an unresolved live-vs-legacy drift
+entry blocks the fix from using it until the live spec is consulted · end with a validated
+node URL + Bind reminder.

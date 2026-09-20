@@ -444,6 +444,24 @@ else
   exit 1
 fi
 rm -f "$GATES_LOG"
+# Regression: a node with an EMPTY fills array and an unbound raw-hex STROKE (the exact
+# shape of every table-row divider / card border in this system) must still fail INV 2.
+# A fills-only checker would miss this. See test-fixtures/invariants/stroke-only-rawhex.json.
+# NOTE: no --pre-bind here — this fixture is a non-instance FRAME, and --pre-bind
+# intentionally exempts non-instance nodes (they're expected unbound mid-build; Bind
+# resolves them). The fixture proves Gate 6's real post-build check, not the pre-bind path.
+if node build/verify-invariants.js test-fixtures/invariants/stroke-only-rawhex.json >/dev/null 2>&1; then
+  echo -e "${RED}verify-invariants.js PASSED a strokes-only unbound raw-hex node — the fills-only blind spot is open${NC}"
+  exit 1
+else
+  echo "  ✓ strokes-only raw-hex divider/border correctly FAILS (INV 2 fills-only blind spot closed)"
+fi
+if node build/verify-invariants.js test-fixtures/invariants/stroke-only-bound-clean.json >/dev/null 2>&1; then
+  echo "  ✓ strokes-only BOUND divider/border correctly PASSES (no false positive on legit stroke-only nodes)"
+else
+  echo -e "${RED}verify-invariants.js rejected a strokes-only node with a properly bound stroke — false positive${NC}"
+  exit 1
+fi
 
 echo ""
 echo "All specs within baseline. Pipeline is clean."

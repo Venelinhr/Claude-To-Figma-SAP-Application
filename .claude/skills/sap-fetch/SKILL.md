@@ -1,6 +1,6 @@
 ---
 name: sap-fetch
-description: Fetch SAP Fiori guidelines, API reference, or samples for any component. Checks local cache first (instant), falls back to live Chrome MCP fetch if stale. Returns structured Markdown ready to use. Invoke as /sap-fetch <ComponentName> — e.g. /sap-fetch Switch, /sap-fetch Button, /sap-fetch FilterBar.
+description: Fetch SAP Fiori guidelines, API reference, or samples for any component. Checks the live SAP knowledge server first (source of truth) in parallel with the local cache, and flags any disagreement before a build proceeds. Falls back to local-only if the live server is unreachable. Returns structured Markdown ready to use. Invoke as /sap-fetch <ComponentName> — e.g. /sap-fetch Switch, /sap-fetch Button, /sap-fetch FilterBar.
 ---
 
 # /sap-fetch — SAP Component Data Fetcher
@@ -16,146 +16,81 @@ Explicit invoke: `/sap-fetch <ComponentName>`
 
 ---
 
-## 4-Step Pipeline
+## Source of truth — live + legacy, in parallel
 
-### Step 1 — Check local cache (always first, <10ms)
+Follow `docs/TIER-FALLBACK.md` for the full contract. Summary: **both systems run,
+every time.** The live server is checked before any build to confirm the legacy
+data is still correct — not consulted only after the legacy path fails.
 
+**Step 1 — always call the live server first:**
+```
+mcp__sap-design-cf-live__get_component_hub({ name: "<ComponentName>" })
+```
+One call. Returns the merged, live-fetched guideline + API + tokens + accessibility
++ `conflicts[]`, already resolved across sap.com/UI5/wiki sources. This is the
+authority when it disagrees with anything local.
+
+**Step 2 — also check the local/legacy cache (runs regardless of Step 1's result):**
 ```
 mcp__sap-fiori-guidelines__getFioriGuideline({ componentName: "<Name>" })
 ```
+The legacy system (`knowledge/guidelines/*.json`, `knowledge/components/registry/*.json`,
+`mcp__sap-fiori-guidelines__*`, `mcp__sap-figma-community__*`) keeps running exactly
+as before — nothing here is retired or bypassed. It stays the fast local path and
+the whole system's fallback if the live server is ever unreachable.
 
-- If result exists and `lastChecked` is within 7 days → **use it, skip to output**
-- If missing or stale → proceed to Step 2
+**Step 3 — reconcile:**
+- **Live reachable, both agree** → proceed, cite the live source (it's authoritative,
+  but no correction was needed).
+- **Live reachable, they disagree** → **the live server wins.** Surface the
+  disagreement plainly (what the legacy cache said vs. what's actually live) before
+  using the live value — never silently pick one, per `docs/TIER-FALLBACK.md`.
+- **Live unreachable** → fall back to the legacy cache alone, notify the user once
+  in one sentence, and stamp the output `⚠ UNVERIFIED — live source was
+  unreachable` in the build handoff.
 
-### Step 2 — Resolve slug
-
-Use this lookup table for known slug variations:
-
-| Component name | URL slug |
-|---|---|
-| FilterBar | filter-bar |
-| Table | responsive-table |
-| TableCell | responsive-table |
-| ProgressStep | wizard |
-| ShellBar | shell-bar |
-| OverflowToolbar | toolbar-overflow |
-| DynamicPage | dynamicpage |
-| IconTabBar | icontabbar |
-| ObjectPage | object-page |
-| MessageBox | message-box |
-| MessageStrip | messagestrip |
-
-For all others: lowercase the component name (e.g. `Switch` → `switch`, `Button` → `button`).
-
-### Step 3 — Fetch guideline via Chrome MCP
-
-```
-navigate_page("https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/{slug}")
-wait_for(["When to Use", "Anatomy", "Intro"])
-evaluate_script(async () => {
-  // Use extension extractor if available (window.__sapFetch exposed by the Chrome Extension)
-  if (typeof window.__sapFetch === 'function') {
-    const result = await window.__sapFetch();
-    return result?.doc || null;
-  }
-  // Fallback: inline extraction
-  const main = document.querySelector('main#main');
-  if (!main) return null;
-  const getMeta = n => document.querySelector(`meta[name="${n}"]`)?.content?.trim() || '';
-  return {
-    title: document.querySelector('h1')?.innerText?.trim() || document.title,
-    status: getMeta('uielementsstatus'),
-    category: getMeta('uielementscategory'),
-    content: main.innerText,
-    apiLinks: Array.from(new Set(Array.from(main.querySelectorAll('a[href*="ui5.sap.com"]')).map(a => a.href)))
-  };
-})
-```
-
-### Step 4 — Fetch API reference (JSON endpoint, no navigation needed)
-
-Run this **in parallel with or after Step 3** — it does not require navigation:
-
-```
-evaluate_script(async () => {
-  const lib = 'sap/m'; // adjust for sap.f.*, sap.uxap.* etc.
-  const res = await fetch(`https://ui5.sap.com/test-resources/${lib}/designtime/apiref/api.json`);
-  const json = await res.json();
-  const sym = json.symbols.find(s => s.name === 'sap.m.{ComponentName}');
-  if (!sym) return null;
-  const meta = sym['ui5-metadata'] || {};
-  return {
-    description: sym.description?.replace(/<[^>]+>/g, '').trim(),
-    availableSince: sym.since || '',
-    properties: (meta.properties || []).filter(p => p.visibility === 'public').map(p => ({
-      name: p.name,
-      type: p.typeInfo?.template || p.type || '',
-      default: String(p.defaultValue ?? ''),
-      since: p.since || '',
-      desc: p.description?.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim().slice(0, 150)
-    })),
-    events: (sym.events || []).filter(e => !e.borrowedFrom).map(e => ({
-      name: e.name,
-      desc: e.description?.replace(/<[^>]+>/g, '').trim().slice(0, 120)
-    })),
-    uxGuidelinesLink: sym.uxGuidelinesLink || ''
-  };
-})
-```
-
-**Library mapping** (for the `lib` variable above):
-
-| Component prefix | lib path |
-|---|---|
-| sap.m.* | sap/m |
-| sap.f.* | sap/f |
-| sap.uxap.* | sap/uxap |
-| sap.ui.table.* | sap/ui/table |
+**The old raw-scrape steps are retired**, not the legacy cache. Previously this
+skill's Steps 3–4 drove Chrome DevTools by hand (`navigate_page` + DOM scraping of
+sap.com, plus a raw `fetch()` against `ui5.sap.com/test-resources/.../api.json`)
+as its *only* live check. `get_component_hub` already returns everything those
+steps existed to produce — live, merged, in one call, without the brittleness of
+scraping a page's DOM by hand — so they're no longer needed. The legacy *cache*
+(Step 2 above) is untouched and still runs every time.
 
 ---
 
 ## Output format
 
-Combine Step 3 + Step 4 into one structured response:
-
 ```markdown
 ## [ComponentName] — SAP Fiori Specification
 
-**Source:** [guideline URL]
+**Live source:** sap-design-cf-live — [checked | unreachable]
+**Legacy cache:** [agrees | disagrees — see below | not checked]
 **Status:** Available | Deprecated
-**Category:** [category]
-**Available Since:** [version]
-**API:** sap.m.[ComponentName]
+**Available Since:** [version, from the live hub response]
 
 ### Design Guidelines
-[guideline content from Step 3]
+[guideline content from get_component_hub / get_live_guideline]
 
 ### API Reference
+[properties/events from get_component_hub's merged API section]
 
-#### Properties
-| Property | Type | Default | Since | Description |
-| --- | --- | --- | --- | --- |
-[properties from Step 4]
-
-#### Events
-| Event | Description |
-| --- | --- |
-[events from Step 4]
+### Conflicts / drift (if any)
+[live hub's conflicts[] array AND/OR any live-vs-legacy disagreement found in
+Step 3, verbatim — never silently resolved]
 
 ### Links
-* [Guideline](https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/{slug})
-* [API Reference](https://ui5.sap.com/#/api/sap.m.{ComponentName})
-* [Samples](https://ui5.sap.com/#/entity/sap.m.{ComponentName})
+[sources[] URLs from the live hub response]
 ```
 
 ---
 
 ## Error handling
 
-- **404 on guideline URL** → try alternate slug (e.g. try without hyphens, then with)
-- **Chrome MCP not available** → use local cache only, note it may be stale
-- **JSON API returns nothing** → check if component is in `sap.f` or `sap.uxap` instead of `sap.m`
-- **Both fail** → return what's in local cache with a staleness warning
+- **Live call fails** → follow `docs/TIER-FALLBACK.md`: notify once, use the legacy cache automatically, stamp UNVERIFIED. No open-ended retry loop.
+- **Legacy cache missing/stale but live succeeds** → proceed on live alone, note the legacy cache should be refreshed (see `sap-registry-update`).
+- **Component not found even in the live hub** → say so plainly, try `search_knowledge(query)` for a fuzzy/misspelled match. Never invent a plausible-sounding component.
+- **Both fail** → report the component cannot currently be verified; ask the user how to proceed rather than guessing.
 
 ---
 
@@ -163,11 +98,15 @@ Combine Step 3 + Step 4 into one structured response:
 
 ```
 /sap-fetch Switch
-→ Returns Switch guideline (types, accessibility, keyboard nav) + API (state, type, customTextOn/Off properties, change event)
+→ Checks live hub + legacy cache in parallel. If legacy still says
+  customTextOn/customTextOff and live confirms textOn/textOff for Web Components,
+  the disagreement is surfaced and live wins.
 
 /sap-fetch FilterBar
-→ Resolves slug to filter-bar, returns FilterBar design guidelines + API
+→ get_component_hub("FilterBar") — no slug table needed, the hub resolves the name.
+  Legacy cache checked alongside it.
 
 /sap-fetch Button
-→ Returns full Button spec: 4 types, priority/emphasis rules, all properties (type, icon, text, enabled...), press event
+→ Live kit variant values (Primary/Secondary/Accept/Reject/Attention/Tertiary)
+  confirmed against whatever the legacy registry currently has on file.
 ```

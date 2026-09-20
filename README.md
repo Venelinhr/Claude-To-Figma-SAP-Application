@@ -299,6 +299,11 @@ Design directly inside Figma with the built-in AI Agent. Select an existing scre
 
 > **Figma Agent vs Claude Code:** Use **Claude Code** for new builds from a reference — it runs the full gated pipeline (wireframe approval, token bind, invariant checks). Use the **Figma Agent** for fast on-canvas iterations — refine, extend, suggest next steps — following the same SAP rules and design system, without leaving Figma.
 
+**Live SAP knowledge in the Figma Agent — how to load it and its real limit:** the `sap-figma-agent` skill's methodology and hard rules are static text uploaded to Figma. They don't call anything live by themselves. Two ways to actually ground the Figma Agent in current SAP data:
+
+1. **Native MCP connector (best, if your org allows it)** — Figma's Agent panel supports connecting directly to a live MCP server: `Add context → Connectors → Manage → Create` → name it, paste `https://sap-design-mcp.cfapps.us10-001.hana.ondemand.com/mcp`, no auth needed. Once connected, `@`-mention it in chat so the Agent pulls live SAP guidance itself. **This needs custom connectors enabled for your Figma org** (an admin-only toggle by default — `Admin → Settings → Connections → MCP connectors in Figma`). If `Connectors → Created by you` says your org doesn't allow it, this needs a request to your Figma admin, not a workaround.
+2. **Claude-Code-refreshed grounding (works today, no admin needed)** — ask Claude Code to pull current guidance from `sap-design-cf-live` and bake it into the skill file or a Figma tool's source (this is how the SAP Screen Builder generative tool's component choices are kept current). Not live-at-runtime, but genuinely verified as of the date stamped in the file — re-run it periodically to keep it fresh.
+
 
 ## Token Optimization
 
@@ -350,18 +355,51 @@ Claude uses this file automatically — before building, it finds the closest ma
 
 ## MCP Servers
 
-**5 servers auto-installed by `install.sh`.** 3 optional add-ons.
+**5 servers auto-installed by `install.sh`, plus `sap-design-cf-live` registered via `.mcp.json` at the repo root.** 3 optional add-ons.
 
 | MCP | What it does | When it runs |
 |---|---|---|
 | `figma` | Live Figma read/write — reads screen structure, builds components, takes screenshots | Every build — reads the canonical reference, executes `use_figma`, verifies the result |
-| `sap-fiori-guidelines` | 154 cached SAP Fiori guidelines — when/how to use each component | ANALYZE stage — Claude checks component guidelines before proposing any component |
+| **`sap-design-cf-live`** | **Live SAP knowledge server** — 1,000+ SAP entities (components, foundations, patterns, tokens), fetched live from sap.com/UI5/internal wiki at call time, not a stale cache | **Checked in parallel with the local registry/guideline cache on every lookup** — if it disagrees with the cached value, the live answer wins and the disagreement is surfaced, never silently resolved. See [`docs/TIER-FALLBACK.md`](docs/TIER-FALLBACK.md) for the full contract. Falls back to cache-only if unreachable (flagged `UNVERIFIED` in the handoff). |
+| `sap-fiori-guidelines` | 154 cached SAP Fiori guidelines — when/how to use each component | ANALYZE stage — Claude checks component guidelines before proposing any component; also the fallback tier when `sap-design-cf-live` is unreachable |
 | `sap-application-analysis` | Maps screenshots/wireframes to SAP region types and floorplan scores | When you attach a reference image — turns visual zones into SAP vocabulary |
 | `sap-figma-community` | Detects stale component keys in the registry vs the live SAP kit | On demand — when Claude suspects a component key may be outdated |
 | `chrome-devtools` | Fetches live SAP Fiori guideline pages from the web | Fallback only — when a component isn't in the local guideline cache |
 | `sapui5` *(optional)* | Live UI5 API — exact property names, enums, aggregations | When a component property is uncertain (e.g. `Semantic` not `State` for ObjectStatus) |
 | `context7` *(optional)* | Live library docs for correct API signatures | When writing UI5 code that calls specific methods |
 | `fundamental-styles` *(optional)* | 120+ CSS components, 1,522 design tokens | Edge-case fallback when SAP Web UI Kit registry doesn't cover a pattern |
+
+### How to load `sap-design-cf-live`
+
+Already wired for you — no extra install step. This repo ships a project-scoped `.mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "sap-design-cf-live": {
+      "type": "http",
+      "url": "https://sap-design-mcp.cfapps.us10-001.hana.ondemand.com/mcp"
+    }
+  }
+}
+```
+
+Open Claude Code from inside the cloned repo folder and it connects automatically:
+
+```bash
+cd Claude-To-Figma-SAP-Application
+claude mcp list   # confirm "sap-design-cf-live" shows Connected
+```
+
+### How to use it
+
+You don't call it directly — the build skills (`/sap-screen`, `/sap-fix`, `/sap-fetch`, and the `sap-figma-agent` Figma skill) already check it automatically as part of every component/variant/token lookup. Concretely:
+
+- `/sap-fetch Button` — checks the live server and the local cache together, uses the live answer if they disagree
+- `/sap-fix <nodeId>` — cross-checks a suspicious variant against the live server before concluding it's wrong
+- Manual lookups still work if you want them: `mcp__sap-design-cf-live__get_component_hub("Switch")` returns the merged guideline + API + token + accessibility answer for any component, with real disagreements between sources called out instead of averaged away.
+
+**Inside Figma itself (no Claude Code):** Figma's Agent panel supports native custom MCP connectors (`Add context → Connectors → Manage → Create`), which would let the Figma Agent call `sap-design-cf-live` directly. **This requires your Figma organization to allow custom connectors** (an org-admin setting, `Admin → Settings → Connections → MCP connectors in Figma`) — check with your Figma admin if `Connectors → Created by you` shows "doesn't allow team members to create their own connectors." The server itself needs no auth and is publicly reachable (confirmed via a plain HTTP request), so once your org allows connectors, setup is just pasting the URL above.
 
 
 ## Skills

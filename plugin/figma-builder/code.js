@@ -2244,17 +2244,25 @@ function validateStatusCommunication(rootNode) {
 
   function walk(node) {
     if (!node) return;
-    // Check FRAME with semantic fill but no text/icon child
+    // Check FRAME with semantic fill OR stroke but no text/icon child. A status pill/
+    // banner/border built with a semantic-colored STROKE (e.g. a 1px semantic-colored
+    // card border or row accent — the same "border built as strokes, not fills" shape
+    // that is the norm elsewhere in this system) previously slipped past this check,
+    // which only read node.fills. (Fixed — same bug class as checkRawHex fills-only
+    // blind spot; see build/verify-invariants.js checkFills for the reference fix.)
     if ((node.type === 'FRAME' || node.type === 'RECTANGLE' || node.type === 'TEXT') && node.visible !== false) {
       stats.checked++;
       var fills = Array.isArray(node.fills) ? node.fills : [];
-      for (var fi = 0; fi < fills.length; fi++) {
-        var fill = fills[fi];
+      var strokes = Array.isArray(node.strokes) ? node.strokes : [];
+      var paints = fills.concat(strokes);
+      for (var fi = 0; fi < paints.length; fi++) {
+        var fill = paints[fi];
         if (fill.type === 'SOLID' && fill.color) {
           var semantic = matchSemanticColor(fill);
           if (semantic) {
             stats.semanticUses++;
-            // If this is a small filled FRAME (status pill, banner) — needs icon or text
+            // If this is a small filled/stroked FRAME (status pill, banner, accent
+            // border) — needs icon or text
             if (node.type === 'FRAME' && !hasTextLabel(node) && !nodeOrParentHasIcon(node)) {
               var v = {
                 kind: 'status-by-color-only',
@@ -2317,15 +2325,19 @@ function validateBuildRules(rootNode) {
     if (!node || node.visible === false) return;
     stats.checked++;
 
-    // R-HL: dark background fill on a container = wrong theme
-    if ((node.type === 'FRAME' || node.type === 'RECTANGLE') && Array.isArray(node.fills)) {
-      for (var i = 0; i < node.fills.length; i++) {
-        var f = node.fills[i];
+    // R-HL: dark background fill OR stroke on a container = wrong theme. A dark-theme
+    // color applied as a STROKE (e.g. a dark card/row border) previously slipped past
+    // this check, which only read node.fills. (Fixed — same fills-only/strokes-blind
+    // bug class as checkRawHex; see build/verify-invariants.js checkFills.)
+    if ((node.type === 'FRAME' || node.type === 'RECTANGLE') && (Array.isArray(node.fills) || Array.isArray(node.strokes))) {
+      var paintsHL = [].concat(Array.isArray(node.fills) ? node.fills : [], Array.isArray(node.strokes) ? node.strokes : []);
+      for (var i = 0; i < paintsHL.length; i++) {
+        var f = paintsHL[i];
         if (f && f.type === 'SOLID' && f.visible !== false) {
           var hx = hexOf(f);
           if (hx && DARK_BG[hx]) {
             var v1 = { kind:'dark-theme-bg', nodeName: node.name || 'Frame',
-              message: '"' + (node.name||'Frame') + '" has dark-theme fill #' + hx + ' — always build Horizon Light (sapBackgroundColor #f5f6f7 / sapShellColor #fff).' };
+              message: '"' + (node.name||'Frame') + '" has dark-theme fill/stroke #' + hx + ' — always build Horizon Light (sapBackgroundColor #f5f6f7 / sapShellColor #fff).' };
             stats.violations.push(v1); logException('build-rule-dark-bg', node.name||'frame', v1.message);
           }
         }

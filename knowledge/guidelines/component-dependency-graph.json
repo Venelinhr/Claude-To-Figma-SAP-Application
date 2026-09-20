@@ -2,7 +2,7 @@
   "_meta": {
     "description": "Composition rules for every SAP component: validParents, validChildren, slots, mustInclude, mustExclude. Generated from knowledge/components/registry/*.json. Do NOT edit manually.",
     "source": "knowledge/components/registry/*.json",
-    "generated": "2026-09-02",
+    "generated": "2026-09-20",
     "components": 152
   },
   "AIButton": {

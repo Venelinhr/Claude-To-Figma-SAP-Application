@@ -2,79 +2,98 @@
   "componentName": "Bar",
   "slug": "bar",
   "sourceUrl": "https://www.sap.com/design-system/fiori-design-web/v1-148/ui-elements/bar",
-  "purpose": "A horizontal container for page-level actions and titles. Used as a header, footer, or subheader anchor for a page or dialog. Sits at the top or bottom of a container, with left/middle/right content regions.",
+  "purpose": "A container used to hold titles, subtitles, buttons, and input elements. Appears at the top or bottom of a screen, dialog, or popover to provide navigation, actions, and key content. Defines start (left) and end (right) content areas.",
   "whenToUse": [
-    "As the header of a Dialog or Popover (contains title + close/accept buttons)",
-    "As the footer of a Dialog or Page (contains primary + secondary action buttons)",
-    "As a subheader inside a page below the main title",
-    "When you need three-region horizontal alignment (left / center / right)"
+    "Display page headers, subheaders, footers, and floating footers on a page, dialog, or popover",
+    "Include only a small number of components (up to two interactive elements)",
+    "As a header bar: with or without a Back/Home navigation button",
+    "As a footer bar: fixed at the bottom providing final actions",
+    "As a floating footer bar: stays visible above content when scrolling"
   ],
   "whenNotToUse": [
-    "Inside a Toolbar — Toolbar is a container of items, Bar is a page-level region",
-    "For a floating action bar — use OverflowToolbar with responsive behavior instead",
-    "As a container of general content — use Panel or Card"
+    "Don't use for many components that require overflow — use Toolbar instead",
+    "Don't use when responsive overflow handling is needed — use OverflowToolbar"
   ],
   "doRules": [
-    "Use design=Header for a top bar, design=Footer for a bottom bar, design=Subheader for an intermediate bar",
-    "Place the primary action right-aligned in a Footer bar",
-    "Center the title in the contentMiddle slot for dialog headers",
-    "Use ToolbarSpacer inside a slot to push content to the edge"
+    "Limit the number of actions within the bar",
+    "Use full width of the screen for the bar",
+    "Place the bar at the top of a container to provide contextual actions and information",
+    "Place the footer bar at the bottom of the page or container to provide final actions",
+    "Use bar with subheader variant on mobile when space is limited",
+    "Center content is supported but not recommended — align to start instead"
   ],
   "dontRules": [
-    "Do not use a Bar for arbitrary layout — it is semantic (header/footer/subheader)",
-    "Do not stack multiple Bars in the same region — restructure the page instead",
-    "Do not put non-action content in a footer Bar"
+    "Don't use bar when more than two interactive elements are needed — use toolbar",
+    "Don't rely on bar for overflow behavior — it is not supported"
   ],
   "layoutGuidance": {
-    "placement": "Top or bottom of parent container (Dialog, Page)",
-    "sizing": "Full width of parent. Height: 44px compact, 56px cozy",
-    "spacing": "8px internal padding compact, 16px cozy",
-    "alignment": "contentLeft: flush left · contentMiddle: centered · contentRight: flush right"
+    "placement": "Top (header/subheader) or bottom (footer/floating footer) of page, dialog, or popover.",
+    "sizing": "Full width of parent container. Height auto.",
+    "spacing": "Compact / Cozy density supported.",
+    "alignment": "Start content: left-aligned (navigation, back buttons, titles). End content: right-aligned (action buttons, icons). Centered content: supported but not recommended."
   },
   "contentGuidance": {
-    "labelLength": "Titles up to 40 characters. Truncate with ellipsis if longer.",
-    "contentRules": "Actions as Buttons, labels as Titles, no arbitrary text",
+    "labelLength": "Keep titles concise. Action button labels: verb-first imperative (Confirm, Cancel).",
+    "contentRules": [
+      "Start area: navigation elements — back buttons, titles, menus, logos",
+      "End area: action buttons, icons, user profiles",
+      "Busy state supported: use BusyIndicator (sizes: small, medium, large; default: medium)",
+      "Bar itself has no states except busy — elements inside have their own states",
+      "Supports LTR and RTL — action buttons end-aligned in both directions"
+    ],
     "examples": [
-      "Dialog header: [Close]  [Title]  [Save]",
-      "Page footer: [Cancel]  ← spacer →  [Submit]"
+      "Header bar: Back | Title",
+      "Footer bar: Cancel ... Confirm",
+      "Floating footer: stays visible above content when scrolling"
     ]
   },
   "responsiveBehavior": {
-    "XL": "Full width, all three regions visible",
-    "L": "Same as XL",
-    "M": "Same. Titles may truncate.",
-    "S": "Middle region may collapse; primary action stays right"
+    "XL": "Full header bar with all elements",
+    "L": "Full header bar with all elements",
+    "M": "Use bar with subheader to distribute content when space is limited",
+    "S": "Bar with subheader on mobile; header bar on desktop"
   },
-  "accessibilityGuidance": {
-    "wcagCriteria": [
-      "WCAG 2.1 · 1.3.1 Info and Relationships (Level A)",
-      "WCAG 2.1 · 1.4.3 Contrast (Level AA)"
-    ],
-    "requirements": [
-      "Bar has aria-role of banner (header) or contentinfo (footer)",
-      "Title text has 4.5:1 contrast against bar background",
-      "Focus order: left content → middle → right actions"
-    ]
-  },
+  "accessibilityGuidance": [
+    {
+      "category": "keyboard",
+      "requirement": "Tab: navigates through items. Shift+Tab: backward. F6: moves focus to next UI group. Shift+F6: backward.",
+      "wcag": "2.1.1 (A)"
+    },
+    {
+      "category": "contrast",
+      "requirement": "Text contrast ≥ 4.5:1 against bar background",
+      "wcag": "1.4.3 (AA)"
+    }
+  ],
   "patterns": [
-    "Dialog",
-    "Fullscreen Dialog",
-    "Popover",
-    "Page footer actions"
+    "Page header",
+    "Page footer",
+    "Dialog header",
+    "Dialog footer",
+    "Floating footer",
+    "Subheader"
   ],
   "compatibility": {
-    "allowedWith": [
-      "Button",
-      "Title",
-      "ToolbarSpacer",
-      "Text",
-      "SearchField"
-    ],
-    "forbiddenWith": [
-      "ShellBar (top-level), Toolbar (as parent)"
+    "worksWith": ["Button", "Title", "SearchField", "BusyIndicator", "IconButton", "Text"],
+    "incompatible": [
+      "More than 2 interactive elements — use Toolbar instead",
+      "Overflow scenarios — use OverflowToolbar instead"
     ]
   },
-  "exceptions": [],
-  "version": "1.149.0",
+  "exceptions": [
+    "Floating footer bar moves with scroll and is always visible at bottom — differs from fixed footer",
+    "Bar itself is only a container — no component states except busy state"
+  ],
+  "types": [
+    "Header bar: container header, with or without navigation button",
+    "Bar with subheader: additional subheader below main header (subtitle, search, etc.)",
+    "Footer bar: fixed at bottom of container",
+    "Floating footer bar: scrolls with content, always visible at screen bottom"
+  ],
+  "figmaNode": "https://www.figma.com/design/SILcWzK5uFghKun9jx6D7c/SAP-Web-UI-Kit?node-id=1101-2321",
+  "ui5Api": "https://ui5.sap.com/#/api/sap.m.Bar",
+  "ui5Samples": "https://ui5.sap.com/#/entity/sap.m.Bar",
+  "webComponent": "ui5-bar",
+  "version": "v1-148",
   "lastChecked": "2026-07-25"
 }
