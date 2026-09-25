@@ -289,18 +289,39 @@ Read the MISSING / WRONG COLOUR / WRONG DENSITY / EXTRA lists and fix every one 
 them — this is the real checklist. **Do not trust the aggregate/TOTAL score as a pass/
 fail gate** — its box-finder can misjudge a genuinely close screen (a known, documented
 limitation); MISSING/COLOUR/DENSITY/EXTRA are the trustworthy signal, plus your own eye
-on the screenshot next to the reference. If `audit-screen.py` isn't available in this
-project, compare the screenshot to the reference by eye against your Step 1 Component
-inventory: every zone present, every colour close, every density matching Step 0.
+on the screenshot next to the reference.
+
+**⛔ A real miss happened here (2026-09-26): a build's MISSING list correctly named two
+bordered icon boxes and a missing leading-icon-per-row pattern, and the agent read
+"the box-finder can be wrong" as permission to skim the score and move on WITHOUT
+checking those specific lines — then called the build done. The lines were right; only
+the checking discipline was missing.** Fix, going forward: **every single line in
+MISSING (and every line in WRONG COLOUR/WRONG DENSITY/EXTRA) needs an explicit
+disposition before Step 5** — either "fixed" (rebuilt it) or "skipped: <real reason>,
+e.g. no matching kit icon/component exists, confirmed against the full catalog." Never
+"skipped because the score is unreliable" — that reasoning applies to the TOTAL number
+only, never to an individual named line with real coordinates. Go through the list
+top to bottom, one line at a time, before writing the hand-off message — do not treat
+"I already looked at the screenshot once" as equivalent to checking the list.
+
+If `audit-screen.py` isn't available in this project, compare the screenshot to the
+reference by eye against your Step 1 Component inventory, zone by zone, with the same
+one-disposition-per-zone discipline: every zone present, every colour close, every
+density matching Step 0 — not a single glance-and-decide pass.
 
 ---
 
 ## STEP 5 — HAND OFF
 
+**Gate before writing the hand-off message: every line from Step 4's MISSING/WRONG
+COLOUR/WRONG DENSITY/EXTRA lists has a stated disposition (fixed, or skipped with a
+real reason).** If you cannot list what you did with each line, you have not finished
+Step 4 — go back, don't write the hand-off yet.
+
 Deliver: the validated Figma URL (`node-id=NNNN-NNNNN`, hyphen format) + the (empty)
 `WARN` array from Step 3 + the Step 4 checklist state (clean, or exactly what's left and
-why it's an accepted gap). No "let me know if..." filler — either it's done or you name
-the one blocker.
+why it's an accepted gap, listed line by line, not summarized as "mostly done"). No
+"let me know if..." filler — either it's done or you name the one blocker.
 
 ---
 
@@ -653,5 +674,17 @@ referenced in this skill. Step 3 is now two explicit layers: the in-call return 
 still useful as a first hint) plus this external re-check as the real gate, run before
 Step 4. `expand-tree-dump.js` is the companion tool if the dump needs converting from
 the compact row format.
+
+v7.5 (2026-09-26): a real build's audit MISSING list correctly named two real gaps (a
+bordered box around a pair of icons, a leading icon on each card's description line) —
+the agent read the audit's own documented caveat ("the aggregate score can misjudge a
+close screen") and applied it to the wrong thing: it skimmed the score, decided the
+list was probably noise too, and called the build done without checking either named
+line. The lines were correct; the discipline of checking them one by one was skipped.
+Fixed: Step 4 now states this exact failure explicitly (so it's recognized, not
+repeated), and both Step 4 and Step 5 require an explicit fixed/skipped-with-reason
+disposition for every single MISSING/WRONG COLOUR/WRONG DENSITY/EXTRA line before the
+build can be handed off — "the score can be wrong" is now scoped to the TOTAL number
+only, never to an individual named line with coordinates.
 
 Old version kept at `SKILL.v6-backup-2026-09-25.md` in this same folder.
