@@ -206,12 +206,18 @@ function sub(inst, layerName)                    // find a nested instance insid
 End every build call by returning:
 
 ```js
-return { WARN, nodeCount, instanceCount, nativeWithPaintOrText: [...] };
+const unstyledText = figma.currentPage.findAll(n => n.type === 'TEXT'
+  && n.fontName !== figma.mixed && n.fontName.family !== '72').map(n => n.name);
+return { WARN, nodeCount, instanceCount, nativeWithPaintOrText: [...], unstyledText };
 ```
 
 - `WARN` must be **empty**. Non-empty = a component/prop/token/text-style wasn't found,
   or a variant value was rejected — fix it before the next section, don't proceed with
   unresolved warnings.
+- `unstyledText` must be **empty**. Any name in it is a text node whose font family
+  isn't `"72"` — it was created without `T()`. Fix by rebuilding that node through
+  `T()` with the correct style from the Text Style Table, not by changing its font
+  manually.
 - `nativeWithPaintOrText` — any `AL()`/native frame in the built subtree that ended up
   with a `fills.length>0`, a stroke, a text child, or an icon **without** having gone
   through a real kit `I()` call is a violation: fix it (replace with the right kit
@@ -277,13 +283,32 @@ say so and ask, don't fake it with a plain textarea frame with paint/text on it)
 
 ## TEXT STYLE TABLE — every text node through `T()`, never a bare font
 
+**No exceptions by size or weight.** A large bold screen title and a small grey caption
+follow the exact same rule — both go through `T(chars, styleName, colorVar)`. There is
+no "it's just a title, I'll set the font directly" case. The font in every real kit
+text style is **"72" (Regular/Bold/Black)** — if a text node's font inspector shows
+**"Inter"** or any other family, `T()` was skipped for that node. This is the single
+most common miss: large/bold display text (screen titles, prices, times, big numbers)
+gets built with a plain `figma.createText()` + manual font/size because it "looks like"
+a one-off, while small 14px body copy correctly goes through `T()`. Treat the two
+identically — the larger and bolder the text, the more visible a miss is, so check
+these first.
+
 | Role | Kit text style (verify exact name with `kit.js t` / `search_design_system`) |
 |---|---|
-| Page/section title | Title of Components / H2 / H3 per hierarchy |
+| Screen/route title (large, bold) | H2/Bold (32px) or H3/Bold (24px) — pick by hierarchy, never H1 unless it's the page's single biggest heading |
+| Section title | H4/Bold (20px) or H5/Bold (16px) |
+| Card/group title | Title of Components/sapGroup_TitleFontSize (16px Bold) |
+| Prominent number/time/price | H3/Bold or H4/Bold — never a raw large font size |
 | Body | MediumText/LHAuto/Regular |
-| Emphasis | MediumText/LHAuto/Bold |
+| Emphasis / bold inline label | MediumText/LHAuto/Bold |
 | Small/caption | SmallText/LHAuto/Regular |
-| Card/group title | Title of Components/sapGroup_TitleFontSize |
+
+**Self-check addition (Step 3):** before returning `WARN`, walk every text node in the
+built subtree and confirm `node.fontName.family === "72"` (or that it was set via
+`setTextStyleIdAsync`, not a direct `fontName` assignment). Any node whose family is
+`"Inter"` or anything else goes into `WARN` as `unstyledText: [...]` — treat it exactly
+like a missing component, not a cosmetic detail.
 
 ---
 
@@ -430,9 +455,11 @@ label-beside-field forms.
 - [ ] Every variant/state set through `I(name, props)`, verified against real component
       props (no `WARN` entries for it)
 - [ ] Every fill/stroke via `fill()`/`stroke()` — zero raw hex
-- [ ] Every text via `T()` with a real kit text style — zero bare font
+- [ ] Every text via `T()` with a real kit text style — zero bare font, including large/
+      bold display text (titles, prices, times) — checked with the same rigor as body
+      copy, never assumed fine because it "looks right"
 - [ ] Step 3 self-check run in the same build call, `WARN` empty,
-      `nativeWithPaintOrText` empty
+      `nativeWithPaintOrText` empty, `unstyledText` empty
 - [ ] One Primary per action group
 - [ ] Step 4 comparison against the reference run (audit script if present, else by eye)
 - [ ] Every layer named for its role — zero "Frame"/"Frame 1"/"Group"/"Rectangle"
@@ -453,5 +480,17 @@ table with real keys as a fifth, mandatory Step-1 artifact — that table is the
 fix: it forces a real kit key for every zone before any code runs. Added the State
 table and Text style table, folded self-check into the build call itself (`WARN` +
 `nativeWithPaintOrText`), resolved v6's rule conflicts (clone-vs-build-fresh, Form Item
-vs Label+Input), and merged the 3x-repeated Schedule dialog spec into one block. Old
-version kept at `SKILL.v6-backup-2026-09-25.md` in this same folder.
+vs Label+Input), and merged the 3x-repeated Schedule dialog spec into one block.
+
+v7.1 (2026-09-26): a real build made with v7 still had unbound text — screen title
+("Sofia (SOF) → Lamezia Terme (SUF)"), a big time ("21:00"), and bold address labels
+all showed font family "Inter" in the inspector instead of the kit's "72" font, i.e.
+built with a raw `figma.createText()` instead of `T()`. Root cause: large/bold display
+text reads as "special" and gets a one-off treatment, while small 14px body text
+correctly went through `T()` every time. Fixed: Text Style Table now states explicitly
+that size/weight change nothing about the rule, added named styles for title/time/price
+roles (H2/H3/H4 Bold) so there's no excuse to freehand a size, and Step 3's self-check
+now programmatically scans every text node's `fontName.family` and fails on anything
+that isn't `"72"` (`unstyledText` in the returned object) — this is no longer something
+that can be missed by eye. Old version kept at `SKILL.v6-backup-2026-09-25.md` in this
+same folder.
