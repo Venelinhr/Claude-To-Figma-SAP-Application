@@ -309,6 +309,46 @@ If a name above has no live match, search with a synonym before assuming it does
 exist ("Dropdown" isn't a kit name — it's "Select"; a component genuinely may not
 exist — say so and ask, don't fake it with a plain frame carrying paint/text on it).
 
+**The same "check the real inventory, don't guess from memory" rule applies to every
+other kit category, not just components** — colours, text styles, icons, and effects
+each have their own full catalog and their own lookup command. A guessed name that
+"sounds right" (`sapPositiveTextColor`, `sapSuccessColor`) is exactly how a token
+silently fails to resolve — see the real example already caught in this project. Check
+first, every time:
+
+- **Colours/spacing (142 variables):** `node build/kit.js v <keyword>` or
+  `node build/kit.js hex <#hex>` to find the nearest real token to a measured colour —
+  never write a token name from memory. Grouped by prefix: **Container** (39 —
+  backgrounds/borders) · **Text** (19) · **Font** (14 — weights/families) · **Tile**
+  (14) · **Input** (13 — field states incl. Success/Warning/Error) · **List** (10) ·
+  **Toolbar** (7) · **Accent** (5) · **Application** (5) · **Interaction** (5) ·
+  **Indication** (4 — status colours 1-N) · **Focus** (3) · **Icon** (3) · **Link** (1).
+  Token names are namespaced (`Group/sapSomeName`) — search the group that matches the
+  role (a success/positive colour lives under **Input**, e.g.
+  `Input/Success/sapField_SuccessColor`, not a bare `sapPositiveTextColor`).
+- **Text styles (25 — the complete set, already short enough to read in full):**
+  SmallText/LHAuto/Regular · SmallText/LHAuto/Bold · MediumText/LHAuto/Regular ·
+  MediumText/LHAuto/Bold · MediumText/LHAuto/Semibold · LargeText/LHAuto/Regular ·
+  LargeText/LHAuto/Bold · LargeText/LHAuto/Semibold · H6/Regular · H6/Bold · H5/Regular
+  · H5/Bold · H4/Regular · H4/Bold · H3/Regular · H3/Bold · H2/Regular · H2/Bold ·
+  H1/Regular · H1/Bold · Main Header/sapObjectHeader_Title_FontSize · Title of
+  Components/sapGroup_TitleFontSize · Button/Emphasized/sapButton_Emphasized_FontWeight
+  · Tab/SmallTabText · Tab/MediumTabText. There is no style outside this list — if a
+  size/weight combination you want isn't here, pick the nearest real one, don't invent
+  a size.
+- **Icons (61):** `node build/kit.js i <keyword>` — every icon a component's `Icon`
+  property or a standalone icon instance can use. Never assume a name; a plausible guess
+  (`arrow-swap` for a swap icon) can miss the real name (`synchronize`, confirmed on the
+  flight-search build).
+- **Effects/shadows (12, all real — use these, never a custom drop shadow):**
+  Shadow/sapContent_Shadow0-3 · Shadow/Lite/sapContent_Lite_Shadow ·
+  Container/sapContent_HeaderShadow · Interaction/sapContent_Interaction_Shadow ·
+  Interaction/sapContent_Selected_Shadow · Semantic/Shadow/sapContent_Negative_Shadow ·
+  Semantic/Shadow/sapContent_Positive_Shadow · Input/Standard/sapField_Shadow ·
+  Input/Invalid/sapField_InvalidShadow. "Avoid the generic AI look — no custom drop
+  shadows" from earlier in this skill means exactly this: use one of these 12, not a
+  hand-picked blur/spread/opacity.
+
 ## STATE TABLE — state is always a variant prop, never hand-painted
 
 | UI state | Set via | Never |
@@ -531,5 +571,13 @@ that size/weight change nothing about the rule, added named styles for title/tim
 roles (H2/H3/H4 Bold) so there's no excuse to freehand a size, and Step 3's self-check
 now programmatically scans every text node's `fontName.family` and fails on anything
 that isn't `"72"` (`unstyledText` in the returned object) — this is no longer something
-that can be missed by eye. Old version kept at `SKILL.v6-backup-2026-09-25.md` in this
-same folder.
+that can be missed by eye.
+
+v7.2 (2026-09-26): the "read the whole kit" fix from v7.1 only covered components (153
+of them, vs a ~35-name memorized shortlist before). v7.2 extends the same fix to the
+other 4 kit categories, which had the identical gap: colours (142 variables, grouped by
+prefix), text styles (25, now listed in full — it's short enough), icons (61), and
+effects/shadows (12, now listed in full). Each now has its own "check the real catalog"
+instruction and lookup command instead of relying on a name sounding plausible.
+
+Old version kept at `SKILL.v6-backup-2026-09-25.md` in this same folder.
