@@ -224,9 +224,18 @@ function sub(inst, layerName)                    // find a nested instance insid
 
 ---
 
-## STEP 3 — SELF-CHECK IN THE SAME BUILD CALL (never a separate pass)
+## STEP 3 — SELF-CHECK: IN-CALL RETURN + AN EXTERNAL RE-VERIFICATION GATE
 
-End every build call by returning:
+**Two layers, not one.** The build call's own return value is the agent grading its own
+homework from memory — that already missed real violations twice on this project (a
+big title and a big time both left on raw Inter while small body text was correctly
+bound). The fix is not "remember better," it's a **second, independent tool reading the
+real node tree from outside the build call.** `build/verify-invariants.js` already
+exists in this project and already does exactly this (INV 3 = font family must be
+`"72"`, INV 2 = no raw hex, INV 1 = no fake-component frames) — it was simply never
+wired into this skill before. Run both layers, every build.
+
+**Layer 1 — in the same build call, return:**
 
 ```js
 const unstyledText = figma.currentPage.findAll(n => n.type === 'TEXT'
@@ -235,22 +244,34 @@ return { WARN, nodeCount, instanceCount, nativeWithPaintOrText: [...], unstyledT
 ```
 
 - `WARN` must be **empty**. Non-empty = a component/prop/token/text-style wasn't found,
-  or a variant value was rejected — fix it before the next section, don't proceed with
-  unresolved warnings.
-- `unstyledText` must be **empty**. Any name in it is a text node whose font family
-  isn't `"72"` — it was created without `T()`. Fix by rebuilding that node through
-  `T()` with the correct style from the Text Style Table, not by changing its font
-  manually.
-- `nativeWithPaintOrText` — any `AL()`/native frame in the built subtree that ended up
-  with a `fills.length>0`, a stroke, a text child, or an icon **without** having gone
-  through a real kit `I()` call is a violation: fix it (replace with the right kit
-  component) before continuing.
+  or a variant value was rejected.
+- `unstyledText` must be **empty**. Treat this as a hint to fix, not proof you're clean
+  — it's still self-reported from the same call that made the mistake.
+- `nativeWithPaintOrText` — any `AL()`/native frame that ended up with a fill, stroke,
+  text child, or icon without going through a real kit `I()` call.
 - More than one Primary button in one action group, a text node not created via `T()`,
-  or a layer still named "Frame"/"Group"/"Rectangle" are also violations — catch them
-  here, not at hand-off.
+  or a layer still named "Frame"/"Group"/"Rectangle" are also violations.
 
-Read the returned values as text. Do not take a screenshot to verify this step —
-screenshots are for Step 4 only.
+**Layer 2 — mandatory external re-check, run before Step 4, if this project has
+`build/verify-invariants.js` (check with a file listing):**
+
+```bash
+# 1. dump the built frame's real node tree (name, type, fontFamily, fontSize, fills incl. boundVariable)
+#    from a use_figma call: root.findAll(()=>true).map(n => ({...})) — see the script's header
+#    "Input node shape" comment for the exact fields, or use build/expand-tree-dump.js if the
+#    dump was produced in the COMPACT row format.
+# 2. run the real gate against that dump:
+node build/verify-invariants.js <build-tree.json>
+```
+
+Read the output. `✓ overallPass` with "0 non-SAP fonts" is the real proof — not the
+in-call `unstyledText` array. A `✗ BUILD FAILS INVARIANTS` line names every violation
+by node name and invariant number (`FAIL_FONT` = raw font, `FAIL_HEX`-style = unbound
+colour, invariant 1 = fake-component frame) — **fix every one before Step 4**, this is
+the gate that actually catches what Layer 1 has already been shown to miss. If this
+script isn't in the project, Layer 1 plus a careful manual font-inspector check on
+every title/price/time/large-bold text node (the exact class of node that has missed
+before) is the fallback — don't skip checking those specifically.
 
 ---
 
@@ -619,5 +640,18 @@ measure-ref.py as the front gate whenever it's present; Step 4 already ran
 audit-screen.py conditionally — reworded it to make clear it's the end gate, not an
 optional extra, with the manual by-eye steps kept as the fallback when the scripts
 aren't in this particular project.
+
+v7.4 (2026-09-26): a real build still had unbound display text (title, price time) —
+twice, despite v7.1's in-call self-check. Root cause: the self-check ran INSIDE the
+same build call, checking the agent's own work from memory — the exact call that made
+the mistake was also the one grading it. Found `build/verify-invariants.js` already
+existed in this project with INV 3 doing precisely this check (font family must be
+`"72"`) against the REAL node tree from outside the build call, and confirmed it needs
+no `[typo:role]` tag for v7's un-tagged direct-binding style (font `"72"` at a real
+role size passes with no tag — checked the actual source). It had simply never been
+referenced in this skill. Step 3 is now two explicit layers: the in-call return (kept,
+still useful as a first hint) plus this external re-check as the real gate, run before
+Step 4. `expand-tree-dump.js` is the companion tool if the dump needs converting from
+the compact row format.
 
 Old version kept at `SKILL.v6-backup-2026-09-25.md` in this same folder.
