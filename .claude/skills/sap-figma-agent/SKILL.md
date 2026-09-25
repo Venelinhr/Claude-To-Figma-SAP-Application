@@ -96,7 +96,13 @@ part that already worked well — keep the same four artifacts, plus one new one
    | Zone | Kit component | real key (or "search: …") | variant props incl. state | text style | token |
    |---|---|---|---|---|---|
    | Search field 1 | Form Item | `1ddf647c238f6e94a75b886bc1fcf2e45d74a547` | Type=Input, Form Factor=Cozy, Orientation=Vertical | Body | sapField_TextColor |
-   | Price | (text only) | — | — | LargeText/LHAuto/Bold | sapPositiveTextColor |
+   | Price | (text only) | — | — | LargeText/LHAuto/Bold | Input/Success/sapField_SuccessColor |
+
+   **Token names are namespaced in this kit** (e.g. `Input/Success/sapField_SuccessColor`,
+   not a bare `sapPositiveTextColor` — that shorthand does not resolve here). Confirm the
+   exact name with `node build/kit.js v <keyword>` or `node build/kit.js hex <#hex>`
+   before writing it into the inventory table, never from memory of a name that sounds
+   right.
 
    **Every row needs a real key or a resolvable search term.** If you cannot find a
    component or token for a zone, say so here and stop — do not silently substitute a
@@ -185,6 +191,13 @@ function sub(inst, layerName)                    // find a nested instance insid
   Tables/Cards/Forms → Dialogs → Footer → final spacing pass.
 - **Responsive resize:** when width changes, recompute and resize every child's width in
   the SAME call (padding/gap-aware) — never a screenshot→resize→screenshot loop.
+- **If `I(name)` can't find a component — don't stop on the first miss.** Try in order:
+  (1) `node build/kit.js list <keyword>` for a partial/synonym match, (2)
+  `search_design_system` with a plain-language description of what it does (not the
+  exact word you first tried), (3) `node build/kit.js c <closest guess>` to see if it's
+  spelled/cased differently. Only stop and ask the user after all three miss — and when
+  you do, name the zone, what you tried, and the closest 2-3 candidates you found, so
+  the user can pick instead of you guessing.
 
 ---
 
