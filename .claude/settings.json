@@ -1,208 +1,24 @@
 {
-  "//": "SELF-CONTAINED 2026-08-28 (v2). Previously this file relied on ~/.claude/settings.json to register the use_figma guards + UserPromptSubmit/Stop/SessionStart chain via an absolute path to the ORIGINAL project folder. That made this copy ungated: the global dispatcher checks the session cwd against its own hardcoded root, sees a different folder, and exits 0 — every gate silently dormant. All hooks are registered HERE using $CLAUDE_PROJECT_DIR, so a session launched from THIS folder gates itself (a session launched elsewhere loads none of this — see bin/sap-v2 and AUDIT-V2 §1.1). 2026-09-01: the 8 use_figma PreToolUse gates run through guard-chain.sh so ONE refusal reports EVERY failing gate; screenshot budget, scoped metadata and build counting added.",
+  "//": "v3 (2026-09-25): lean hooks. One build check (guard-build-v3.sh), privacy + token-saving guards, background feedback capture. The v2 approval gates, wireframe forcing, marker files and stop-gate are no longer registered (files kept in .claude/hooks/ for reference). v2 settings: git show main:.claude/settings.json",
   "hooks": {
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "cat \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/.sap-session-banner.txt 2>/dev/null"
-          },
-          {
-            "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/load-workflow-contract.sh",
-            "statusMessage": "Loading SAP workflow contract…",
-            "async": true
-          },
-          {
-            "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/surface-learnings.sh",
-            "statusMessage": "Surfacing SAP lessons…",
-            "async": true
-          },
-          {
-            "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/clear-reuse-marker.sh",
-            "statusMessage": "Clearing SAP gate markers…",
-            "async": true
-          }
-        ]
-      }
-    ],
     "UserPromptSubmit": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/recall-vdi.sh"
-          },
-          {
-            "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/enforce-wireframe-first.sh",
-            "statusMessage": "Checking wireframe gate…"
-          },
-          {
-            "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/feedback-learn.sh",
-            "statusMessage": "Learning from feedback…",
-            "async": true
-          },
-          {
-            "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/recall-lessons.sh",
-            "statusMessage": "Recalling SAP lessons…",
-            "async": true
-          },
-          {
-            "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/capture-approvals.sh",
-            "statusMessage": "Capturing approvals…",
-            "async": true
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Edit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/registry-rebuild.sh"
-          },
-          {
-            "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/manifest-sync-check.sh"
-          },
-          {
-            "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/validate-lesson.sh"
-          }
-        ]
-      },
-      {
-        "matcher": "mcp__figma__use_figma",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/mark-build.sh"
-          },
-          {
-            "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/count-build.sh"
-          },
-          {
-            "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/capture-dump.sh",
-            "statusMessage": "SAP reality gate on the returned tree…"
-          }
-        ]
-      },
-      {
-        "matcher": "mcp__figma__get_metadata",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/guard-scoped-metadata.sh"
-          }
-        ]
-      }
+      { "hooks": [
+        { "type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/feedback-learn.sh", "async": true }
+      ] }
     ],
     "PreToolUse": [
-      {
-        "matcher": "Edit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/block-generated-files.sh"
-          },
-          {
-            "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/guard-marker-write.sh",
-            "statusMessage": "Guarding SAP approval markers…"
-          }
-        ]
-      },
-      {
-        "matcher": "Read",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/block-codejs-read.sh"
-          }
-        ]
-      },
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/guard-private-screens.sh"
-          },
-          {
-            "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/guard-marker-write.sh",
-            "statusMessage": "Guarding SAP approval markers…"
-          }
-        ]
-      },
-      {
-        "matcher": "mcp__figma__use_figma",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/guard-chain.sh",
-            "statusMessage": "SAP build gates (all at once)…"
-          }
-        ]
-      },
-      {
-        "matcher": "mcp__figma__get_screenshot|mcp__figma__take_screenshot",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/guard-screenshot-budget.sh"
-          }
-        ]
-      },
-      {
-        "matcher": "mcp__figma__get_metadata",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/guard-scoped-metadata.sh"
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/lint-on-stop.sh",
-            "statusMessage": "SAP build reality gate…"
-          },
-          {
-            "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/verify-learnings.sh",
-            "statusMessage": "Verifying lessons…",
-            "async": true
-          },
-          {
-            "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/clear-reuse-marker.sh",
-            "statusMessage": "Clearing gate markers…",
-            "async": true
-          },
-          {
-            "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/surface-canonical-record.sh",
-            "statusMessage": "Recording canonical…",
-            "async": true
-          }
-        ]
-      }
+      { "matcher": ".*use_figma", "hooks": [
+        { "type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/guard-build-v3.sh", "statusMessage": "SAP v3 build check…" }
+      ] },
+      { "matcher": "Read", "hooks": [
+        { "type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/block-codejs-read.sh" }
+      ] },
+      { "matcher": "Edit|Write", "hooks": [
+        { "type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/block-generated-files.sh" }
+      ] },
+      { "matcher": "Bash", "hooks": [
+        { "type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/guard-private-screens.sh" }
+      ] }
     ]
   }
 }
