@@ -225,6 +225,14 @@ raw reference-photo pixels:
 - **A design-system component set can be missing a slot the reference needs** (e.g. a tab
   bar with only 2 tab instances when the reference shows 3) — clone an existing slot child
   rather than fighting the component's variant properties for one that doesn't exist.
+- **A small element between two bigger ones is easy to miss building from memory of "the
+  fields I remember"** — the audit's own box-finder found a real swap-icon (⇄) button
+  between two search fields that never got built, only surfaced while verifying the audit
+  tool itself, not while building. The real fix: before building, walk the measured BOXES
+  list from `measure-ref.py` top to bottom and account for every single entry — including
+  ones smaller than a normal component — not just the obvious named fields/sections. A
+  missing small icon doesn't break the layout enough to notice by eye; it only shows up
+  in the measured box count.
 
 ## Handoff
 
