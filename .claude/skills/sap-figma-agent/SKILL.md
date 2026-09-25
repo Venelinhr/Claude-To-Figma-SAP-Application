@@ -253,22 +253,61 @@ the one blocker.
 
 ---
 
-## KEY TABLE — most-used kit components (look up the current key; don't hardcode it)
+## READ THE WHOLE KIT — don't pick from memory, check the real inventory
 
-Look these up live every session with `node build/kit.js c <name>` (or
-`search_design_system` if `kit.js`/`kit.json` isn't in this project) — keys can change
-when the kit library updates. Names to search:
+**Before saying "no matching component" for any zone in the Step 1 inventory, list the
+full component catalog — don't rely on a short remembered list.** Run
+`node build/kit.js list` (no filter — every component) once per session, or
+`search_design_system` with the zone's plain-language description, and actually scan
+the result. A short memorized shortlist causes real misses: this kit has **153
+components**, far more than any 25-35 name "most common" cheat sheet covers, and many
+of them are exactly the part a screen needs but wouldn't come to mind unprompted
+(Object Attribute, Object Identifier, Object Number, Rating Indicator, Progress
+Indicator, Illustrated Message, Token/Tokenizer, Notification Banner, Card family,
+Avatar Badge, Step Input, Range Slider…). Guessing "the kit probably doesn't have that"
+without checking is exactly how a real part gets replaced with a frame.
 
-Shell Bar · Side Navigation · Navigation List Item · Icon Tab Bar · Form Item · Input ·
-Select · MultiComboBox · Date Picker · Button · Check Box · Radio Button · Switch ·
-Object Status · Table Cell · Table · Dynamic Page Header · Dialog · Toolbar ·
-Overflow Toolbar · Tag · Message Strip · Link · Label · Title · Breadcrumb · Wizard Step
-· Wizard Page Header · Panel · Avatar · Icon Button · Value Help · MultiInput ·
-Standard List Item.
+**The full live catalog, for reference** (verify keys with `kit.js c <name>` — this list
+can drift when the kit updates, the command is the source of truth, not this text):
+
+AI Button · AI Input · AI Menu Button · AI Prompt Input · AI Rich Text Editor · AI Split
+Menu Button · AI Text Area · Animated Busy Indicator · Avatar · Avatar Badge · Avatar
+Group · Banner · Branding Button · Breadcrumb · Busy Indicator · Busy Indicator Dot ·
+Button · Button Badge · Calendar · Calendar Date Types · Card · Card Badge · Card
+Extended Header · Card Footer · Card Main Header · Card Media Block · Card Numeric
+Header · Card Timestamp and Counter · Carousel · Check Box · Clock-face · Color Palette
+· Color Picker (+ Color Mode Panel / Comparison Color Fields / Slider) · Date (Range)
+Picker · Date Time Dropdown · Date Time Picker · Dialog · Dialog Block Layer · Drop-Down
+(+ Base / Item / Value Message Item) · Dynamic Page Header · Expand/Collapse and Pin
+Buttons · File Uploader · Footer · Form · Form Item · Header · Header Content Area ·
+Homepage Hero Banner · Hours and Minutes Output · Icon Button · Icon Menu Button · Icon
+Split Button · Icon Tab Bar · Illustrated Message · Input · Input Button · Input Message
+Popover · Label · Legend · Legend Item · Link · List · List Attachment · List Item ·
+List Thumbnail · Menu · Menu Button · Menu List Item · Message Strip (+ Icon Button) ·
+Mixed Calendar Button · Multi Combobox · Multi Input · Navigation Item · Notification
+Banner · Notification List Item · Notifications (+ Growing Item / Status Indicator) ·
+Number Selector · Object Attribute · Object Identifier · Object Number · Object Status ·
+On Content Page Indicator · Page Indicator (+ Dots) · Panel · Popover · Product Icon ·
+Product Switch (+ Element) · Progress Indicator · Radio Button · Range Slider (+ Handle)
+· Rating Indicator (+ Single) · Scrollbar · Segmented Button (+ Singular) · Select ·
+Selector · Settings · Shell Bar · Shell Button · Shell Search (+ Button / Selector) ·
+Side Navigation · Slider (+ Handle) · Split Button · Step Input · Swatch · Switch · Tab
+(+ Bar Overflow) · Table · Table Cell · Table Highlight · Tag · Text · Text Area · Tick
+Mark · Time Dropdown · Time Picker · Toast · Token · Tokenizer · Tool Header · Toolbar
+(+ Items) · Tooltip (+ and Input) · Trailing Container · Tree (+ Item / Item Base) ·
+Two-Month Calendar · User Menu (+ Custom List / Custom List Item / Custom Menu List
+Item) · Wizard Page Header · Wizard Step (`.base/Wizard Step`).
+
+**Most-used, to start from** (still verify the key — don't hardcode it): Shell Bar ·
+Side Navigation · Navigation Item · Icon Tab Bar · Form Item · Input · Select ·
+Multi Combobox · Date (Range) Picker · Button · Check Box · Radio Button · Switch ·
+Object Status · Object Attribute · Object Number · Table Cell · Table · Dynamic Page
+Header · Dialog · Toolbar · Tag · Message Strip · Link · Label · Breadcrumb · Wizard
+Step · Wizard Page Header · Panel · Avatar · Icon Button · Multi Input.
 
 If a name above has no live match, search with a synonym before assuming it doesn't
-exist ("Dropdown" isn't a kit name — it's "Select"; "code editor" may not exist at all —
-say so and ask, don't fake it with a plain textarea frame with paint/text on it).
+exist ("Dropdown" isn't a kit name — it's "Select"; a component genuinely may not
+exist — say so and ask, don't fake it with a plain frame carrying paint/text on it).
 
 ## STATE TABLE — state is always a variant prop, never hand-painted
 
