@@ -258,8 +258,21 @@ def main():
     surfaces.sort(key=lambda s: (s['box'][1], s['box'][0]))
     R['surfaces'] = surfaces[:24]
 
+    # FRAME: build at the reference's own size first; breakpoint is info only.
+    # Density: SAP rows are 32px (Compact) or 44px (Cozy); controls 26 vs 36.
+    ys = sorted({l['y'] for l in R['h_lines']})
+    pitch = [b - a_ for a_, b in zip(ys, ys[1:]) if 24 <= b - a_ <= 60]
+    p = Counter(pitch).most_common(1)[0][0] if pitch else None
+    dens = ('Cozy' if p >= 40 else 'Compact') if p else 'unknown — look at button height: ~26px Compact, ~36px Cozy'
+    fw, fh = (8 * round(v / 8) for v in (W, H))
+    bp = 'S' if fw < 600 else 'M' if fw < 1024 else 'L' if fw < 1440 else 'XL'
+    R['frame'] = {'build': [fw, fh], 'breakpoint': bp, 'row_pitch': p, 'density': dens}
+
     if '--json' in args:
         print(json.dumps(R)); return
+    f = R['frame']
+    print(f"FRAME → build {f['build'][0]}x{f['build'][1]} (match the reference; SAP breakpoint {f['breakpoint']}, info only)"
+          f"  · row pitch {f['row_pitch']} → {f['density']}")
     off = R.get('crop', [0, 0])
     print(f"{R['image']}  logical {W}x{H}  (scale {scale:g})" + (f"  CROP at {off} — coords below are relative to the crop" if 'crop' in R else ''))
     print('COLOURS (share → nearest SAP token):')

@@ -41,6 +41,19 @@ region's box, background token, padding, and the gaps between its children. Use 
 BEFORE picking components — it tells you the actual spacing scale in the image (8, 16,
 24, 32px…) so you set real `itemSpacing`/padding instead of eyeballing.
 
+The first line is `FRAME → build W×H · row pitch → Compact|Cozy`. **Build the frame at that
+size** — never default to 1440. If the user asks for desktop/tablet/mobile, build the
+reference-size frame first, then the breakpoint version beside it. Density follows the
+image: ~26px buttons / 32px rows → Compact, ~36px buttons / 44px rows → Cozy (both may mix).
+
+## Gold screens — learn from local numbers, not live Figma
+
+`knowledge/gold/gold-screens.md` holds the measured structure of 16 PM-approved screens
+(shell, per-floorplan paddings/gaps, components, text styles). Read it; don't re-open the
+gold nodes (costs tokens). Refresh only if a gold screen changes:
+`build/templates/study-gold.use_figma.js` (read-only, set `IDS`, one call per file).
+Side menu = kit `Side Navigation`, always, unless the user asks otherwise.
+
 ## Floorplan pick — one line, from the shape of the ask
 
 | Task shape | Floorplan |
@@ -52,7 +65,11 @@ BEFORE picking components — it tells you the actual spacing scale in the image
 | Tune something without losing context | Drawer |
 | Scan KPIs/numbers | Overview |
 
-Shell (ShellBar + Side Navigation) on every screen, verbatim — clone it, don't rebuild.
+Shell (Shell Bar + Side Navigation) on every full screen. Skip it for a component-level
+reference (a card, dialog, or section crop) — then match that crop's size.
+
+The Figma-side twin of these rules is `.claude/skills/sap-figma-agent/SKILL.md` (uploaded
+into Figma's Agent panel). Change one → change the other, then re-upload the skill.
 
 ## Building — the runtime, not raw Plugin API calls
 
