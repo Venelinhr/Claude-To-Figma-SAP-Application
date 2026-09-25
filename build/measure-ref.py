@@ -220,9 +220,19 @@ def ink_colour(a, box, bg):
 
 
 def find_boxes(a, bg):
-    """Outlined rectangles (1-3px border, any radius) + filled blocks of one colour."""
+    """Outlined rectangles (1-3px border, any radius) + filled blocks of one colour.
+
+    Two conflicting needs, both real: (1) a genuine SAP Check Box is only 16-22px, and
+    the original minlen=20/14 missed it more often than not; (2) lowering minlen alone
+    (tried first) also caught small TEXT fragments/underlines as fake "boxes" — a 41x9
+    or 26x11 sliver is text, not a control. Fix: lower minlen to catch small controls,
+    but then require near-square aspect ratio (SAP's small controls — Check Box, Radio
+    Button, Switch — are square or near-square) OR a minimum absolute size, before
+    accepting a small candidate. A genuine wide/short outline (an input field's
+    underline-only bottom edge) still needs the old wider minlen, so both thresholds
+    run and their results are merged, filtered by shape."""
     H, W, _ = a.shape
-    hs, vs = thin_runs(a, 0, 20), thin_runs(a, 1, 14)
+    hs, vs = thin_runs(a, 0, 12), thin_runs(a, 1, 12)
     boxes, used = [], set()
     for i, t in enumerate(hs):
         if i in used:
@@ -237,6 +247,24 @@ def find_boxes(a, bg):
             if not L or not R:
                 continue
             lx, rx = max(v[0] for v in L), min(v[0] for v in R)
+            w, h = rx + 1 - lx, by + 1 - ty
+            # Bug found while verifying: this filter must reason in BUILD-scale px (what
+            # the rest of the tool reports and what the audit compares), not raw image
+            # px — a reference shot at 2000px wide with SCALE=0.72 has every raw
+            # measurement ~1.4x bigger than the number everyone actually looks at. Using
+            # raw px here let a 57x21 raw sliver (= 41x15 at build scale — clearly a text
+            # fragment) slip through untouched because 57 > the un-scaled "44" ceiling.
+            sw, sh = S(w), S(h)
+            # A "small" candidate (fits in a 44x44 box in BUILD px — bigger than any real
+            # small SAP control) must be near-square (Check Box/Radio/Switch-like) or
+            # sized like a real bordered control (>=14 build-px on the SHORT side);
+            # anything under that on its short side, at any width, is a text fragment or
+            # underline the lowered minlen picked up — not a component. A wide chip/
+            # field/card (short side >=44 build-px) is never subject to this filter.
+            if min(sw, sh) < 44 and min(sw, sh) < 14:
+                continue
+            if max(sw, sh) <= 44 and not (0.5 <= sw / max(sh, 1) <= 2.0):
+                continue
             boxes.append({'kind': 'outline', 'box': (lx, ty, rx + 1, by + 1), 'r': max(0, tx0 - lx),
                           'edge': token(tc), 'edge_rgb': tc})
             used.update((i, j))
