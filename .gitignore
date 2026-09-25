@@ -82,3 +82,7 @@ plugin/figma-builder-v2/registry-bundle-full.json
 
 # Screen-audit scratch (reference/build screenshots, crops) — not source
 .audit/
+
+# Except: gold reference screenshots (kept as source of truth, not scratch)
+!knowledge/gold/snapshots/
+!knowledge/gold/snapshots/*.png
