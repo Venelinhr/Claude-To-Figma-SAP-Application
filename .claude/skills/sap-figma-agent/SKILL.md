@@ -55,7 +55,30 @@ serves it, and which real kit component renders each piece?*
 
 ## STEP 0 — READ THE REFERENCE: SIZE, DENSITY, SPACING (before anything else)
 
-A reference image or node is a spec, not a mood board. Measure it first.
+A reference image or node is a spec, not a mood board. Measure it first — with the
+real measuring tool, not by eye.
+
+**If this project has `build/measure-ref.py` (check with a file listing before Step 0
+— v3-style SAP Figma projects do), it is the front gate: run it before reading the
+image by eye.** Save the reference to a local file first (a pasted image path, or
+`download_assets`/a saved screenshot for a Figma-node reference), then:
+
+```bash
+python3 build/measure-ref.py <reference.png>
+# add --crop x,y,w,h to zoom one region (a card, a dialog, a filter bar) in reference px
+```
+
+This prints, in real measured px, not a guess: the snapped frame size, a reading-order
+tree (top-left → right → down) of every zone, every box's border/fill/ink colour
+already matched to the nearest kit token, padding, font sizes snapped to real kit text
+sizes, and each control's height checked against real kit Compact/Cozy heights so you
+know the density before you build a single node — this is what the manual steps below
+are approximating; run the script first, use the manual steps only when the script
+isn't available in this project or as a sanity double-check. Read the WHOLE output —
+it has caught a genuinely missing element (an icon present in the reference but never
+built) that a first by-eye read missed.
+
+If the script isn't available, fall back to reading by eye with the same rigor:
 
 1. **Frame size = reference, snapped to the SAP breakpoint when it's a standard screen.**
    Measure in logical px (a Retina screenshot is 2× — halve it).
@@ -233,14 +256,21 @@ screenshots are for Step 4 only.
 
 ## STEP 4 — END CHECK: COMPARE TO THE REFERENCE
 
-Take **one** screenshot of the finished frame (`get_screenshot`). If this project has a
-reference image and `build/audit-screen.py` (check for it — v3-style projects do), run
-it: `python3 build/audit-screen.py <reference> <build.png>` and read the
-MISSING / WRONG COLOUR / WRONG DENSITY / EXTRA lists — fix those, not the aggregate
-score (the box-finder can misjudge a genuinely close screen; MISSING/COLOUR/DENSITY/
-EXTRA are the trustworthy signal). If no audit script exists in this file's project,
-compare the screenshot to the reference by eye against your Step 1 Component inventory:
-every zone present, every colour close, every density matching Step 0.
+`build/audit-screen.py` is the end gate — the same relationship measure-ref.py has to
+Step 0, mirrored at the finish. Take **one** screenshot of the finished frame
+(`get_screenshot`), save it locally, then:
+
+```bash
+python3 build/audit-screen.py <reference.png> <build.png>
+```
+
+Read the MISSING / WRONG COLOUR / WRONG DENSITY / EXTRA lists and fix every one of
+them — this is the real checklist. **Do not trust the aggregate/TOTAL score as a pass/
+fail gate** — its box-finder can misjudge a genuinely close screen (a known, documented
+limitation); MISSING/COLOUR/DENSITY/EXTRA are the trustworthy signal, plus your own eye
+on the screenshot next to the reference. If `audit-screen.py` isn't available in this
+project, compare the screenshot to the reference by eye against your Step 1 Component
+inventory: every zone present, every colour close, every density matching Step 0.
 
 ---
 
@@ -579,5 +609,15 @@ other 4 kit categories, which had the identical gap: colours (142 variables, gro
 prefix), text styles (25, now listed in full — it's short enough), icons (61), and
 effects/shadows (12, now listed in full). Each now has its own "check the real catalog"
 instruction and lookup command instead of relying on a name sounding plausible.
+
+v7.3 (2026-09-26): pointed Step 0 and Step 4 at this project's own real measuring/audit
+tools (`build/measure-ref.py`, `build/audit-screen.py`) instead of only reading by eye.
+These scripts already exist in v3 projects, are proven (real bugs caught: a missing
+swap-icon, wrong Compact/Cozy density on 7 checkboxes), and give exact px/token
+readings the agent's own vision reasoning can only approximate. Step 0 now runs
+measure-ref.py as the front gate whenever it's present; Step 4 already ran
+audit-screen.py conditionally — reworded it to make clear it's the end gate, not an
+optional extra, with the manual by-eye steps kept as the fallback when the scripts
+aren't in this particular project.
 
 Old version kept at `SKILL.v6-backup-2026-09-25.md` in this same folder.
