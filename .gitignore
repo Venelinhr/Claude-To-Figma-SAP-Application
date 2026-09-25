@@ -79,3 +79,6 @@ bridge/*.bak.*
 # v2 plugin generated bundle (source is committed; the full registry JSON is generated, 630KB)
 plugin/figma-builder-v2/registry-bundle-full.json
 .claude/reuse-decision-temp.json
+
+# Screen-audit scratch (reference/build screenshots, crops) — not source
+.audit/
