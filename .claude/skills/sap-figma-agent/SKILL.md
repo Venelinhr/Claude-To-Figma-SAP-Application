@@ -25,13 +25,18 @@ Every action must answer: *what business problem am I solving, and which SAP pat
 
 A reference image or node is a spec, not a mood board. Measure it first.
 
-1. **Frame size = reference size.** Take the reference's width × height in logical px
-   (a Retina screenshot is 2× — halve it). Round each to the nearest 8. Build the frame at
-   THAT size. Do **not** default to 1440 / desktop XL. Example: a 733×518 Kayak crop →
-   build 736×520, not 1440×… and not 895×598.
-   - If the user asks for desktop / tablet / mobile, **first** match the reference size,
-     then offer the breakpoint version as a second frame beside it: S <600 · M 600–1023 ·
-     L 1024–1439 · XL ≥1440 (SAP breakpoints). State the size you chose and why.
+1. **Frame size = reference, snapped to the SAP breakpoint when it's a standard screen.**
+   Measure the reference in logical px (a Retina screenshot is 2× — halve it).
+   - **A full desktop/tablet screen → snap to the nearest SAP standard width**, don't copy an
+     odd pixel width. Desktop: M 1024 · L 1280 · XL 1440. Tablet: 768. Keep the reference's
+     HEIGHT (round to 8). Example: a 2000-wide flight-search screen is desktop → build 1440
+     (XL), not 2000. A 1100-wide screen → 1024 (M). State which breakpoint and why.
+   - **A component-level crop (card, dialog, section, chip)** is NOT a breakpoint screen →
+     keep its measured size rounded to 8. Example: a 733×518 flight-card crop → 736×520.
+   - **Not a standard shape** (very wide, very tall, an odd ratio) → use a custom size, and if
+     it could be mobile or tablet, **ask** "is this for mobile, tablet, or desktop?" — the
+     user confirms or refuses. Don't guess a phone frame from a wide image.
+   - If the user names desktop/tablet/mobile, use that breakpoint's standard width.
 2. **Density from what you see, not a default.** Measure a button or a table row:
    - button ≈26px high, row ≈32px → **Compact**
    - button ≈36px high, row ≈44px, big touch targets → **Cozy**

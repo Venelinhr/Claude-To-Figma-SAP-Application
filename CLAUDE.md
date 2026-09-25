@@ -41,10 +41,11 @@ region's box, background token, padding, and the gaps between its children. Use 
 BEFORE picking components — it tells you the actual spacing scale in the image (8, 16,
 24, 32px…) so you set real `itemSpacing`/padding instead of eyeballing.
 
-The first line is `FRAME → build W×H · row pitch → Compact|Cozy`. **Build the frame at that
-size** — never default to 1440. If the user asks for desktop/tablet/mobile, build the
-reference-size frame first, then the breakpoint version beside it. Density follows the
-image: ~26px buttons / 32px rows → Compact, ~36px buttons / 44px rows → Cozy (both may mix).
+The first line is `FRAME → build W×H · row pitch → Compact|Cozy`. **Snap the size to SAP
+standards when it's a full screen:** desktop M 1024 · L 1280 · XL 1440, tablet 768 — keep the
+measured height. A component crop (card, dialog, section) keeps its measured size rounded to
+8. An odd shape that might be mobile/tablet → ask the user before building. Density follows
+the image: ~26px buttons / 32px rows → Compact, ~36px buttons / 44px rows → Cozy (both may mix).
 
 ## Gold screens — learn from local numbers, not live Figma
 

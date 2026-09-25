@@ -265,14 +265,20 @@ def main():
     p = Counter(pitch).most_common(1)[0][0] if pitch else None
     dens = ('Cozy' if p >= 40 else 'Compact') if p else 'unknown — look at button height: ~26px Compact, ~36px Cozy'
     fw, fh = (8 * round(v / 8) for v in (W, H))
-    bp = 'S' if fw < 600 else 'M' if fw < 1024 else 'L' if fw < 1440 else 'XL'
-    R['frame'] = {'build': [fw, fh], 'breakpoint': bp, 'row_pitch': p, 'density': dens}
+    # A full screen (wide) snaps to the nearest SAP standard width; a crop keeps measured size.
+    std = [(768, '768 tablet'), (1024, 'M 1024'), (1280, 'L 1280'), (1440, 'XL 1440')]
+    is_screen = fw >= 700 and fh >= 500  # a screen is wide AND tall; a wide short strip is a crop
+    snap, bp = min(std, key=lambda s: abs(s[0] - fw)) if is_screen else (fw, 'crop')
+    build = [snap if is_screen else fw, fh]
+    hint = 'ask: mobile/tablet/desktop?' if fw < 700 and W / max(H, 1) < 0.9 else ''
+    R['frame'] = {'build': build, 'breakpoint': bp, 'measured_w': fw, 'row_pitch': p, 'density': dens, 'hint': hint}
 
     if '--json' in args:
         print(json.dumps(R)); return
     f = R['frame']
-    print(f"FRAME → build {f['build'][0]}x{f['build'][1]} (match the reference; SAP breakpoint {f['breakpoint']}, info only)"
-          f"  · row pitch {f['row_pitch']} → {f['density']}")
+    snapnote = f" (measured {f['measured_w']} → SAP {f['breakpoint']})" if is_screen and snap != fw else ''
+    print(f"FRAME → build {f['build'][0]}x{f['build'][1]}{snapnote}  · row pitch {f['row_pitch']} → {f['density']}"
+          + (f"  · {f['hint']}" if f['hint'] else ''))
     off = R.get('crop', [0, 0])
     print(f"{R['image']}  logical {W}x{H}  (scale {scale:g})" + (f"  CROP at {off} — coords below are relative to the crop" if 'crop' in R else ''))
     print('COLOURS (share → nearest SAP token):')
