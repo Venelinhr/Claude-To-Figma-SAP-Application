@@ -35,16 +35,17 @@ MEASURE = os.path.join(ROOT, 'build', 'measure-ref.py')
 # guesses that are the same UI role. Compare by role, not the exact guess string, so
 # labeling/detection quirks (e.g. a label sitting above an input, outside its border)
 # don't get scored as missing/extra content.
-_KIND_ALIAS = {
-    'Field with label': 'field', 'Input / Select': 'field', 'Input / Button': 'field',
-    'Tile / chip': 'tile', 'filled panel / selected item': 'tile',
-    'Card / list item': 'card', 'Button Primary': 'button',
-}
+# The families come from build/router-table.json (image_labels[].audit_role) — the same
+# table the Jev router uses to type each box — so routing and auditing never disagree.
+with open(os.path.join(ROOT, 'build', 'router-table.json')) as _f:
+    _LABELS = sorted(json.load(_f)['image_labels']['rules'], key=lambda r: -len(r['label']))
 
 
 def role(guess):
-    base = guess.split(' (')[0].split(' —')[0].strip()
-    return _KIND_ALIAS.get(base, base)
+    for r in _LABELS:
+        if guess.startswith(r['label']):
+            return r.get('audit_role', r['label'])
+    return guess.split(' (')[0].split(' —')[0].strip()
 
 
 def measure(path):

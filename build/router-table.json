@@ -1,0 +1,832 @@
+{
+  "_doc": "Jev typed router — the ONE source of the 4 gate tables. build/route.js reads it; the SKILL.md router section and the ROUTE(text) block are generated from it (build/gen-router.js). Every component/token/icon value here MUST exist in knowledge/live/kit.json — the drift test enforces it. Keys captured 2026-09-26 from kit.json.",
+  "gate1_mode": {
+    "_doc": "MODE. property words -> ACT (even with add/remove/move present). node-structure verbs -> QUICK. build/new/suggest words -> THINK. Order of checks in route.js: think words first (new+screen-noun, build, suggest), then property words (beat action verbs), then structure verbs, else default THINK.",
+    "think_words": [
+      "build",
+      "create screen",
+      "make a",
+      "design",
+      "suggest",
+      "recommend",
+      "better",
+      "nicer",
+      "improve",
+      "what is wrong",
+      "whats wrong",
+      "what's wrong",
+      "lay out",
+      "layout for",
+      "from the reference",
+      "based on this",
+      "based on the image",
+      "like this"
+    ],
+    "think_new_screen": {
+      "_doc": "new/create/add + a screen noun = THINK, not ACT/QUICK. 'add a dialog' is a new screen; 'add a column' is QUICK.",
+      "new_words": [
+        "new",
+        "create",
+        "add a",
+        "add an",
+        "another"
+      ],
+      "screen_nouns": [
+        "dialog",
+        "page",
+        "screen",
+        "form",
+        "wizard",
+        "drawer",
+        "popover",
+        "sheet",
+        "view",
+        "layout",
+        "flow",
+        "overview"
+      ]
+    },
+    "property_words": [
+      "state",
+      "active",
+      "selected",
+      "unselect",
+      "deselect",
+      "checked",
+      "check",
+      "uncheck",
+      "toggle",
+      "on",
+      "off",
+      "border",
+      "stroke",
+      "outline",
+      "padding",
+      "gap",
+      "gaps",
+      "spacing",
+      "primary",
+      "secondary",
+      "tertiary",
+      "emphasized",
+      "compact",
+      "cozy",
+      "disabled",
+      "enabled",
+      "read only",
+      "read-only",
+      "error",
+      "warning",
+      "success",
+      "information",
+      "colour",
+      "color",
+      "blue",
+      "red",
+      "green",
+      "bold",
+      "hide",
+      "show",
+      "visible",
+      "rename",
+      "text to",
+      "align",
+      "left align",
+      "right align",
+      "center align"
+    ],
+    "structure_words": [
+      "add",
+      "remove",
+      "delete",
+      "move",
+      "swap",
+      "replace",
+      "insert",
+      "column",
+      "row",
+      "icon",
+      "field",
+      "card",
+      "put",
+      "drag",
+      "reorder",
+      "duplicate",
+      "clone"
+    ],
+    "default": "THINK"
+  },
+  "gate2_floorplan": {
+    "_doc": "THINK only. task-shape words -> one floorplan + gold recipe name. Recipes live in knowledge/gold/gold-screens.md. default null = no task-shape word: take it from the image (Gate 0) or ask — never a silent default.",
+    "rules": [
+      {
+        "words": [
+          "manage",
+          "edit one",
+          "record",
+          "details of",
+          "one item",
+          "fields of"
+        ],
+        "floorplan": "Object Page"
+      },
+      {
+        "words": [
+          "browse",
+          "filter",
+          "list of",
+          "results",
+          "search results",
+          "many",
+          "table of",
+          "compare offers",
+          "compare results",
+          "booking",
+          "flights",
+          "tickets"
+        ],
+        "floorplan": "List Report"
+      },
+      {
+        "words": [
+          "step",
+          "steps",
+          "wizard",
+          "onboarding",
+          "create flow",
+          "guided"
+        ],
+        "floorplan": "Wizard-in-Dialog"
+      },
+      {
+        "words": [
+          "confirm",
+          "one decision",
+          "yes/no",
+          "approve",
+          "delete confirm",
+          "dialog",
+          "popup",
+          "pop-up"
+        ],
+        "floorplan": "Dialog"
+      },
+      {
+        "words": [
+          "tune",
+          "adjust",
+          "without losing",
+          "side panel",
+          "settings panel"
+        ],
+        "floorplan": "Drawer"
+      },
+      {
+        "words": [
+          "kpi",
+          "kpis",
+          "dashboard",
+          "metrics",
+          "numbers",
+          "at a glance",
+          "overview"
+        ],
+        "floorplan": "Overview"
+      }
+    ],
+    "default": null
+  },
+  "gate3_component": {
+    "_doc": "zone/noun words -> ONE kit component + its real key. name+key MUST match kit.json. ambiguous words -> candidates, never a silent pick.",
+    "rules": [
+      {
+        "words": [
+          "checkbox",
+          "check box",
+          "tick box"
+        ],
+        "component": "Check Box",
+        "key": "23b4a2ca030e4bd2ff3bdd5b97b70f646ec09071"
+      },
+      {
+        "words": [
+          "switch",
+          "toggle"
+        ],
+        "component": "Switch",
+        "key": "c63509f642cdabbeb8c1878dd125ee006481631c"
+      },
+      {
+        "words": [
+          "radio",
+          "radio button",
+          "choose one",
+          "one of few"
+        ],
+        "component": "Radio Button",
+        "key": "9308f27ef27fbb28bc7d167c52494aa41a21610f"
+      },
+      {
+        "words": [
+          "dropdown",
+          "drop-down",
+          "select",
+          "choose from"
+        ],
+        "component": "Select",
+        "key": "5ce369ff7fb0cce28984eec8dd9973ccde82facb"
+      },
+      {
+        "words": [
+          "multi select",
+          "multiple values",
+          "multi combobox",
+          "combobox"
+        ],
+        "component": "Multi Combobox",
+        "key": "cc0631141a7083096632c6161ee15448ced39ec3"
+      },
+      {
+        "words": [
+          "date",
+          "date picker",
+          "calendar field"
+        ],
+        "component": "Date (Range) Picker",
+        "key": "ad1f84e6293671f80ff8dd174b1da0cbacf0fa48"
+      },
+      {
+        "words": [
+          "status",
+          "object status",
+          "semantic status"
+        ],
+        "component": "Object Status",
+        "key": "748d609ead5d4a246d7cd7c144b94b518c467e58"
+      },
+      {
+        "words": [
+          "tag",
+          "badge",
+          "chip",
+          "label pill"
+        ],
+        "component": "Tag",
+        "key": "9b55bf702befd73b2e28f800ee4d0033bc0e0e95"
+      },
+      {
+        "words": [
+          "tab",
+          "tabs",
+          "tab bar",
+          "icon tab"
+        ],
+        "component": "Icon Tab Bar",
+        "key": "4aafcbf55528c439876b314d155438884b614722"
+      },
+      {
+        "words": [
+          "form field",
+          "label and field",
+          "labelled field",
+          "form item"
+        ],
+        "component": "Form Item",
+        "key": "1ddf647c238f6e94a75b886bc1fcf2e45d74a547"
+      },
+      {
+        "words": [
+          "input",
+          "text field",
+          "text input",
+          "type here"
+        ],
+        "component": "Input",
+        "key": "0f4366cb3065919e8f3deb0462f1a5a3633d6b50"
+      },
+      {
+        "words": [
+          "table",
+          "list rows",
+          "table rows",
+          "grid rows",
+          "table cell",
+          "row"
+        ],
+        "component": "Table Cell",
+        "key": "e717737e98a40a8619e315ca1b4b04646b93b541"
+      },
+      {
+        "words": [
+          "button",
+          "action",
+          "cta",
+          "submit",
+          "primary action"
+        ],
+        "component": "Button",
+        "key": "91805fa199b1fd247d76a9c08bbe0982b49065c4"
+      }
+    ],
+    "candidates": [
+      {
+        "word": "box",
+        "options": [
+          "Check Box",
+          "Multi Combobox",
+          "Message Strip"
+        ]
+      },
+      {
+        "word": "bar",
+        "options": [
+          "Icon Tab Bar",
+          "Shell Bar",
+          "Toolbar"
+        ]
+      },
+      {
+        "word": "picker",
+        "options": [
+          "Date (Range) Picker",
+          "Date Time Picker",
+          "Time Picker"
+        ]
+      }
+    ]
+  },
+  "gate4_state": {
+    "_doc": "state word -> state KEY -> ordered props + values. The router picks the FIRST prop the component really has and the FIRST value that prop really offers (kit.json on the Claude side, the live node in Figma) — because the kit names the same state differently (error = Negative on Input, Error on others; on = Checked / True). Never a fixed value. Order of keys = match order; a word used once is not reused.",
+    "keys": {
+      "primary": {
+        "words": [
+          "primary",
+          "sap blue",
+          "emphasized",
+          "main action"
+        ],
+        "props": [
+          "Type"
+        ],
+        "values": [
+          "Primary"
+        ]
+      },
+      "secondary": {
+        "words": [
+          "secondary"
+        ],
+        "props": [
+          "Type"
+        ],
+        "values": [
+          "Secondary"
+        ]
+      },
+      "tertiary": {
+        "words": [
+          "tertiary",
+          "link style"
+        ],
+        "props": [
+          "Type"
+        ],
+        "values": [
+          "Tertiary"
+        ]
+      },
+      "compact": {
+        "words": [
+          "compact",
+          "dense"
+        ],
+        "props": [
+          "Form Factor"
+        ],
+        "values": [
+          "Compact"
+        ]
+      },
+      "cozy": {
+        "words": [
+          "cozy",
+          "cosy",
+          "comfortable"
+        ],
+        "props": [
+          "Form Factor"
+        ],
+        "values": [
+          "Cozy"
+        ]
+      },
+      "disabled": {
+        "words": [
+          "disabled",
+          "greyed out",
+          "grayed out"
+        ],
+        "props": [
+          "Interaction State"
+        ],
+        "values": [
+          "Disabled"
+        ]
+      },
+      "readonly": {
+        "words": [
+          "read only",
+          "read-only",
+          "readonly"
+        ],
+        "props": [
+          "Interaction State"
+        ],
+        "values": [
+          "Read Only",
+          "Display Only"
+        ]
+      },
+      "error": {
+        "words": [
+          "error",
+          "negative",
+          "invalid"
+        ],
+        "props": [
+          "Value State",
+          "Semantic",
+          "State"
+        ],
+        "values": [
+          "Negative",
+          "Error"
+        ]
+      },
+      "warning": {
+        "words": [
+          "warning",
+          "critical"
+        ],
+        "props": [
+          "Value State",
+          "Semantic",
+          "State"
+        ],
+        "values": [
+          "Critical",
+          "Warning"
+        ]
+      },
+      "success": {
+        "words": [
+          "success",
+          "positive",
+          "valid"
+        ],
+        "props": [
+          "Value State",
+          "Semantic",
+          "State"
+        ],
+        "values": [
+          "Positive",
+          "Success"
+        ]
+      },
+      "information": {
+        "words": [
+          "information",
+          "info"
+        ],
+        "props": [
+          "Value State",
+          "Semantic",
+          "State"
+        ],
+        "values": [
+          "Information"
+        ]
+      },
+      "off": {
+        "words": [
+          "off",
+          "unchecked",
+          "uncheck",
+          "unselect",
+          "deselect",
+          "inactive",
+          "turn off"
+        ],
+        "props": [
+          "Check",
+          "Checked",
+          "Selected",
+          "Toggled"
+        ],
+        "values": [
+          "Unchecked",
+          "False"
+        ]
+      },
+      "active": {
+        "words": [
+          "active",
+          "activate",
+          "highlighted"
+        ],
+        "props": [
+          "Check",
+          "Checked",
+          "Selected",
+          "Toggled",
+          "Interaction State"
+        ],
+        "values": [
+          "Checked",
+          "True",
+          "Active"
+        ]
+      },
+      "on": {
+        "words": [
+          "on",
+          "checked",
+          "check",
+          "select",
+          "selected",
+          "enable",
+          "turn on"
+        ],
+        "props": [
+          "Check",
+          "Checked",
+          "Selected",
+          "Toggled"
+        ],
+        "values": [
+          "Checked",
+          "True"
+        ]
+      }
+    },
+    "frame_keys": {
+      "_doc": "on a plain frame/card (no component) these keys set a border instead",
+      "on": "frame_active_border",
+      "active": "frame_active_border",
+      "off": "frame_normal_border"
+    }
+  },
+  "act_route": {
+    "_doc": "ROUTE(text, selection) for the ACT one-call. State words resolved against the SELECTED node's real componentProperties, in this order; a plain frame -> border token. Numbers snap to SAP scale.",
+    "frame_active_border": {
+      "token": "sapList_SelectionBorderColor",
+      "key": "226689172d58b3e41784155d818f632f9c7f332b",
+      "weight": 2,
+      "verified": "live file L9bomZ4CKDmBGQfGM9C61z 2026-09-26 = #0064d9; not in the cached kit.json. sapActiveColor (#dee2e5) is a pressed BACKGROUND, not a selected border."
+    },
+    "frame_normal_border": {
+      "token": "sapList_BorderColor",
+      "key": "ae5e040923e301aea32233ae118cc187149588b0",
+      "weight": 1
+    },
+    "sap_scale": [
+      0,
+      4,
+      8,
+      12,
+      16,
+      24,
+      32
+    ],
+    "number_targets": {
+      "padding": "all4",
+      "side padding": "leftRight",
+      "left padding": "left",
+      "right padding": "right",
+      "gap": "itemSpacing",
+      "gaps": "itemSpacing",
+      "spacing": "itemSpacing"
+    }
+  },
+  "image_labels": {
+    "_doc": "GATE 0. measure-ref.py guess label (matched by PREFIX, longest first) + a size rule -> ONE kit component or a container frame. Sizes in build px. Covers every label guess() can return (checked 2026-09-26). A label not here -> unmapped (shown in the plan, never a silent guess). Also read by audit-screen.py role(). audit_role = the coarse family audit-screen.py compares by (same families as its old _KIND_ALIAS, so scores do not change); a rule without audit_role compares by its own label.",
+    "rules": [
+      {
+        "label": "Field with label",
+        "size": [
+          {
+            "else": "Form Item"
+          }
+        ],
+        "audit_role": "field"
+      },
+      {
+        "label": "Input / Select",
+        "size": [
+          {
+            "else": "candidates",
+            "options": [
+              "Input",
+              "Select"
+            ]
+          }
+        ],
+        "audit_role": "field"
+      },
+      {
+        "label": "Input / Button (outline)",
+        "size": [
+          {
+            "w_max": 48,
+            "component": "Icon Button"
+          },
+          {
+            "w_max": 120,
+            "component": "Button"
+          },
+          {
+            "else": "Input"
+          }
+        ],
+        "audit_role": "field"
+      },
+      {
+        "label": "Tile / chip — SELECTED",
+        "size": [
+          {
+            "h_max": 26,
+            "component": "Tag",
+            "state": "on"
+          },
+          {
+            "else": "container",
+            "state": "on"
+          }
+        ],
+        "audit_role": "tile"
+      },
+      {
+        "label": "Tile / chip",
+        "size": [
+          {
+            "h_max": 26,
+            "component": "Tag"
+          },
+          {
+            "else": "container"
+          }
+        ],
+        "audit_role": "tile"
+      },
+      {
+        "label": "Check Box",
+        "size": [
+          {
+            "h_max": 19,
+            "component": "Check Box",
+            "density": "Compact"
+          },
+          {
+            "else": "Check Box",
+            "density": "Cozy"
+          }
+        ]
+      },
+      {
+        "label": "Switch track",
+        "size": [
+          {
+            "else": "Switch"
+          }
+        ]
+      },
+      {
+        "label": "Button Primary",
+        "size": [
+          {
+            "h_max": 31,
+            "component": "Button",
+            "props": {
+              "Type": "Primary"
+            },
+            "density": "Compact"
+          },
+          {
+            "else": "Button",
+            "props": {
+              "Type": "Primary"
+            },
+            "density": "Cozy"
+          }
+        ],
+        "audit_role": "button"
+      },
+      {
+        "label": "Avatar / icon circle",
+        "size": [
+          {
+            "else": "Avatar"
+          }
+        ]
+      },
+      {
+        "label": "Card / list item",
+        "size": [
+          {
+            "else": "container"
+          }
+        ],
+        "audit_role": "card"
+      },
+      {
+        "label": "filled panel / selected item",
+        "size": [
+          {
+            "else": "container",
+            "state": "on"
+          }
+        ],
+        "audit_role": "tile"
+      },
+      {
+        "label": "dot",
+        "size": [
+          {
+            "else": "decoration"
+          }
+        ]
+      },
+      {
+        "label": "box",
+        "size": [
+          {
+            "else": "unmapped"
+          }
+        ]
+      }
+    ],
+    "container": {
+      "_doc": "container = a plain unstyled auto-layout FRAME, no fill, only a border token if the label had a visible edge.",
+      "border_token": "sapList_BorderColor",
+      "selected_border_token": "sapList_SelectionBorderColor"
+    }
+  },
+  "figma_kit": {
+    "_doc": "What the Figma Agent gets in the BUILD INSTALL (it has no terminal, so no kit.js). Components: this list (keys from kit.json). Colours, text styles, icons: ALL from kit.json. Size limit: SKILL.md must stay under 65,536 chars — add components here only when a build needs them.",
+    "components": [
+      "Shell Bar",
+      "Side Navigation",
+      "Navigation Item",
+      "Icon Tab Bar",
+      "Form Item",
+      "Input",
+      "Select",
+      "Multi Combobox",
+      "Date (Range) Picker",
+      "Button",
+      "Check Box",
+      "Radio Button",
+      "Switch",
+      "Object Status",
+      "Object Attribute",
+      "Object Number",
+      "Object Identifier",
+      "Table Cell",
+      "Table",
+      "Dynamic Page Header",
+      "Dialog",
+      "Toolbar",
+      "Tag",
+      "Message Strip",
+      "Link",
+      "Label",
+      "Breadcrumb",
+      ".base/Wizard Step",
+      "Wizard Page Header",
+      "Panel",
+      "Avatar",
+      "Icon Button",
+      "Multi Input",
+      "Text",
+      "Text Area",
+      "Segmented Button",
+      "Step Input",
+      "List",
+      "List Item",
+      "Card",
+      "Card Main Header",
+      "Menu Button",
+      "Split Button",
+      "Token",
+      "Tokenizer",
+      "Footer",
+      "Header",
+      "Popover",
+      "Illustrated Message",
+      "Progress Indicator",
+      "Time Picker",
+      "Date Time Picker"
+    ]
+  }
+}
