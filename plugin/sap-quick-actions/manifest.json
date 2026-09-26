@@ -1,0 +1,30 @@
+{
+  "name": "SAP Quick Actions",
+  "id": "sap-quick-actions",
+  "api": "1.0.0",
+  "main": "code.js",
+  "editorType": ["figma"],
+  "documentAccess": "dynamic-page",
+  "permissions": ["teamlibrary"],
+  "networkAccess": { "allowedDomains": ["none"] },
+  "menu": [
+    { "name": "Toggle on / off (checkbox, switch, radio, row)", "command": "toggle" },
+    { "separator": true },
+    { "name": "Border → Selected (sapActiveColor 2px)", "command": "border-selected" },
+    { "name": "Border → Normal (sapList_BorderColor 1px)", "command": "border-normal" },
+    { "separator": true },
+    { "name": "Button → Primary", "command": "type-primary" },
+    { "name": "Button → Secondary", "command": "type-secondary" },
+    { "name": "Button → Tertiary", "command": "type-tertiary" },
+    { "separator": true },
+    { "name": "Density → Compact", "command": "ff-compact" },
+    { "name": "Density → Cozy", "command": "ff-cozy" },
+    { "separator": true },
+    { "name": "State → Disabled", "command": "state-disabled" },
+    { "name": "State → Regular", "command": "state-regular" },
+    { "separator": true },
+    { "name": "Side padding → 16", "command": "pad-16" },
+    { "name": "Side padding → 24", "command": "pad-24" },
+    { "name": "Side padding → 32", "command": "pad-32" }
+  ]
+}

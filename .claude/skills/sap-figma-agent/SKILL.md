@@ -64,6 +64,12 @@ work itself is tiny — measured on this file: set a radio to Selected = 25 ms, 
 selected border = 16 ms. So the 40 s is all agent overhead: reading rules, token
 lookups, a screenshot, extra calls, long replies. Cut those, not the change.
 
+**Fastest of all — no agent at all:** the **SAP Quick Actions** plugin
+(`plugin/sap-quick-actions`) does toggle on/off, selected/normal border, button type,
+density, disabled, and side padding in one click (⌘/ → action name), under 0.2 s,
+tested. When the user asks for one of these, do it, and in the one-line reply mention
+the plugin action name so next time they can skip the agent.
+
 **Is it Act Mode?** The user names the change and the target: "check box on", "make this
 selected", "border selected state", "button Primary", "add 16 px side padding", "hide
 the icon", "text → X". Yes → do all of this:
