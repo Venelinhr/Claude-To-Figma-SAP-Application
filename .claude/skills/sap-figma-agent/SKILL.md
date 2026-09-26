@@ -18,6 +18,13 @@ don't exist for you. Every UI element you place is a real **SAP Web UI Kit** com
 instance, imported by its real key, with variant props read from the live component
 (never guessed) and fills/text bound to real kit variables and text styles.
 
+**⚡ The point of this skill living in Figma is speed.** A named, already-decided change
+("add a border", "make it blue", "add padding") is a direct action — do it immediately,
+no plan, no approval stop (**ACT MODE**, below). Only an open design decision ("make
+this better", a new screen from scratch) gets the full reason→plan→approve→build
+sequence (**THINK MODE**). Read "ACT MODE" below before doing anything else — most
+requests to an already-built screen belong there, not in the full sequence.
+
 **Theme: Horizon Light, always** — even if the reference is dark.
 **File:** whatever Figma file the Agent panel is open in. Patterns are learned by shape,
 never by a remembered node ID (IDs drift — see "Why no node IDs" below).
@@ -141,12 +148,58 @@ buttons, free-text field for a fixed set of values) even if the reference has it
 
 ---
 
-## QUICK MODE — small change on an existing frame
+## ⚡ ACT MODE — a direct, named change: do it now, zero planning, zero ceremony
 
-Request edits or restyles something that already exists (rename, add a column, swap a
-control, try a variant): skip the Step 1 stop. Read the selected node, make the change
-using the same code-first rules below, keep frame size/density, report what changed.
-Full sequence only for a new screen from scratch.
+**This is the whole reason this skill exists: to act fast inside Figma instead of
+routing a small change through you asking Claude to do it via MCP.** A real case
+measured: a single-property fix (a 2px border color) took 1.5 minutes through the full
+workflow — the change itself was one line
+(`stroke(node, 'sapActiveColor', {a:2})`). The overhead was the process around it, not
+the edit. That overhead is gone in this mode.
+
+**Trigger:** the user names a concrete, already-decided change to something that
+exists — a property, a color, a state, a spacing value, an icon, text, an alignment.
+Examples: "add a selected-state border", "make the button blue", "add side padding",
+"center these icons", "remove the € sign", "make it Cozy". If you could describe the
+fix as one sentence naming the exact property to change, this is Act Mode.
+
+**Do, in order, with no pause between them and no plan shown:**
+1. Find the real node(s) (read-only lookup, no announcement needed).
+2. Look up the real token/variant value if you don't already have it cached from this
+   session (`kit.js` / `search_design_system` — one lookup, not a research pass).
+3. Apply the change directly via the runtime (`fill()`/`stroke()`/`I(name, props)`/
+   `T()` — same functions as any build, just no prelude reload if it's already in
+   context from this session).
+4. One screenshot to confirm it looks right. Report what changed, in one line.
+
+**Skip entirely in Act Mode:** the Step 1 plan (VDI/tree/confidence/ASCII), the
+Component inventory table, the external `verify-invariants.js` re-check (Step 3 Layer
+2) — these exist to prevent a *new build* from drifting into fake components over many
+sections; they add nothing to a single named property change on a node that's already
+real. Keep only the in-call check that the specific thing you touched is still real
+(e.g. if you added a stroke, confirm it's a bound variable, not raw hex — that's a
+one-line check, not a separate script run).
+
+**Escalate to THINK MODE (Step 0-5, full sequence) only when:**
+- The request is open-ended ("make this better", "suggest a design", "what would you
+  improve") — a judgment call, not a named property.
+- It's a new screen or section from scratch, not an edit to something existing.
+- The named change would require inventing a component/pattern you haven't confirmed
+  exists — that's real design work, not a direct action.
+
+When in doubt: if the user already made the design decision and just wants it applied,
+that's Act Mode. If the decision itself is still open, that's Think Mode.
+
+---
+
+## QUICK MODE — small change on an existing frame (multi-part edits, still fast)
+
+For an edit that's slightly bigger than one property — add a column, swap a control,
+try a variant, several related changes at once — skip the Step 1 stop, but still run
+the full Step 2/3 build+self-check discipline (not the trimmed Act Mode path above),
+since more than one thing is changing at once. Read the selected node, make the change
+using the code-first rules below, keep frame size/density, report what changed. Full
+Step 0-5 sequence only for a new screen from scratch.
 
 ---
 
@@ -686,5 +739,22 @@ repeated), and both Step 4 and Step 5 require an explicit fixed/skipped-with-rea
 disposition for every single MISSING/WRONG COLOUR/WRONG DENSITY/EXTRA line before the
 build can be handed off — "the score can be wrong" is now scoped to the TOTAL number
 only, never to an individual named line with coordinates.
+
+v7.6 (2026-09-26): a real 1-line change (add a selected-state border, one bound
+variable, one property) took 1.5 minutes end to end through this skill. Traced why:
+Quick Mode correctly skipped the Step 1 plan for a small edit, but still routed the
+change through the same full Step 2/3 machinery a whole new build needs — reload the
+85-line prelude, look up the token, run the in-call check, AND run the external
+`verify-invariants.js` node-tree export-and-check (Step 3 Layer 2). That's fixed
+overhead sized for a multi-section build, applied to a single property. Added **ACT
+MODE**, a new top-level mode above Quick Mode: for any request that names a concrete,
+already-decided change (a property, color, state, spacing, icon, alignment) — find the
+node, look up the one token if needed, apply it directly, one screenshot, one-line
+report. No plan, no approval stop, no Component inventory table, no external
+verify-invariants.js run. Quick Mode still exists for edits bigger than one property
+(add a column, several related changes) where the full self-check still earns its
+cost. The mode split is now stated as the very first thing in the skill, since it's
+the main lever for the skill's actual purpose — acting fast inside Figma instead of
+routing everything through Claude via MCP.
 
 Old version kept at `SKILL.v6-backup-2026-09-25.md` in this same folder.
