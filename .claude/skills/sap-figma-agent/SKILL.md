@@ -64,11 +64,28 @@ work itself is tiny — measured on this file: set a radio to Selected = 25 ms, 
 selected border = 16 ms. So the 40 s is all agent overhead: reading rules, token
 lookups, a screenshot, extra calls, long replies. Cut those, not the change.
 
-**Fastest of all — no agent at all:** the **SAP Quick Actions** plugin
-(`plugin/sap-quick-actions`) does toggle on/off, selected/normal border, button type,
-density, disabled, and side padding in one click (⌘/ → action name), under 0.2 s,
-tested. When the user asks for one of these, do it, and in the one-line reply mention
-the plugin action name so next time they can skip the agent.
+**ANY small request is ACT — there is no fixed list.** The user can ask for anything
+small, in any words: "check box on", "make it red error", "hide the second row", "icon to
+the left", "gap 8", "rename to X", "bold this", "swap to star icon". You never wait for a
+known command. You write the few lines yourself, in this shape, and run it at once:
+
+```js
+const n = figma.currentPage.selection[0];   // or the node the user linked
+// 1-5 lines: set the one property the user named (variant prop, stroke, padding, text,
+//            visible, itemSpacing, layout align…). Reuse a token from a sibling if needed.
+return { done: true, changed: '<what you set>' };
+```
+
+Rules for writing it:
+- **Instance state** → `setProperties({ '<Prop>': '<Value>' })`. If you are not sure of the
+  exact prop name, read `n.componentProperties` in the same call and pick the match —
+  never a separate lookup call.
+- **A colour** → copy the bound paint from a sibling/near node that already has it; only
+  if none exists, `importVariableByKeyAsync(key)` with a key from the table below.
+- **Text** → load the node's own current font, set `characters`. Never change its style.
+- **Size, gap, padding, visible, align** → plain property, SAP scale 0/4/8/12/16/24/32.
+- **Nothing to look up in `kit.js`, no `search_design_system`, no screenshot, no plan.**
+- Wrong result → fix in one more call. The recipes A-D below are examples of this shape.
 
 **Is it Act Mode?** The user names the change and the target: "check box on", "make this
 selected", "border selected state", "button Primary", "add 16 px side padding", "hide
@@ -126,6 +143,33 @@ return { done: true, changed: ref ? 'stroke copied from ' + ref.name : 'stroke s
 const n = figma.currentPage.selection[0];
 n.paddingLeft = n.paddingRight = 16;          // "side padding"
 return { done: true, changed: { pl: n.paddingLeft, pr: n.paddingRight } };
+```
+
+**D. ONE SCRIPT FOR ALL COMMON ACTIONS** (tested live on this kit, each action < 0.2 s).
+Set `CMD` and run. Works on the selection; a selected frame acts on the SAP instances inside it.
+
+```js
+const CMD = 'toggle'; // toggle | border-selected | border-normal | type-primary | type-secondary |
+                      // type-tertiary | ff-compact | ff-cozy | state-disabled | state-regular | pad-16 | pad-24 | pad-32
+const sel = figma.currentPage.selection;
+const TOGGLE = [['Check','Checked','Unchecked'], ['Checked','True','False'], ['Selected','True','False']];
+const defs = i => { const p = i.mainComponent && i.mainComponent.parent; return p && p.type === 'COMPONENT_SET' ? p.componentPropertyDefinitions : {}; };
+const insts = sel.flatMap(n => n.type === 'INSTANCE' ? [n] : ('findAll' in n ? n.findAll(x => x.type === 'INSTANCE' && Object.keys(defs(x)).length) : []));
+const setV = (i, p, v) => { const d = defs(i)[p]; if (!d || d.type !== 'VARIANT' || !d.variantOptions.includes(v)) return 0; i.setProperties({ [p]: v }); return 1; };
+let n = 0;
+if (CMD === 'toggle') for (const i of insts) for (const [p, on, off] of TOGGLE) { const c = i.componentProperties[p]; if (c && setV(i, p, c.value === on ? off : on)) { n++; break; } }
+if (CMD.startsWith('border')) {
+  const [key, w] = CMD === 'border-selected' ? ['8280fcbaf014930076ff69cc352ce47246d4829c', 2] : ['ae5e040923e301aea32233ae118cc187149588b0', 1];
+  const ref = sel[0].parent && sel[0].parent.children.find(c => !sel.includes(c) && c.strokeWeight === w && c.strokes?.[0]?.boundVariables?.color);
+  const v = ref ? null : await figma.variables.importVariableByKeyAsync(key);   // sibling copy = 16 ms, import = 1.6 s
+  for (const x of sel) if ('strokes' in x) { x.strokes = ref ? ref.strokes : [figma.variables.setBoundVariableForPaint({ type: 'SOLID', color: { r: 0, g: 0, b: 0 } }, 'color', v)]; x.strokeAlign = 'INSIDE'; x.strokeWeight = w; n++; }
+}
+const V = { 'type-primary': ['Type','Primary'], 'type-secondary': ['Type','Secondary'], 'type-tertiary': ['Type','Tertiary'],
+  'ff-compact': ['Form Factor','Compact'], 'ff-cozy': ['Form Factor','Cozy'],
+  'state-disabled': ['Interaction State','Disabled'], 'state-regular': ['Interaction State','Regular'] }[CMD];
+if (V) for (const i of insts) n += setV(i, V[0], V[1]);
+if (CMD.startsWith('pad-')) for (const x of sel) if ('paddingLeft' in x) { x.paddingLeft = x.paddingRight = +CMD.slice(4); n++; }
+return { done: n > 0, CMD, changed: n };
 ```
 
 **Token keys for Act Mode (no lookup needed):**
