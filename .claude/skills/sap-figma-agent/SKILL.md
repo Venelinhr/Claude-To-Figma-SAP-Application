@@ -1,6 +1,6 @@
 ---
 name: sap-figma-agent
-description: SAP Fiori Design Agent — full Claude-style workflow (reason → plan → build → self-check → verify) executed as real code against the Figma Plugin API, using only real SAP Web UI Kit component instances, bound tokens, and kit text styles. Never native frames as UI. Use for any request to build, improve, fix, or extend a screen in Figma, with or without a reference image.
+description: SAP Fiori Design Agent. FIRST pick the mode — ACT (one small named change: do it in one call, no plan, seconds), QUICK (several edits to an existing frame), THINK (open design question or new screen: full plan). Full Claude-style workflow (reason → plan → build → self-check → verify) executed as real code against the Figma Plugin API, using only real SAP Web UI Kit component instances, bound tokens, and kit text styles. Never native frames as UI. Use for any request to build, improve, fix, or extend a screen in Figma, with or without a reference image.
 ---
 
 # SAP Fiori Design Agent — v7 (code-first rewrite, 2026-09-25)
@@ -34,6 +34,128 @@ stroke, text, or icon that is not inside a real kit component instance is a viol
 see HARD RULE 1.
 
 ---
+
+## 🚦 STEP −1 — PICK THE MODE FIRST (every request, before anything else)
+
+Read the request once. Pick one mode. Do not mix them.
+
+| Mode | When | Examples | What you do |
+|---|---|---|---|
+| **⚡ ACT** | One small change. User names the change **and** the target. Decision already made. | "check box on", "make this card selected", "button Primary", "add 16 px side padding", "hide this icon", "text → Buchen" | One `use_figma` call, no plan, no screenshot, one-line reply. Target 2-5 s. |
+| **🔧 QUICK** | Several changes, or one change that touches structure, on something that exists. Decision already made. | "add a column", "swap Input for Select", "add a price to every row", "move icons outside the card", "center these 3 icons in every row" | No plan stop. Build with the runtime, Step 3 Layer 1 check, one screenshot. |
+| **🧠 THINK** | Decision is open, or the thing does not exist yet. | "make it better", "suggest a layout", "build this screen from the reference", "new dialog for X", "what is wrong here" | Full Step 0 → 5: measure, plan (VDI, tree, inventory, confidence, ASCII), wait for approval, build, audit. |
+
+**Tie-break rules:**
+- Can you write the whole fix as one property set on nodes the user pointed at? → **ACT**.
+- Does it add, remove, or move nodes, or repeat over many rows? → **QUICK**.
+- Does it need a design choice the user did not make? → **THINK**. Ask nothing extra —
+  the THINK plan *is* the question.
+- The same message has an ACT part and a THINK part → do the ACT part now, then plan
+  the THINK part.
+- Never escalate a plain ACT request to THINK "to be safe". That is the 40 s failure.
+
+---
+
+## ⚡ ACT MODE — READ THIS FIRST. Direct change = one call, done in seconds.
+
+**Gold bar: a human does "turn the checkbox on" or "give the card a selected border" in
+2-3 seconds. Match that.** A measured run took 40 s for one state change. The Figma
+work itself is tiny — measured on this file: set a radio to Selected = 25 ms, copy a
+selected border = 16 ms. So the 40 s is all agent overhead: reading rules, token
+lookups, a screenshot, extra calls, long replies. Cut those, not the change.
+
+**Is it Act Mode?** The user names the change and the target: "check box on", "make this
+selected", "border selected state", "button Primary", "add 16 px side padding", "hide
+the icon", "text → X". Yes → do all of this:
+
+1. **No words before acting.** No plan, no restating, no "I will…". First output is the
+   `use_figma` call.
+2. **One `use_figma` call. No prelude. No `kit.js`. No `search_design_system`.**
+   Target = `figma.currentPage.selection` (or the node the user linked). Do not search
+   the page.
+3. **State = the instance's own variant prop.** Read the options in the same call and set
+   the matching one — never look it up outside.
+4. **Token = copy it from a sibling that already has that state** (16 ms), else import
+   it by the key in the table below (1.6 s). Never scan the whole page (2.8 s). Never raw hex.
+5. **No screenshot.** The user is looking at the canvas. Return `{done, changed}` only.
+6. **Reply with one line.** "Checkbox → Selected=True." Nothing else.
+7. Wrong result or error → fix in one more call. Still wrong → say the one blocker.
+
+```js
+// A. STATE on an instance (checkbox on, radio selected, switch on, disabled, value state)
+const n = figma.currentPage.selection[0];
+const inst = n.type === 'INSTANCE' ? n : n.findOne(x => x.type === 'INSTANCE');
+const set0 = inst.mainComponent.parent;
+const defs = set0.type === 'COMPONENT_SET' ? set0.componentPropertyDefinitions : {};
+const want = { check: 'Checked' };            // exact prop + value from the table below
+const set = {};
+for (const [k, d] of Object.entries(defs)) {
+  if (d.type !== 'VARIANT') continue;
+  for (const [frag, val] of Object.entries(want))
+    if (k.toLowerCase() === frag) {
+      const hit = d.variantOptions.find(o => o.toLowerCase() === val.toLowerCase());
+      if (hit) set[k] = hit;
+    }
+}
+inst.setProperties(set);
+return { done: true, changed: set };
+```
+
+```js
+// B. SELECTED BORDER — measured: copy from sibling 16 ms · import by key 1.6 s · page scan 2.8 s (never scan)
+const n = figma.currentPage.selection[0];
+// 1) fastest: copy the bound stroke from a sibling that already has the selected state
+const ref = n.parent.children.find(c => c !== n && c.strokeWeight === 2 && c.strokes?.[0]?.boundVariables?.color);
+if (ref) { n.strokes = ref.strokes; n.strokeAlign = ref.strokeAlign; n.strokeWeight = ref.strokeWeight; }
+else {   // 2) fallback: import the SAP variable by key (table below)
+  const v = await figma.variables.importVariableByKeyAsync('8280fcbaf014930076ff69cc352ce47246d4829c'); // sapActiveColor
+  n.strokes = [figma.variables.setBoundVariableForPaint({ type: 'SOLID', color: { r: 0, g: 0, b: 0 } }, 'color', v)];
+  n.strokeAlign = 'INSIDE'; n.strokeWeight = 2;
+}
+return { done: true, changed: ref ? 'stroke copied from ' + ref.name : 'stroke sapActiveColor 2px' };
+```
+
+```js
+// C. PADDING / GAP — plain numbers on the SAP scale 0/4/8/12/16/24/32, all 4 sides always
+const n = figma.currentPage.selection[0];
+n.paddingLeft = n.paddingRight = 16;          // "side padding"
+return { done: true, changed: { pl: n.paddingLeft, pr: n.paddingRight } };
+```
+
+**Token keys for Act Mode (no lookup needed):**
+
+| Role | Variable | Key |
+|---|---|---|
+| Selected / active border | sapActiveColor | `8280fcbaf014930076ff69cc352ce47246d4829c` |
+| Normal card / list border | sapList_BorderColor | `ae5e040923e301aea32233ae118cc187149588b0` |
+| Field border | sapField_BorderColor | `1378b9f583e24df50c0d9f05657cbb463d88c0ef` |
+| Card background | sapList_Background | `f4736a188daa008f7fecaf74339db52f6e0633c6` |
+| Page background | sapBackgroundColor | `81733e831b5776ab41555848ba944bb507889e2d` |
+| Text | sapTextColor | `ddcb06d470abeacc7195a4bd4908b969ac8bad6c` |
+| Secondary text | sapField_PlaceholderTextColor | `b83a7b7711f1705c7717a83b6eb5c915298201e8` |
+| Link | sapLinkColor | `d3df28203fe7452c7ed42bad054ac10fe75d7751` |
+| Success | sapField_SuccessColor | `d58c45eb345a8f440d318289ecfc617c190fc150` |
+| Warning | sapField_WarningColor | `4cfd933a8462a2fd0951a539a5eea61382a0dc9b` |
+
+**State props — exact kit names and values (checked against the kit, 2026-09-26):**
+
+| Ask | Component | Prop → value |
+|---|---|---|
+| "check box on" | Check Box | `Check` → `Checked` (off: `Unchecked`, partial: `Tristate`) |
+| "switch on" | Switch | `Checked` → `True` |
+| "radio selected" | Radio Button | `Selected` → `True` |
+| "row selected" | Table Cell | `Selected` → `True` |
+| "primary / secondary button" | Button | `Type` → `Primary` / `Secondary` / `Tertiary` |
+| "compact / cozy" | any control | `Form Factor` → `Compact` / `Cozy` |
+| "error / warning / success field" | Input, Check Box, Radio | `Value State` → `Negative` / `Critical` / `Positive` |
+| "status success / error" | Object Status | `Semantic` → `Success` / `Error` / `Warning` |
+| "disabled / read only" | any control | `Interaction State` → `Disabled` / `Read Only` |
+
+**Not Act Mode — use the full steps below:** "make it better", "suggest", a new screen or
+section, or a change that needs a component that is not there yet.
+
+---
+
 
 ## WHY THIS REWRITE EXISTS (read once, applies to every build)
 
@@ -148,49 +270,6 @@ buttons, free-text field for a fixed set of values) even if the reference has it
 
 ---
 
-## ⚡ ACT MODE — a direct, named change: do it now, zero planning, zero ceremony
-
-**This is the whole reason this skill exists: to act fast inside Figma instead of
-routing a small change through you asking Claude to do it via MCP.** A real case
-measured: a single-property fix (a 2px border color) took 1.5 minutes through the full
-workflow — the change itself was one line
-(`stroke(node, 'sapActiveColor', {a:2})`). The overhead was the process around it, not
-the edit. That overhead is gone in this mode.
-
-**Trigger:** the user names a concrete, already-decided change to something that
-exists — a property, a color, a state, a spacing value, an icon, text, an alignment.
-Examples: "add a selected-state border", "make the button blue", "add side padding",
-"center these icons", "remove the € sign", "make it Cozy". If you could describe the
-fix as one sentence naming the exact property to change, this is Act Mode.
-
-**Do, in order, with no pause between them and no plan shown:**
-1. Find the real node(s) (read-only lookup, no announcement needed).
-2. Look up the real token/variant value if you don't already have it cached from this
-   session (`kit.js` / `search_design_system` — one lookup, not a research pass).
-3. Apply the change directly via the runtime (`fill()`/`stroke()`/`I(name, props)`/
-   `T()` — same functions as any build, just no prelude reload if it's already in
-   context from this session).
-4. One screenshot to confirm it looks right. Report what changed, in one line.
-
-**Skip entirely in Act Mode:** the Step 1 plan (VDI/tree/confidence/ASCII), the
-Component inventory table, the external `verify-invariants.js` re-check (Step 3 Layer
-2) — these exist to prevent a *new build* from drifting into fake components over many
-sections; they add nothing to a single named property change on a node that's already
-real. Keep only the in-call check that the specific thing you touched is still real
-(e.g. if you added a stroke, confirm it's a bound variable, not raw hex — that's a
-one-line check, not a separate script run).
-
-**Escalate to THINK MODE (Step 0-5, full sequence) only when:**
-- The request is open-ended ("make this better", "suggest a design", "what would you
-  improve") — a judgment call, not a named property.
-- It's a new screen or section from scratch, not an edit to something existing.
-- The named change would require inventing a component/pattern you haven't confirmed
-  exists — that's real design work, not a direct action.
-
-When in doubt: if the user already made the design decision and just wants it applied,
-that's Act Mode. If the decision itself is still open, that's Think Mode.
-
----
 
 ## QUICK MODE — small change on an existing frame (multi-part edits, still fast)
 

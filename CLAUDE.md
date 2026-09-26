@@ -105,6 +105,12 @@ Side menu = kit `Side Navigation`, always, unless the user asks otherwise.
 Shell (Shell Bar + Side Navigation) on every full screen. Skip it for a component-level
 reference (a card, dialog, or section crop) — then match that crop's size.
 
+**Pick the mode first.** One small named change on an existing node (checkbox on,
+selected border, button Primary, padding 16) = ACT: one `use_figma` call, no measure, no
+plan, no screenshot, one-line reply — the Figma work is ~20 ms, so any delay is overhead.
+Several edits to an existing frame = QUICK. Open design question or new screen = the full
+workflow above.
+
 The Figma-side twin of these rules is `.claude/skills/sap-figma-agent/SKILL.md` (uploaded
 into Figma's Agent panel). Change one → change the other, then re-upload the skill.
 
