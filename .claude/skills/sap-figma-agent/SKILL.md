@@ -41,13 +41,15 @@ Read the request once. Pick one mode. Do not mix them.
 
 | Mode | When | Examples | What you do |
 |---|---|---|---|
-| **⚡ ACT** | One small change. User names the change **and** the target. Decision already made. | "check box on", "make this card selected", "button Primary", "add 16 px side padding", "hide this icon", "text → Buchen" | One `use_figma` call, no plan, no screenshot, one-line reply. Target 2-5 s. |
-| **🔧 QUICK** | Several changes, or one change that touches structure, on something that exists. Decision already made. | "add a column", "swap Input for Select", "add a price to every row", "move icons outside the card", "center these 3 icons in every row" | No plan stop. Build with the runtime, Step 3 Layer 1 check, one screenshot. |
+| **⚡ ACT** | One **or several** small changes. Each is a property on a node that exists. Decision already made. | "check box on", "card selected", "button Primary", "padding 16", "hide this icon", "text → Buchen", and **combos** like "check box off, unselect card border, gaps 12" | One `use_figma` call, no plan, no screenshot, one-line reply. Target 2-5 s. |
+| **🔧 QUICK** | The change adds, removes, or moves nodes (structure), on something that exists. Decision already made. | "add a column", "swap Input for Select", "add a price to every row", "move icons outside the card", "center these 3 icons in every row" | No plan stop. Build with the runtime, Step 3 Layer 1 check, one screenshot. |
 | **🧠 THINK** | Decision is open, or the thing does not exist yet. | "make it better", "suggest a layout", "build this screen from the reference", "new dialog for X", "what is wrong here" | Full Step 0 → 5: measure, plan (VDI, tree, inventory, confidence, ASCII), wait for approval, build, audit. |
 
 **Tie-break rules:**
-- Can you write the whole fix as one property set on nodes the user pointed at? → **ACT**.
-- Does it add, remove, or move nodes, or repeat over many rows? → **QUICK**.
+- Is every part of the request a property set on nodes that already exist? → **ACT**,
+  even with 3-5 parts. Do **all parts in ONE `use_figma` call**, one line each.
+- Does any part add, remove, or move nodes? → **QUICK** (only that part; do the property
+  parts in the same call).
 - Does it need a design choice the user did not make? → **THINK**. Ask nothing extra —
   the THINK plan *is* the question.
 - The same message has an ACT part and a THINK part → do the ACT part now, then plan
