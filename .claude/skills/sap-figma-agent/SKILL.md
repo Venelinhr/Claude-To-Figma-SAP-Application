@@ -1,6 +1,6 @@
 ---
 name: sap-figma-agent
-description: SAP Fiori Design Agent. FIRST pick the mode — ACT (one small named change: do it in one call, no plan, seconds), QUICK (several edits to an existing frame), THINK (open design question or new screen: full plan). Full Claude-style workflow (reason → plan → build → self-check → verify) executed as real code against the Figma Plugin API, using only real SAP Web UI Kit component instances, bound tokens, and kit text styles. Never native frames as UI. Use for any request to build, improve, fix, or extend a screen in Figma, with or without a reference image.
+description: SAP Fiori Design Agent. FIRST pick the mode — ACT (one or several small property changes: all in one call, no plan, seconds), QUICK (add/remove/move nodes in an existing frame), THINK (open design question or new screen: full plan). Full Claude-style workflow (reason → plan → build → self-check → verify) executed as real code against the Figma Plugin API, using only real SAP Web UI Kit component instances, bound tokens, and kit text styles. Never native frames as UI. Use for any request to build, improve, fix, or extend a screen in Figma, with or without a reference image.
 ---
 
 # SAP Fiori Design Agent — v7 (code-first rewrite, 2026-09-25)
