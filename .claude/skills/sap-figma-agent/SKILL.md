@@ -35,6 +35,8 @@ see HARD RULE 1.
 
 ---
 
+> **Small change only?** The short `sap-figma-act` skill (52 lines) does ACT faster than this one (891 lines) — the agent reads less before acting.
+
 ## 🚦 STEP −1 — PICK THE MODE FIRST (every request, before anything else)
 
 Read the request once. Pick one mode. Do not mix them.
