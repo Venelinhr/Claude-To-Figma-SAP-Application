@@ -50,6 +50,14 @@
     "direction-arrows": {
       "key": "d8df6bd3e7657212a65f733f39878d4e0a37cc2e",
       "desc": "two-way arrows, range handle (read live from gold 270:6722)"
+    },
+    "media-forward": {
+      "key": "b200c671f28c62c7e4ead976aa02b5875f77d5fa",
+      "desc": "forward, media, fast — SAP has no lightning bolt: use for \"fastest\""
+    },
+    "thumb-up": {
+      "key": "5302ae09353d82f5221906eb454886085d60b9c3",
+      "desc": "thumbs, up, like, recommended, best"
     }
   }
 }

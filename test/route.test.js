@@ -489,3 +489,16 @@ test('see.py spec (GATE 1): the gold sidebar card as a builder needs it — box,
   assert.ok(all.some(n => n.icon === 'navigation-down-arrow'));
   assert.strictEqual(S.frame.text_scale, 1);                                                        // an SAP source: no density step
 });
+
+test('see.py eye rules: an icon row is not text, OCR slips are read like a person, a brand colour is not a wrong token', { skip: process.platform !== 'darwin' }, () => {
+  const py = `import importlib.util, json
+s = importlib.util.spec_from_file_location('see', ${JSON.stringify(path.join(ROOT, 'build/see.py'))}); m = importlib.util.module_from_spec(s); s.loader.exec_module(m)
+print(json.dumps([m.junk('6XZ', 'bg'), m.junk('0xx', 'bg'), m.junk('3h', 'bg'), m.junk('7мин', 'bg'),
+  m.clean_line('агенцията от 3/,2/ €', 'bg'), m.ntext('OT 191 €') == m.ntext('от 191 €'),
+  m.sap_colour('#cb2076', '#556b82', 'text'), m.sap_colour('#e5e5e5', '#a0a0a0', 'border')], ensure_ascii=False))`;
+  const r = JSON.parse(execFileSync('python3', ['-c', py]).toString());
+  // baggage icons OCR'd as "6XZ"/"0xx" are icons; "3h"/"7мин" are a number + unit
+  // a thin 7 read as "/" in a price; Latin "OT" = Cyrillic "от"
+  // brand pink text shown as the SAP label colour = the SAP translation; a darker grey border than sapList_BorderColor = a real mistake
+  assert.deepStrictEqual(r, [true, true, false, false, 'агенцията от 37,27 €', true, true, false]);
+});

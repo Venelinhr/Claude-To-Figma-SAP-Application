@@ -68,7 +68,8 @@ async function space(f, o) {
   return f; }
 function AL(dir, o = {}) {
   const f = figma.createAutoLayout(dir, { name: o.name || 'Container', itemSpacing: typeof o.gap === 'number' ? o.gap : 0 });
-  f.fills = []; if (Array.isArray(o.p)) [f.paddingTop, f.paddingRight, f.paddingBottom, f.paddingLeft] = o.p;
+  f.fills = []; f.strokesIncludedInLayout = false;   // a 1px card border must not push the content in (seen: cards +2px, sidebar +4px)
+  if (Array.isArray(o.p)) [f.paddingTop, f.paddingRight, f.paddingBottom, f.paddingLeft] = o.p;
   else if (typeof o.p === 'number') f.paddingTop = f.paddingRight = f.paddingBottom = f.paddingLeft = o.p;
   if (o.align) f.counterAxisAlignItems = o.align; if (o.justify) f.primaryAxisAlignItems = o.justify;
   return f; }

@@ -951,8 +951,9 @@
     "flag": "flag",
     "sort": "sort-descending",
     "pin": "pushpin-on",
-    "fastest": "activate",
-    "best": "accept"
+    "fastest": "media-forward",
+    "best": "thumb-up",
+    "collapse": "navigation-up-arrow"
   },
   "element_plan": {
     "_doc": "GATE 0 v2 — read the reference like a person (Z pattern: top-left → right, then down). STEP A: frame (size, breakpoint, density, floorplan). STEP B: section map — split the image into sections (A, B, C…), each with its box, layout, SAP components and recipe, declared in Z order. STEP C: one row per visible element, row.section = a section id, row.group = the sub-part (a card, a list row, a leg). `node build/route.js --plan plan.json` validates it; build only on exit 0.",

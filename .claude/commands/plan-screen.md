@@ -19,8 +19,11 @@ Reply to the user in short, plain sentences. Input: $ARGUMENTS
    components with states (Radio Button Selected, Button Primary Cozy + width, Range Slider, collapse
    arrows), SAP text styles (brand sites step down to Compact ×0.85), logo crops — and an ASK list.
    Answer every ASK line (look at `see-ref/tile-*.png`; icons from `router-table.json` icon_meanings;
-   brand colours → roles). No plan before ASK is empty. When a gold exists for this screen, run `spec` on the
-   gold's 2× export instead: the gold is the approved SAP translation, the build must equal it.
+   brand colours → roles). No plan before ASK is empty. The target is the REFERENCE itself: a crop keeps its
+   measured size (1000 wide stays 1000 — a 1440 re-layout scored EYE 19% on 348:8435), texts keep the measured
+   SAP size (no Compact step-down when the eye must match). A gold plan is only a start for rows (components,
+   roles, icons); every number — box, padding, gap, width, x — comes from the spec. Fix the plan where the gold
+   disagrees with the reference (the gold had down chevrons, 2 suitcases, Compact radios; the reference did not).
    Copy the spec's numbers into the plan rows and section `layout` — the Figma Agent must not guess any.
 4. **Start from gold.** `node build/route.js --closest-gold ref.json "<words you can read in the image>"`.
    If it says "start from …" → copy that gold plan and change only what differs. Else write new.

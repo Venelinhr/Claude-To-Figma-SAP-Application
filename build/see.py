@@ -67,6 +67,27 @@ PREF = {'text': ['sapTextColor', 'sapTitleColor', 'sapContent_LabelColor', 'sapL
         'border': ['sapList_BorderColor', 'sapTile_BorderColor', 'sapButton_BorderColor', 'sapField_BorderColor', 'sapGroup_TitleBorderColor'],
         'icon': ['sapContent_IconColor', 'sapErrorColor', 'sapWarningColor', 'sapContent_Selected_ForegroundColor', 'sapSelectedColor']}
 
+UNITS = {'h', 'm', 's', 'min', 'ч', 'мин', 'м', 'с', 'д', 'kg', 'km', 'cm', 'mm', 'кг', 'км', 'см', 'мм', 'x', 'х', 'px', 'pt', 'st', 'nd', 'rd', 'th'}
+# the SAP tokens a thing of this kind may take (a text is never painted with a border token, a line never with a text token)
+ROLE_RE = {'text': r'(Text|Title|Label|Link)Color$|^sap(Error|Warning|Success|Information|Negative|Positive|Critical|Neutral)Color$|^sapField_(Warning|Invalid|Success|Information)Color$|Selected_(Text|Foreground)Color$',
+           'icon': r'Icon|Foreground|^sap(Error|Warning|Success|Information|Negative|Positive|Critical|Neutral|Selected)Color$',
+           'line': r'Border|Separator|IconColor',
+           'fill': r'Background|BaseColor|^sapSelectedColor$|^sapButton_Emphasized',
+           'border': r'Border|Separator'}
+
+def role_near(hexcol, kind):
+    """closest SAP token for a thing of this kind → (lab, ΔE)"""
+    idx = [i for i, (n, _) in enumerate(TOKENS) if re.search(ROLE_RE[kind], n)]
+    d = np.linalg.norm(TLAB[idx] - lab(rgb(hexcol)), axis=1)
+    j = int(d.argmin()); return TLAB[idx[j]], float(d[j])
+
+def sap_colour(ref_hex, build_hex, kind):
+    """a person accepts the SAP translation of a colour: the build shows a real SAP token of the right kind, and it is
+    the closest one to the reference — or the reference colour is a brand colour SAP has nothing near (ΔE > 8)"""
+    best, dr = role_near(ref_hex, kind)
+    _, db = role_near(build_hex, kind)
+    return db <= 4 and (dr > 8 or float(np.linalg.norm(best - lab(rgb(build_hex)))) <= 4)
+
 def token(rgb, role=None):
     """nearest SAP colour token → (name, ΔE); among equal colours the one that fits the role"""
     d = np.linalg.norm(TLAB - lab(rgb), axis=1)
@@ -97,6 +118,7 @@ def clean_word(t, lang):
     return t
 
 def clean_line(s, lang):
+    s = re.sub(r'(?<![\w/])[\d/]*\d[\d/]*,[\d/]+(?![\w/])', lambda m: m.group().replace('/', '7'), s)   # "3/,2/ €" = 37,27 € (a thin 7)
     if lang == 'bg':                          # Vision reads the Bulgarian "ч" (hours) as "4": 3ч 7мин → "34 7мин", 3 ч. → "34."
         s = re.sub(r'(?<=\d)4(?=\s?\d{1,2}\s?мин)', 'ч', s)
         s = re.sub(r'(?<![\d,.])(\d{1,2})4\.(?!\d)', r'\1ч.', s)
@@ -108,6 +130,8 @@ def junk(t, lang, edge=False):
     if edge and t in ('•', '·', 'o', 'O', 'о', 'О'): return True
     if lang == 'bg' and re.fullmatch('[A-Za-z]', t): return True
     core = re.sub(f'[{PUNCT}]', '', t)
+    m = re.fullmatch(r'\d+([A-Za-zА-Яа-я]+)', re.sub(r'[^\w]', '', t))   # "6XZ", "0xx" = an icon row; "3h", "15m", "3ч" = a number + unit
+    if m and len(m.group(0)) <= 4 and m.group(1).lower() not in UNITS: return True
     if not re.search(r'[0-9A-Za-zА-Яа-яÄÖÜäöüß€]', t): return t not in ('•', '·', '-', '–', '+', '%', '€')
     return bool(re.search(f'[^{ALLOWED[lang]}]', core))
 
@@ -135,7 +159,9 @@ def reread(img, lines, lang, tmp):
         conf = min(g['conf'] for g in hit)
         if conf <= l['conf']: continue
         hit.sort(key=lambda g: g['x'])
-        l['text'] = ' '.join(g['text'] for g in hit); l['conf'] = conf
+        new = ' '.join(g['text'] for g in hit)
+        if len(new.replace(' ', '')) < 0.85 * len(l['text'].replace(' ', '')): continue   # a re-read corrects letters, it does not cut the line
+        l['text'] = new; l['conf'] = conf
         l['words'] = [{**w, 'x': x0 + w['x'] / 3, 'y': y0 + (w['y'] - b0) / 3, 'w': w['w'] / 3, 'h': w['h'] / 3} for g in hit for w in g['words']]
     return lines
 
@@ -160,6 +186,13 @@ def measure_text(img, x, y, w, h, text, k):
     m = d >= 0.5 * top
     m[m.mean(1) > 0.8] = False                # a divider or box edge crossing the crop is not a glyph
     m[:, m.mean(0) > 0.6] = False            # a vertical separator next to the text (letter stems cover < 50%)
+    n_, _, st_, _ = cv2.connectedComponentsWithStats(m.astype(np.uint8), 8)
+    comp = sorted((st_[i] for i in range(1, n_) if st_[i][4] > 3), key=lambda s: s[0])
+    if len(comp) > 3:                         # a radio ring / icon next to the words: taller than the letters and apart from them
+        hmed = np.median([s[3] for s in comp])
+        for c_, nx_ in ((comp[0], comp[1]), (comp[-1], comp[-2])):
+            gap_ = nx_[0] - (c_[0] + c_[2]) if nx_[0] > c_[0] else c_[0] - (nx_[0] + nx_[2])
+            if c_[3] >= 1.6 * hmed and gap_ >= 0.4 * c_[3]: m[:, c_[0]:c_[0] + c_[2]] = False
     if not m.any(): return None
     # keep the main band of ink rows (this line of text); drop bands of the lines above/below that peek in
     rows = m.sum(1)
@@ -204,7 +237,8 @@ def texts(img, path, lang, k, tmp):
         if len(fixed) == len(words):
             for w, t in zip(words, fixed): w['t'] = t
         for n, w in enumerate(words + [None]):
-            if w is not None and junk(w['t'], lang, edge=n in (0, len(words) - 1)):
+            lead_icon = n == 0 and w is not None and len(words) > 1 and re.fullmatch(r'\d', w['t']) and re.fullmatch(r'[A-ZА-Я][A-ZА-Я\-]{2,}', words[1]['t'])
+            if w is not None and (lead_icon or junk(w['t'], lang, edge=n in (0, len(words) - 1))):   # "7 НАЙ-БЪРЗО" = a bolt icon + a badge
                 icons.append({'x': w['x'], 'y': w['y'], 'w': w['w'], 'h': w['h'], 'ocr': w['t']})
                 w = 'break'
             gap = w not in (None, 'break') and seg and w['x'] - (seg[-1]['x'] + seg[-1]['w']) > 1.6 * max(seg[-1]['h'], 1)
@@ -366,7 +400,10 @@ def shapes(img, k, text_boxes, words=()):
                 if orient == 'h' and min(abs(y - by), abs(y + h - by - bh)) <= 3 and inside(L, [bx - 3, by - 3, bw_ + 6, bh + 6], 0.7): edge = True
                 if orient == 'v' and min(abs(x - bx), abs(x + w - bx - bw_)) <= 3 and inside(L, [bx - 3, by - 3, bw_ + 6, bh + 6], 0.7): edge = True
             if edge: continue
-            c = np.median(f[y:y + h, x:x + w].reshape(-1, 3), 0)
+            px = f[y:y + h, x:x + w].reshape(-1, 3).astype(float)
+            ring = f[max(0, y - 3):y + h + 3, max(0, x - 3):x + w + 3].reshape(-1, 3).astype(float)
+            dist = np.linalg.norm(px - np.median(ring, 0), axis=1)
+            c = np.median(px[dist >= 0.6 * dist.max()], 0) if dist.max() > 0 else np.median(px, 0)   # the line's core, not its soft edge
             lines.append({'kind': 'line', 'box': [int(x), int(y), int(w), int(h)], 'orient': orient, 'color': hexc(c), 'token': token(c, 'border')[0]})
     lmask = np.zeros((H, W), np.uint8)
     for l in lines: x, y, w, h = l['box']; lmask[max(0, y - 2):y + h + 2, max(0, x - 2):x + w + 2] = 1
@@ -384,7 +421,9 @@ def shapes(img, k, text_boxes, words=()):
     for i in range(1, n3):
         x, y, w, h, a = st3[i]
         if w < 5 or h < 5 or a < 20 or w > W * 0.6 or h > H * 0.6: continue
-        corner = False                               # the rounded corner of a bordered box is not an icon
+        if max(w, h) > 64 or min(w, h) < 3 or (max(w, h) > 5 * min(w, h) and min(w, h) < 8): continue   # frame px
+        # an icon is at most 64 px: bigger = a region of other things; thin and long = a sliver of an edge, not an icon
+        corner = False                              # the rounded corner of a bordered box is not an icon
         for b in boxes:
             if b.get('page') or not b['radius']: continue
             bx, by, bw_, bh = b['box']
@@ -396,6 +435,12 @@ def shapes(img, k, text_boxes, words=()):
         if r is None: continue
         bg, d, top = r
         d = d[2:-2, 2:-2]
+        ys_, xs_ = np.nonzero(d >= 0.5 * top)            # the shape ends where its contrast is half: a light ring and a dark one of one size read alike
+        if len(xs_):
+            x0_, y0_, x1_, y1_ = xs_.min(), ys_.min(), xs_.max() + 1, ys_.max() + 1
+            x, y, w, h = x + x0_, y + y0_, x1_ - x0_, y1_ - y0_
+            crop, d = crop[y0_:y1_, x0_:x1_], d[y0_:y1_, x0_:x1_]
+            if min(w, h) < 3 or (max(w, h) > 5 * min(w, h) and min(w, h) < 8): continue
         col = np.median(crop[d >= 0.8 * top], 0)
         marks.append({'kind': 'icon', 'box': [int(x), int(y), int(w), int(h)], 'color': hexc(col), 'token': token(col, 'icon')[0],
                       '_thumb': cv2.resize((d >= 0.5 * top).astype(np.float32), (12, 12), interpolation=cv2.INTER_AREA),
@@ -555,7 +600,7 @@ def cmd_read(a):
 
 # ── diff: element to element, like a person comparing two screens ─────────────────────────
 def ntext(t):
-    return re.sub(r'^[•·.,:;\-–]+|[•·.,:;\-–]+$', '', re.sub(r'[\s|]+', '', t.lower()).translate(LAT2CYR))
+    return re.sub(r'^[•·.,:;\-–]+|[•·.,:;\-–]+$', '', re.sub(r'[\s|]+', '', t.translate(LAT2CYR).lower()).translate(LAT2CYR))
 
 class Map:
     """ref position → expected build position: global scale (from text sizes) + local shift of the nearest matched texts"""
@@ -603,6 +648,14 @@ def match(A, B, GA=(), GB=()):
             same_size = abs(ea['size_px'] * M.s - eb['size_px']) <= 4
             if (sim == 1 and d <= 140) or (sim >= 0.75 and d <= 50 and same_size): cands.append(((1 - sim) * 200 + d, ea, eb, sim))
     greedy(cands, pairs, ua, ub, M)
+    for ea in TA:                                   # 2a. a text read as part of a longer line on the other screen (OCR joined two labels)
+        t = na[ea['id']]
+        if ea['id'] in ua or len(t) < 5: continue
+        pa = M(center(ea['box']))
+        for eb in TB:
+            bx, by, bw, bh = eb['box']
+            if t in nb[eb['id']] and len(nb[eb['id']]) > len(t) and bx - 40 <= pa[0] <= bx + bw + 40 and abs(pa[1] - (by + bh / 2)) <= 20:
+                ea['_part'] = True; pairs.append((ea, eb, 1.0)); ua.add(ea['id']); ub.add(eb['id']); break
     byA, byB, used = {e['id']: e for e in A}, {e['id']: e for e in B}, set()
     gc = []                                         # 2b. a row of icons: group to group, then members left to right
     for ga in GA:
@@ -651,23 +704,38 @@ def match(A, B, GA=(), GB=()):
     greedy(cands, pairs, ua, ub)
     return pairs, M
 
+def rel_weight(E):
+    """bold or regular the way a person sees it: against the other texts of the same screen (fonts differ in stroke)"""
+    T = [e for e in E if e['kind'] == 'text' and e.get('stroke')]
+    v = np.sort([e['stroke'] for e in T])
+    if len(v) < 4: return
+    cut = max(((len(v[:i]) * len(v[i:]) * (v[i:].mean() - v[:i].mean()) ** 2, (v[i - 1] + v[i]) / 2) for i in range(1, len(v))))[1]
+    lo, hi = v[v <= cut], v[v > cut]
+    if not len(hi) or hi.mean() / lo.mean() < 1.15: cut = BOLD_AT         # one weight on the whole screen
+    for e in T:
+        e['wrel'] = 'Bold' if e['stroke'] > cut else 'Regular'
+        e['wamb'] = abs(e['stroke'] - cut) / cut < 0.05                    # right on the line: a person can't tell
+
 def cmp(ea, eb, sim, M, bmap):
     s, out = M.s, []
     k = ea['kind']
     if k == 'text':
         if sim < 1: out.append(('TEXT', f'"{ea["text"]}" → "{eb["text"]}"'))
         sa = min(SAP_SIZES, key=lambda v: abs(v - ea['size_px'] * s))
-        if sa != eb['size']: out.append(('FONT SIZE', f'"{eb["text"]}" {sa}px → {eb["size"]}px'))
-        if ea['weight'] != eb['weight']: out.append(('WEIGHT', f'"{eb["text"]}" {ea["weight"]} → {eb["weight"]}'))
+        if not ea.get('_part') and sa != eb['size'] and abs(ea['size_px'] * s - eb['size_px']) > max(1.5, 0.12 * eb['size_px']):
+            out.append(('FONT SIZE', f'"{eb["text"]}" {sa}px → {eb["size"]}px'))
+        if not ea.get('_part') and ea.get('wrel', ea['weight']) != eb.get('wrel', eb['weight']) and not (ea.get('wamb') or eb.get('wamb')):
+            out.append(('WEIGHT', f'"{eb["text"]}" {ea.get("wrel", ea["weight"])} → {eb.get("wrel", eb["weight"])} (stroke {ea["stroke"]:.3f} → {eb["stroke"]:.3f})'))
     if k in ('text', 'icon', 'line'):
         d = de(rgb(ea['color']), rgb(eb['color']))
         if d > 12:
-            brand = token(rgb(ea['color']))[1] > 8
-            out.append(('COLOUR' + (' (brand→SAP)' if brand else ''), f'{ea.get("text", k)[:30]!s}: {ea["color"]} {ea["token"]} → {eb["color"]} {eb["token"]}'))
+            ok = sap_colour(ea['color'], eb['color'], k)
+            out.append(('COLOUR' + (' (brand→SAP)' if ok else ''), f'{ea.get("text", k)[:30]!s}: {ea["color"]} {ea["token"]} → {eb["color"]} {eb["token"]}'))
     if k == 'icon':
         ta, tb = ea['_thumb'].ravel(), eb['_thumb'].ravel()
         if ta.std() > 0 and tb.std() > 0 and np.corrcoef(ta, tb)[0, 1] < 0.45: out.append(('ICON SHAPE', 'a different icon'))
-    if k in ('icon', 'image') and (abs(ea['box'][2] * s - eb['box'][2]) > 3 or abs(ea['box'][3] * s - eb['box'][3]) > 3):
+    tol = max(3, 0.15 * max(ea['box'][2], ea['box'][3]) * s)   # 20 vs 23 px reads as the same icon; 15 vs 21 does not
+    if k in ('icon', 'image') and (abs(ea['box'][2] * s - eb['box'][2]) > tol or abs(ea['box'][3] * s - eb['box'][3]) > tol):
         out.append((k.upper() + ' SIZE', f'{ea["box"][2]}×{ea["box"][3]} → {eb["box"][2]}×{eb["box"][3]}'))
     if k == 'image' and np.abs(ea['_rgb'].astype(float) - eb['_rgb'].astype(float)).mean() > 45:
         out.append(('IMAGE CONTENT', 'the picture shows something else'))
@@ -676,10 +744,12 @@ def cmp(ea, eb, sim, M, bmap):
         if abs(wa - eb['box'][2]) > max(3, 0.03 * wa) or abs(ha - eb['box'][3]) > max(3, 0.03 * ha):
             out.append(('BOX SIZE', f'{ea["box"][2]}×{ea["box"][3]} → {eb["box"][2]}×{eb["box"][3]}'))
         if abs(ea['radius'] - eb['radius']) > 2: out.append(('RADIUS', f'{ea["radius"]} → {eb["radius"]}'))
-        if de(rgb(ea['fill']), rgb(eb['fill'])) > 3: out.append(('FILL', f'{ea["fill"]} {ea["token"]} → {eb["fill"]} {eb["token"]}'))
+        if de(rgb(ea['fill']), rgb(eb['fill'])) > 3:
+            out.append(('FILL' + (' (brand→SAP)' if sap_colour(ea['fill'], eb['fill'], 'fill') else ''), f'{ea["fill"]} {ea["token"]} → {eb["fill"]} {eb["token"]}'))
         ba, bb = ea.get('border'), eb.get('border')
         if bool(ba) != bool(bb): out.append(('BORDER', f'{"border " + ba + " " + ea["border_token"] if ba else "no border"} → {"border " + bb + " " + eb["border_token"] if bb else "no border"}'))
-        elif ba and de(rgb(ba), rgb(bb)) > 8: out.append(('BORDER COLOUR', f'{ba} {ea["border_token"]} → {bb} {eb["border_token"]}'))
+        elif ba and de(rgb(ba), rgb(bb)) > 8:
+            out.append(('BORDER COLOUR' + (' (brand→SAP)' if sap_colour(ba, bb, 'border') else ''), f'{ba} {ea["border_token"]} → {bb} {eb["border_token"]}'))
         elif ba and ea['border_w'] != eb['border_w']: out.append(('BORDER WIDTH', f'{ea["border_w"]}px → {eb["border_w"]}px'))
         if bool(ea.get('shadow')) != bool(eb.get('shadow')): out.append(('SHADOW', f'{"shadow" if ea.get("shadow") else "no shadow"} → {"shadow" if eb.get("shadow") else "no shadow"}'))
         pa, pb = ea.get('padding'), eb.get('padding')
@@ -688,8 +758,16 @@ def cmp(ea, eb, sim, M, bmap):
     if k != 'box':                                  # inside the same box as in the reference?
         pa, pb = ea['parent'], eb['parent']
         if pa in bmap and bmap[pa] != pb: out.append(('MOVED', f'{ea.get("text", k)[:30]!s} sits in another box'))
-        r = center(eb['box']) - M(center(ea['box']), skip=ea['id'])
-        if k == 'text' and np.abs(r).max() > 6: out.append(('POSITION', f'{ea.get("text", k)[:30]!s} {r[0]:+.0f},{r[1]:+.0f}px from where the reference puts it'))
+        (xa, ya, wa, ha), (xb, yb, wb, hb) = ea['box'], eb['box']
+        r = min((np.array([xb + fb * wb, yb + hb / 2]) - M(np.array([xa + fa * wa, ya + ha / 2]), skip=ea['id']) for fa, fb in ((0, 0), (.5, .5), (1, 1))),
+                key=lambda v: np.abs(v).max())       # a person sees a text in place when it keeps its left, centre or right edge
+        if k == 'text' and not ea.get('_part') and np.abs(r).max() > 6: out.append(('POSITION', f'{ea.get("text", k)[:30]!s} {r[0]:+.0f},{r[1]:+.0f}px from where the reference puts it'))
+    if eb.get('sap') == 'control':                 # a real SAP control (Radio Button, Slider, Button): look and height come from the kit
+        look = {'ICON SHAPE', 'ICON SIZE', 'COLOUR', 'FILL', 'BORDER', 'BORDER COLOUR', 'BORDER WIDTH', 'RADIUS', 'SHADOW', 'PADDING', 'FONT SIZE', 'WEIGHT'}
+        same_w = abs(ea['box'][2] * s - eb['box'][2]) <= max(4, 0.1 * eb['box'][2])      # the width is the builder's choice: still checked
+        out = [(f'SAP LOOK · {kd}' if kd in look or (kd == 'BOX SIZE' and same_w) else kd, w) for kd, w in out]
+    elif eb.get('sap') == 'icon':                  # a real SAP icon: its drawing is the kit's; its size is still the builder's choice
+        out = [(f'SAP LOOK · {kd}' if kd in ('ICON SHAPE', 'COLOUR') else kd, w) for kd, w in out]
     return out
 
 ORDER = ['MISSING', 'EXTRA', 'MOVED', 'TEXT', 'BOX SIZE', 'BORDER', 'BORDER COLOUR', 'BORDER WIDTH', 'RADIUS', 'SHADOW', 'PADDING', 'FILL',
@@ -703,6 +781,16 @@ def cmd_diff(a):
     RA, ia, fa = read(a.ref, a.lang, a.w_ref, a.out)
     RB, ib, fb = read(a.build, a.lang, a.w, a.out)
     A, B = RA['elements'], RB['elements']
+    if a.tree:                                      # which build pixels come from a real SAP component instance
+        cover = {k_: np.zeros((RB['frame'][1] + 8, RB['frame'][0] + 8), bool) for k_ in ('control', 'icon')}   # +3 px: the eye's box is a bit looser
+        for n in load_tree(a.tree):
+            if n['type'] == 'INSTANCE':
+                x, y, w, h = n['box']; cover['icon' if str(n['text']).startswith('icon:') else 'control'][max(0, y - 3):y + h + 3, max(0, x - 3):x + w + 3] = True
+        for e in B:
+            x, y, w, h = e['box']
+            for k_ in ('control', 'icon'):
+                if w > 0 and h > 0 and cover[k_][y:y + h, x:x + w].mean() >= 0.8: e['sap'] = k_; break
+    for E in (A, B): rel_weight(E)
     pairs, M = match(A, B, RA['groups'], RB['groups'])
     bmap = {ea['id']: eb['id'] for ea, eb, _ in pairs if ea['kind'] == 'box'}
     pa_ = next((e for e in A if e.get('page')), None); pb_ = next((e for e in B if e.get('page')), None)
@@ -724,7 +812,8 @@ def cmd_diff(a):
             diffs.append({'kind': 'GAP', 'what': f'{len(mem)} items side by side: gap {g["gap"]}px → {G["gap"]}px', 'a': {'box': g['box']}, 'b': {'box': G['box']}})
     diffs.sort(key=lambda d: (ORDER.index(d['kind']) if d['kind'] in ORDER else 99, (d['a'] or d['b'])['box'][1]))
     total = sum(1 for e in A if not e.get('page'))
-    bad = {d['a']['id'] for d in diffs if d['a'] and 'id' in d['a'] and d['kind'] != 'COLOUR (brand→SAP)'}
+    expected = lambda d: d['kind'].endswith('(brand→SAP)') or d['kind'].startswith('SAP LOOK')
+    bad = {d['a']['id'] for d in diffs if d['a'] and 'id' in d['a'] and not expected(d)}
     eye = round(100 * (total - len(bad)) / max(total, 1))
     # pictures: side by side, numbered; and zoomed pairs
     Hs = max(fa.shape[0], fb.shape[0])
@@ -765,15 +854,19 @@ def cmd_diff(a):
                           'ref_id': d['a'] and d['a'].get('id'), 'build_id': d['b'] and d['b'].get('id')} for n, d in enumerate(diffs, 1)]},
               open(os.path.join(a.out, 'diff.json'), 'w'), ensure_ascii=False, indent=1)
     fr = '' if RA['frame'] == RB['frame'] else f" · FRAME {RA['frame'][0]}×{RA['frame'][1]} → {RB['frame'][0]}×{RB['frame'][1]}"
-    real = [d for d in diffs if d['kind'] != 'COLOUR (brand→SAP)']
     print(f"EYE MATCH {eye}%  ({total - len(bad)} of {total} reference elements look the same · scale ×{M.s:.2f}{fr})")
-    for n, d in enumerate(diffs, 1):
-        if d['kind'] == 'COLOUR (brand→SAP)': continue
+    def line(n, d):
         at = f"ref {d['a']['box'][0]},{d['a']['box'][1]}" if d['a'] else ''
         bt = f"build {d['b']['box'][0]},{d['b']['box'][1]}" if d['b'] else ''
-        print(f"{n:>3} {d['kind']:<13} {d['what']}  [{' → '.join(t for t in (at, bt) if t)}]")
-    info = len(diffs) - len(real)
-    if info: print(f"    + {info} brand colours in the reference mapped to SAP tokens (expected, not listed)")
+        return f"{n:>3} {d['kind']:<13} {d['what']}  [{' → '.join(t for t in (at, bt) if t)}]"
+    for n, d in enumerate(diffs, 1):
+        if not expected(d) and d['kind'] != 'EXTRA': print(line(n, d))
+    extra = [(n, d) for n, d in enumerate(diffs, 1) if d['kind'] == 'EXTRA']
+    if extra: print(f"EXTRA in the build ({len(extra)}, not in the %): " + ' · '.join(f"#{n} {d['what']}" for n, d in extra))
+    look = [(n, d) for n, d in enumerate(diffs, 1) if d['kind'].startswith('SAP LOOK')]
+    if look: print(f"SAP component look (expected, {len(look)}): " + ' · '.join(f"#{n} {d['kind'][11:]} {d['what'][:40]}" for n, d in look))
+    info = sum(d['kind'].endswith('(brand→SAP)') for d in diffs)
+    if info: print(f"    + {info} brand colours in the reference shown with the closest SAP token (expected)")
     print(f"LOOK: {os.path.join(a.out, 'diff-sheet.png')} (numbers = lines above) · {os.path.join(a.out, 'zooms.png')} (first 24, ref | build) — confirm each line by eye")
     passed = eye >= a.pass_at
     if a.tree and not passed:

@@ -23,8 +23,11 @@ Using ONLY the Gate 1 spec (not raw re-interpretation of the image), build each 
 GATE 3 — VERIFY / AUDIT
 Compare the built result against the original reference, section by section, on layout, spacing, sizing, color, type styles, tokens, and component/icon choices. For every mismatch, find the root cause (wrong/missing schema value, wrong token, wrong variant, or a Gate 1 gap) — fix the cause, not just the symptom. Re-check until overall deviation is ≤5% (95%+ match) across all sections.
 → `download_assets` png scale 2 of the build; `build/templates/dump-geometry.use_figma.js` (read-only) → geometry.json;
-  `python3 build/see.py diff <reference or gold> build@2x.png --tree geometry.json --out see-out` → EYE MATCH %,
+  `python3 build/see.py diff <reference> build@2x.png --tree geometry.json --out see-out` → EYE MATCH %,
   `see-out/fix.md` (node ids). Look at `see-out/diff-sheet.png` first. Pass = exit 0 (≥ 95%).
+  With `--tree`, parts of real SAP controls (Radio Button, Slider, Button) are checked for place, width and state;
+  their SAP look (blue, handle shape, 36 px height) is listed as "SAP component look", not counted. Brand colours
+  shown with the closest SAP token of the right role are listed as expected, not counted.
   A Gate 1 gap is fixed in the spec too, so the next build is right first time.
 
 Final output: per-section report of what was read, what was built, any mismatches found with root cause and fix, and confirmation the ≤5% bar is met.

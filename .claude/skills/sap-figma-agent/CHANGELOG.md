@@ -10,6 +10,11 @@ v7.10 (2026-09-26): Jev typed router at the top (generated from build/router-tab
 - Colour roles + icon meanings extended with live tokens/icons from gold 270:6722.
 - Manual-fallback token table removed (keys live in the BUILD KIT).
 
+### v8.1 — 2026-09-28
+- BUILD KIT `AL()`: `strokesIncludedInLayout = false` — a 1px card border pushed content in (cards +2px, sidebar +4px).
+- Icon meanings: fastest → `media-forward` (SAP has no lightning bolt), best → `thumb-up`, collapse (expanded
+  section) → `navigation-up-arrow`. Found building the BG results reference 1:1 (364:6465, EYE 97%, MATCH 100%).
+
 ## WHY THIS REWRITE EXISTS (read once, applies to every build)
 
 v6 of this skill told the agent to "open the Assets panel (Shift+I), drag the

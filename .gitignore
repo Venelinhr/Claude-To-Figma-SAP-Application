@@ -88,3 +88,5 @@ plugin/figma-builder-v2/registry-bundle-full.json
 !knowledge/gold/snapshots/*.png
 build/.bin/
 see-out/
+/see-*/
+/ref.webp
