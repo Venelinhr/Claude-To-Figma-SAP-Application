@@ -796,10 +796,12 @@ def main():
     d = sp.add_parser('diff'); d.add_argument('ref'); d.add_argument('build'); d.add_argument('--w-ref', type=int)
     d.add_argument('--tree', help='geometry.json of the build (build/templates/dump-geometry.use_figma.js) → fix list with node ids')
     d.add_argument('--pass-at', type=int, default=95, help='EYE MATCH %% needed to pass (default 95)')
-    for p in (r, d):
+    sp_ = sp.add_parser('spec'); sp_.add_argument('image'); sp_.add_argument('--text-scale', type=float, help='text size step to SAP (default: 0.85 when body text is 16px, else 1)')
+    for p in (r, d, sp_):
         p.add_argument('--w', type=int); p.add_argument('--lang', default='bg', choices=list(LANGS)); p.add_argument('--out', default='see-out')
     a = ap.parse_args()
     if a.cmd == 'read': cmd_read(a)
+    elif a.cmd == 'spec': cmd_spec(a)
     else: cmd_diff(a)
 
 
@@ -917,6 +919,205 @@ def instructions(diffs, pairs, A, B, RA, RB, tree, M):
             out.append(f'{n_}. Set the gap of {nm(G)} to {d["what"].split("→")[0].split("gap")[-1].strip()} (now {d["what"].split("→")[1].strip()}).')
         elif k == 'POSITION': out.append(f'{n_}. Move {nm(N)}: {d["what"]}.')
     return out
+
+
+# ── spec: GATE 1 — the complete structure of the screen, per section, before anything is built ─────────
+def sap_step(px, scale):
+    """measured text px → SAP size after the density step (consumer sites set body text 16px; SAP Compact 14)"""
+    return min(SAP_SIZES, key=lambda v: abs(v - px * scale))
+
+def layout_of(kids):
+    """how children sit: one row, a column of rows, the gaps between them"""
+    items = [e for e in kids if e['kind'] != 'line' or max(e['box'][2], e['box'][3]) < 200]
+    if not items: return {'dir': 'none'}
+    rows = []
+    for e in sorted(items, key=lambda e: e['box'][1]):
+        y0, y1 = e['box'][1], e['box'][1] + e['box'][3]
+        for r in rows:
+            if min(y1, r[1]) - max(y0, r[0]) >= 0.4 * min(y1 - y0, r[1] - r[0]): r[2].append(e); r[0], r[1] = min(r[0], y0), max(r[1], y1); break
+        else: rows.append([y0, y1, [e]])
+    rows.sort(key=lambda r: r[0])
+    vg = [b[0] - a[1] for a, b in zip(rows, rows[1:])]
+    out = {'dir': 'column' if len(rows) > 1 else 'row', 'rows': len(rows)}
+    if vg: out['gap'] = int(np.median(vg))
+    hg = [q['box'][0] - (p['box'][0] + p['box'][2]) for r in rows for p, q in zip(sorted(r[2], key=lambda e: e['box'][0]), sorted(r[2], key=lambda e: e['box'][0])[1:])]
+    if hg: out['row_gap'] = int(np.median(hg))
+    return out
+
+RING = ((lambda yy, xx: ((np.hypot(yy - 5.5, xx - 5.5) >= 4.3) & (np.hypot(yy - 5.5, xx - 5.5) <= 6.2)).astype(np.float32))(*np.mgrid[0:12, 0:12]))
+
+RING_DOT = np.maximum(RING, (lambda yy, xx: (np.hypot(yy - 5.5, xx - 5.5) <= 2.4).astype(np.float32))(*np.mgrid[0:12, 0:12]))
+
+def ring(thumb):
+    """how much an icon looks like a round radio: an empty ring, or a ring with a dot (selected)"""
+    if thumb.std() == 0: return 0.0
+    return max(float(np.corrcoef(thumb.ravel(), t.ravel())[0, 1]) for t in (RING, RING_DOT))
+
+def components(R, accent):
+    """what a person recognises: radio + label, button, range slider, tab bar, collapse arrow"""
+    els = {e['id']: e for e in R['elements']}
+    found, used = [], set()
+    by_group = {}
+    for e in R['elements']:
+        if e.get('group'): by_group.setdefault(e['group'], []).append(e)
+    for g in by_group.values():                      # radio: a round mark 14–26 px, its label right next to it
+        g = sorted(g, key=lambda e: e['box'][0])
+        for a, b in zip(g, g[1:]):
+            if a['kind'] == 'icon' and b['kind'] == 'text' and 14 <= a['box'][3] <= 26 and 0.7 <= a['box'][2] / a['box'][3] <= 1.3 and ring(a['_thumb']) > 0.3:
+                sel = a['token'].startswith('sapContent_Selected') or (accent is not None and de(rgb(a['color']), rgb(accent)) < 25)
+                found.append({'component': 'Radio Button', 'props': {'Selected': 'True' if sel else 'False'}, 'text': b['text'], 'box': union([a['box'], b['box']]), 'ids': [a['id'], b['id']]})
+                used |= {a['id'], b['id']}
+    for b in (e for e in R['elements'] if e['kind'] == 'box' and not e.get('page')):   # button: a filled pill with one word on it
+        kids = [e for e in R['elements'] if e['parent'] == b['id']]
+        sat = cv2.cvtColor(np.uint8([[rgb(b['fill'])]]), cv2.COLOR_RGB2HSV)[0, 0, 1] > 90
+        if sat and len(kids) == 1 and kids[0]['kind'] == 'text' and 20 <= b['box'][3] <= 56:
+            found.append({'component': 'Button', 'props': {'Type': 'Primary', 'Form Factor': 'Cozy' if b['box'][3] >= 32 else 'Compact'},
+                          'text': kids[0]['text'], 'box': b['box'], 'ids': [b['id'], kids[0]['id']], 'width': b['box'][2]})
+            used |= {b['id'], kids[0]['id']}
+    lines = [e for e in R['elements'] if e['kind'] == 'line' and e['orient'] == 'h']
+    icons = [e for e in R['elements'] if e['kind'] == 'icon' and e['id'] not in used]
+    for l in lines:                                  # range slider: a track with a handle at each end
+        x0, x1, cy = l['box'][0], l['box'][0] + l['box'][2], l['box'][1] + l['box'][3] / 2
+        hs = [i for i in icons if abs(i['box'][1] + i['box'][3] / 2 - cy) <= 8 and (x0 - 40 <= i['box'][0] <= x1 + 20)]
+        if len(hs) >= 2 and l['box'][2] >= 60:
+            bx = union([l['box']] + [h['box'] for h in hs])
+            found.append({'component': 'Range Slider', 'props': {'Form Factor': 'Compact'}, 'box': bx, 'ids': [l['id']] + [h['id'] for h in hs]})
+            used |= {l['id']} | {h['id'] for h in hs}
+    for i in icons:                                  # collapse arrow: a small wide chevron — which way it points
+        if i['id'] in used or not (8 <= i['box'][2] <= 26 and i['box'][2] > 1.25 * i['box'][3]): continue
+        t = i['_thumb']; up = t[:6].sum() < t[6:].sum()
+        found.append({'icon': 'navigation-up-arrow' if up else 'navigation-down-arrow', 'meaning': 'collapse' if up else 'expand', 'box': i['box'], 'ids': [i['id']]})
+        used.add(i['id'])
+    return found, used
+
+def split(items, axis):
+    its = sorted(items, key=lambda n: n['box'][axis])
+    groups, end = [], None
+    for n in its:
+        a0, a1 = n['box'][axis], n['box'][axis] + n['box'][axis + 2]
+        if groups and a0 <= end: groups[-1].append(n); end = max(end, a1)
+        else: groups.append([n]); end = a1
+    return groups
+
+def cut(items):
+    """split a set of things at the white gaps, like a person: side by side = row, one under the other = column,
+    recursively (the XY-cut); the wider gap decides which way to cut first"""
+    if len(items) == 1: return items[0]
+    best = None
+    for axis in (1, 0):
+        its = sorted(items, key=lambda n: n['box'][axis])
+        groups, end = [], None
+        for n in its:
+            a0, a1 = n['box'][axis], n['box'][axis] + n['box'][axis + 2]
+            if groups and a0 <= end: groups[-1].append(n); end = max(end, a1)
+            else: groups.append([n]); end = a1
+        if len(groups) > 1:
+            gaps = [min(n['box'][axis] for n in b) - max(n['box'][axis] + n['box'][axis + 2] for n in a) for a, b in zip(groups, groups[1:])]
+            if best is None or max(gaps) > best[0]: best = (max(gaps), axis, groups, gaps)
+    if not best: return {'type': 'stack', 'box': union([n['box'] for n in items]), 'children': items}
+    _, axis, groups, gaps = best
+    if axis == 0 and len(groups) >= 3:               # columns that line up in the same bands = rows (a person reads flight rows)
+        for n_ in range(len(groups), 2, -1):
+            for i0 in range(0, len(groups) - n_ + 1):
+                run = groups[i0:i0 + n_]
+                flat = [x for g in run for x in g]
+                bands = split(flat, 1)
+                if len(bands) >= 2 and all(sum(any(x in g for x in b) for g in run) >= 2 for b in bands):
+                    rows = {'type': 'column', 'gap': int(np.median([min(x['box'][1] for x in b2) - max(x['box'][1] + x['box'][3] for x in b1) for b1, b2 in zip(bands, bands[1:])])),
+                            'box': union([x['box'] for x in flat]), 'children': [cut(b) for b in bands]}
+                    rest = groups[:i0] + [[rows]] + groups[i0 + n_:]
+                    gg = [min(x['box'][0] for x in b) - max(x['box'][0] + x['box'][2] for x in a) for a, b in zip(rest, rest[1:])]
+                    return {'type': 'row', 'gap': int(np.median(gg)) if gg else 0, 'box': union([n['box'] for n in items]),
+                            'children': [g[0] if g == [rows] else cut(g) for g in rest]}
+    return {'type': 'column' if axis == 1 else 'row', 'gap': int(np.median(gaps)), 'box': union([n['box'] for n in items]),
+            'children': [cut(g) for g in groups]}
+
+def cmd_spec(a):
+    os.makedirs(a.out, exist_ok=True)
+    R, img, f = read(a.image, a.lang, a.w, a.out)
+    els = R['elements']
+    byid = {e['id']: e for e in els}
+    texts = [e for e in els if e['kind'] == 'text']
+    brand_src = texts and sum(e['dE'] > 8 for e in texts) > 0.5 * len(texts)
+    scale = a.text_scale or (0.85 if brand_src else 1.0)
+    # accent = the brand colour of the selected state (the most common saturated text/icon colour)
+    hsv_ = lambda h: cv2.cvtColor(np.uint8([[rgb(h)]]), cv2.COLOR_RGB2HSV)[0, 0]
+    sats = [e['color'] for e in els if e['kind'] in ('text', 'icon') and hsv_(e['color'])[1] > 120 and hsv_(e['color'])[2] > 120]
+    accent = max(set(sats), key=sats.count) if sats else None
+    comps, used = components(R, accent)
+    ask, brand, shapes_ = [], {}, []
+    def node(e):
+        if e['kind'] == 'text':
+            sz = sap_step(e['size_px'], scale)
+            tok = e['token']
+            if e['dE'] > 8:
+                hsv = cv2.cvtColor(np.uint8([[rgb(e['color'])]]), cv2.COLOR_RGB2HSV)[0, 0]
+                if hsv[1] < 90 or hsv[2] < 70: tok = 'sapTextColor' if hsv[2] < 90 else 'sapContent_LabelColor'   # a neutral (or near-black): the role is plain
+                else: brand.setdefault(e['color'], []).append(f'text "{e["text"][:24]}"'); tok = '?'
+            n = {'type': 'text', 'text': e['text'], 'style': STYLE.get((sz, e['weight']), f'{sz}px {e["weight"]}'), 'measured': f'{e["size"]}px {e["weight"]}',
+                 'token': tok, 'color': e['color'], 'box': e['box']}
+            if e.get('conf', 1) < 0.5: ask.append(f'text "{e["text"][:30]}": OCR unsure — check the letters on the tile')
+            return n
+        if e['kind'] == 'icon':
+            kind_ = next((k for k in shapes_ if abs(k['w'] - e['box'][2]) <= 3 and abs(k['h'] - e['box'][3]) <= 3 and float(np.corrcoef(k['t'].ravel(), e['_thumb'].ravel())[0, 1] if k['t'].std() and e['_thumb'].std() else 0) > 0.8), None)
+            if kind_: kind_['n'] += 1
+            else: shapes_.append({'w': e['box'][2], 'h': e['box'][3], 't': e['_thumb'], 'n': 1, 'at': e['box'][:2], 'color': e['color'], 'id': len(shapes_) + 1}); kind_ = shapes_[-1]
+            return {'type': 'icon', 'box': e['box'], 'token': e['token'], 'color': e['color'], 'meaning': '?', 'shape': kind_['id']}
+        if e['kind'] == 'image': return {'type': 'image', 'crop': e['box'], 'box': e['box']}
+        if e['kind'] == 'line': return {'type': 'divider' if e['orient'] == 'h' else 'separator', 'box': e['box'], 'token': e['token'], 'thickness': min(e['box'][2], e['box'][3])}
+        n = {'type': 'box', 'box': e['box'], 'size': [e['box'][2], e['box'][3]], 'fill': e['token'], 'fill_hex': e['fill'],
+             'border': f'{e["border_w"]}px {e["border_token"]}' if e.get('border') else 'none', 'radius': e['radius'],
+             'padding': e.get('padding'), 'shadow': bool(e.get('shadow'))}
+        if e['dE'] > 8: brand.setdefault(e['fill'], []).append(f'box {e["box"][2]}×{e["box"][3]}')
+        kids = [k for k in els if k['parent'] == e['id']]
+        n['layout'] = layout_of(kids)
+        n['children'] = children(kids, e['id'])
+        return n
+    def children(kids, pid):
+        out, done = [], set()
+        for c in comps:
+            if c['ids'] and byid[c['ids'][0]]['parent'] == pid:
+                out.append({'type': 'component' if 'component' in c else 'icon', **{k: v for k, v in c.items() if k != 'ids'}}); done |= set(c['ids'])
+        for k in kids:
+            if k['id'] not in done and k['id'] not in used: out.append(node(k))
+        return [cut(out)] if out else []
+    page = next((e for e in els if e.get('page')), None)
+    top = [e for e in els if e['parent'] == (page['id'] if page else 0) and not e.get('page')]
+    sections = children(top, page['id'] if page else 0)
+    if scale != 1: ask.insert(0, f'density: the reference is a brand site — texts step down to SAP Compact (×{scale}: 24→20, 16→14, 14→12, as gold 270:6722). OK?')
+    for col, users in sorted(brand.items(), key=lambda kv: -len(kv[1])):
+        ask.append(f'brand colour {col} ({token(rgb(col))[0]} nearest) on {len(users)}: {", ".join(users[:4])}{"…" if len(users) > 4 else ""} — which SAP role (selected / link / price / warning / button)?')
+    for k in shapes_:
+        ask.append(f'icon shape #{k["id"]} {k["w"]}×{k["h"]} ×{k["n"]} (first at {k["at"][0]},{k["at"][1]}, {k["color"]}) — which SAP icon? (router-table icon_meanings)')
+    spec = {'frame': {'w': R['frame'][0], 'h': R['frame'][1], 'fill': page['token'] if page else None,
+                      'text_scale': scale, 'density': 'Compact' if scale < 1 else 'as measured', 'accent': accent},
+            'sections': sections, 'ask': ask}
+    json.dump(spec, open(os.path.join(a.out, 'spec.json'), 'w'), ensure_ascii=False, indent=1)
+    tiles(img, a.out)
+    def show(n, d=0):
+        pad = '  ' * d
+        t = n['type']
+        if t == 'box':
+            L = n['layout']
+            print(f"{pad}BOX {n['size'][0]}×{n['size'][1]} · fill {n['fill']} · border {n['border']} · radius {n['radius']} · padding {'/'.join(map(str, n['padding'])) if n['padding'] else '-'}"
+                  f" · {L.get('dir')}{' gap ' + str(L['gap']) if 'gap' in L else ''}{' · row gap ' + str(L['row_gap']) if 'row_gap' in L else ''}{' · shadow' if n['shadow'] else ''}")
+            for c in n['children']: show(c, d + 1)
+        elif t in ('row', 'column', 'stack'):
+            if len(n['children']) == 1: return show(n['children'][0], d)
+            print(f"{pad}{t.upper()}{' gap ' + str(n['gap']) if 'gap' in n else ''}")
+            for c in n['children']: show(c, d + 1)
+        elif t == 'component': print(f"{pad}{n['component']} {json.dumps(n['props'], ensure_ascii=False)}{' “' + n['text'] + '”' if n.get('text') else ''}{' w' + str(n['width']) if n.get('width') else ''}")
+        elif t == 'text': print(f"{pad}text “{n['text'][:60]}” {n['style']} {n['token']}{' (brand ' + n['color'] + ')' if n.get('brand') else ''}")
+        elif t == 'icon': print(f"{pad}icon {n.get('icon') or ('shape #' + str(n['shape']) if n.get('shape') else '?')} {n['box'][2]}×{n['box'][3]} {n.get('token', '')}")
+        elif t == 'image': print(f"{pad}image/logo crop {n['crop']}")
+        else: print(f"{pad}{t} {n['box'][2]}×{n['box'][3]} {n['token']}")
+    fr = spec['frame']
+    print(f"GATE 1 SPEC · frame {fr['w']}×{fr['h']} fill {fr['fill']} · text scale ×{scale} ({fr['density']}) · accent {accent}")
+    for n in spec['sections']: show(n, 1)
+    print(f"ASK ({len(ask)}) — answer each before GATE 2:")
+    for q in ask: print('  - ' + q)
+    print(f"spec: {os.path.join(a.out, 'spec.json')} · tiles: {a.out}/tile-*.png")
+    sys.exit(0 if not ask else 1)
 
 
 if __name__ == '__main__':

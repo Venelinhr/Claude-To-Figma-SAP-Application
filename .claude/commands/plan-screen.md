@@ -14,10 +14,14 @@ Reply to the user in short, plain sentences. Input: $ARGUMENTS
    `SHA=$(shasum -a 1 ref.png | cut -c1-12)`. If `knowledge/plans-cache/$SHA.plan.json` exists and
    `node build/route.js --plan` passes on it → use it, jump to step 7.
 3. **Measure.** `python3 build/measure-ref.py ref.png --json > ref.json` (frame, spacing scale), then read it
-   like a person: `python3 build/see.py read ref.png --lang bg --out see-ref` → every text exactly (OCR),
-   its SAP size + weight + colour token, every box (fill, border px + token, radius, padding, shadow), what
-   sits inside what, icon groups vs single icons, logo crop boxes in frame px. Copy these numbers into the
-   plan rows; look at `see-ref/overview.png` and the `tile-*.png` pieces for anything it missed.
+   like a person — **GATE 1**: `python3 build/see.py spec ref.png --lang bg --out see-ref` → the screen as
+   sections → boxes (size, fill, border px + token, radius, padding, shadow) → rows/columns with gaps →
+   components with states (Radio Button Selected, Button Primary Cozy + width, Range Slider, collapse
+   arrows), SAP text styles (brand sites step down to Compact ×0.85), logo crops — and an ASK list.
+   Answer every ASK line (look at `see-ref/tile-*.png`; icons from `router-table.json` icon_meanings;
+   brand colours → roles). No plan before ASK is empty. When a gold exists for this screen, run `spec` on the
+   gold's 2× export instead: the gold is the approved SAP translation, the build must equal it.
+   Copy the spec's numbers into the plan rows and section `layout` — the Figma Agent must not guess any.
 4. **Start from gold.** `node build/route.js --closest-gold ref.json "<words you can read in the image>"`.
    If it says "start from …" → copy that gold plan and change only what differs. Else write new.
    **If you change `frame.w` from the gold's, rescale every logo `crop` by newW ÷ goldW** —

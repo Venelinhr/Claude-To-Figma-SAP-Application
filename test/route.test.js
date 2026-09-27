@@ -474,3 +474,18 @@ test('see.py diff: same image = PASS, a changed box = the exact line + a failing
   assert.strictEqual(r.code, 1);
   assert.match(r.out, /BORDER COLOUR +#e5e5e5 sapList_BorderColor → #a0a0a0/);
 });
+
+test('see.py spec (GATE 1): the gold sidebar card as a builder needs it — box, layout, Radio Buttons with state, SAP styles', { skip: process.platform !== 'darwin' }, () => {
+  const out = fs.mkdtempSync(path.join(os.tmpdir(), 'see-'));
+  try { execFileSync('python3', [path.join(ROOT, 'build/see.py'), 'spec', path.join(__dirname, 'fixtures/gold-270-6722-sidebar@2x.png'), '--w', '250', '--out', out]); } catch (e) { /* exit 1 = open ASK lines */ }
+  const S = JSON.parse(fs.readFileSync(path.join(out, 'spec.json'), 'utf8'));
+  const all = []; const walk = n => { all.push(n); (n.children || []).forEach(walk); }; S.sections.forEach(walk);
+  const card = all.find(n => n.type === 'box');
+  assert.deepStrictEqual([card.size[0], card.border, card.radius], [217, '1px sapList_BorderColor', 8]);
+  const radios = all.filter(n => n.component === 'Radio Button');
+  assert.ok(radios.length >= 3);
+  assert.ok(radios.some(r => r.props.Selected === 'True' && r.text === 'Всички'));                  // the selected one, read from its colour
+  assert.ok(all.some(n => n.type === 'text' && n.text === 'Спирки' && n.style === 'H5/Bold'));
+  assert.ok(all.some(n => n.icon === 'navigation-down-arrow'));
+  assert.strictEqual(S.frame.text_scale, 1);                                                        // an SAP source: no density step
+});
