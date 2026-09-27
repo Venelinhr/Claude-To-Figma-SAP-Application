@@ -10,8 +10,13 @@ const inInst = n => { for (let p = n.parent; p && p !== root.parent; p = p.paren
 const out = [];
 for (const n of [root, ...root.findAll(() => true)]) {
   if (n.visible === false) continue;
-  const base = { id: n.id, type: n.type, name: n.name, inInst: inInst(n) };
+  const ii = inInst(n);
+  // kit internals: keep only text (presence check) and inner icon instances (icon check) —
+  // frames/vectors/rects inside instances pushed real screens past the 20 KB reply cap
+  if (ii && n.type !== 'TEXT' && n.type !== 'INSTANCE') continue;
+  const base = { id: n.id, type: n.type, name: n.name, inInst: ii };
   if (n.type === 'TEXT') {
+    if (ii) { out.push({ ...base, text: n.characters }); continue; }
     const st = typeof n.textStyleId === 'string' && n.textStyleId ? await figma.getStyleByIdAsync(n.textStyleId) : null;
     out.push({ ...base, text: n.characters, style: st ? st.name : '', fill: await tok(n.fills),
       font: n.fontName === figma.mixed ? [...new Set(n.getStyledTextSegments(['fontName']).map(g => g.fontName.family))].join('+') : n.fontName.family });
