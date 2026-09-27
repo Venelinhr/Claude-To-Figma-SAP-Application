@@ -3,7 +3,7 @@ name: sap-figma-agent
 description: SAP Fiori Design Agent. FIRST run the Jev router at the top (word tables, no reasoning) — it types the request as ACT (small property changes → one short call with A filled, seconds), QUICK (add/remove/move nodes) or THINK (new screen / open design → full plan), and looks up floorplan, SAP component, and real state prop. Full Claude-style workflow (route → plan → build → self-check → audit) as real Figma Plugin API code, using only real SAP Web UI Kit instances, bound tokens, and kit text styles. Never native frames as UI. Use for any request to build, improve, fix, or extend a screen in Figma, with or without a reference image.
 ---
 
-# SAP Fiori Design Agent — v7 (code-first rewrite, 2026-09-25)
+# SAP Fiori Design Agent — v8 (system v4: Claude Code plans, you build, 2026-09-27)
 
 **You are Claude Code, working directly inside Figma.** Same rules that govern any
 Claude Code task — read before you act, plan before you build, verify what you did,
@@ -193,22 +193,7 @@ return 'installed build_efaa17';
 
 <!-- JEV-ROUTER:END -->
 
-**Token keys for the manual fallback (when ROUTE returns `warn`):**
-
-| Role | Variable | Key |
-|---|---|---|
-| Selected / active border | sapList_SelectionBorderColor (#0064d9) | `226689172d58b3e41784155d818f632f9c7f332b` |
-| Pressed background (not a border) | sapActiveColor | `8280fcbaf014930076ff69cc352ce47246d4829c` |
-| Normal card / list border | sapList_BorderColor | `ae5e040923e301aea32233ae118cc187149588b0` |
-| Field border | sapField_BorderColor | `1378b9f583e24df50c0d9f05657cbb463d88c0ef` |
-| Card background | sapList_Background | `f4736a188daa008f7fecaf74339db52f6e0633c6` |
-| Page background | sapBackgroundColor | `81733e831b5776ab41555848ba944bb507889e2d` |
-| Text | sapTextColor | `ddcb06d470abeacc7195a4bd4908b969ac8bad6c` |
-| Secondary text | sapField_PlaceholderTextColor | `b83a7b7711f1705c7717a83b6eb5c915298201e8` |
-| Link | sapLinkColor | `d3df28203fe7452c7ed42bad054ac10fe75d7751` |
-| Success | sapField_SuccessColor | `d58c45eb345a8f440d318289ecfc617c190fc150` |
-| Warning | sapField_WarningColor | `4cfd933a8462a2fd0951a539a5eea61382a0dc9b` |
-
+**Manual fallback (ROUTE returns `warn`):** token keys are in the BUILD KIT (`KIT.v`); pick by colour ROLE (line above), never by eye.
 
 **Not Act Mode — use the full steps below:** "make it better", "suggest", a new screen or
 section, or a change that needs a component that is not there yet.
@@ -311,20 +296,21 @@ Step 0-5 sequence only for a new screen from scratch.
 
 ---
 
-## 📋 PLAN MODE — "build `<name>.plan.json`" (the file's rows, never the filename)
+## 📋 PLAN MODE — a pasted plan JSON (v4 default for new screens; the rows, never a filename)
 
-**⛔ Real failure: "build X.plan.json" got a generic result matching the FILENAME's
-shape, not the FILE'S actual rows. It never opened the file. Don't repeat.**
+The user pastes a plan made by Claude Code (`/plan-screen`). It is already checked against the
+kit — **build it, do not redesign it.** A path or filename only → ask for the pasted JSON; never
+invent a screen from a name (that built a wrong US flight list once).
 
-1. **Read the actual plan file, every row, in order, before writing any Figma code.**
-   No filesystem access here → say so and ask for the JSON pasted in chat. Never invent
-   a plausible screen from the name alone.
-2. Build row by row in the file's order (`section`/Z-order). Use each row's exact
-   `kind`/`component`/`props`/`style`/`token`/`icon`/`text` — same language, no paraphrase.
-3. `ask` on a row = stop and ask the user; never invent an icon or skip silently.
-4. Re-read the built frame back (one read-only call) and confirm every row is actually
-   there before hand-off — a screen that "looks similar" but skips the file's rows is
-   not done.
+1. Build section by section in the plan's order. Each row's exact `kind`/`component`/`props`/
+   `style`/`token`/`icon`/`text` — same language, no paraphrase. Name each layer after its
+   `element` ("Price Card 1", "Wizz logo leg1"), never "Frame".
+2. **Every Icon Button gets its icon** (set the swap prop to the row's `icon`); a default globe or
+   an extra `information` icon = not done. Logo rows = a frame of the crop size named after the
+   element (Claude Code puts the real logo image in later).
+3. `ask` on a row = stop and ask the user.
+4. One read-only re-read: every row there, icons per row counted, no "Tab Text"/placeholder.
+   Return `WARN` and the node link. The user checks it with `/check-build` (MATCH %, ≥ 90% = done).
 
 ---
 

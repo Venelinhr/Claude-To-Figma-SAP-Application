@@ -1,14 +1,27 @@
-# SAP Figma Build System v3 — read this file only
+# SAP Figma Build System v4 — read this file only
 
-v2 (39 hooks, 8 gates, ~3,900 lines across 6 docs) is archived in `.archive-v2/` for
-reference. It is not loaded. This file is the whole system.
+**Branch must be `v4`.** If `git branch --show-current` is not `v4`, stop and tell the user
+`git checkout v4` — `main` is the old v2 system (18 min / 59k tokens per screen), `v3` is history.
+v2 is archived in `.archive-v2/`; it is not loaded. This file is the whole system. The v4 idea
+and the evidence behind it: `docs/V4-PLAN.md`.
 
-## The workflow, in order — do not skip or reorder a step
+## v4 in one line — Claude Code plans, the Figma Agent builds, Claude Code checks
+Targets: **MATCH ≥ 90%** (audit-plan score), plan session **≤ 12k tokens / ≤ 5 min**, **≤ 1 fix
+round**. Fail twice on one step → switch approach or ask. Proven: plan→paste build 301:7074 = $2;
+all-in-one terminal build 286:5646 = $8 and worse; main-branch build 291:6032 = 18 min, placeholders.
 
-**`measure-ref.py` is the front gate. `audit-screen.py` is the end gate.** Nothing gets
-built before the reference is measured; nothing is called done before the build is
-exported and checked against it. Full order:
-**Measure → read like a person (sections) → element plan → `route.js --plan` → build → audit → fix → re-audit.**
+| Step | Where | Command |
+|---|---|---|
+| 1. image → validated plan on the clipboard | Claude Code | `/plan-screen <image>` |
+| 2. build the pasted plan (PLAN MODE) | Figma Agent | paste + the build line `/plan-screen` prints |
+| 3. dump → MATCH % → logos → fix list | Claude Code | `/check-build <node link>` |
+| 4. apply the fix list, re-check once | Figma Agent → Claude Code | paste, then `/check-build` |
+| small edits later | Figma Agent | ACT mode (one short call, ~11 s) |
+
+Never build a new screen from a prompt alone in Figma, never give the Figma Agent a file path
+(it cannot read files — it invents), never copy JSON out of the terminal (use `pbcopy`).
+
+## The workflow in detail (what `/plan-screen` and `/check-build` run)
 
 1. **Measure** the reference for real: `python3 build/measure-ref.py <image> --json > ref.json`
    (and without `--json` to read it). Use the READ tree, ACCENTS (measured colours of text/
@@ -27,21 +40,26 @@ exported and checked against it. Full order:
    role** (never a colour picked by photo), `ref_hex` for coloured text, `meaning` for icons,
    `crop` for logos, `ask` when SAP has no match. Worked example — copy its shape:
    `knowledge/gold/plans/flight-ticket-selection.plan.json`.
-4. **Validate:** `node build/route.js --plan plan.json`. Exit 1 = fix the listed rows first.
+   **Start from gold:** `node build/route.js --closest-gold ref.json "<words in the image>"` — if it
+   names a gold plan, adapt that plan instead of writing from zero. Repeat image → `knowledge/plans-cache/`.
+4. **Validate:** `node build/route.js --plan plan.json --map --min`. Exit 1 = fix the listed rows first.
    It checks Z order, real components/props/text styles, **colour by role** (selected border
    = `sapList_SelectionBorderColor`, link = `sapLinkColor`, warning text = `sapField_WarningColor`,
    CTA = Button `Type=Primary` — never a painted brand colour), **one SAP icon per meaning**
    (`icon_meanings`; extra icons in `knowledge/live/icons-extra.json`), a crop for every logo.
    Then `node build/route.js --plan plan.json --map` = the SAP proposal per section (what you
-   see → component · state · text style · colour variable). Show it + the questions, wait for go.
-5. **Build** with the runtime (below), section by section, following the recipes. Every
-   auto-layout node gets an explicit sizing decision — see "Auto-layout sizing" below. Logos:
-   crop from the reference → `upload_assets` → image fill.
+   see → component · state · text style · colour variable) + an ASCII of the sections + up to 3
+   suggestions. `--min` writes `plan.min.json` → hand off with `pbcopy < plan.min.json`.
+5. **Build** — by the Figma Agent from the pasted plan (PLAN MODE in its skill). Claude Code builds
+   itself only when asked, with the runtime (below). Logos: `python3 build/crop-logos.py plan.json
+   ref.png logos/` → `upload_assets` onto the logo frames (crops are in frame px).
 6. **Audit — both gates:** (a) dump the build with `build/templates/dump-tree.use_figma.js`
-   (read-only) → `node build/audit-plan.js plan.json tree.json` must exit 0; (b)
-   `python3 build/audit-screen.py <reference> <build.png>`.
-7. **Fix** every line, re-audit. **Not done** until audit-plan exits 0 AND every audit-screen
-   MISSING / WRONG COLOUR line has "fixed" or "skipped: <real reason>" in the hand-off.
+   (read-only) → `node build/audit-plan.js plan.json tree.json` → `MATCH NN%` + HYGIENE
+   (non-72 font, raw colour, placeholders, default globe/info icons, "Frame" names; kit
+   internals skipped). Exit 0 = MATCH ≥ 90% and 0 hygiene. (b) optional pixel checklist:
+   `python3 build/audit-screen.py <reference> <build.png>` (use its lists, never its score).
+7. **Fix** the lines (hygiene first), re-audit once. **Done** = audit-plan exit 0. Then the plan
+   goes to `knowledge/plans-cache/<sha>.plan.json`; if the user calls it gold, to `knowledge/gold/plans/`.
    Never call a build "1:1" by eye alone.
 
 **Build hygiene:** reuse only approved/gold frames — never an unaudited or "UNBOUND" frame as a

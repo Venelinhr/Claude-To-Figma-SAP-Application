@@ -333,7 +333,59 @@ function sapMap(plan) {
   return out.join('\n');
 }
 
-module.exports = { route, routeImage, routeBox, defsOf, validatePlan, sapMap };
+// ── v4: ASCII of the section boxes (one look at the layout before "go") ──
+function asciiMap(plan, W = 72, H = 18) {
+  const f = plan.frame || {}, g = Array.from({ length: H }, () => Array(W).fill(' '));
+  const secs = (plan.sections || []).filter(s => s.box);
+  const fw = f.w || Math.max(...secs.map(s => s.box[0] + s.box[2]), 1);
+  const fh = f.h || Math.max(...secs.map(s => s.box[1] + s.box[3]), 1);
+  const cell = s => {
+    const x0 = Math.min(W - 5, Math.round(s.box[0] / fw * (W - 1))), y0 = Math.min(H - 3, Math.round(s.box[1] / fh * (H - 1)));
+    return [x0, y0, Math.min(W - 1, Math.max(x0 + 4, Math.round((s.box[0] + s.box[2]) / fw * (W - 1)))),
+      Math.min(H - 1, Math.max(y0 + 2, Math.round((s.box[1] + s.box[3]) / fh * (H - 1))))];
+  };
+  for (const s of secs) {                          // borders first …
+    const [x0, y0, x1, y1] = cell(s);
+    for (let x = x0; x <= x1; x++) { g[y0][x] = '─'; g[y1][x] = '─'; }
+    for (let y = y0; y <= y1; y++) { g[y][x0] = '│'; g[y][x1] = '│'; }
+    g[y0][x0] = '┌'; g[y0][x1] = '┐'; g[y1][x0] = '└'; g[y1][x1] = '┘';
+  }
+  for (const s of secs) {                          // … labels last, so no border hides a name
+    const [x0, y0, x1] = cell(s), label = `${s.id} ${s.name}`.slice(0, Math.max(1, x1 - x0 - 1));
+    for (let i = 0; i < label.length; i++) g[y0 + 1][x0 + 1 + i] = label[i];
+  }
+  return g.map(r => r.join('').trimEnd()).join('\n');
+}
+
+// ── v4: up to 3 proactive suggestions (main's SAP-SUGGESTION-CATALOG, the ones a plan can show) ──
+function suggestions(plan) {
+  const rows = plan.rows || [], out = [];
+  const groups = {}; for (const r of rows.filter(r => r.role === 'primary_cta')) groups[r.group || r.section] = (groups[r.group || r.section] || 0) + 1;
+  if (Object.values(groups).some(n => n > 1)) out.push('Two Primary buttons in one group → keep one Primary, the rest Secondary/Tertiary (one main action).');
+  if (rows.some(r => r.component === 'Step Input' || /slider|range/i.test(r.element || '')))
+    out.push('A time/price range → use the kit Range Slider (SAP Web UI Kit key 34d973fcb4c85d6517c8e5c3079e2b40d14d0fe8), not Step Inputs.');
+  if (rows.some(r => r.kind === 'logo')) out.push('Logos: crop them from the reference (`build/crop-logos.py`) and place them as images — the #1 gap to a 90% match.');
+  if (rows.some(r => r.component === 'Icon Button' && !(r.props && r.props.Icon) && !rows.some(i => i.kind === 'icon' && i.group === r.group)))
+    out.push('An Icon Button without an icon → name its icon, or it shows the default globe.');
+  return out.slice(0, 3);
+}
+
+// ── v4: start from the closest gold plan instead of from zero (main's reuse-first, at plan level) ──
+function closestGold(ref, words = '') {
+  const dir = path.join(__dirname, '../knowledge/gold/plans');
+  const q = new Set(RC.norm(words).split(' ').filter(w => w.length > 2));
+  const bp = ref && ref.frame && ref.frame.breakpoint, dens = ref && ref.frame && ref.frame.density;
+  return fs.readdirSync(dir).filter(f => f.endsWith('.plan.json')).map(f => {
+    const p = JSON.parse(fs.readFileSync(path.join(dir, f), 'utf8'));
+    const txt = new Set(RC.norm([...(p.sections || []).flatMap(s => [s.name, s.describe]), ...(p.rows || []).map(r => r.text || r.element)].join(' ')).split(' '));
+    let score = [...q].filter(w => txt.has(w)).length;
+    if (bp && p.frame && p.frame.breakpoint === bp) score += 3;
+    if (dens && p.frame && p.frame.density === dens) score += 2;
+    return { file: `knowledge/gold/plans/${f}`, score };
+  }).sort((a, b) => b.score - a.score);
+}
+
+module.exports = { route, routeImage, routeBox, defsOf, validatePlan, sapMap, asciiMap, suggestions, closestGold };
 
 if (require.main === module) {
   const a = process.argv.slice(2);
@@ -342,12 +394,27 @@ if (require.main === module) {
   if (a[0] === '--plan') {
     const pj = JSON.parse(fs.readFileSync(path.resolve(a[1]), 'utf8'));
     r = validatePlan(pj);
-    if (a.includes('--map')) console.log(sapMap(pj) + '\n');
+    if (a.includes('--map')) {
+      console.log(asciiMap(pj) + '\n\n' + sapMap(pj) + '\n');
+      const sg = suggestions(pj); if (sg.length) console.log('⚡ SUGGESTIONS\n' + sg.map(s => '  - ' + s).join('\n') + '\n');
+    }
     console.log(r.trace);
     for (const e of r.errors) console.log('  ✗ ' + e);
     for (const q of r.questions) console.log('  ? ' + q);
     for (const x of r.recipes) console.log('  ▸ ' + x + '  (knowledge: router-table.json patterns)');
+    if (a.includes('--min') && r.ok) {             // clean hand-off: one line, safe to pbcopy, no terminal wrapping
+      const out = path.resolve(a[1]).replace(/(\.plan)?\.json$/, '') + '.min.json';
+      fs.writeFileSync(out, JSON.stringify(pj));
+      const shown = out.startsWith(process.cwd()) ? path.relative(process.cwd(), out) : out;
+      console.log(`▸ wrote ${shown} (${fs.statSync(out).size} bytes) — hand off with: pbcopy < ${shown}`);
+    }
     process.exit(r.ok ? 0 : 1);
+  }
+  if (a[0] === '--closest-gold') {                 // node build/route.js --closest-gold ref.json "words you see"
+    const ranked = closestGold(a[1] && fs.existsSync(a[1]) ? JSON.parse(fs.readFileSync(path.resolve(a[1]), 'utf8')) : null, a.slice(2).join(' '));
+    for (const g of ranked) console.log(`${String(g.score).padStart(3)}  ${g.file}`);
+    console.log(ranked[0] && ranked[0].score >= 6 && ranked[0].score - ((ranked[1] || {}).score || 0) >= 3 ? `▸ start from ${ranked[0].file} — adapt it, do not write from zero` : '▸ no close gold plan — write the plan from the reference');
+    process.exit(0);
   }
   if (a[0] === '--image') r = routeImage(JSON.parse(fs.readFileSync(path.resolve(a[1]), 'utf8')), a.slice(2).join(' '));
   else r = route(a.join(' '));

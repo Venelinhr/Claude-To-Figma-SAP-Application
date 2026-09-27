@@ -305,7 +305,9 @@ test('audit-plan (element plan): perfect build passes; missing logo, grey Ankunf
     if (r.kind === 'component') tree.push({ type: 'INSTANCE', name: r.element, component: r.component, props: r.props || {} });
     if (r.kind === 'icon') tree.push({ type: 'INSTANCE', name: r.icon, component: r.icon, props: {} });
     if (r.kind === 'logo') tree.push({ type: 'RECTANGLE', name: r.element, image: true });
-    if (r.kind === 'container' && r.selected) tree.push({ type: 'FRAME', name: r.element, stroke: R.selected_border[0] });
+    if (r.kind === 'divider') tree.push({ type: 'LINE', name: r.element, stroke: R.divider[0] });
+    if (r.kind === 'container') tree.push({ type: 'FRAME', name: r.element,
+      stroke: r.selected ? R.selected_border[0] : r.border_role ? R[r.border_role][0] : '', fill: r.fill_role ? R[r.fill_role][0] : '' });
   }
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ep-'));
   const run = t => { fs.writeFileSync(path.join(dir, 't.json'), JSON.stringify(t));
@@ -317,7 +319,7 @@ test('audit-plan (element plan): perfect build passes; missing logo, grey Ankunf
     .map(n => n.component === 'suitcase' ? { ...n, component: 'information', name: 'information' } : n);
   const b = run(bad);
   assert.strictEqual(b.code, 1);
-  assert.match(b.out, /logo \(image crop/); assert.match(b.out, /Ankunft: Do 8\. Okt": sapContent_LabelColor, role warning_text/); assert.match(b.out, /icon "suitcase"/);
+  assert.match(b.out, /logo ".*" \(image crop/); assert.match(b.out, /Ankunft: Do 8\. Okt": sapContent_LabelColor, role warning_text/); assert.match(b.out, /icon "suitcase"/);
 });
 
 test('drift: every role token, icon meaning and recipe role exists', () => {
@@ -372,4 +374,63 @@ test('--map: per section, what you see → SAP component · state · style · va
     /Radio Button · Selected=True, Form Factor=Compact/, /border sapList_SelectionBorderColor · SELECTED/,
     /Text · style SmallText\/LHAuto\/Bold · sapField_WarningColor \(warning_text\)/, /Icon Button · Type=Secondary/, /SAP icon grid \(seat\)/])
     assert.match(m, want);
+});
+
+// ── v4: audit gives MATCH %, hygiene (main's invariants minus instance internals), 90% gate ──
+test('v4 audit: MATCH %, 90% gate, hygiene catches default globes, placeholders, raw colour, non-72 font', () => {
+  const plan = JSON.parse(fs.readFileSync(GOLD, 'utf8')), rows = plan.rows.filter(r => !r.ask);
+  const R = require('../build/router-table.json').colour_roles;
+  const tree = [];
+  for (const r of rows) {
+    if (r.kind === 'text') tree.push({ type: 'TEXT', name: r.element, text: r.text, style: r.style, fill: r.token || R[r.role][0], font: '72' });
+    if (r.kind === 'component') tree.push({ type: 'INSTANCE', name: r.element, component: r.component, props: r.props || {} });
+    if (r.kind === 'icon') tree.push({ type: 'INSTANCE', name: r.icon, component: r.icon, props: {} });
+    if (r.kind === 'logo') tree.push({ type: 'RECTANGLE', name: r.element, image: true });
+    if (r.kind === 'divider') tree.push({ type: 'LINE', name: r.element, stroke: R.divider[0] });
+    if (r.kind === 'container') tree.push({ type: 'FRAME', name: r.element,
+      stroke: r.selected ? R.selected_border[0] : r.border_role ? R[r.border_role][0] : '', fill: r.fill_role ? R[r.fill_role][0] : '' });
+  }
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'v4-'));
+  const run = t => { fs.writeFileSync(path.join(dir, 't.json'), JSON.stringify(t));
+    try { return { code: 0, out: execFileSync('node', [path.join(ROOT, 'build/audit-plan.js'), GOLD, path.join(dir, 't.json')]).toString() }; }
+    catch (e) { return { code: e.status, out: e.stdout.toString() }; } };
+  let r = run(tree); assert.strictEqual(r.code, 0, r.out); assert.match(r.out, /MATCH 100%/);
+  // 5 logos missing of ~82 rows → still ≥ 90% → pass, but lines listed
+  const noLogos = tree.filter((n, i) => !(n.image && tree.filter(x => x.image).indexOf(n) < 5));
+  r = run(noLogos); assert.strictEqual(r.code, 0, r.out); assert.match(r.out, /MATCH 9\d%/); assert.match(r.out, /logo "/);
+  // half the texts gone → below 90% → fail
+  let k = 0; r = run(tree.filter(n => n.type !== 'TEXT' || k++ % 2)); assert.strictEqual(r.code, 1); assert.match(r.out, /MATCH [0-8]\d%/);
+  // hygiene: default globe, placeholder, raw colour, Inter font — each blocks; kit internals are skipped
+  for (const bad of [{ type: 'INSTANCE', name: 'globe', component: 'globe', props: {} }, { type: 'TEXT', name: 't', text: 'Tab Text', font: '72' },
+    { type: 'FRAME', name: 'Card', fill: 'RAW' }, { type: 'TEXT', name: 't', text: 'x', font: 'Inter' }]) {
+    r = run([...tree, bad]); assert.strictEqual(r.code, 1, JSON.stringify(bad)); assert.match(r.out, /HYGIENE \(1\)/);
+    assert.strictEqual(run([...tree, { ...bad, inInst: true }]).code, bad.name === 'globe' ? 1 : 0);   // globe counts anywhere
+  }
+});
+
+test('v4 crop-logos: one PNG per logo row, crop scaled from frame px to the image', () => {
+  const { PNG } = (() => { try { return require('pngjs'); } catch { return {}; } })();
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'logo-'));
+  const img = path.join(dir, 'ref.png');
+  // a 2880-wide reference (2× the 1440 frame): python makes it, so the test needs only PIL
+  execFileSync('python3', ['-c', `from PIL import Image; Image.new('RGB',(2880,1530),'white').save('${img}')`]);
+  const out = execFileSync('python3', [path.join(ROOT, 'build/crop-logos.py'),
+    path.join(ROOT, 'knowledge/gold/plans/flight-search-results.plan.json'), img, path.join(dir, 'out')]).toString();
+  assert.match(out, /4 logo\(s\) cropped/);
+  assert.match(out, /100×96/);                                          // [510,196,50,48] × 2
+  assert.strictEqual(fs.readdirSync(path.join(dir, 'out')).length, 4);
+});
+
+test('v4 route.js: --min writes a one-line plan; --closest-gold picks the right gold; --map has ASCII + suggestions', () => {
+  const { closestGold, asciiMap, suggestions } = require('../build/route.js');
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'min-'));
+  fs.copyFileSync(GOLD, path.join(dir, 'x.plan.json'));
+  execFileSync('node', [path.join(ROOT, 'build/route.js'), '--plan', path.join(dir, 'x.plan.json'), '--min']);
+  const min = fs.readFileSync(path.join(dir, 'x.min.json'), 'utf8');
+  assert.ok(!min.includes('\n')); assert.deepStrictEqual(JSON.parse(min), JSON.parse(fs.readFileSync(GOLD, 'utf8')));
+  assert.match(closestGold(null, 'Schritt Tickets Buchen Gepäck Ryanair Kiwi')[0].file, /flight-ticket-selection/);
+  assert.match(closestGold({ frame: { breakpoint: 'XL 1440', density: 'Compact' } }, 'Спирки Часове Директен Избор')[0].file, /flight-search-results/);
+  const gold = JSON.parse(fs.readFileSync(GOLD, 'utf8'));
+  assert.match(asciiMap(gold), /A Step 1/); assert.match(asciiMap(gold), /[│─]/);
+  assert.ok(suggestions(gold).some(s => /Logos/.test(s)));
 });
