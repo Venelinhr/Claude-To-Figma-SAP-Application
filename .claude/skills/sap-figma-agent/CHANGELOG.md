@@ -3,7 +3,14 @@
 Moved out of SKILL.md on 2026-09-26 (Figma limit: 65,536 characters).
 v7.10 (2026-09-26): Jev typed router at the top (generated from build/router-table.json); ACT = one ROUTE block call; sap-figma-act removed; selected border = sapList_SelectionBorderColor.
 
-### WHY THIS REWRITE EXISTS (read once, applies to every build)
+### v8 — 2026-09-27 (system v4)
+- New default for new screens: Claude Code writes + validates the plan (`/plan-screen`), you build the
+  pasted plan in PLAN MODE (no Step 1 stop, no redesign), Claude Code checks it (`/check-build`, MATCH %).
+- PLAN MODE: every Icon Button gets its row's icon; layers named after plan elements; logos = named frames.
+- Colour roles + icon meanings extended with live tokens/icons from gold 270:6722.
+- Manual-fallback token table removed (keys live in the BUILD KIT).
+
+## WHY THIS REWRITE EXISTS (read once, applies to every build)
 
 v6 of this skill told the agent to "open the Assets panel (Shift+I), drag the
 instance, set variants in the right-side panel." **The Figma Agent has no panel, no

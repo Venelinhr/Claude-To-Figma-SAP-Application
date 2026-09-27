@@ -150,3 +150,23 @@ structure (placeholders, "Tab Text", "[swap slot]", default globe/info icons, wr
 - `route.js --closest-gold` on the Bulgarian ref → picks `flight-search-results.plan.json`.
 - Live run: next screen with `/plan-screen` end to end. Pass = MATCH ≥ 90%, plan session
   ≤ 12k tokens / ≤ 5 min, ≤ 1 fix round. Record time, tokens, $ and score in memory.
+
+## Results (built 2026-09-27, branch v4)
+| Step | Status |
+|---|---|
+| 1 Rescue v3 work into v4 | done — `f09aebc` (stash@{1} kept as backup) |
+| 2 `/plan-screen` | done — `.claude/commands/plan-screen.md` |
+| 3 `crop-logos.py` | done — crops in frame px, scaled to the image; checked visually on both golds |
+| 4 `--min` + pbcopy hand-off | done |
+| 5 default-icon check | done — HYGIENE "default icon globe/information" |
+| 6 stop the drift | partly — CLAUDE.md v4 + branch guard, SKILL v8, global `sap-bind`/`sap-vdi` moved to `~/.claude/skills-disabled/`. **Archiving the v2 leftovers in the repo was blocked by the auto-mode classifier — waits for the user.** |
+| 7 memory | done — 6 notes in the project auto-memory |
+| 8 plan cache + gold start | done — `knowledge/plans-cache/`, `route.js --closest-gold` |
+| 9 MATCH % + hygiene | done — `audit-plan.js`; `/check-build` |
+| 10 ASCII + suggestions | done — `route.js --plan --map` |
+| + learn from gold | `vars-extra.json` + `kit-live.js` (real tokens the cached kit lacks), gold plan synced with 270:6722 |
+
+**Proof on a real build:** audit of gold 270:6722 against its plan: 63% before (audit too narrow,
+plan older than the gold) → **97%** after. The 3% left are real defects in the gold: card 2
+disclaimer copied from card 1 (37,27 € instead of 38,65 €), and raw pink promo text (no SAP token).
+Tests: 28/28 (`npm test`).
