@@ -13,8 +13,11 @@ Reply to the user in short, plain sentences. Input: $ARGUMENTS
 2. **Image.** Save the reference to the scratchpad as `ref.png` (convert webp with PIL).
    `SHA=$(shasum -a 1 ref.png | cut -c1-12)`. If `knowledge/plans-cache/$SHA.plan.json` exists and
    `node build/route.js --plan` passes on it → use it, jump to step 7.
-3. **Measure.** `python3 build/measure-ref.py ref.png --json > ref.json`, then read the human output
-   once (`python3 build/measure-ref.py ref.png`): frame, READ tree, ACCENTS. Box labels are hints only.
+3. **Measure.** `python3 build/measure-ref.py ref.png --json > ref.json` (frame, spacing scale), then read it
+   like a person: `python3 build/see.py read ref.png --lang bg --out see-ref` → every text exactly (OCR),
+   its SAP size + weight + colour token, every box (fill, border px + token, radius, padding, shadow), what
+   sits inside what, icon groups vs single icons, logo crop boxes in frame px. Copy these numbers into the
+   plan rows; look at `see-ref/overview.png` and the `tile-*.png` pieces for anything it missed.
 4. **Start from gold.** `node build/route.js --closest-gold ref.json "<words you can read in the image>"`.
    If it says "start from …" → copy that gold plan and change only what differs. Else write new.
    **If you change `frame.w` from the gold's, rescale every logo `crop` by newW ÷ goldW** —

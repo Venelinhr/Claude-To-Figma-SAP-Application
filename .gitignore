@@ -86,3 +86,5 @@ plugin/figma-builder-v2/registry-bundle-full.json
 # Except: gold reference screenshots (kept as source of truth, not scratch)
 !knowledge/gold/snapshots/
 !knowledge/gold/snapshots/*.png
+build/.bin/
+see-out/

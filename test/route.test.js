@@ -445,3 +445,32 @@ test('v4 audit on the REAL gold build 270:6722 (dump fixture): 97%, only its rea
   assert.strictEqual(code, 1);
   assert.doesNotMatch(out, /Всички|01:00 \+1": font|Logo": raw/);   // kit-internal labels, mixed 72 text, logo backing: no false alarms
 });
+
+test('see.py reads the gold like an eye: box, border, radius, padding, text size/weight/colour, radio state (macOS Vision)', { skip: process.platform !== 'darwin' }, () => {
+  const out = fs.mkdtempSync(path.join(os.tmpdir(), 'see-'));
+  execFileSync('python3', [path.join(ROOT, 'build/see.py'), 'read', path.join(__dirname, 'fixtures/gold-270-6722-sidebar@2x.png'), '--w', '250', '--out', out]);
+  const R = JSON.parse(fs.readFileSync(path.join(out, 'read.json'), 'utf8'));
+  const card = R.elements.find(e => e.kind === 'box' && !e.page);
+  assert.deepStrictEqual([card.box[2], card.box[3], card.border_w, card.border_token, card.radius], [217, 229, 1, 'sapList_BorderColor', 8]);
+  const t = s => R.elements.find(e => e.kind === 'text' && e.text === s);
+  assert.deepStrictEqual([t('Спирки').size, t('Спирки').weight, t('Спирки').token], [16, 'Bold', 'sapTextColor']);
+  assert.deepStrictEqual([t('Всички').size, t('Всички').weight], [14, 'Regular']);
+  assert.deepStrictEqual([t('от 365 €').size, t('от 365 €').token], [12, 'sapContent_LabelColor']);   // Latin "o" OCR slip fixed to Cyrillic
+  assert.ok(R.elements.some(e => e.kind === 'icon' && e.token === 'sapContent_Selected_ForegroundColor'));   // the selected radio
+  assert.ok(R.groups.some(g => g.members.length === 2 && g.gap <= 8));                                        // radio + label side by side
+});
+
+test('see.py diff: same image = PASS, a changed box = the exact line + a failing verdict', { skip: process.platform !== 'darwin' }, () => {
+  const out = fs.mkdtempSync(path.join(os.tmpdir(), 'see-'));
+  const img = path.join(__dirname, 'fixtures/gold-270-6722-sidebar@2x.png');
+  const run = (b) => { try { return { out: execFileSync('python3', [path.join(ROOT, 'build/see.py'), 'diff', img, b, '--w', '250', '--w-ref', '250', '--out', out]).toString(), code: 0 }; }
+                       catch (e) { return { out: e.stdout.toString(), code: e.status }; } };
+  const same = run(img);
+  assert.strictEqual(same.code, 0); assert.match(same.out, /EYE MATCH 100%/);
+  // redraw the card border 1px darker grey → the eye must see BORDER COLOUR, nothing else
+  const bad = path.join(out, 'bad.png');
+  execFileSync('python3', ['-c', `import cv2; f=cv2.imread(${JSON.stringify(img)}); m=((f==229).all(2)); f[m]=(160,160,160); cv2.imwrite(${JSON.stringify(bad)}, f)`]);
+  const r = run(bad);
+  assert.strictEqual(r.code, 1);
+  assert.match(r.out, /BORDER COLOUR +#e5e5e5 sapList_BorderColor → #a0a0a0/);
+});
