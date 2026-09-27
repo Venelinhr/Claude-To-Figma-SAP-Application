@@ -27,4 +27,4 @@ Reply to the user in short, plain sentences. Input: $ARGUMENTS
 8. **Hand off.** `pbcopy < plan.min.json`. Show the user: the ASCII + SAP map, the suggestions,
    the questions, and this line to paste in the Figma Agent together with the clipboard:
    > Build this plan (PLAN MODE): every row, in order, exact kind/component/props/style/token/icon/text. Keep the text language. New frame next to the last one. Name layers after the plan elements. Return WARN and the node link.
-9. Stop. Do not call `use_figma`. Step 2 of 2 = `/audit-screen <node link>` after the build.
+9. Stop. Do not call `use_figma`. Step 2 of 2 = `/check-build <node link>` after the build.
