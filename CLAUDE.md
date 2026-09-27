@@ -8,27 +8,44 @@ reference. It is not loaded. This file is the whole system.
 **`measure-ref.py` is the front gate. `audit-screen.py` is the end gate.** Nothing gets
 built before the reference is measured; nothing is called done before the build is
 exported and checked against it. Full order:
-**Measure → analyze → pick floorplan/components → build → audit → auto-fix → re-audit.**
+**Measure → read like a person (sections) → element plan → `route.js --plan` → build → audit → fix → re-audit.**
 
-1. **Measure** the reference for real: `python3 build/measure-ref.py <image>`. Read the
-   whole output — FRAME size/density, the READ tree (top-left→right→down, one line per
-   section with its role, gap, and holds-N-of-X), BOXES (every field/chip/card with its
-   real border/fill/ink token and padding), ACCENTS (colored text/icons), COLOURS.
-2. **Analyze before touching Figma.** From the READ tree, write down (even just in your
-   head) the section order top-to-bottom, left-to-right, and for each section: is it a
-   row or a column, what's inside it, and roughly how wide/tall. This is what stops you
-   building sections in the wrong place or wrong order — the #1 defect in the first
-   attempt of every build so far.
-3. **Pick the floorplan and components** from that analysis — table below. Look up every
-   component's real key with `kit.js` (below) — never guess a prop name or value.
-4. **Build** with the runtime (below). Every auto-layout node gets an explicit sizing
-   decision — see "Auto-layout sizing" below, this is the #2 defect.
-5. **Audit**: `python3 build/audit-screen.py <reference> <build.png>` (export the build
-   with Figma's `get_screenshot` tool first).
-6. **Auto-fix** every item in MISSING, WRONG COLOUR, and EXTRA using real tokens/values
-   (never eyeball a fix — measure the reference pixel, resolve the nearest real
-   *semantic* token, apply it). Re-export, re-audit. Repeat until those lists are empty
-   or every remaining item is a confirmed non-issue.
+1. **Measure** the reference for real: `python3 build/measure-ref.py <image> --json > ref.json`
+   (and without `--json` to read it). Use the READ tree, ACCENTS (measured colours of text/
+   icons → `ref_hex`) and COLOURS. The BOXES labels (`guess()`) are hints only, never the plan.
+2. **Read it like a person — Z pattern.** Top-left → right, then down. Split the image into
+   **sections** (A, B, C…); sections side by side form one band, read left → right. For each
+   section **first describe it in plain words, like a person, with positions** — e.g. *"A: two
+   lines of text, the top one bold and bigger; far right two icons (favourite, share). B: three
+   cards; each has a radio button on the left and the title next to it, under it the price, then
+   a divider, then an icon and the text next to it…"* — then write: box, layout (row/column/grid +
+   FILL/HUG/FIXED), the SAP components it uses,
+   the recipe (`router-table.json` → `patterns`). Plus the **frame**: size, breakpoint, density,
+   floorplan. Small things belong to the section they sit in (e.g. heart/share above a card).
+3. **Element plan.** One row per visible element, in Z order: `section`, `group` (card / row /
+   leg), `kind` (text · component · icon · logo · divider · container), SAP value, **colour
+   role** (never a colour picked by photo), `ref_hex` for coloured text, `meaning` for icons,
+   `crop` for logos, `ask` when SAP has no match. Worked example — copy its shape:
+   `knowledge/gold/plans/flight-ticket-selection.plan.json`.
+4. **Validate:** `node build/route.js --plan plan.json`. Exit 1 = fix the listed rows first.
+   It checks Z order, real components/props/text styles, **colour by role** (selected border
+   = `sapList_SelectionBorderColor`, link = `sapLinkColor`, warning text = `sapField_WarningColor`,
+   CTA = Button `Type=Primary` — never a painted brand colour), **one SAP icon per meaning**
+   (`icon_meanings`; extra icons in `knowledge/live/icons-extra.json`), a crop for every logo.
+   Then `node build/route.js --plan plan.json --map` = the SAP proposal per section (what you
+   see → component · state · text style · colour variable). Show it + the questions, wait for go.
+5. **Build** with the runtime (below), section by section, following the recipes. Every
+   auto-layout node gets an explicit sizing decision — see "Auto-layout sizing" below. Logos:
+   crop from the reference → `upload_assets` → image fill.
+6. **Audit — both gates:** (a) dump the build with `build/templates/dump-tree.use_figma.js`
+   (read-only) → `node build/audit-plan.js plan.json tree.json` must exit 0; (b)
+   `python3 build/audit-screen.py <reference> <build.png>`.
+7. **Fix** every line, re-audit. **Not done** until audit-plan exits 0 AND every audit-screen
+   MISSING / WRONG COLOUR line has "fixed" or "skipped: <real reason>" in the hand-off.
+   Never call a build "1:1" by eye alone.
+
+**Build hygiene:** reuse only approved/gold frames — never an unaudited or "UNBOUND" frame as a
+structural reference. One model for the whole build (plan and build on the same model).
 
 **Do not gate on the TOTAL score or the POSITION/SIZE numbers.** As of this build, the
 box-finder the score is built on (`guess()` in `measure-ref.py`) classifies the same
@@ -106,13 +123,14 @@ Shell (Shell Bar + Side Navigation) on every full screen. Skip it for a componen
 reference (a card, dialog, or section crop) — then match that crop's size.
 
 **Route first — Jev typed router, 0 tokens.** Before anything else run
-`node build/route.js "<request>"` (with an image: `measure-ref.py <img> --json > ref.json`
-then `node build/route.js --image ref.json "<request>"`). It returns the mode (ACT / QUICK /
-THINK / SPLIT), floorplan, SAP component + real key, and the real state prop/value from
-the kit. Follow its `handler`; do not re-decide what it decided. ACT = one `use_figma` call
-with `build/templates/route.use_figma.js` (set `TEXT` to the user's words), no measure, no
-plan, no screenshot, one-line reply. Tables: `build/router-table.json` (edit there, then
-`node build/gen-router.js`). Candidates → ask, never guess.
+`node build/route.js "<request>"`. It returns the mode (ACT / QUICK / THINK / SPLIT),
+floorplan, SAP component + real key, the real state prop/value, and for ACT the `act`
+object (`A`). Follow its `handler`; do not re-decide what it decided. ACT = one `use_figma`
+call: the skill's CALL with `A` filled (code saved in the file; INSTALL once per file) — no
+measure, no plan, no screenshot, one-line reply. THINK with an image = workflow steps 1-7
+above: the router's image gate is the **element plan** (`node build/route.js --plan`), not
+the box labels. Tables: `build/router-table.json` (edit there, then `node build/gen-router.js`).
+Candidates → ask, never guess.
 
 The Figma-side twin of these rules is `.claude/skills/sap-figma-agent/SKILL.md` (uploaded
 into Figma's Agent panel). Change one → change the other, then re-upload the skill.
@@ -123,7 +141,7 @@ Paste `build/templates/sap-kit.prelude.js` at the top of every `use_figma` build
 plus a `const KIT = {...}` from `node build/kit.js pack <names>`. It gives you:
 
 ```js
-await I('Button', {Type:'Emphasized', Text:'Save', 'Icon Left':true, Icon:'add'})
+await I('Button', {Type:'Primary', Text:'Save', 'Icon Left':true, Icon:'add'})
 await T('Section title', 'H4/Bold', 'sapTitleColor')
 await fill(node, 'sapBackgroundColor')      // never raw hex
 await stroke(node, 'sapList_BorderColor', {b:1})

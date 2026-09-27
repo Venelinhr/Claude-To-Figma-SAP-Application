@@ -44,6 +44,7 @@ for (const [n, v] of Object.entries(KITJ.vars)) if (v.split('|')[1] === 'C') FK.
 FK.v[T.act_route.frame_active_border.token] = T.act_route.frame_active_border.key;   // verified live, not in kit.json
 for (const [n, v] of Object.entries(KITJ.text)) FK.t[n] = v.split('|')[0];
 for (const [n, v] of Object.entries(KITJ.icons)) FK.i[n.split('/').pop()] = v;
+for (const [n, v] of Object.entries(require('../knowledge/live/icons-extra.json').icons)) FK.i[n] = v.key;   // suitcase, meal, share-arrow…
 const prelude = mini('templates/sap-kit.prelude.js') + '\nreturn { I, T, fill, stroke, space, AL, put, sub, setP, WARN, KIT };';
 const BKEY = 'build_' + require('crypto').createHash('sha1').update(JSON.stringify(FK) + prelude).digest('hex').slice(0, 6);
 const BUILD_LOAD = `const _k = figma.root.getSharedPluginData('sapfiori', '${BKEY}');
@@ -102,11 +103,21 @@ ${Object.entries(g4.keys).map(([k, s]) => `| \`'${k}'\` | ${s.words.join(', ')} 
 On a plain frame / card (no component): on / active → border \`${T.act_route.frame_active_border.token}\` ${T.act_route.frame_active_border.weight}px · off → border \`${T.act_route.frame_normal_border.token}\` ${T.act_route.frame_normal_border.weight}px.
 Numbers snap to the SAP scale ${T.act_route.sap_scale.join('/')}: ${Object.entries(T.act_route.number_targets).map(([w, o]) => `"${w} N" → ${o}`).join(' · ')}.
 
-**GATE 0 — IMAGE** (a reference image: in Figma, look at it and name each box with a label below; Claude Code: \`measure-ref.py --json\` does it. Same table the audit uses)
+**GATE 0 — IMAGE** (labels come from \`measure-ref.py --json\`; in Figma, label by eye. The audit uses the same table)
 
 | measure-ref label (prefix) | Size rule → component |
 |---|---|
 ${T.image_labels.rules.map(r => `| ${r.label} | ${r.size.map(s => ('w_max' in s ? `w≤${s.w_max} ` : 'h_max' in s ? `h≤${s.h_max} ` : 'else ') + '→ ' + (s.component || s.else) + (s.options ? ' (' + s.options.join('/') + ')' : '') + (s.density ? ' ' + s.density : '') + (s.state ? ' state ' + s.state : '')).join(' · ')} |`).join('\n')}
+
+**Read like a person (THINK / MATCH with an image):** Z pattern — top-left → right, then down.
+Split into sections A, B, C… (side-by-side = one band, left → right). For each, FIRST describe
+it in plain words with positions ("B: three cards; each: radio left, title next to it, price
+under it, divider, icon + text"), THEN map each thing to SAP: component · state · text style ·
+colour token. Then list every element. Small parts belong to the section they sit in.
+
+**Colour by ROLE, never by photo:** ${Object.entries(T.colour_roles).filter(([k]) => k !== '_doc').map(([k, v]) => `${k.replace(/_/g, ' ')} \`${v[0]}\``).join(' · ')}. CTA = Button \`Type=Primary\` — never paint a brand colour; a reference colour with no SAP role keeps the component default.
+
+**One SAP icon per meaning:** ${Object.entries(Object.entries(T.icon_meanings).filter(([k]) => k !== '_doc').reduce((g, [m, i]) => ((g[i === null ? 'ASK' : i] ||= []).push(m.replace(/_/g, ' ')), g), {})).map(([i, ms]) => i === 'ASK' ? `${ms.join('/')} → **ask**` : `\`${i}\` ${ms.join('/')}`).join(' · ')}. Never the same icon for different meanings. Logos: crop from the reference, never a colour block.
 
 Container = plain auto-layout FRAME, no fill; border \`${T.image_labels.container.border_token}\`, selected \`${T.image_labels.container.selected_border_token}\`. A label not here → list it as **unmapped** in the plan.
 

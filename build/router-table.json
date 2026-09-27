@@ -828,5 +828,283 @@
       "Time Picker",
       "Date Time Picker"
     ]
+  },
+  "colour_roles": {
+    "_doc": "GATE 5 — colour by ROLE, not by photo. role -> allowed SAP tokens (first = default). A reference colour with no SAP role keeps the component default; never spread a brand colour to other roles. route.js --plan enforces it.",
+    "page_background": [
+      "sapBackgroundColor"
+    ],
+    "card_background": [
+      "sapList_Background",
+      "sapGroup_ContentBackground",
+      "sapTile_Background"
+    ],
+    "card_border": [
+      "sapList_BorderColor",
+      "sapGroup_ContentBorderColor",
+      "sapTile_Interactive_BorderColor"
+    ],
+    "selected_border": [
+      "sapList_SelectionBorderColor"
+    ],
+    "divider": [
+      "sapList_BorderColor",
+      "sapToolbar_SeparatorColor",
+      "sapGroup_ContentBorderColor"
+    ],
+    "title_text": [
+      "sapTitleColor",
+      "sapTextColor"
+    ],
+    "body_text": [
+      "sapTextColor",
+      "sapField_TextColor"
+    ],
+    "secondary_text": [
+      "sapContent_LabelColor",
+      "sapField_PlaceholderTextColor",
+      "sapTile_TextColor"
+    ],
+    "disabled_text": [
+      "sapContent_DisabledTextColor"
+    ],
+    "link": [
+      "sapLinkColor"
+    ],
+    "success_text": [
+      "sapField_SuccessColor"
+    ],
+    "warning_text": [
+      "sapField_WarningColor"
+    ],
+    "error_text": [
+      "sapField_InvalidColor"
+    ],
+    "accent_bar": [
+      "sapAccentColor1",
+      "sapAccentColor5",
+      "sapIndicationColor_4_Background",
+      "sapIndicationColor_5_Background"
+    ],
+    "icon": [
+      "sapContent_IconColor",
+      "sapContent_NonInteractiveIconColor",
+      "sapTextColor"
+    ]
+  },
+  "component_roles": {
+    "_doc": "roles that are a COMPONENT VALUE, never a painted colour",
+    "primary_cta": {
+      "component": "Button",
+      "props": {
+        "Type": "Primary"
+      }
+    },
+    "secondary_action": {
+      "component": "Button",
+      "props": {
+        "Type": "Secondary"
+      }
+    },
+    "icon_action": {
+      "component": "Icon Button"
+    },
+    "selection_control": {
+      "component": "Radio Button"
+    },
+    "status_price": {
+      "component": "Object Status"
+    }
+  },
+  "icon_meanings": {
+    "_doc": "GATE 6 — meaning -> ONE SAP icon (kit.json icons + knowledge/live/icons-extra.json). One icon per meaning group; the same icon for two different groups = error. null = SAP has none → put it in the plan as a question.",
+    "info": "information",
+    "favourite": "favorite",
+    "heart": "favorite",
+    "share": "share-arrow",
+    "forward": "share-arrow",
+    "luggage": "suitcase",
+    "baggage": "suitcase",
+    "cabin_bag": "suitcase",
+    "checked_bag": "suitcase",
+    "meal": "meal",
+    "food": "meal",
+    "price_tag": "tag",
+    "sort_by_price": "tag",
+    "flexibility": "travel-expense",
+    "fee": "travel-expense",
+    "ticket": "receipt",
+    "flight": "flight",
+    "itinerary": "travel-itinerary",
+    "dropdown": "navigation-down-arrow",
+    "expand": "navigation-down-arrow",
+    "seat": "grid",
+    "not_included": "decline",
+    "flag": "flag"
+  },
+  "element_plan": {
+    "_doc": "GATE 0 v2 — read the reference like a person (Z pattern: top-left → right, then down). STEP A: frame (size, breakpoint, density, floorplan). STEP B: section map — split the image into sections (A, B, C…), each with its box, layout, SAP components and recipe, declared in Z order. STEP C: one row per visible element, row.section = a section id, row.group = the sub-part (a card, a list row, a leg). `node build/route.js --plan plan.json` validates it; build only on exit 0.",
+    "kinds": [
+      "text",
+      "component",
+      "icon",
+      "logo",
+      "divider",
+      "container"
+    ],
+    "row": {
+      "section": "string",
+      "element": "string",
+      "kind": "one of kinds",
+      "text": "text only",
+      "style": "text style (kit.json text)",
+      "role": "colour_roles or component_roles key",
+      "token": "SAP token allowed for role (optional = role default)",
+      "component": "kit component",
+      "props": "{prop:value} real options",
+      "icon": "icon name",
+      "meaning": "icon meaning (icon_meanings key)",
+      "crop": "[x,y,w,h] in reference px (logo)",
+      "border_role": "container border role",
+      "fill_role": "container fill role",
+      "recipe": "patterns key"
+    },
+    "frame": {
+      "w": "number (SAP width: 1024|1280|1440 desktop, 768 tablet, or the crop size)",
+      "h": "number",
+      "breakpoint": "string",
+      "density": "Compact|Cozy",
+      "floorplan": "gate2 floorplan"
+    },
+    "section": {
+      "id": "A|B|C…",
+      "name": "what it is",
+      "describe": "REQUIRED — say what you see like a person, in reading order, with positions: left / right / under / after / next to. e.g. \"Two lines of text; the top one is bold and bigger. Far right: two icons (favourite, share).\"",
+      "box": "[x,y,w,h] measure-ref build px",
+      "layout": "row|column|grid + sizing (FILL/HUG/FIXED)",
+      "sap": "[SAP components used]",
+      "recipe": "patterns key (optional)"
+    },
+    "z_order": "sections sorted by top y; sections whose boxes overlap vertically form one band, read left → right"
+  },
+  "patterns": {
+    "_doc": "GATE 7 — measured recipes from the verified build 174:4211 (matched this reference). Triggered by content words in a READ-tree section. Numbers are real px.",
+    "ticket_card": {
+      "words": [
+        "ab",
+        "€",
+        "tickets",
+        "gepäck",
+        "flexibel"
+      ],
+      "frame": {
+        "dir": "VERTICAL",
+        "pad": 16,
+        "gap": 8,
+        "radius": 8,
+        "fill_role": "card_background",
+        "border_role": "card_border",
+        "selected_border_role": "selected_border",
+        "selected_weight": 2
+      },
+      "parts": [
+        "Radio Button Compact + title MediumText/LHAuto/Bold",
+        "price MediumText/LHAuto/Regular",
+        "divider",
+        "icon 14 + body SmallText/LHAuto/Regular secondary_text"
+      ]
+    },
+    "provider_row": {
+      "words": [
+        "buchen",
+        "basic",
+        "€"
+      ],
+      "frame": {
+        "dir": "HORIZONTAL",
+        "pad": [
+          12,
+          16,
+          12,
+          16
+        ],
+        "gap": 16,
+        "border_role": "divider"
+      },
+      "parts": [
+        "logo 48 (crop)",
+        "name MediumText/LHAuto/Bold + Tag",
+        "plan SmallText secondary_text",
+        "3 icons 16 gap 12",
+        "price Object Status (success for best)",
+        "Button Primary Cozy",
+        "Icon Button Secondary (dropdown)"
+      ],
+      "selected": "accent_bar left 4px"
+    },
+    "flight_leg_card": {
+      "words": [
+        "nonstop",
+        "→",
+        "std.",
+        "economy",
+        "durchgeführt"
+      ],
+      "frame": {
+        "dir": "VERTICAL",
+        "pad": 16,
+        "gap": 6,
+        "radius": 8,
+        "border_role": "card_border"
+      },
+      "parts": [
+        "header row gap 10: logo 48 (crop) + route/date MediumText/LHAuto/Bold + duration SmallText secondary_text",
+        "divider",
+        "times H3/Bold",
+        "full route SmallText body_text",
+        "flight no / cabin / operator SmallText secondary_text",
+        "aircraft chip pad 4/10 radius 4 border card_border",
+        "seat/meal icons 16"
+      ]
+    },
+    "flight_result_card": {
+      "_doc": "two-leg search-result row card — measured from the Wizz/Ryanair reference (not yet a verified Figma build; treat numbers as a starting estimate).",
+      "words": [
+        "директен",
+        "цена на човек",
+        "избор"
+      ],
+      "frame": {
+        "dir": "VERTICAL",
+        "pad": 16,
+        "gap": 0,
+        "radius": 7,
+        "border_role": "card_border"
+      },
+      "parts": [
+        "pin icon + 2 flight-leg rows (logo, times, route, direct label, 3 fee icons) separated by a divider",
+        "vertical divider",
+        "price H4/Bold + caption + Button Primary Cozy"
+      ]
+    },
+    "summary_card": {
+      "words": [
+        "hin- und rückflug",
+        "reisender"
+      ],
+      "frame": {
+        "dir": "VERTICAL",
+        "pad": 24,
+        "gap": 20,
+        "radius": 8,
+        "fill_role": "card_background",
+        "border_role": "card_border"
+      },
+      "parts": [
+        "title H3/Bold title_text",
+        "subtitle SmallText secondary_text",
+        "flight_leg_card x2"
+      ]
+    }
   }
 }

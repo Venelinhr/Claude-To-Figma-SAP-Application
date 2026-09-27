@@ -265,3 +265,111 @@ test('skill tells the Figma Agent no terminal: no bare python3/node/kit.js steps
   const bad = paras.filter(p => !/Claude Code|no terminal|JEV-ROUTER|router section is generated/.test(p)).map(p => p.slice(0, 80));
   assert.deepStrictEqual(bad, []);
 });
+
+// ── Gate 0 v2: element plan (run-3 fix) ──────────────────────────────────────
+const { validatePlan } = require('../build/route.js');
+const GOLD = path.join(ROOT, 'knowledge/gold/plans/flight-ticket-selection.plan.json');
+const BAD = path.join(ROOT, 'test/fixtures/plan-run3-bad.json');
+
+test('element plan: every run-3 mistake is rejected with its fix', () => {
+  const r = validatePlan(JSON.parse(fs.readFileSync(BAD, 'utf8')));
+  assert.strictEqual(r.ok, false);
+  const all = r.errors.join('\n');
+  for (const want of [/selected card needs border_role selected_border/, /not allowed for role link — use sapLinkColor/,
+    /"luggage" uses icon suitcase/, /"price_tag" uses icon tag/, /Type="Emphasized"/, /role primary_cta needs Type=Primary/,
+    /logo needs crop/, /meaning "seat" uses icon grid, not information/, /"information" used for .* one icon per meaning/])
+    assert.match(all, want);
+});
+
+test('element plan: the gold plan for this reference passes, 0 questions (seat icon now maps to grid)', () => {
+  const r = validatePlan(JSON.parse(fs.readFileSync(GOLD, 'utf8')));
+  assert.deepStrictEqual(r.errors, []);
+  assert.strictEqual(r.questions.length, 0);
+  for (const k of ['ticket_card', 'provider_row', 'flight_leg_card', 'summary_card']) assert.ok(r.recipes.some(x => x.endsWith(k)), k);
+  assert.ok(r.count.logo >= 6 && r.count.icon >= 10);
+});
+
+test('element plan: a wrong ROLE is caught from the measured reference colour', () => {
+  const row = { section: 'S', element: 'Ankunft', kind: 'text', text: 'Ankunft', style: 'SmallText/LHAuto/Bold', ref_hex: '#b6763a' };
+  assert.strictEqual(validatePlan([{ ...row, role: 'secondary_text' }]).ok, false);
+  assert.strictEqual(validatePlan([{ ...row, role: 'warning_text' }]).ok, true);
+  assert.strictEqual(validatePlan([{ ...row, role: 'secondary_text', ref_hex: '#556b82' }]).ok, true);   // no false alarm
+});
+
+test('audit-plan (element plan): perfect build passes; missing logo, grey Ankunft, wrong icon fail', () => {
+  const plan = JSON.parse(fs.readFileSync(GOLD, 'utf8')), rows = plan.rows.filter(r => !r.ask);
+  const R = require('../build/router-table.json').colour_roles;
+  const tree = [];
+  for (const r of rows) {
+    if (r.kind === 'text') tree.push({ type: 'TEXT', name: r.element, text: r.text, style: r.style, fill: r.token || R[r.role][0] });
+    if (r.kind === 'component') tree.push({ type: 'INSTANCE', name: r.element, component: r.component, props: r.props || {} });
+    if (r.kind === 'icon') tree.push({ type: 'INSTANCE', name: r.icon, component: r.icon, props: {} });
+    if (r.kind === 'logo') tree.push({ type: 'RECTANGLE', name: r.element, image: true });
+    if (r.kind === 'container' && r.selected) tree.push({ type: 'FRAME', name: r.element, stroke: R.selected_border[0] });
+  }
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ep-'));
+  const run = t => { fs.writeFileSync(path.join(dir, 't.json'), JSON.stringify(t));
+    try { return { code: 0, out: execFileSync('node', [path.join(ROOT, 'build/audit-plan.js'), GOLD, path.join(dir, 't.json')]).toString() }; }
+    catch (e) { return { code: e.status, out: e.stdout.toString() }; } };
+  assert.strictEqual(run(tree).code, 0, run(tree).out);
+  const bad = tree.filter((n, i) => !(n.image && i === tree.findIndex(x => x.image)))
+    .map(n => n.text === 'Ankunft: Do 8. Okt' ? { ...n, fill: 'sapContent_LabelColor' } : n)
+    .map(n => n.component === 'suitcase' ? { ...n, component: 'information', name: 'information' } : n);
+  const b = run(bad);
+  assert.strictEqual(b.code, 1);
+  assert.match(b.out, /logo \(image crop/); assert.match(b.out, /Ankunft: Do 8\. Okt": sapContent_LabelColor, role warning_text/); assert.match(b.out, /icon "suitcase"/);
+});
+
+test('drift: every role token, icon meaning and recipe role exists', () => {
+  const T2 = require('../build/router-table.json'), KJ = require('../knowledge/live/kit.json');
+  const toks = new Set([...Object.keys(KJ.vars).map(n => n.split('/').pop()), T2.act_route.frame_active_border.token]);
+  for (const [role, list] of Object.entries(T2.colour_roles)) if (role !== '_doc') for (const t of list) assert.ok(toks.has(t), `${role}: ${t}`);
+  const icons = new Set([...Object.keys(KJ.icons).map(n => n.split('/').pop()), ...Object.keys(require('../knowledge/live/icons-extra.json').icons)]);
+  for (const [m, icon] of Object.entries(T2.icon_meanings)) if (m !== '_doc' && icon) assert.ok(icons.has(icon), `${m} → ${icon}`);
+  for (const p of Object.values(T2.patterns)) if (p.frame) for (const k of ['fill_role', 'border_role', 'selected_border_role'])
+    if (p.frame[k]) assert.ok(T2.colour_roles[p.frame[k]], `${k} ${p.frame[k]}`);
+});
+
+test('docs: every I(...) example uses real kit values (the Emphasized bug)', () => {
+  const bad = [];
+  for (const f of ['CLAUDE.md', 'build/templates/sap-kit.prelude.js', '.claude/skills/sap-figma-agent/SKILL.md']) {
+    const src = fs.readFileSync(path.join(ROOT, f), 'utf8');
+    for (const m of src.matchAll(/I\('([^']+)',\s*\{([^}]*)\}/g)) {
+      const c = KIT[m[1]]; if (!c) { bad.push(`${f}: component ${m[1]}`); continue; }
+      for (const pv of m[2].matchAll(/'?([\w ]+)'?\s*:\s*'([^']+)'/g)) {
+        const def = c.props[pv[1]]; if (!def || !def.startsWith('V:')) continue;
+        if (!def.slice(2).split('|')[1].split(',').includes(pv[2])) bad.push(`${f}: ${m[1]}.${pv[1]}='${pv[2]}'`);
+      }
+    }
+  }
+  assert.deepStrictEqual(bad, []);
+});
+
+test('section map: read like a person — Z order, every section filled, every row in a section', () => {
+  const gold = JSON.parse(fs.readFileSync(GOLD, 'utf8'));
+  assert.deepStrictEqual(gold.sections.map(s => s.id), ['A', 'B', 'C', 'D']);
+  const swapped = { ...gold, sections: [gold.sections[0], gold.sections[2], gold.sections[1], gold.sections[3]] };
+  assert.match(validatePlan(swapped).errors.join('\n'), /not in Z order: declared A → C → B → D, reading order is A → B → C → D/);
+  assert.match(validatePlan({ ...gold, sections: undefined }).errors.join('\n'), /plan\.sections missing/);
+  assert.match(validatePlan({ ...gold, frame: undefined }).errors.join('\n'), /plan\.frame missing/);
+  const lost = { ...gold, rows: gold.rows.map(r => r.section === 'D' ? { ...r, section: 'E' } : r) };
+  const e = validatePlan(lost).errors.join('\n');
+  assert.match(e, /section D \(Step 2: provider list\) has no elements/); assert.match(e, /section "E" is not in the section map/);
+  assert.ok(gold.rows.some(r => r.section === 'A' && /Favourite|Share/.test(r.element)), 'heart/share belong to section A');
+});
+
+test('section map: each section is first described like a person, with positions', () => {
+  const gold = JSON.parse(fs.readFileSync(GOLD, 'utf8'));
+  assert.ok(gold.sections.every(s => s.describe && s.describe.length > 40));
+  const vague = { ...gold, sections: gold.sections.map(s => s.id === 'B' ? { ...s, describe: 'cards' } : s) };
+  assert.match(validatePlan(vague).errors.join('\n'), /section B: describe it first like a person/);
+});
+
+test('--map: per section, what you see → SAP component · state · style · variable', () => {
+  const { sapMap } = require('../build/route.js');
+  const m = sapMap(JSON.parse(fs.readFileSync(GOLD, 'utf8')));
+  for (const want of [/^FRAME 1440×891 · XL 1440 · Compact · List Report/m, /^B — Ticket type cards/m, /sees: Three cards side by side/,
+    /Radio Button · Selected=True, Form Factor=Compact/, /border sapList_SelectionBorderColor · SELECTED/,
+    /Text · style SmallText\/LHAuto\/Bold · sapField_WarningColor \(warning_text\)/, /Icon Button · Type=Secondary/, /SAP icon grid \(seat\)/])
+    assert.match(m, want);
+});

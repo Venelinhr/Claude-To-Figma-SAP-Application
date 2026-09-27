@@ -7,10 +7,10 @@
 // call became the short A-block (typing 10K chars cost ~1 min in Figma).
 const RC = (() => {
   const norm = s => ' ' + String(s || '').toLowerCase().replace(/[’']/g, "'")
-    .replace(/[^a-z0-9'/\-. ]+/g, ' ').replace(/\s+/g, ' ').trim() + ' ';
+    .replace(/[^\p{L}\p{N}'/\-.€→ ]+/gu, ' ').replace(/\s+/g, ' ').trim() + ' ';   // keeps ü ä ö ß € →
   const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   // whole word / phrase; a single word also matches its plural ("buttons", "gaps")
-  const re = w => new RegExp(`(^|[^a-z0-9])${esc(w)}${/\s/.test(w) ? '' : 's?'}(?=[^a-z0-9]|$)`, 'g');
+  const re = w => new RegExp(`(^|[^\\p{L}\\p{N}])${esc(w)}${/\s/.test(w) ? '' : 's?'}(?=[^\\p{L}\\p{N}]|$)`, 'gu');
   const hit = (t, w) => re(w).test(t);
   const any = (t, words) => words.find(w => hit(t, w));
   const cut = (t, w) => t.replace(re(w), '$1 ');

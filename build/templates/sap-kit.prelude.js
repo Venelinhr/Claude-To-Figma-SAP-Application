@@ -1,6 +1,6 @@
 // ── SAP KIT RUNTIME v3 — paste once at the top of every build use_figma call ──
 // Needs: const KIT = {...}  (generate with: node build/kit.js pack <names...>)
-// API:  await I('Button', {Type:'Emphasized', Text:'Save', 'Icon Left':true, Icon:'save'})  → instance
+// API:  await I('Button', {Type:'Primary', Text:'Save', 'Icon Left':true, Icon:'add'})  → instance
 //       await T('Hello', 'Header/H3', 'sapTitleColor')   → text node, SAP text style + colour variable bound
 //       await fill(node, 'sapBackgroundColor') · await stroke(node, 'sapList_BorderColor', {b:1})
 //       await space(frame, {p:'sapContent_Space_M', gap:8}) — numbers or FLOAT variable names

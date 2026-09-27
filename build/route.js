@@ -184,12 +184,171 @@ function routeImage(m, words) {
   return r;
 }
 
-module.exports = { route, routeImage, routeBox, defsOf };
+// ── GATE 0 v2: validate the typed ELEMENT PLAN (build only on ok) ────────────
+// The builder lists every element of the reference; each row is checked against the
+// real kit (components, props, text styles, icons) and the colour-ROLE table, so no
+// quality choice is left to free reasoning. Unknown → error with the fix, never a guess.
+const KJ = require('../knowledge/live/kit.json');
+const ICONS = new Set([...Object.keys(KJ.icons).map(n => n.split('/').pop()),
+  ...Object.keys(require('../knowledge/live/icons-extra.json').icons)]);
+const TOKENS = new Set([...Object.keys(KJ.vars).map(n => n.split('/').pop()), T.act_route.frame_active_border.token]);
+// nearest TEXT role for a measured hex (only saturated roles: link / success / warning / error)
+const hexVal = n => { const v = KJ.vars[Object.keys(KJ.vars).find(k => k.endsWith('/' + n))]; if (!v) return null;
+  let x = v.split('|')[2]; for (let d = 0; x && x.startsWith('→') && d < 8; d++) x = (KJ.vars[x.slice(1)] || '').split('|')[2];
+  return /^#[0-9a-f]{6}/i.test(x || '') ? x.slice(0, 7) : null; };
+const rgb = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+function nearestRole(hex) {
+  let best = null;
+  for (const role of ['link', 'success_text', 'warning_text', 'error_text', 'body_text', 'secondary_text'])
+    for (const token of T.colour_roles[role]) { const h = hexVal(token); if (!h) continue;
+      const d = Math.hypot(...rgb(hex).map((c, k) => c - rgb(h)[k])); if (!best || d < best.d) best = { role, token, d }; }
+  return best;
+}
+function validatePlan(plan) {
+  const rows = Array.isArray(plan) ? plan : plan.rows || [];
+  const R = T.colour_roles, CR = T.component_roles, IM = T.icon_meanings, errors = [];
+  const err = (i, r, msg) => errors.push(`row ${i + 1} [${r.section || '?'} / ${r.element || r.text || r.kind}]: ${msg}`);
+  const tokenFor = (i, r, role, token, what) => {
+    if (!R[role] || role === '_doc') return err(i, r, `${what} role "${role}" unknown — use one of: ${Object.keys(R).filter(k => k !== '_doc').join(', ')}`);
+    if (token && !R[role].includes(token)) err(i, r, `${what} token ${token} is not allowed for role ${role} — use ${R[role].join(' / ')}`);
+  };
+  const iconMeanings = {}, questions = [];
+  // STEP A + B — frame and section map, read like a person: Z pattern (top → down, left → right per band)
+  const secs = Array.isArray(plan) ? null : plan.sections;
+  if (!Array.isArray(plan)) {
+    const f = plan.frame;
+    if (!f) errors.push('plan.frame missing — state w, h, breakpoint, density, floorplan first');
+    else {
+      if (!['Compact', 'Cozy'].includes(f.density)) errors.push(`frame.density "${f.density}" — Compact or Cozy`);
+      const fps = T.gate2_floorplan.rules.map(x => x.floorplan);
+      if (!fps.includes(f.floorplan)) errors.push(`frame.floorplan "${f.floorplan}" — one of ${fps.join(', ')}`);
+    }
+    if (!Array.isArray(secs) || !secs.length) errors.push('plan.sections missing — split the reference into sections (A, B, C…) in Z order before listing elements');
+    else {
+      const ids = secs.map(s => s.id);
+      if (new Set(ids).size !== ids.length) errors.push(`section ids must be unique: ${ids.join(', ')}`);
+      for (const s of secs) {
+        // first SAY what you see, like a person, with positions — then choose SAP parts
+        if (!s.describe || s.describe.split(/\s+/).length < 8 || !/\b(left|right|under|after|next|top|below|above|side by side)\b/i.test(s.describe))
+          errors.push(`section ${s.id}: describe it first like a person, in reading order, with positions (left / right / under / after / next to)`);
+        if (!(Array.isArray(s.box) && s.box.length === 4)) errors.push(`section ${s.id}: box [x,y,w,h] missing`);
+        if (!s.layout) errors.push(`section ${s.id}: layout missing (row / column / grid + FILL/HUG/FIXED)`);
+        if (!Array.isArray(s.sap) || !s.sap.length) errors.push(`section ${s.id}: list the SAP components it uses`);
+        if (s.recipe && !T.patterns[s.recipe]) errors.push(`section ${s.id}: recipe "${s.recipe}" unknown`);
+        if (!rows.some(r => r.section === s.id)) errors.push(`section ${s.id} (${s.name}) has no elements — read it again`);
+      }
+      // Z order: band = sections that overlap vertically; bands top → down, left → right inside a band
+      const z = [...secs].filter(s => Array.isArray(s.box)).sort((a, b) => a.box[1] - b.box[1]);
+      const bands = [];
+      for (const s of z) {
+        const b = bands.find(b => b.some(o => s.box[1] < o.box[1] + o.box[3] && o.box[1] < s.box[1] + s.box[3] && Math.abs(s.box[1] - o.box[1]) < 40));
+        b ? b.push(s) : bands.push([s]);
+      }
+      const want = bands.flatMap(b => b.sort((a, c) => a.box[0] - c.box[0])).map(s => s.id);
+      if (want.join() !== ids.join()) errors.push(`sections are not in Z order: declared ${ids.join(' → ')}, reading order is ${want.join(' → ')}`);
+      rows.forEach((r, i) => { if (!ids.includes(r.section)) err(i, r, `section "${r.section}" is not in the section map (${ids.join(', ')})`); });
+    }
+  }
+  rows.forEach((r, i) => {
+    if (r.ask) return questions.push(`${r.section || '?'} / ${r.element}: ${r.ask === true ? 'no SAP match — ask the user' : r.ask}`);
+    if (!T.element_plan.kinds.includes(r.kind)) return err(i, r, `kind "${r.kind}" — use ${T.element_plan.kinds.join('|')}`);
+    if (r.kind === 'text') {
+      if (!KJ.text[r.style]) err(i, r, `text style "${r.style}" not in the kit — see node build/kit.js t`);
+      if (!r.role) err(i, r, 'every text needs a colour role (title_text, body_text, secondary_text, link, success_text, warning_text…)');
+      else tokenFor(i, r, r.role, r.token, 'text');
+    }
+    if (r.kind === 'component') {
+      if (!KIT[r.component]) return err(i, r, `component "${r.component}" not in the kit — see node build/kit.js list`);
+      const d = defsOf(r.component);
+      for (const [p, v] of Object.entries(r.props || {}))
+        if (d[p] && !d[p].includes(String(v))) err(i, r, `${r.component}.${p}="${v}" — real values: ${d[p].join(', ')}`);
+      const cr = r.role && CR[r.role];
+      if (cr) {
+        if (cr.component !== r.component) err(i, r, `role ${r.role} must be a ${cr.component}, not ${r.component}`);
+        for (const [p, v] of Object.entries(cr.props || {})) if ((r.props || {})[p] !== v) err(i, r, `role ${r.role} needs ${p}=${v} (never paint a brand colour)`);
+      }
+    }
+    if (r.kind === 'icon') {
+      if (!r.meaning) err(i, r, 'every icon needs a meaning (what it tells the user)');
+      const want = r.meaning ? IM[r.meaning] : undefined;
+      if (want === null) err(i, r, `SAP has no icon for "${r.meaning}" — ask the user (put it in the plan as a question)`);
+      else if (want && r.icon !== want) err(i, r, `meaning "${r.meaning}" uses icon ${want}, not ${r.icon}`);
+      if (!ICONS.has(r.icon)) err(i, r, `icon "${r.icon}" not found — see node build/kit.js i <word>`);
+      if (r.meaning) (iconMeanings[r.icon] ||= new Set()).add(r.meaning);
+      if (r.role) tokenFor(i, r, r.role, r.token, 'icon');
+    }
+    if (r.kind === 'logo' && !(Array.isArray(r.crop) && r.crop.length === 4 && r.crop.every(n => typeof n === 'number')))
+      err(i, r, 'a logo needs crop:[x,y,w,h] in reference px — crop it from the reference image, never a colour block');
+    if (r.kind === 'divider') tokenFor(i, r, r.role || 'divider', r.token, 'divider');
+    if (r.kind === 'container') {
+      if (r.border_role) tokenFor(i, r, r.border_role, r.border_token, 'border');
+      if (r.fill_role) tokenFor(i, r, r.fill_role, r.fill_token, 'fill');
+      if (r.selected && r.border_role !== 'selected_border') err(i, r, 'a selected card needs border_role selected_border (sapList_SelectionBorderColor)');
+    }
+    for (const t of [r.token, r.border_token, r.fill_token]) if (t && !TOKENS.has(t)) err(i, r, `token ${t} does not exist in the kit`);
+    // wrong ROLE check: the measured reference colour (measure-ref accents) must fit the chosen role
+    if (r.ref_hex && r.kind === 'text' && R[r.role]) {
+      const near = nearestRole(r.ref_hex);
+      if (near && near.role !== r.role && near.d < 90 && !R[r.role].includes(near.token))
+        err(i, r, `reference colour ${r.ref_hex} reads as ${near.role} (${near.token}), not ${r.role} — check the role`);
+    }
+  });
+  // one icon per meaning: an icon may serve several meanings only when the table maps them all to it
+  for (const [icon, ms] of Object.entries(iconMeanings)) {
+    const foreign = [...ms].filter(m => IM[m] !== icon);
+    if (ms.size > 1 && foreign.length) errors.push(`icon "${icon}" used for ${[...ms].join(', ')} — one icon per meaning`);
+  }
+  const count = {}; for (const r of rows) count[r.kind] = (count[r.kind] || 0) + 1;
+  const key = r => r.group ? `${r.section} / ${r.group}` : r.section;
+  const recipes = [...new Set(rows.map(key))].map(s => {
+    const txt = RC.norm(rows.filter(r => key(r) === s).map(r => r.text || r.element || '').join(' '));
+    const hit = Object.entries(T.patterns).find(([k, p]) => k !== '_doc' && p.words.filter(w => RC.hit(txt, w)).length >= 2);
+    return hit ? `${s} → recipe ${hit[0]}` : null;
+  }).filter(Boolean);
+  return { ok: !errors.length, rows: rows.length, count, errors, questions, recipes,
+    trace: `▸ plan ${errors.length ? 'REJECTED' : 'OK'} · ${rows.length} rows · ` +
+      Object.entries(count).map(([k, v]) => `${v} ${k}`).join(', ') + (errors.length ? ` · ${errors.length} errors` : '') +
+      (questions.length ? ` · ${questions.length} question(s) for the user` : '') };
+}
+
+// ── the SAP proposal: per section, what you see → SAP component · state · style · variable ──
+function sapMap(plan) {
+  const R = T.colour_roles, out = [];
+  if (plan.frame) out.push(`FRAME ${plan.frame.w}×${plan.frame.h} · ${plan.frame.breakpoint} · ${plan.frame.density} · ${plan.frame.floorplan}`);
+  for (const s of plan.sections || []) {
+    out.push('', `${s.id} — ${s.name}`, `  sees: ${s.describe || '(no description)'}`, `  layout: ${s.layout || '-'}${s.recipe ? ` · recipe ${s.recipe}` : ''}`);
+    for (const r of (plan.rows || []).filter(r => r.section === s.id)) {
+      const what = (r.group ? r.group + ' · ' : '') + r.element;
+      let sap;
+      if (r.ask) sap = `? ${r.ask === true ? 'no SAP match — ask' : r.ask}`;
+      else if (r.kind === 'text') sap = `Text · style ${r.style} · ${r.token || R[r.role][0]} (${r.role})`;
+      else if (r.kind === 'component') sap = `${r.component}${r.props ? ' · ' + Object.entries(r.props).map(([k, v]) => `${k}=${v}`).join(', ') : ''}${r.role ? ` (${r.role})` : ''}`;
+      else if (r.kind === 'icon') sap = `SAP icon ${r.icon} (${r.meaning})${r.token ? ' · ' + r.token : ''}`;
+      else if (r.kind === 'logo') sap = `image crop [${r.crop}] (SAP has no brand logos)`;
+      else if (r.kind === 'divider') sap = `divider · ${r.token || R[r.role || 'divider'][0]}`;
+      else sap = `container${r.fill_role ? ` · fill ${r.fill_token || R[r.fill_role][0]}` : ''}${r.border_role ? ` · border ${r.border_token || R[r.border_role][0]}` : ''}${r.selected ? ' · SELECTED' : ''}`;
+      out.push(`  ${what.padEnd(34)} → ${sap}`);
+    }
+  }
+  return out.join('\n');
+}
+
+module.exports = { route, routeImage, routeBox, defsOf, validatePlan, sapMap };
 
 if (require.main === module) {
   const a = process.argv.slice(2);
   const onlyTrace = a[0] === '--trace' && a.shift();
   let r;
+  if (a[0] === '--plan') {
+    const pj = JSON.parse(fs.readFileSync(path.resolve(a[1]), 'utf8'));
+    r = validatePlan(pj);
+    if (a.includes('--map')) console.log(sapMap(pj) + '\n');
+    console.log(r.trace);
+    for (const e of r.errors) console.log('  ✗ ' + e);
+    for (const q of r.questions) console.log('  ? ' + q);
+    for (const x of r.recipes) console.log('  ▸ ' + x + '  (knowledge: router-table.json patterns)');
+    process.exit(r.ok ? 0 : 1);
+  }
   if (a[0] === '--image') r = routeImage(JSON.parse(fs.readFileSync(path.resolve(a[1]), 'utf8')), a.slice(2).join(' '));
   else r = route(a.join(' '));
   console.log(onlyTrace ? r.trace : JSON.stringify(r, null, 2));
