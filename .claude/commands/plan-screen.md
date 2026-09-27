@@ -17,6 +17,8 @@ Reply to the user in short, plain sentences. Input: $ARGUMENTS
    once (`python3 build/measure-ref.py ref.png`): frame, READ tree, ACCENTS. Box labels are hints only.
 4. **Start from gold.** `node build/route.js --closest-gold ref.json "<words you can read in the image>"`.
    If it says "start from …" → copy that gold plan and change only what differs. Else write new.
+   **If you change `frame.w` from the gold's, rescale every logo `crop` by newW ÷ goldW** —
+   crops are in frame px; unscaled crops cut random text pieces instead of the badges (seen live).
 5. **Plan** `plan.json` (schema + worked example: `knowledge/gold/plans/*.plan.json`):
    frame → sections A, B, C… in Z order, each FIRST described in plain words with positions →
    one row per visible element. Colour by ROLE, one SAP icon per meaning, every Icon Button names
