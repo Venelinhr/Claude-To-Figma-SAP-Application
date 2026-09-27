@@ -299,7 +299,7 @@ Step 0-5 sequence only for a new screen from scratch.
 ## 📋 PLAN MODE — a pasted plan JSON (v4 default for new screens; the rows, never a filename)
 
 The user pastes a plan made by Claude Code (`/plan-screen`). It is already checked against the
-kit — **build it, do not redesign it.** A path or filename only → ask for the pasted JSON; never
+kit and approved — **build it now: no Step 1 stop, no redesign.** A path or filename only → ask for the pasted JSON; never
 invent a screen from a name (that built a wrong US flight list once).
 
 1. Build section by section in the plan's order. Each row's exact `kind`/`component`/`props`/
@@ -401,7 +401,7 @@ return { WARN, nodeCount, instanceCount, nativeWithPaintOrText: [...], unstyledT
   or a layer still named "Frame"/"Group"/"Rectangle" are also violations.
 
 **Layer 2 — a SEPARATE read-only `use_figma` call on the built frame** (Claude Code:
-`node build/verify-invariants.js`). Return every: TEXT whose `fontName.family` is not
+`/check-build`, which runs `build/audit-plan.js`). Return every: TEXT whose `fontName.family` is not
 `"72"` or has no `textStyleId`; non-instance node with a fill/stroke that has no
 `boundVariables`; layer named Frame/Group/Rectangle. **Fix every hit before Step 4.**
 

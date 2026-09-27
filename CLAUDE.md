@@ -236,8 +236,6 @@ raw reference-photo pixels:
   *real* token by sampling the reference pixel directly and searching
   `search_design_system` for the semantically right token (border/separator/tile — not
   whatever wins on raw distance), not just the nearest cached hex.
-  color) — check it's actually the right *semantic* token for that role, not just the
-  nearest hex. Search `search_design_system` by role name (e.g. "tile border") when in doubt.
 - **Icons distort if resized right after `createInstance()`**, especially composite
   icons (more than one vector, like `travel-itinerary`). Recolor the inner vector fill
   first; only resize if the component's *native* size already needs no change, or test on
@@ -281,6 +279,6 @@ raw reference-photo pixels:
 
 ## Handoff
 
-End every build with: the validated Figma node URL (`figma.com/design/.../?node-id=...`),
-the `WARN` array from the build call (empty = clean), and the final `audit-screen.py`
-score with its verdict line.
+End every build with: the Figma node link (`figma.com/design/.../?node-id=...`), the `WARN`
+array (empty = clean), and the `/check-build` result: `MATCH NN%` + `HYGIENE (0)`. Done = ≥ 90%
+and 0 hygiene. The `audit-screen.py` lists are a checklist; never report its score as the result.

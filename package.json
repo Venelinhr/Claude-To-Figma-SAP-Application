@@ -1,15 +1,12 @@
 {
   "name": "claude-to-figma-sap-application",
   "version": "1.0.0",
-  "description": "SAP Figma Design Agent — build production-ready SAP Fiori screens from plain language or reference images",
+  "description": "SAP Figma Build System v4 — Claude Code plans (validated JSON element plan), the Figma Agent builds, Claude Code checks (MATCH %).",
   "scripts": {
-    "test": "bash build/test-build.sh",
-    "validate": "node build/validate-spec.js",
-    "check": "node build/check-manifest-sync.js",
-    "lint": "node build/lint-mcp-frame.js",
-    "reuse-check": "node build/check-reuse-integrity.js",
-    "generate": "node build/generate-derived.js",
-    "drift-gate": "bash build/ci-drift-gate.sh"
+    "test": "node --test test/route.test.js",
+    "plan": "node build/route.js --plan",
+    "audit": "node build/audit-plan.js",
+    "router": "node build/gen-router.js --check"
   },
   "engines": {
     "node": ">=20"
