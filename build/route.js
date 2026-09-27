@@ -18,7 +18,7 @@ const fs = require('fs');
 const path = require('path');
 const T = require('./router-table.json');
 const RC = require('./route-core.js');
-const KIT = require('../knowledge/live/kit.json').components;
+const KIT = require('./kit-live.js').components;
 
 // real variant options of a kit component: { prop: [options] }
 const defsOf = name => {
@@ -188,7 +188,7 @@ function routeImage(m, words) {
 // The builder lists every element of the reference; each row is checked against the
 // real kit (components, props, text styles, icons) and the colour-ROLE table, so no
 // quality choice is left to free reasoning. Unknown → error with the fix, never a guess.
-const KJ = require('../knowledge/live/kit.json');
+const KJ = require('./kit-live.js');
 const ICONS = new Set([...Object.keys(KJ.icons).map(n => n.split('/').pop()),
   ...Object.keys(require('../knowledge/live/icons-extra.json').icons)]);
 const TOKENS = new Set([...Object.keys(KJ.vars).map(n => n.split('/').pop()), T.act_route.frame_active_border.token]);

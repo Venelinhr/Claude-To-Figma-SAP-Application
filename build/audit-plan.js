@@ -50,6 +50,7 @@ if (plan.rows) {                                   // ── element plan ──
   for (const r of rows.filter(r => r.kind === 'text')) {
     const n = take(n => n.type === 'TEXT' && norm(n.text).includes(norm(r.text)));
     if (!n) { L.missing.push(`text "${r.text}" (${r.section})`); continue; }
+    if (n.inInst) { ok++; continue; }             // label inside a kit component: the component owns style + colour
     let good = true;
     if (r.style && n.style !== r.style) { good = false; L.style.push(`"${r.text}": ${n.style || 'no style'}, plan says ${r.style}`); }
     const allowed = r.token ? [r.token] : (R[r.role] || []);
@@ -97,9 +98,10 @@ if (plan.rows) {                                   // ── element plan ──
 const PLACEHOLDER = /^(tab text|\[swap slot\]|page title|page subtitle|lorem ipsum.*|placeholder)$/i;
 const GENERIC = /^(frame|group|rectangle|auto layout)\s*\d*$/i;
 for (const n of tree.filter(n => !n.inInst)) {
-  if (n.type === 'TEXT' && n.font && n.font !== '72') L.hygiene.push(`"${String(n.text).slice(0, 30)}": font ${n.font}, SAP needs 72 (use a kit text style)`);
+  if (n.type === 'TEXT' && n.font && String(n.font).split('+').some(f => f !== '72')) L.hygiene.push(`"${String(n.text).slice(0, 30)}": font ${n.font}, SAP needs 72 (use a kit text style)`);
   if (n.type === 'TEXT' && PLACEHOLDER.test(String(n.text).trim())) L.hygiene.push(`placeholder text "${n.text}" left in the build`);
-  if (n.fill === 'RAW' || n.stroke === 'RAW') L.hygiene.push(`"${n.name}": raw colour, bind a SAP token`);
+  // a logo's backing frame may stay raw white
+  if ((n.fill === 'RAW' && !/logo|image/i.test(n.name)) || n.stroke === 'RAW') L.hygiene.push(`"${n.name}": raw colour, bind a SAP token`);
 }
 const generic = tree.filter(n => !n.inInst && n.type === 'FRAME' && GENERIC.test(n.name)).length;
 if (generic) L.hygiene.push(`${generic} frames named "Frame"/"Group" — give them real names`);

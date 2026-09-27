@@ -830,14 +830,16 @@
     ]
   },
   "colour_roles": {
-    "_doc": "GATE 5 — colour by ROLE, not by photo. role -> allowed SAP tokens (first = default). A reference colour with no SAP role keeps the component default; never spread a brand colour to other roles. route.js --plan enforces it.",
+    "_doc": "GATE 5 — colour by ROLE, not by photo. role -> allowed SAP tokens (first = default). A reference colour with no SAP role keeps the component default; never spread a brand colour to other roles. route.js --plan enforces it. Extra tokens (sapBaseColor, sapWarningColor, sapErrorColor, sapErrorBackground, sapButton_BorderColor) come from knowledge/live/vars-extra.json — read live from gold 270:6722.",
     "page_background": [
-      "sapBackgroundColor"
+      "sapBackgroundColor",
+      "sapBaseColor"
     ],
     "card_background": [
       "sapList_Background",
       "sapGroup_ContentBackground",
-      "sapTile_Background"
+      "sapTile_Background",
+      "sapBaseColor"
     ],
     "card_border": [
       "sapList_BorderColor",
@@ -850,7 +852,8 @@
     "divider": [
       "sapList_BorderColor",
       "sapToolbar_SeparatorColor",
-      "sapGroup_ContentBorderColor"
+      "sapGroup_ContentBorderColor",
+      "sapButton_BorderColor"
     ],
     "title_text": [
       "sapTitleColor",
@@ -875,10 +878,12 @@
       "sapField_SuccessColor"
     ],
     "warning_text": [
-      "sapField_WarningColor"
+      "sapField_WarningColor",
+      "sapWarningColor"
     ],
     "error_text": [
-      "sapField_InvalidColor"
+      "sapField_InvalidColor",
+      "sapErrorColor"
     ],
     "accent_bar": [
       "sapAccentColor1",
@@ -890,6 +895,9 @@
       "sapContent_IconColor",
       "sapContent_NonInteractiveIconColor",
       "sapTextColor"
+    ],
+    "highlight_background": [
+      "sapErrorBackground"
     ]
   },
   "component_roles": {
@@ -940,7 +948,11 @@
     "expand": "navigation-down-arrow",
     "seat": "grid",
     "not_included": "decline",
-    "flag": "flag"
+    "flag": "flag",
+    "sort": "sort-descending",
+    "pin": "pushpin-on",
+    "fastest": "activate",
+    "best": "accept"
   },
   "element_plan": {
     "_doc": "GATE 0 v2 — read the reference like a person (Z pattern: top-left → right, then down). STEP A: frame (size, breakpoint, density, floorplan). STEP B: section map — split the image into sections (A, B, C…), each with its box, layout, SAP components and recipe, declared in Z order. STEP C: one row per visible element, row.section = a section id, row.group = the sub-part (a card, a list row, a leg). `node build/route.js --plan plan.json` validates it; build only on exit 0.",

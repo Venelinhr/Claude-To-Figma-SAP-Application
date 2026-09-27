@@ -9,7 +9,7 @@ const { execFileSync } = require('child_process');
 const ROOT = path.join(__dirname, '..');
 const { route, routeImage } = require('../build/route.js');
 const T = require('../build/router-table.json');
-const KIT = require('../knowledge/live/kit.json').components;
+const KIT = require('../build/kit-live.js').components;
 
 // [request, mode, expected trace fragments...] — real requests from the 2026-09 sessions
 const CASES = [
@@ -90,7 +90,7 @@ test('a state the component does not have is reported, not invented', () => {
 });
 
 test('drift: every table component, key, token and candidate exists in kit.json', () => {
-  const vars = require('../knowledge/live/kit.json').vars;
+  const vars = require('../build/kit-live.js').vars;
   const varKey = n => Object.entries(vars).find(([k]) => k.endsWith('/' + n))?.[1].split('|')[0];
   for (const r of T.gate3_component.rules) {
     assert.ok(KIT[r.component], `${r.component} not in kit`);
@@ -323,7 +323,7 @@ test('audit-plan (element plan): perfect build passes; missing logo, grey Ankunf
 });
 
 test('drift: every role token, icon meaning and recipe role exists', () => {
-  const T2 = require('../build/router-table.json'), KJ = require('../knowledge/live/kit.json');
+  const T2 = require('../build/router-table.json'), KJ = require('../build/kit-live.js');
   const toks = new Set([...Object.keys(KJ.vars).map(n => n.split('/').pop()), T2.act_route.frame_active_border.token]);
   for (const [role, list] of Object.entries(T2.colour_roles)) if (role !== '_doc') for (const t of list) assert.ok(toks.has(t), `${role}: ${t}`);
   const icons = new Set([...Object.keys(KJ.icons).map(n => n.split('/').pop()), ...Object.keys(require('../knowledge/live/icons-extra.json').icons)]);
@@ -433,4 +433,15 @@ test('v4 route.js: --min writes a one-line plan; --closest-gold picks the right 
   const gold = JSON.parse(fs.readFileSync(GOLD, 'utf8'));
   assert.match(asciiMap(gold), /A Step 1/); assert.match(asciiMap(gold), /[│─]/);
   assert.ok(suggestions(gold).some(s => /Logos/.test(s)));
+});
+
+test('v4 audit on the REAL gold build 270:6722 (dump fixture): 97%, only its real defects listed', () => {
+  let out, code = 0;
+  try { out = execFileSync('node', [path.join(ROOT, 'build/audit-plan.js'), path.join(ROOT, 'knowledge/gold/plans/flight-search-results.plan.json'),
+    path.join(ROOT, 'test/fixtures/tree-gold-270-6722.json')]).toString(); } catch (e) { code = e.status; out = e.stdout.toString(); }
+  assert.match(out, /MATCH 97%/);
+  assert.match(out, /38,65 €/);                                 // card 2 disclaimer copied from card 1 (37,27 €) — a real defect
+  assert.match(out, /"НАЙ-БЪРЗО": raw colour/);                // pink promo text is not a SAP token — hygiene blocks
+  assert.strictEqual(code, 1);
+  assert.doesNotMatch(out, /Всички|01:00 \+1": font|Logo": raw/);   // kit-internal labels, mixed 72 text, logo backing: no false alarms
 });

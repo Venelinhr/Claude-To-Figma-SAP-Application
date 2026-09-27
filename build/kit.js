@@ -9,7 +9,7 @@
 //   node build/kit.js e [regex]             effect styles (shadows)
 //   node build/kit.js pack <name...>        print `const KIT = {...}` for the build prelude
 //        (names: component names, text style names, token short names e.g. sapTitleColor, icon names)
-const kit = require('../knowledge/live/kit.json');
+const kit = require('./kit-live.js');
 // + SAP icons the kit's Iconography page lacks (suitcase, meal, share-arrow…) — see icons-extra.json
 for (const [n, v] of Object.entries(require('../knowledge/live/icons-extra.json').icons)) kit.icons['sap-icons/' + n] = v.key;
 const [cmd, q = '', n = '6'] = process.argv.slice(2);

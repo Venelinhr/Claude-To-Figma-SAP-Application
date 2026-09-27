@@ -37,7 +37,7 @@ return c ? await new (Object.getPrototypeOf(async () => {}).constructor)('A', c)
 const block = apply;   // build/templates/route.use_figma.js = the saved code (tests run it; A is its parameter)
 
 // ── BUILD KIT: helpers (sap-kit.prelude.js) + SAP keys, saved once per file for the Figma Agent ──
-const KITJ = require('../knowledge/live/kit.json');
+const KITJ = require('./kit-live.js');
 const FK = { c: {}, v: {}, t: {}, i: {} };
 for (const n of T.figma_kit.components) { if (!KITJ.components[n]) throw new Error(`figma_kit: ${n} not in kit.json`); FK.c[n] = KITJ.components[n].key; }
 for (const [n, v] of Object.entries(KITJ.vars)) if (v.split('|')[1] === 'C') FK.v[n.split('/').pop()] = v.split('|')[0];

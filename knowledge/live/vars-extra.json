@@ -1,0 +1,12 @@
+{
+  "_doc": "Real SAP colour variables the cached kit.json (142 of 1537 tokens) lacks, read LIVE from the user-approved gold build 270:6722 in file L9bomZ4CKDmBGQfGM9C61z (2026-09-27, read-only use_figma: boundVariables → variable.key). Merged into the kit by build/kit-live.js. Add more the same way — never guess a key.",
+  "vars": {
+    "sapBaseColor": { "key": "53977e207776cc051f5bc312eadd9140ab3842cb", "hex": "#ffffff" },
+    "sapWarningColor": { "key": "2b9aa2b38d0039e1d1119ba2eaa6226383f7e3b3", "hex": "#e76500" },
+    "sapErrorColor": { "key": "f80fb25da691a72796a20df06d830d01bb25d2a8", "hex": "#aa0808" },
+    "sapErrorBackground": { "key": "f87afb0f0bd68badc30f9022a3db1e4788881a7a", "hex": "#ffeaf4" },
+    "sapButton_BorderColor": { "key": "2bb33c0108c90f38df37796205f9c25de044863f", "hex": "#bcc3ca" },
+    "sapContent_Selected_ForegroundColor": { "key": "35cc8f15a553c16824b64083f51191cd74323574", "hex": "#0064d9" },
+    "sapSlider_Selected_Background": { "key": "28ebf748b5d0cd3e9064c5a8c1c0ab50d7b41f3b", "hex": "#0064d9" }
+  }
+}

@@ -14,7 +14,7 @@ for (const n of [root, ...root.findAll(() => true)]) {
   if (n.type === 'TEXT') {
     const st = typeof n.textStyleId === 'string' && n.textStyleId ? await figma.getStyleByIdAsync(n.textStyleId) : null;
     out.push({ ...base, text: n.characters, style: st ? st.name : '', fill: await tok(n.fills),
-      font: n.fontName === figma.mixed ? 'mixed' : n.fontName.family });
+      font: n.fontName === figma.mixed ? [...new Set(n.getStyledTextSegments(['fontName']).map(g => g.fontName.family))].join('+') : n.fontName.family });
   } else if (n.type === 'INSTANCE') {
     const m = await n.getMainComponentAsync(), s = m && m.parent && m.parent.type === 'COMPONENT_SET' ? m.parent : m;
     const p = {}; for (const [k, v] of Object.entries(n.componentProperties)) if (v.type === 'VARIANT') p[k] = v.value;

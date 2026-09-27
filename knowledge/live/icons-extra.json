@@ -3,15 +3,53 @@
   "library": "v1 Archived Horizon Web UI Kit",
   "libraryKey": "lk-bcf5c884fb86f0cc723897bafd66bf28106bec58e2cb192516aa84d570ac04e12816371be8cf9e253d53f9d0e0af5a1b15d7f17a4a48083253aa06d8bc35f496",
   "icons": {
-    "suitcase": { "key": "aab233a77becbdfc986a734c5451f5b976638855", "desc": "travel, suitcase, business trip, possessions" },
-    "meal": { "key": "52c9186b136b0ff70196b57dd6cf5f0e17e848bf", "desc": "meal, knife and fork, dinner, lunch" },
-    "share-arrow": { "key": "f186ab5dabe94fbbf9b8427f9fd41edddf104e2c", "desc": "share, reshare, distribute, arrow (SAP 'share')" },
-    "share-2": { "key": "3e32bfc37d0c6c148ea9919015d02a7acf91d58c", "desc": "share, distribute, share with connections" },
-    "tag": { "key": "af4ff91cd6e44b9c54a1560aa2bef561c8d8b0c9", "desc": "tag, label, marker, indicator" },
-    "flight": { "key": "65ca2deb9dd0c4f7734d2269e7958fbe62b4a462", "desc": "plane, trip, travel, flight" },
-    "paper-plane": { "key": "1af59a706bee8811d9439901ec3d4f54f118185a", "desc": "send, paper plane" },
-    "receipt": { "key": "28664297b6ba462b297b4487f2fa5884d53a3a08", "desc": "bill, receipt, proof of sale" },
-    "travel-expense": { "key": "00af06f46dafee9ba85ce133c4ce34d449eaee25", "desc": "plane + money: trip expense, fee" },
-    "travel-itinerary": { "key": "303136e86aedf4da03db63f869e9a9262c9a89d7", "desc": "itinerary, schedule, flight, drive" }
+    "suitcase": {
+      "key": "aab233a77becbdfc986a734c5451f5b976638855",
+      "desc": "travel, suitcase, business trip, possessions"
+    },
+    "meal": {
+      "key": "52c9186b136b0ff70196b57dd6cf5f0e17e848bf",
+      "desc": "meal, knife and fork, dinner, lunch"
+    },
+    "share-arrow": {
+      "key": "f186ab5dabe94fbbf9b8427f9fd41edddf104e2c",
+      "desc": "share, reshare, distribute, arrow (SAP 'share')"
+    },
+    "share-2": {
+      "key": "3e32bfc37d0c6c148ea9919015d02a7acf91d58c",
+      "desc": "share, distribute, share with connections"
+    },
+    "tag": {
+      "key": "af4ff91cd6e44b9c54a1560aa2bef561c8d8b0c9",
+      "desc": "tag, label, marker, indicator"
+    },
+    "flight": {
+      "key": "65ca2deb9dd0c4f7734d2269e7958fbe62b4a462",
+      "desc": "plane, trip, travel, flight"
+    },
+    "paper-plane": {
+      "key": "1af59a706bee8811d9439901ec3d4f54f118185a",
+      "desc": "send, paper plane"
+    },
+    "receipt": {
+      "key": "28664297b6ba462b297b4487f2fa5884d53a3a08",
+      "desc": "bill, receipt, proof of sale"
+    },
+    "travel-expense": {
+      "key": "00af06f46dafee9ba85ce133c4ce34d449eaee25",
+      "desc": "plane + money: trip expense, fee"
+    },
+    "travel-itinerary": {
+      "key": "303136e86aedf4da03db63f869e9a9262c9a89d7",
+      "desc": "itinerary, schedule, flight, drive"
+    },
+    "pushpin-on": {
+      "key": "a103a0ee9c45c6b54d5f799e82b1842236f2c79e",
+      "desc": "pin, pinned, keep on top (read live from gold 270:6722)"
+    },
+    "direction-arrows": {
+      "key": "d8df6bd3e7657212a65f733f39878d4e0a37cc2e",
+      "desc": "two-way arrows, range handle (read live from gold 270:6722)"
+    }
   }
 }
