@@ -102,7 +102,7 @@ if (plan.rows) {                                   // ── element plan ──
 const PLACEHOLDER = /^(tab text|\[swap slot\]|page title|page subtitle|lorem ipsum.*|placeholder)$/i;
 const GENERIC = /^(frame|group|rectangle|auto layout)\s*\d*$/i;
 for (const n of tree.filter(n => !n.inInst)) {
-  if (n.type === 'TEXT' && n.font && String(n.font).split('+').some(f => f !== '72')) L.hygiene.push(`"${String(n.text).slice(0, 30)}": font ${n.font}, SAP needs 72 (use a kit text style)`);
+  if (n.type === 'TEXT' && n.font && !/^\d+$/.test(String(n.font)) && String(n.font).split('+').some(f => f !== '72')) L.hygiene.push(`"${String(n.text).slice(0, 30)}": font ${n.font}, SAP needs 72 (use a kit text style)`);
   if (n.type === 'TEXT' && PLACEHOLDER.test(String(n.text).trim())) L.hygiene.push(`placeholder text "${n.text}" left in the build`);
   // a logo's backing frame may stay raw white
   if ((n.fill === 'RAW' && !/logo|image/i.test(n.name)) || n.stroke === 'RAW') L.hygiene.push(`"${n.name}": raw colour, bind a SAP token`);

@@ -6,7 +6,7 @@ Same rules as the job task: only `STAGE` / `AGENT_` lines are read, one-line mar
 nothing but this node. A hook asks for facts → give them in 4 short lines and retry. Shell: one plain
 command per call, no `>` `|` `&&` (blocked) — save printed output with the Write tool.
 
-1. **Layers.** One read-only `use_figma` with `build/templates/dump-tree.use_figma.js` (ROOT = `'{{nodeId}}'`)
+1. **Layers.** One read-only `use_figma` with `build/templates/dump-tree.use_figma.js` UNCHANGED (only ROOT = `'{{nodeId}}'`; it already skips kit internals — never write your own dump, a hand-made one once put the font size in `font` and made 8 false hygiene lines)
    → save the returned JSON to `{{jobDir}}/tree.json` →
    `node build/audit-plan.js {{plan}} {{jobDir}}/tree.json` → MATCH % + HYGIENE.
 2. **Eye** (only with a reference image). `download_assets` of `{{nodeId}}` (png, defaultScale 2) →
