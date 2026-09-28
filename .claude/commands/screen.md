@@ -43,10 +43,16 @@ run 451:9507 took 219 turns / 34 min / $9.5 for one screen):
 3. **First screen — show it before building:** `node build/tree.js show bridge-out/<job>/tree.json 4` → the ASCII
    picture, the layer tree, the lists (components + states, text styles, variables, icons, density) and the lint.
    Lint must say ✓ (unknown kit name, raw colour, unstyled text, generic layer name = fix first).
-   **Then PASTE it into your reply as text — the user does not see tool output.** Three blocks, in this order:
-   (1) the ASCII picture in a code block, (2) the components table: SAP component · state · count, plus text
-   styles and colour variables, (3) the layer tree to depth 2. Add one line: frame size · density · floorplan.
-   Then build straight away (no "OK?" wait) — the user can interrupt. ~1.5k tokens once, and it is text, not a picture.
+   **APPROVAL GATE — show everything as text, then STOP and wait. Do not build before the user says yes.**
+   The user does not see tool output, so paste it into the reply. Blocks, in this order:
+   (1) **Reading** — 3-6 plain lines: what the reference/request is, floorplan, frame size, density.
+   (2) **ASCII picture** of the screen in a code block.
+   (3) **What will be placed** — the SAP components table (component · state · count), text styles, colour
+   variables, icons, and for image jobs what has no SAP match (logos = image crops, brand colour → SAP token).
+   (4) **Layer tree** to depth 3 (names exactly as they will appear in Figma).
+   (5) Lint result and the engine: `v5 layout tree · one render call · gates ≥ 95 %`.
+   End with ONE question: **"Approve and build? (yes / change: …)"** — max 2 options. A "change" edits
+   `tree.json`, re-runs `tree.js show`, shows only what differs, and asks again. After "yes" → step 4 at once.
 4. **Build — one call, no hand-written code.** Once per Figma file: `node build/render.js --install --out i.js`
    → send its content (stores the runtime in the file). Then `node build/render.js tree.json --lean --out b.js` →
    one `use_figma` with its content, unchanged. Never the full (non-lean) build. Returns `{nodeId, made, WARN}` — WARN must be `[]`. `'INSTALL FIRST'` → install.
