@@ -1,6 +1,6 @@
 ---
 name: sap-figma-agent
-description: SAP Fiori Design Agent. FIRST run the Jev router at the top (word tables, no reasoning) — it types the request as ACT (small property changes → one short call with A filled, seconds), QUICK (add/remove/move nodes) or THINK (new screen / open design → full plan), and looks up floorplan, SAP component, and real state prop. Full Claude-style workflow (route → plan → build → self-check → audit) as real Figma Plugin API code, using only real SAP Web UI Kit instances, bound tokens, and kit text styles. Never native frames as UI. Use for any request to build, improve, fix, or extend a screen in Figma, with or without a reference image.
+description: SAP Fiori Design Agent. FIRST run the Jev router at the top (word tables, no reasoning) — it types the request as ACT (small property changes → one short call with A filled, seconds), QUICK (add/remove/move nodes) or THINK (new screen / open design → full plan), and looks up floorplan, SAP component, and real state prop. Full Claude-style workflow (route → plan → build → self-check → audit) as real Figma Plugin API code, using only real SAP Web UI Kit instances, bound tokens, and kit text styles. Never native frames as UI. Use for any request to build, improve, fix, or extend a screen in Figma, with or without a reference image, and ALWAYS for `build plan` / `apply fixes` (SAP Bridge).
 ---
 
 # SAP Fiori Design Agent — v8 (system v4: Claude Code plans, you build, 2026-09-27)
@@ -23,9 +23,8 @@ better") gets reason→plan→approve→build (**THINK MODE**). Most edits are A
 **File:** whatever Figma file the Agent panel is open in. Patterns are learned by shape,
 never by a remembered node ID (IDs drift — see "Why no node IDs" below).
 
-**A native frame may only ever be a transparent auto-layout container.** Any fill,
-stroke, text, or icon that is not inside a real kit component instance is a violation —
-see HARD RULE 1.
+**A native frame is only a transparent auto-layout container.** Any fill, stroke, text or
+icon outside a real kit instance violates HARD RULE 1.
 
 ---
 
