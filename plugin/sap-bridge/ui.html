@@ -248,6 +248,7 @@ textarea::placeholder{color:var(--figma-color-text-tertiary)}
   <!-- stages (hidden until job starts) -->
   <div class="stages" id="stages" style="display:none" aria-live="polite"></div>
   <div class="progress-text" id="progressText" style="display:none"></div>
+  <div class="progress-text" id="timerText" style="display:none"></div>
 
   <!-- ask card -->
   <div class="card ask" id="askCard" style="display:none">
@@ -313,6 +314,31 @@ textarea::placeholder{color:var(--figma-color-text-tertiary)}
   var mode         = 'claude';
   var imageBase64  = null;
   var imageMime    = null;
+  var jobStartedAt = null;
+  var jobElapsedMs = null;
+  var timerHandle  = null;
+
+  // ── timer ─────────────────────────────────────────────────────────────────
+  function fmtElapsed(ms) {
+    var s = Math.max(0, Math.round(ms / 1000));
+    var m = Math.floor(s / 60);
+    s = s % 60;
+    return m + 'm ' + (s < 10 ? '0' : '') + s + 's';
+  }
+  function startTimer() {
+    jobStartedAt = Date.now();
+    jobElapsedMs = null;
+    el.timer.style.display = '';
+    tickTimer();
+    timerHandle = setInterval(tickTimer, 1000);
+  }
+  function tickTimer() {
+    el.timer.textContent = 'Running · ' + fmtElapsed(Date.now() - jobStartedAt);
+  }
+  function stopTimer() {
+    if (timerHandle) { clearInterval(timerHandle); timerHandle = null; }
+    if (jobStartedAt) jobElapsedMs = Date.now() - jobStartedAt;
+  }
 
   // ── DOM refs ──────────────────────────────────────────────────────────────
   var el = {
@@ -331,6 +357,7 @@ textarea::placeholder{color:var(--figma-color-text-tertiary)}
     goBtn:      document.getElementById('goBtn'),
     stages:     document.getElementById('stages'),
     progress:   document.getElementById('progressText'),
+    timer:      document.getElementById('timerText'),
     askCard:    document.getElementById('askCard'),
     askQ:       document.getElementById('askQuestion'),
     askInput:   document.getElementById('askInput'),
@@ -529,6 +556,7 @@ textarea::placeholder{color:var(--figma-color-text-tertiary)}
     if (!text && !imageBase64) return;
     hideCards();
     initStages();
+    startTimer();
     postMsg({
       type:        'go',
       text:        text,
@@ -597,6 +625,8 @@ textarea::placeholder{color:var(--figma-color-text-tertiary)}
         el.mbxCard.style.display = 'none';
         running = false;
         updateGoBtn();
+        stopTimer();
+        el.timer.style.display = 'none';
         var d = msg.data;
         doneNodeId = d.nodeId || null;
         fillResultText(d);
@@ -623,10 +653,14 @@ textarea::placeholder{color:var(--figma-color-text-tertiary)}
       case 'cancelled':
         running = false;
         updateGoBtn();
+        stopTimer();
+        el.timer.style.display = 'none';
         break;
       case 'error':
         running = false;
         updateGoBtn();
+        stopTimer();
+        el.timer.style.display = 'none';
         el.errMsg.textContent = msg.message;
         el.errCard.style.display = 'flex';
         if (stageState) {
@@ -647,9 +681,16 @@ textarea::placeholder{color:var(--figma-color-text-tertiary)}
     return d.toLocaleDateString(undefined, { day: 'numeric', month: 'short' }) + ' ' + d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
   }
   function pct(v) { return v != null ? v + '%' : '—'; }
+  function fmtElapsedShort(ms) {
+    if (ms == null) return '';
+    var s = Math.max(0, Math.round(ms / 1000));
+    var m = Math.floor(s / 60);
+    s = s % 60;
+    return 'Done in ' + (m ? m + 'm ' : '') + s + 's';
+  }
   function fillResultText(d) {
     el.resName.textContent = d.name || 'Screen';
-    var bits = [when(d.at || Date.now()), MODE[d.mode] || '', d.request ? '“' + d.request + '”' : ''].filter(Boolean);
+    var bits = [when(d.at || Date.now()), MODE[d.mode] || '', fmtElapsedShort(d.elapsedMs), d.request ? '“' + d.request + '”' : ''].filter(Boolean);
     el.resSub.textContent = bits.join(' · ');
   }
   function showResult(h) {
@@ -677,7 +718,7 @@ textarea::placeholder{color:var(--figma-color-text-tertiary)}
       score.textContent = 'MATCH ' + pct(h.match) + (h.eye != null ? ' · EYE ' + pct(h.eye) : '');
       top.appendChild(name); top.appendChild(score);
       var sub = document.createElement('div'); sub.className = 'res-sub';
-      sub.textContent = [when(h.at), MODE[h.mode] || '', h.request ? '“' + h.request + '”' : ''].filter(Boolean).join(' · ');
+      sub.textContent = [when(h.at), MODE[h.mode] || '', fmtElapsedShort(h.elapsedMs), h.request ? '“' + h.request + '”' : ''].filter(Boolean).join(' · ');
       row.appendChild(top); row.appendChild(sub);
       row.title = 'Show in canvas';
       row.addEventListener('click', function () { showResult(h); if (h.nodeId) postMsg({ type: 'show-node', nodeId: h.nodeId }); });

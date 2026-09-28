@@ -9,6 +9,7 @@ let inboxCursor = 0;
 let pollCursor = 0;
 let followingJobId = null;
 let lastJobId = null;
+let jobStartedAt = null;
 let watchJobId = null;
 let lastDoneAt = 0;
 let pollTimer = null;
@@ -70,6 +71,7 @@ figma.root.setRelaunchData({ open: 'Build SAP screens with Claude' });
 (async function init() {
   token = (await figma.clientStorage.getAsync('sapBridgeToken')) || null;
   lastJobId = figma.root.getPluginData('lastJobId') || null;
+  jobStartedAt = Number(figma.root.getPluginData('lastJobStartedAt')) || null;
   sendSelection();
   sendHistory(true);
   healthCheck();
@@ -188,8 +190,10 @@ async function postJob(msg) {
   }
   lastJobId = r.json.jobId;
   lastRequest = { text: cleanText || (image ? 'Reference image' : ''), mode: msg.mode || 'claude' };
+  jobStartedAt = Date.now();
   figma.root.setPluginData('lastJobId', lastJobId);
   figma.root.setPluginData('lastRequest', JSON.stringify(lastRequest));
+  figma.root.setPluginData('lastJobStartedAt', String(jobStartedAt));
   send({ type: 'job-started', jobId: lastJobId });
   startPollLoop(lastJobId);
 }
@@ -339,13 +343,16 @@ async function handleDone(d) {
   if (node) { try { node.setRelaunchData({ open: 'Build SAP screens with Claude' }); } catch (_) {} }
   let req = lastRequest;
   try { if (!req.text) req = JSON.parse(figma.root.getPluginData('lastRequest') || '{}'); } catch (_) {}
+  const elapsedMs = jobStartedAt ? (Date.now() - jobStartedAt) : null;
   const entry = { jobId: d.jobId || lastJobId, at: Date.now(), name: node ? node.name : (d.name || 'Screen'), nodeId: d.nodeId || null,
     match: d.match == null ? null : d.match, eye: d.eye == null ? null : d.eye, pass: d.pass !== false,
-    mode: req.mode || '', request: String(req.text || '').slice(0, 140), blocks: d.blocks || [] };
+    mode: req.mode || '', request: String(req.text || '').slice(0, 140), blocks: d.blocks || [], elapsedMs: elapsedMs };
   const items = readHistory().filter(function (h) { return h.jobId !== entry.jobId; });
   items.unshift(entry);
   figma.root.setPluginData(HISTORY_KEY, JSON.stringify(items.slice(0, 30)));
-  send({ type: 'done', data: Object.assign({}, d, { name: entry.name, request: entry.request, mode: entry.mode, at: entry.at }) });
+  jobStartedAt = null;
+  figma.root.setPluginData('lastJobStartedAt', '');
+  send({ type: 'done', data: Object.assign({}, d, { name: entry.name, request: entry.request, mode: entry.mode, at: entry.at, elapsedMs: elapsedMs }) });
   sendHistory(false);
 }
 
