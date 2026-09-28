@@ -572,6 +572,7 @@ textarea::placeholder{color:var(--figma-color-text-tertiary)}
         setStage('logos', 'done');
         break;
       case 'done':
+        el.mbxCard.style.display = 'none';
         running = false;
         updateGoBtn();
         var d = msg.data;

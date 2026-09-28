@@ -724,7 +724,10 @@ function recordPass(run, g) {
   } catch (_) {}
   try {
     const line = `- ${new Date().toISOString().slice(0, 10)} · "${String(run.text || '').slice(0, 60)}" → ${run.nodeId} · via SAP Bridge (${run.mode}) · measured MATCH ${g.match}% · EYE ${g.eye == null ? '—' : g.eye + '%'} · gate rounds ${run.gateRounds || 0} · PASS\n`;
-    fs.appendFileSync(path.join(MEMORY_DIR, 'v4-run-log.md'), line);
+    const logf = path.join(MEMORY_DIR, 'v4-run-log.md');
+    const cur = fs.existsSync(logf) ? fs.readFileSync(logf, 'utf8') : '';
+    const at = cur.lastIndexOf('\nRelated:');
+    fs.writeFileSync(logf, at >= 0 ? cur.slice(0, at + 1) + line + cur.slice(at + 1) : cur + line);
   } catch (_) {}
 }
 function gatePrompt(run, g, blocks) {
