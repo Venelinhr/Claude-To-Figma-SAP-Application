@@ -6,6 +6,7 @@
 <title>SAP Bridge</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
+html,body{height:auto}
 body{
   font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
   font-size:11px;
@@ -13,8 +14,6 @@ body{
   background:var(--figma-color-bg);
   display:flex;
   flex-direction:column;
-  height:100vh;
-  overflow:hidden;
 }
 
 /* ── header ── */
@@ -33,8 +32,8 @@ body{
 @keyframes pulse{0%,100%{opacity:.4}50%{opacity:1}}
 .status-text{color:var(--figma-color-text-secondary);font-size:10px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
-/* ── scrollable body ── */
-.body{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:6px;padding:8px 10px}
+/* ── body: grows with content, the Figma window resizes to fit (see 'resize' postMessage) ── */
+.body{display:flex;flex-direction:column;gap:6px;padding:8px 10px}
 
 /* ── chips ── */
 .chips{display:flex;flex-wrap:wrap;gap:4px;min-height:0}
@@ -178,7 +177,7 @@ textarea::placeholder{color:var(--figma-color-text-tertiary)}
 .hist-name{flex:1;font-size:11px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .hist-score{font-size:11px;font-weight:700;color:#1bc47d}
 .hist-item.fail .hist-score{color:#f24822}
-.hist-list{display:flex;flex-direction:column;gap:5px}
+.hist-list{display:flex;flex-direction:column;gap:5px;max-height:260px;overflow-y:auto}
 .show-btn{
   align-self:flex-start;
   padding:4px 10px;border:none;border-radius:4px;
@@ -730,12 +729,25 @@ textarea::placeholder{color:var(--figma-color-text-tertiary)}
     parent.postMessage({ pluginMessage: msg }, '*');
   }
 
-  function scroll() {
-    el.body.scrollTop = el.body.scrollHeight;
+  function scroll() {} // window now grows to fit content — nothing to scroll to
+
+  // ── auto height: tell code.js the real content height, it resizes the window ──
+  var lastSentHeight = 0;
+  function sendHeight() {
+    var h = document.body.scrollHeight;
+    if (Math.abs(h - lastSentHeight) < 2) return;
+    lastSentHeight = h;
+    postMsg({ type: 'resize', height: h });
+  }
+  if (window.ResizeObserver) {
+    new ResizeObserver(sendHeight).observe(document.body);
+  } else {
+    setInterval(sendHeight, 300);
   }
 
   // ── init ──────────────────────────────────────────────────────────────────
   postMsg({ type: 'reopen' });
+  sendHeight();
 })();
 </script>
 </body>

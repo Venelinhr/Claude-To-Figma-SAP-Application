@@ -65,7 +65,7 @@ async function showNode(nodeId) {
 }
 
 // ─── start ─────────────────────────────────────────────────────────────────
-figma.showUI(__html__, { width: 340, height: 560, themeColors: true });
+figma.showUI(__html__, { width: 340, height: 240, themeColors: true });
 figma.root.setRelaunchData({ open: 'Build SAP screens with Claude' });
 
 (async function init() {
@@ -386,6 +386,9 @@ figma.ui.onmessage = async function (msg) {
       break;
     case 'reopen': await reopenLastJob(); break;
     case 'show-node': if (msg.nodeId) await showNode(msg.nodeId); break;
+    case 'resize':
+      figma.ui.resize(340, Math.max(240, Math.min(760, Math.round(msg.height))));
+      break;
     case 'unpair':
       send({ type: 'error', message: 'Nothing to do: SAP Bridge pairs once and reconnects by itself. Only to connect a different Figma (another computer), ask Claude: node build/mailbox.js unpair' });
       break;
