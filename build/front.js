@@ -56,7 +56,9 @@ const f = spec && spec.frame, full = want.length && G.hit / want.length >= 0.95,
 // uncertainty: what an approved gold tree or a proven rule already answers is an ASSUMPTION, not a question
 const assumed = [], asks = [];
 for (const a of r.ask) {
-  if (/^density:/.test(a)) assumed.push('density SAP Compact, texts step down ×' + (f ? f.text_scale : 0.85) + ' (proven rule, gold 270:6722)');
+  if (/^density:/.test(a)) { const ff = {}; (function w(o) { if (o.pr && o.pr['Form Factor']) ff[o.pr['Form Factor']] = (ff[o.pr['Form Factor']] || 0) + 1; (o.c || []).forEach(w); })(T);
+    const d = Object.entries(ff).sort((x, y) => y[1] - x[1])[0];
+    assumed.push(full && d ? `density ${d[0]} and text styles as the approved gold "${gname}" (the reference is a brand site at ×${f.text_scale})` : 'density SAP Compact, texts step down ×' + (f ? f.text_scale : 0.85) + ' (proven rule, gold 270:6722)'); }
   else if (/^brand colour/.test(a) && full) assumed.push(`brand colour ${a.match(/#[0-9a-f]{6}/i)[0]} → the SAP colour roles of the approved gold "${gname}" (CTA = Button Primary, no painted brand colour)`);
   else if (/icon shapes have no SAP icon/.test(a) && full && !r.out.some(([w]) => w === 'missing')) assumed.push('icons = the gold tree\'s SAP icons for the same meanings');
   else if (/OCR unsure/.test(a)) assumed.push(a.replace(/ is not in the tree.*/, ' kept as read'));

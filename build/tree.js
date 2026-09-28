@@ -131,7 +131,8 @@ function lTree(max) {
 function compTable() {
   const kit = require('./kit-live.js'), by = {};
   for (const o of all.filter(o => o.k === 'i')) {
-    const st = Object.fromEntries(Object.entries(o.pr || {}).filter(([k]) => !/^✏️|By Text/.test(k)));   // states, not typed text
+    const kd = Object.fromEntries(Object.entries((kit.components[o.cp] || {}).props || {}).map(([n, v]) => [n.replace(/#.*$/, ''), v.replace(/^[A-Z]:/, '').split(/[| ]/)[0]]));
+    const st = Object.fromEntries(Object.entries(o.pr || {}).filter(([k, v]) => !/^✏️|By Text/.test(k) && String(kd[k]) !== String(v)));   // states that differ from the kit default
     const key = o.cp + '|' + JSON.stringify(st), e = by[key] || (by[key] = { cp: o.cp, pr: st, n: 0 });
     e.n++;
   }
