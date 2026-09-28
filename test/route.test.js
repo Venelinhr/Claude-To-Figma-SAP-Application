@@ -418,7 +418,11 @@ test('v4 crop-logos: one PNG per logo row, crop scaled from frame px to the imag
     path.join(ROOT, 'knowledge/gold/plans/flight-search-results.plan.json'), img, path.join(dir, 'out')]).toString();
   assert.match(out, /4 logo\(s\) cropped/);
   assert.match(out, /100×96/);                                          // [510,196,50,48] × 2
-  assert.strictEqual(fs.readdirSync(path.join(dir, 'out')).length, 4);
+  const files = fs.readdirSync(path.join(dir, 'out'));
+  assert.strictEqual(files.filter((f) => f.endsWith('.png')).length, 4);
+  const index = JSON.parse(fs.readFileSync(path.join(dir, 'out', 'index.json'), 'utf8'));  // SAP Bridge plugin: file → frame
+  assert.strictEqual(index.length, 4);
+  for (const e of index) { assert.ok(files.includes(e.file)); assert.ok(e.element); }
 });
 
 test('v4 route.js: --min writes a one-line plan; --closest-gold picks the right gold; --map has ASCII + suggestions', () => {

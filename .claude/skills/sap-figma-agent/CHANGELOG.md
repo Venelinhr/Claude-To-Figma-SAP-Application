@@ -15,6 +15,12 @@ v7.10 (2026-09-26): Jev typed router at the top (generated from build/router-tab
 - Icon meanings: fastest → `media-forward` (SAP has no lightning bolt), best → `thumb-up`, collapse (expanded
   section) → `navigation-up-arrow`. Found building the BG results reference 1:1 (364:6465, EYE 97%, MATCH 100%).
 
+### v8.2 — 2026-09-28 (SAP Bridge)
+- `build plan` / `apply fixes` skip the router → PLAN MODE reads the plan from the file mailbox
+  (`sapfiori/mbx_job` + one `mbx_part_<id>` per call, each < 8 KB) and writes `mbx_done`; the SAP
+  Bridge plugin (`plugin/sap-bridge/`) delivers the plan and starts the check. No JSON paste.
+- Intro and speed paragraphs shortened to keep SKILL.md < 62,000 chars.
+
 ## WHY THIS REWRITE EXISTS (read once, applies to every build)
 
 v6 of this skill told the agent to "open the Assets panel (Shift+I), drag the

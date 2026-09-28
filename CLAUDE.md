@@ -10,16 +10,24 @@ Targets: **MATCH ≥ 90%** (audit-plan score), plan session **≤ 12k tokens / �
 round**. Fail twice on one step → switch approach or ask. Proven: plan→paste build 301:7074 = $2;
 all-in-one terminal build 286:5646 = $8 and worse; main-branch build 291:6032 = 18 min, placeholders.
 
-| Step | Where | Command |
-|---|---|---|
-| 1. image → validated plan on the clipboard | Claude Code | `/plan-screen <image>` |
-| 2. build the pasted plan (PLAN MODE) | Figma Agent | paste + the build line `/plan-screen` prints |
-| 3. dump → MATCH % → logos → fix list | Claude Code | `/check-build <node link>` |
-| 4. apply the fix list, re-check once | Figma Agent → Claude Code | paste, then `/check-build` |
-| small edits later | Figma Agent | ACT mode (one short call, ~11 s) |
+**Default since 2026-09-28 — SAP Bridge (no copy/paste, no terminal):** open the Figma file →
+click **SAP Bridge** → type the request and/or select (or drop) the reference image → **Go**. The
+plugin (`plugin/sap-bridge/`) finds the always-on bridge (`bridge/server.js`, localhost:41778,
+LaunchAgent `com.sap.v4-bridge`) by itself; headless Claude runs Route → Plan (steps 1–4 below) →
+Analyse → Execute → Check (step 6) → fix ≤ 2 rounds, logos placed by the plugin. Mode toggle
+"Figma Agent builds": the plan goes into the file mailbox, the user types `build plan` in the
+Figma Agent, the bridge checks. Contract + CLI: `bridge/README.md`, `node build/mailbox.js status`.
 
-Never build a new screen from a prompt alone in Figma, never give the Figma Agent a file path
-(it cannot read files — it invents), never copy JSON out of the terminal (use `pbcopy`).
+| Step (manual path, when the bridge is off) | Where | Command |
+|---|---|---|
+| 1. image → validated plan | Claude Code | `/plan-screen <image>` (pushes to SAP Bridge; `pbcopy` only as fallback) |
+| 2. build the plan (PLAN MODE) | Figma Agent | `build plan` (bridge) or paste + the build line |
+| 3. dump → MATCH % → logos → fix list | Claude Code | automatic with the bridge, else `/check-build <node link>` |
+| 4. apply the fix list, re-check once | Figma Agent → Claude Code | `apply fixes` (bridge), else paste + `/check-build` |
+| small edits later | SAP Bridge or Figma Agent | "make the Save button primary" → ACT (one short call) |
+
+Never build a new screen from a prompt alone in the Figma Agent, never give it a file path
+(it cannot read files — it invents), never copy JSON out of the terminal (bridge, else `pbcopy`).
 
 ## The workflow in detail (what `/plan-screen` and `/check-build` run)
 

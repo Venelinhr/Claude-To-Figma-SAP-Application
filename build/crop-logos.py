@@ -22,6 +22,7 @@ os.makedirs(out_dir, exist_ok=True)
 k = img.width / plan['frame']['w'] if plan.get('frame', {}).get('w') else 1.0   # frame px → image px
 slug = lambda s: re.sub(r'[^A-Za-z0-9]+', '-', str(s or '')).strip('-').lower() or 'x'
 n = 0
+index = []   # logos/index.json: file → plan element, so the SAP Bridge plugin fills the right frame
 for r in plan.get('rows', []):
     if r.get('kind') != 'logo' or not r.get('crop'):
         continue
@@ -33,5 +34,7 @@ for r in plan.get('rows', []):
     n += 1
     f = os.path.join(out_dir, f'{n:02d}-{slug(r.get("group"))}-{slug(r.get("element"))}.png')
     img.crop(box).save(f)
+    index.append({'file': os.path.basename(f), 'element': r.get('element'), 'group': r.get('group', '')})
     print(f'▸ {f}  {box[2] - box[0]}×{box[3] - box[1]}  ({r.get("group", "")} · {r.get("element")})')
+json.dump(index, open(os.path.join(out_dir, 'index.json'), 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
 print(f'{n} logo(s) cropped' + ('' if n else ' — no logo rows with a crop in the plan'))

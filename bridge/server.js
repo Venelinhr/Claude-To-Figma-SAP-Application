@@ -28,17 +28,17 @@
 'use strict';
 
 const http = require('node:http');
-const { spawn, execFileSync } = require('node:child_process');
+const { spawn, execFile, execFileSync } = require('node:child_process');
 const crypto = require('node:crypto');
 const fs = require('node:fs');
 const path = require('node:path');
 
 // ── Config ───────────────────────────────────────────────────────────────────
 const PROJ = path.resolve(__dirname, '..');               // the project dir (cwd for claude)
-const PORT = Number(process.env.SAP_BRIDGE_PORT || 41777); // must match manifest allowedDomains
+const PORT = Number(process.env.SAP_BRIDGE_PORT || 41778); // v4 SAP Bridge (plugin/sap-bridge/manifest.json); the old SAP Agent v2 bridge keeps 41777
 const HOST = '127.0.0.1';                                  // loopback ONLY — never 0.0.0.0
 const TURN1_SENTINEL = path.join(PROJ, '.claude', '.agent-turn1');
-const TOKEN_FILE = path.join(PROJ, '.claude', '.bridge-token');
+const TOKEN_FILE = process.env.SAP_BRIDGE_TOKEN_FILE || path.join(PROJ, '.claude', '.bridge-token');
 function loadOrCreateToken() {
   try {
     const t = fs.readFileSync(TOKEN_FILE, 'utf8').trim();
@@ -84,7 +84,7 @@ function scheduleEviction(run) {
     for (const res of run.sseClients) { try { res.end(); } catch (_) {} }
     run.sseClients.clear();
     runs.delete(run.id);
-  }, RUN_TTL_AFTER_DONE_MS);
+  }, run.ttl || RUN_TTL_AFTER_DONE_MS);
   if (run._evictTimer.unref) run._evictTimer.unref();
 }
 
@@ -126,6 +126,7 @@ function emit(run, type, data) {
   }
   // Terminal phases → schedule cleanup so the run + its buffers are released.
   if (type === 'done' || type === 'error') scheduleEviction(run);
+  if (run.kind === 'job') touchJob(run);
 }
 
 // ── Claude child lifecycle ─────────────────────────────────────────────────────
@@ -214,7 +215,8 @@ function onChildStdout(run, buf) {
     if (!line) continue;
     let msg;
     try { msg = JSON.parse(line); } catch (_) { continue; }
-    handleChildMessage(run, msg);
+    if (run.kind === 'job') handleJobMessage(run, msg);
+    else handleChildMessage(run, msg);
   }
 }
 
@@ -300,6 +302,7 @@ function fail(run, message) {
   if (run.phase === 'done' || run.phase === 'error') return;
   run.phase = 'error';
   try { fs.rmSync(TURN1_SENTINEL, { force: true }); } catch (_) {}
+  if (run.kind === 'job') { run.result = { jobId: run.id, pass: false, error: message }; writeResult(run); }
   emit(run, 'error', { message });
   endChild(run);
   clearTimeout(run.timer);
@@ -372,12 +375,586 @@ function reqToken(req, url) {
   return req.headers['x-bridge-token'] || url.searchParams.get('token') || '';
 }
 
-function readBody(req) {
+function readBody(req, limit = 1e6) {
   return new Promise((resolve) => {
     let b = '';
-    req.on('data', (c) => { b += c; if (b.length > 1e6) req.destroy(); });
-    req.on('end', () => { try { resolve(JSON.parse(b || '{}')); } catch (_) { resolve({}); } });
+    let over = false;
+    req.on('data', (c) => {
+      if (over) return;
+      b += c;
+      if (b.length > limit) { over = true; resolve({ __tooBig: true }); req.destroy(); }
+    });
+    req.on('end', () => { if (over) return; try { resolve(JSON.parse(b || '{}')); } catch (_) { resolve({}); } });
   });
+}
+
+// ── v4: SAP Bridge — plugin ⇄ headless Claude pipeline (contract: bridge/README.md) ──
+const os = require('node:os');
+const CFG = Object.assign({ model: 'opus', maxFixRounds: 2, timeoutMin: 30, agentWaitMin: 120 },
+  (() => { try { return JSON.parse(fs.readFileSync(path.join(__dirname, 'config.json'), 'utf8')); } catch (_) { return {}; } })());
+const OUT = process.env.SAP_BRIDGE_OUT || path.join(PROJ, 'bridge-out');
+const PAIR_FILE = process.env.SAP_BRIDGE_PAIR || path.join(PROJ, '.claude', '.bridge-pair.json');
+const CLAUDE_BIN = process.env.SAP_CLAUDE_BIN || 'claude';
+const MEMORY_DIR = process.env.SAP_BRIDGE_MEMORY_DIR || path.join(os.homedir(), '.claude', 'projects', PROJ.replace(/[^A-Za-z0-9]/g, '-'), 'memory');
+const JOB_TTL_MS = 15 * 60 * 1000;
+const LOGOS_WAIT_MS = Number(process.env.SAP_BRIDGE_LOGOS_WAIT || CFG.logosWaitSec || 120) * 1000;   // the plugin needs < 1 s
+const NODE_RE = /^I?\d+[:-]\d+(;I?\d+[:-]\d+)*$/;
+const KEY_RE = /^[A-Za-z0-9]{1,128}$/;
+// Headless Claude gets an allow-list, never bypassPermissions: the request text comes from a plugin.
+const ALLOWED_TOOLS = [
+  'Read', 'Write', 'Edit', 'Glob', 'Grep',
+  'Bash(node build/*)', 'Bash(python3 build/*)', 'Bash(git branch --show-current)', 'Bash(shasum *)',
+  'Bash(mkdir -p bridge-out/*)', 'Bash(cp *)', 'Bash(ls *)', 'Bash(curl -s -o bridge-out/*)',
+  'mcp__figma__use_figma', 'mcp__figma__download_assets', 'mcp__figma__get_screenshot',
+  'mcp__figma__get_metadata', 'mcp__figma__search_design_system', 'mcp__figma__whoami',
+].join(',');
+const mbx = () => require('../build/mailbox.js');
+
+let figmaSeen = null;                          // {fileKey, fileName, lastSeen} — the plugin heartbeat
+const inbox = { events: [], nextSeq: 0, _pollWaiters: [] };
+const jobIndex = new Map();                    // jobId → summary (outlives run eviction)
+const lastJobByFile = new Map();               // fileKey → jobId
+let currentJobId = null;
+
+const sha256 = (s) => crypto.createHash('sha256').update(String(s)).digest('hex');
+const rel = (p) => path.relative(PROJ, p);
+const clean = (s, n) => String(s == null ? '' : s).replace(/[\x00-\x08\x0b-\x1f]/g, ' ').slice(0, n).trim();
+function sameStr(a, b) {
+  const x = Buffer.from(String(a)); const y = Buffer.from(String(b));
+  return x.length === y.length && crypto.timingSafeEqual(x, y);
+}
+function pairHash() {
+  try { return JSON.parse(fs.readFileSync(PAIR_FILE, 'utf8')).sha256 || null; } catch (_) { return null; }
+}
+function authOf(req, url) {
+  const t = reqToken(req, url);
+  if (!t) return null;
+  if (sameStr(t, TOKEN)) return 'cli';
+  const h = pairHash();
+  return h && sameStr(sha256(t), h) ? 'plugin' : null;
+}
+let _branch = { v: null, at: 0 };
+function gitBranch() {
+  if (Date.now() - _branch.at < 30000) return _branch.v;
+  let v = null;
+  try { v = execFileSync('git', ['-C', PROJ, 'branch', '--show-current'], { timeout: 3000 }).toString().trim(); } catch (_) {}
+  _branch = { v, at: Date.now() };
+  return v;
+}
+
+function emitInbox(type, data) {
+  inbox.events.push({ seq: inbox.nextSeq++, type, data, at: Date.now() });
+  if (inbox.events.length > 50) inbox.events.splice(0, inbox.events.length - 50);
+  const w = inbox._pollWaiters; inbox._pollWaiters = [];
+  for (const f of w) { try { f(); } catch (_) {} }
+}
+function longPoll(req, res, holder, since) {
+  const pending = () => holder.events.filter((e) => e.seq >= since);
+  const cursor = () => (holder.nextSeq != null ? holder.nextSeq : holder.events.length);
+  if (pending().length) return send(res, 200, { events: pending(), cursor: cursor() });
+  let done = false;
+  const flush = () => { if (done) return; done = true; clearTimeout(t); send(res, 200, { events: pending(), cursor: cursor() }); };
+  const t = setTimeout(() => { holder._pollWaiters = (holder._pollWaiters || []).filter((w) => w !== flush); flush(); }, 25000);
+  holder._pollWaiters = holder._pollWaiters || [];
+  holder._pollWaiters.push(flush);
+  req.on('close', () => { clearTimeout(t); done = true; });
+}
+
+function jobSummary(run) {
+  return { jobId: run.id, phase: run.phase, mode: run.mode, fileKey: run.fileKey, nodeId: run.nodeId || null,
+    stages: run.stages, result: run.result || null, at: run.createdAt };
+}
+function touchJob(run) {
+  jobIndex.set(run.id, jobSummary(run));
+  if (run.fileKey) lastJobByFile.set(run.fileKey, run.id);
+  if (jobIndex.size > 50) jobIndex.delete(jobIndex.keys().next().value);
+}
+function writeResult(run) {
+  const r = Object.assign({ phase: run.phase, stages: run.stages }, run.result || {});
+  try { fs.writeFileSync(path.join(run.jobDir, 'result.json'), JSON.stringify(r, null, 2)); } catch (_) {}
+  try {
+    fs.appendFileSync(path.join(OUT, 'runs.log'), JSON.stringify(Object.assign({ at: new Date().toISOString(),
+      jobId: run.id, mode: run.mode, text: String(run.text || '').slice(0, 120) }, run.result || {})) + '\n');
+  } catch (_) {}
+}
+function isBusy() {
+  const r = currentJobId && runs.get(currentJobId);
+  return !!(r && r.phase !== 'done' && r.phase !== 'error');
+}
+function newJob({ mode, fileKey, fileName, text, selection, source }) {
+  const run = newRun();
+  Object.assign(run, { kind: 'job', mode, fileKey, fileName, text, selection, source, stages: [], round: 0,
+    createdAt: Date.now(), ttl: JOB_TTL_MS, routeMode: 'THINK', phase: 'running' });
+  run.jobDir = path.join(OUT, run.id);
+  fs.mkdirSync(run.jobDir, { recursive: true });
+  currentJobId = run.id;
+  touchJob(run);
+  return run;
+}
+function stage(run, name, text) {
+  const st = { name, text: String(text || '').slice(0, 160) };
+  run.stages.push(st);
+  emit(run, 'stage', st);
+}
+function fillTpl(name, vars) {
+  const s = fs.readFileSync(path.join(__dirname, 'prompts', name), 'utf8');
+  return s.replace(/\{\{(\w+)\}\}/g, (_, k) => (vars[k] == null ? '' : String(vars[k])));
+}
+function inJob(run, p) {
+  const abs = path.resolve(PROJ, String(p || ''));
+  return abs.startsWith(run.jobDir + path.sep) ? abs : null;
+}
+function refOf(run) {
+  const png = path.join(run.jobDir, 'ref.png');
+  return fs.existsSync(png) ? png : run.refPath || null;
+}
+
+// A clean env: a bridge started from inside a Claude Code session would otherwise pass that
+// session's short-lived login (ANTHROPIC_AUTH_TOKEN, CLAUDE_CODE_*) → "401 Invalid bearer token".
+// Headless claude then uses the user's own login, the same as under the LaunchAgent.
+const ENV_KEEP = ['HOME', 'USER', 'LOGNAME', 'PATH', 'SHELL', 'LANG', 'LC_ALL', 'LC_CTYPE', 'TMPDIR', 'TERM'];
+function childEnv(run) {
+  const env = {};
+  for (const k of ENV_KEEP) if (process.env[k]) env[k] = process.env[k];
+  for (const k of Object.keys(process.env)) if (k.startsWith('SAP_')) env[k] = process.env[k];
+  env.SAP_BRIDGE_JOB = run.id;
+  return env;
+}
+
+function spawnJob(run, prompt, resume) {
+  const args = ['-p', '--output-format', 'stream-json', '--input-format', 'stream-json', '--verbose',
+    '--model', CFG.model, '--add-dir', PROJ, '--allowedTools', ALLOWED_TOOLS];
+  if (fs.existsSync(MEMORY_DIR)) args.push('--add-dir', MEMORY_DIR);
+  if (resume && run.sessionId) args.push('--resume', run.sessionId);
+  else { run.sessionId = crypto.randomUUID(); args.push('--session-id', run.sessionId); }
+  const child = spawn(CLAUDE_BIN, args, { cwd: PROJ, stdio: ['pipe', 'pipe', 'pipe'], env: childEnv(run) });
+  Object.assign(run, { child, childExited: false, turnResultText: '', stdoutBuf: '', markerSeen: false, phase: 'running' });
+  child.stdout.on('data', (buf) => onChildStdout(run, buf));
+  child.stderr.on('data', (buf) => {
+    const s = buf.toString().trim();
+    if (s) console.log(`[job ${run.id}] stderr: ${s.slice(0, 400)}`);
+  });
+  child.on('exit', (code) => {
+    if (run.child !== child) return;              // an earlier step's process; the next step already runs
+    run.childExited = true;
+    if (!run.markerSeen && run.phase === 'running') fail(run, `Claude stopped (exit ${code}) without a result line`);
+  });
+  child.on('error', (err) => { if (run.child === child) fail(run, `cannot start Claude (${CLAUDE_BIN}): ${err.message}`); });
+  child.stdin.write(JSON.stringify({ type: 'user', message: { role: 'user', content: prompt } }) + '\n');
+  child.stdin.end();
+  clearTimeout(run.timer);
+  run.timer = setTimeout(() => fail(run, `timed out after ${CFG.timeoutMin} min`), CFG.timeoutMin * 60000);
+  touchJob(run);
+}
+
+const STAGE_RE = /^[`*>\s]*STAGE[`*]*\s+(route|plan|analy[sz]e|execute|logos|check|fix|done)\b[\s:·—-]*(.*)$/i;
+function handleJobMessage(run, msg) {
+  if (msg.type === 'assistant' && msg.message && Array.isArray(msg.message.content)) {
+    for (const b of msg.message.content) {
+      if (b.type === 'text' && b.text) { run.turnResultText += b.text + '\n'; jobText(run, b.text); }
+    }
+    return;
+  }
+  if (msg.type === 'result') {
+    const text = run.turnResultText + '\n' + (typeof msg.result === 'string' ? msg.result : '');
+    run.turnResultText = '';
+    jobTurnEnd(run, text, msg);
+  }
+}
+function jobText(run, text) {
+  let last = '';
+  for (const raw of text.split('\n')) {
+    const line = raw.trim();
+    if (!line) continue;
+    const m = line.match(STAGE_RE);
+    if (m) {
+      const name = m[1].toLowerCase().replace('analyze', 'analyse');
+      const txt = m[2].replace(/[`*]+$/, '').trim();
+      if (name === 'route') { const mm = txt.match(/\b(ACT|QUICK|THINK|SPLIT)\b/); if (mm) run.routeMode = mm[1]; }
+      stage(run, name, txt);
+      continue;
+    }
+    if (!/AGENT_[A-Z_]+/.test(line)) last = line;
+  }
+  if (last) emit(run, 'progress', { text: last.slice(0, 300) });
+}
+function marker(text, name) {
+  const re = new RegExp('^[`*>\\s]*' + name + '[`*]*\\s+(.+)$', 'gm');
+  let m; let found = null;
+  while ((m = re.exec(text))) found = m[1].trim().replace(/`+$/, '');
+  return found;
+}
+function markerJson(text, name) {
+  const s = marker(text, name);
+  if (s == null) return null;
+  try { return JSON.parse(s.slice(s.indexOf('{'), s.lastIndexOf('}') + 1)); } catch (_) { return null; }
+}
+function jobTurnEnd(run, text, msg) {
+  run.markerSeen = true;
+  clearTimeout(run.timer);
+  const res = markerJson(text, 'AGENT_RESULT');
+  if (res) return finishGated(run, res);
+  const ask = marker(text, 'AGENT_ASK');
+  if (ask) { run.phase = 'ask'; return emit(run, 'ask', { question: ask.slice(0, 600) }); }
+  const ready = markerJson(text, 'AGENT_PLAN_READY');
+  if (ready) return planReady(run, ready.plan);
+  const built = markerJson(text, 'AGENT_BUILT');
+  if (built && NODE_RE.test(String(built.nodeId || ''))) return afterBuilt(run, String(built.nodeId));
+  const fix = markerJson(text, 'AGENT_FIX');
+  if (fix) return fixReady(run, fix.fixFile);
+  run.markerSeen = false;
+  fail(run, msg && msg.is_error
+    ? `Claude error: ${String(msg.result || msg.subtype || '').slice(0, 300)}`
+    : 'Claude finished without a result line');
+}
+
+function planReady(run, planPath) {
+  if (run.mode !== 'agent') return fail(run, 'Claude stopped after the plan, but this job is "Claude builds"');
+  const abs = inJob(run, planPath);
+  if (!abs || !fs.existsSync(abs)) return fail(run, `plan file missing: ${planPath}`);
+  let plan;
+  try { plan = JSON.parse(fs.readFileSync(abs, 'utf8')); } catch (_) { return fail(run, 'the plan is not valid JSON'); }
+  run.planPath = abs;
+  sendPlanMailbox(run, plan);
+}
+function sendPlanMailbox(run, plan) {
+  let sp;
+  try { sp = mbx().splitPlan(plan, run.id); } catch (e) { return fail(run, `cannot split the plan: ${e.message}`); }
+  run.phase = 'waiting-agent';
+  const data = { jobId: run.id, kind: 'plan', job: sp.job, parts: sp.parts, fix: null };
+  stage(run, 'execute', 'waiting for the Figma Agent — type: build plan');
+  emit(run, 'mailbox', data);
+  if (run.source === 'cli') emitInbox('mailbox', data);
+  armAgentWait(run);
+}
+function armAgentWait(run) {
+  clearTimeout(run.timer);
+  run.timer = setTimeout(() => fail(run, `no build from the Figma Agent in ${CFG.agentWaitMin} min`), CFG.agentWaitMin * 60000);
+}
+function readLogos(run) {
+  const dir = path.join(run.jobDir, 'logos');
+  let idx;
+  try { idx = JSON.parse(fs.readFileSync(path.join(dir, 'index.json'), 'utf8')); } catch (_) { return []; }
+  return (Array.isArray(idx) ? idx : []).filter((e) => e && e.file && e.element).slice(0, 40).map((e) => {
+    try {
+      const file = path.basename(String(e.file));
+      return { element: String(e.element), group: String(e.group || ''), file,
+        base64: fs.readFileSync(path.join(dir, file)).toString('base64') };
+    } catch (_) { return null; }
+  }).filter(Boolean);
+}
+function afterBuilt(run, nodeId) {
+  run.nodeId = nodeId;
+  if (run.logosPlaced != null) return startCheck(run);
+  const items = readLogos(run);
+  if (!items.length) { run.logosPlaced = 0; return startCheck(run); }
+  run.phase = 'logos';
+  stage(run, 'logos', `placing ${items.length} logo(s)`);
+  emit(run, 'logos', { jobId: run.id, nodeId, items });
+  clearTimeout(run.timer);
+  run.timer = setTimeout(() => { if (run.phase === 'logos') { run.logosPlaced = 0; startCheck(run); } }, LOGOS_WAIT_MS);
+}
+function startCheck(run) {
+  run.round += 1;
+  const builder = run.mode === 'agent' ? 'figma-agent' : 'claude';
+  const ref = refOf(run);
+  const prompt = fillTpl('check.md', {
+    jobId: run.id, round: run.round, maxRounds: CFG.maxFixRounds + 1, builder, nodeId: run.nodeId,
+    fileKey: run.fileKey, logos: run.logosPlaced ? `${run.logosPlaced} placed` : 'none',
+    plan: rel(run.planPath || path.join(run.jobDir, 'plan.json')), ref: ref ? rel(ref) : 'none',
+    jobDir: rel(run.jobDir), memoryDir: MEMORY_DIR, routeMode: run.routeMode,
+  });
+  spawnJob(run, prompt, !!run.sessionId);
+}
+function fixReady(run, fixFile) {
+  if (run.mode !== 'agent') return fail(run, 'the check asked for Figma Agent fixes, but this job is "Claude builds"');
+  const abs = inJob(run, fixFile);
+  if (!abs || !fs.existsSync(abs)) return fail(run, `fix file missing: ${fixFile}`);
+  const fix = mbx().splitFix(fs.readFileSync(abs, 'utf8'), { jobId: run.id, nodeId: run.nodeId, round: run.round });
+  run.phase = 'waiting-agent';
+  stage(run, 'fix', `${fix.lines.length} fix line(s) — type: apply fixes`);
+  const data = { jobId: run.id, kind: 'fix', job: null, parts: null, fix };
+  emit(run, 'mailbox', data);
+  if (run.source === 'cli') emitInbox('mailbox', data);
+  armAgentWait(run);
+}
+// The bridge runs the gates itself: a headless run once reported "EYE 97" for a build that
+// measured EYE 9 % (384:6551). Only numbers printed by audit-plan.js / see.py count.
+function sh(cmd, args) {
+  return new Promise((resolve) => {
+    execFile(cmd, args, { cwd: PROJ, timeout: 240000, maxBuffer: 16 << 20 }, (err, stdout, stderr) =>
+      resolve({ code: err ? (typeof err.code === 'number' ? err.code : 1) : 0, out: String(stdout || '') + String(stderr || '') }));
+  });
+}
+async function measureGates(run) {
+  const plan = run.planPath || path.join(run.jobDir, 'plan.json');
+  if (!fs.existsSync(plan)) return null;
+  const tree = path.join(run.jobDir, 'tree.json');
+  const shot = path.join(run.jobDir, 'build@2x.png');
+  const geom = path.join(run.jobDir, 'geometry.json');
+  const ref = refOf(run);
+  const g = { match: null, hygiene: null, eye: null, missing: [] };
+  if (fs.existsSync(tree)) {
+    const a = await sh(process.execPath, ['build/audit-plan.js', plan, tree]);
+    fs.writeFileSync(path.join(run.jobDir, 'audit-bridge.txt'), a.out);
+    const m = a.out.match(/MATCH\s+(\d+)%/); if (m) g.match = Number(m[1]);
+    const h = a.out.match(/HYGIENE\s*\((\d+)\)/); if (h) g.hygiene = Number(h[1]);
+  } else g.missing.push('tree.json');
+  if (ref) {
+    if (fs.existsSync(shot)) {
+      const args = ['build/see.py', 'diff', ref, shot, '--out', path.join(run.jobDir, 'see-bridge')];
+      if (fs.existsSync(geom)) args.push('--tree', geom);
+      const e = await sh('python3', args);
+      const m = e.out.match(/EYE MATCH\s+(\d+)%/); if (m) g.eye = Number(m[1]); else g.missing.push('eye result');
+    } else g.missing.push('build@2x.png');
+  }
+  g.pass = !g.missing.length && g.match >= 90 && g.hygiene === 0 && (!ref || g.eye >= 95);
+  return g;
+}
+// Only a MEASURED pass may write the plan cache and the run log (a claimed pass once overwrote a gold plan).
+function recordPass(run, g) {
+  const ref = refOf(run);
+  const plan = run.planPath || path.join(run.jobDir, 'plan.json');
+  try {
+    if (ref && fs.existsSync(plan)) {
+      const sha = crypto.createHash('sha1').update(fs.readFileSync(ref)).digest('hex').slice(0, 12);
+      const dest = path.join(PROJ, 'knowledge', 'plans-cache', `${sha}.plan.json`);
+      if (!fs.existsSync(dest)) fs.copyFileSync(plan, dest);
+    }
+  } catch (_) {}
+  try {
+    const line = `- ${new Date().toISOString().slice(0, 10)} · "${String(run.text || '').slice(0, 60)}" → ${run.nodeId} · via SAP Bridge (${run.mode}) · measured MATCH ${g.match}% · EYE ${g.eye == null ? '—' : g.eye + '%'} · gate rounds ${run.gateRounds || 0} · PASS\n`;
+    fs.appendFileSync(path.join(MEMORY_DIR, 'v4-run-log.md'), line);
+  } catch (_) {}
+}
+function gatePrompt(run, g, blocks) {
+  const d = rel(run.jobDir);
+  return `[SAP v4 BRIDGE · gate round ${run.gateRounds} of ${CFG.maxFixRounds} — your result was NOT accepted; the bridge ran the gates itself]
+Job folder: \`${d}\`
+Measured: MATCH ${g.match == null ? '?' : g.match}% · hygiene ${g.hygiene == null ? '?' : g.hygiene} · EYE ${g.eye == null ? '—' : g.eye + '%'} (need MATCH ≥ 90, hygiene 0, EYE ≥ 95 with a reference). Problems: ${blocks.join('; ')}.
+Audit lines: ${d}/audit-bridge.txt · eye fix lines with node ids: ${d}/see-bridge/fix.md · look at ${d}/see-bridge/diff-sheet.png.
+Fix node \`${run.nodeId}\` with small use_figma calls (prelude runtime; auto-layout rows hug their content — primaryAxisSizingMode and counterAxisSizingMode 'AUTO' — unless the plan gives a size).
+Then write fresh files, the bridge measures from them: ${d}/tree.json (dump-tree), ${d}/build@2x.png (download_assets png scale 2, then curl -s -o), ${d}/geometry.json (dump-geometry).
+End with the AGENT_RESULT line. Never report a number that a script did not print.`;
+}
+async function finishGated(run, res) {
+  const mode = String(res.mode || run.routeMode || '').toUpperCase();
+  if (mode === 'ACT' || mode === 'QUICK' || process.env.SAP_BRIDGE_GATES === 'off') return finishJob(run, res);
+  run.phase = 'gating';
+  stage(run, 'check', 'the bridge measures MATCH and EYE itself…');
+  let g;
+  try { g = await measureGates(run); } catch (e) { g = { missing: [`gate error: ${e.message}`], pass: false }; }
+  if (!g) return finishJob(run, res);
+  const out = Object.assign({}, res, { match: g.match, eye: g.eye, pass: !!g.pass, measured: true,
+    claimed: { match: res.match == null ? null : res.match, eye: res.eye == null ? null : res.eye } });
+  const txt = `measured MATCH ${g.match == null ? '?' : g.match}% · EYE ${g.eye == null ? '—' : g.eye + '%'} · hygiene ${g.hygiene == null ? '?' : g.hygiene}`;
+  if (g.pass) { stage(run, 'done', txt); recordPass(run, g); return finishJob(run, out); }
+  const blocks = [];
+  if (g.missing.length) blocks.push(`gate files missing: ${g.missing.join(', ')}`);
+  if (g.match != null && g.match < 90) blocks.push(`MATCH ${g.match}% < 90`);
+  if (g.hygiene) blocks.push(`hygiene ${g.hygiene}`);
+  if (g.eye != null && g.eye < 95) blocks.push(`EYE ${g.eye}% < 95`);
+  stage(run, 'check', `${txt} — not passed`);
+  run.gateRounds = (run.gateRounds || 0) + 1;
+  if (run.gateRounds <= CFG.maxFixRounds) {
+    if (run.mode === 'agent') {
+      const parts = [];
+      try { parts.push(fs.readFileSync(path.join(run.jobDir, 'audit-bridge.txt'), 'utf8')); } catch (_) {}
+      try { parts.push(fs.readFileSync(path.join(run.jobDir, 'see-bridge', 'fix.md'), 'utf8')); } catch (_) {}
+      const f = path.join(run.jobDir, `fix-bridge-${run.gateRounds}.md`);
+      fs.writeFileSync(f, parts.join('\n'));
+      return fixReady(run, rel(f));
+    }
+    stage(run, 'fix', `gate round ${run.gateRounds}: ${blocks.join('; ')}`);
+    return spawnJob(run, gatePrompt(run, g, blocks), true);
+  }
+  out.blocks = blocks.concat(Array.isArray(res.blocks) ? res.blocks : []);
+  return finishJob(run, out);
+}
+
+function finishJob(run, res) {
+  const nodeId = String(res.nodeId || run.nodeId || '');
+  const url = run.fileKey && nodeId ? `https://www.figma.com/design/${run.fileKey}/?node-id=${nodeId.replace(/:/g, '-')}` : '';
+  run.result = { jobId: run.id, nodeId, fileKey: run.fileKey, url, mode: res.mode || run.routeMode,
+    match: res.match == null ? null : res.match, eye: res.eye == null ? null : res.eye,
+    WARN: Array.isArray(res.WARN) ? res.WARN : [], pass: res.pass !== false,
+    blocks: Array.isArray(res.blocks) ? res.blocks : [], measured: !!res.measured, claimed: res.claimed || null };
+  run.phase = 'done';
+  clearTimeout(run.timer);
+  writeResult(run);
+  emit(run, 'done', run.result);
+}
+
+// Returns true when it answered the request (v4 routes, /health, /pair, /poll).
+async function handleV4(req, res, url) {
+  const p = url.pathname;
+  if (p === '/health') {
+    const pendingRun = [...runs.values()].find((r) => r.phase === 'need-approval' && r.sessionId);
+    send(res, 200, { ok: true, app: 'sap-v4-bridge', version: 1, repo: path.basename(PROJ), branch: gitBranch(),
+      model: CFG.model, paired: !!pairHash(), busy: isBusy(),
+      figma: figmaSeen ? Object.assign({}, figmaSeen, { lastSeenSec: Math.round((Date.now() - figmaSeen.lastSeen) / 1000) }) : null,
+      runs: runs.size, needToken: true, pendingApproval: pendingRun ? { runId: pendingRun.id } : null });
+    return true;
+  }
+  if (p === '/pair') {
+    if (req.headers.origin !== 'null') { send(res, 403, { error: 'pairing only from the SAP Bridge Figma plugin' }); return true; }
+    if (pairHash()) { send(res, 409, { error: 'already paired' }); return true; }
+    const tok = crypto.randomBytes(32).toString('hex');
+    try { fs.mkdirSync(path.dirname(PAIR_FILE), { recursive: true, mode: 0o700 }); } catch (_) {}
+    fs.writeFileSync(PAIR_FILE, JSON.stringify({ sha256: sha256(tok), pairedAt: new Date().toISOString() }), { mode: 0o600 });
+    console.log('[pair] SAP Bridge plugin paired');
+    send(res, 200, { token: tok });
+    return true;
+  }
+  const routes = ['/poll', '/inbox', '/job', '/answer', '/job/logos-done', '/mbx/done', '/mbx/push',
+    '/job/status', '/job/last', '/job/cancel'];
+  if (!routes.includes(p)) return false;
+  const who = authOf(req, url);
+  if (!who) { send(res, 401, { error: 'bad or missing token' }); return true; }
+  const bad = (m) => { send(res, 400, { error: m }); return true; };
+  const getJob = (id) => { const r = runs.get(String(id || '')); return r && r.kind === 'job' ? r : null; };
+
+  if (p === '/poll') {
+    const run = runs.get(url.searchParams.get('runId'));
+    if (!run) { send(res, 404, { error: 'unknown runId' }); return true; }
+    longPoll(req, res, run, Number(url.searchParams.get('since') || 0));
+    return true;
+  }
+  if (p === '/inbox') {
+    figmaSeen = { fileKey: String(url.searchParams.get('fileKey') || '').replace(/[^A-Za-z0-9]/g, '').slice(0, 128),
+      fileName: clean(url.searchParams.get('fileName'), 200), lastSeen: Date.now() };
+    longPoll(req, res, inbox, Number(url.searchParams.get('since') || 0));
+    return true;
+  }
+  if (p === '/job/status') {
+    const s = jobIndex.get(url.searchParams.get('jobId') || '');
+    if (!s) { send(res, 404, { error: 'unknown job' }); return true; }
+    send(res, 200, s);
+    return true;
+  }
+  if (p === '/job/last') {
+    const id = lastJobByFile.get(url.searchParams.get('fileKey') || '');
+    send(res, 200, (id && jobIndex.get(id)) || {});
+    return true;
+  }
+  if (req.method !== 'POST') { send(res, 405, { error: 'POST only' }); return true; }
+
+  if (p === '/job') {
+    if (isBusy()) { send(res, 409, { error: 'Claude is busy with another job', jobId: currentJobId }); return true; }
+    const b = await readBody(req, 22e6);
+    if (b.__tooBig) return bad('request too big (image over 15 MB)');
+    const text = clean(b.text, 4000).replace(/>>>|<<</g, '> > >');
+    const mode = b.mode === 'agent' ? 'agent' : 'claude';
+    const fileKey = String(b.fileKey || '');
+    if (!KEY_RE.test(fileKey)) return bad('no Figma file key — the file must be saved in Figma (drafts are fine)');
+    const selection = (Array.isArray(b.selection) ? b.selection : []).slice(0, 20)
+      .filter((s) => s && NODE_RE.test(String(s.id)))
+      .map((s) => ({ id: String(s.id), name: clean(s.name, 200), type: clean(s.type, 40),
+        width: Math.round(Number(s.width) || 0), height: Math.round(Number(s.height) || 0) }));
+    let img = null;
+    if (b.image && b.image.base64) {
+      const mime = String(b.image.mime || 'image/png');
+      if (!/^image\/(png|jpeg|webp)$/.test(mime)) return bad('the image must be png, jpeg or webp');
+      const buf = Buffer.from(String(b.image.base64), 'base64');
+      if (!buf.length || buf.length > 15e6) return bad('the image is empty or bigger than 15 MB');
+      img = { buf, ext: { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp' }[mime],
+        nodeId: NODE_RE.test(String(b.image.nodeId || '')) ? String(b.image.nodeId) : null };
+    }
+    if (!text && !img) return bad('type a request or add an image');
+    const run = newJob({ mode, fileKey, fileName: clean(b.fileName, 200), text, selection, source: who });
+    let cache = 'none';
+    if (img) {
+      run.refPath = path.join(run.jobDir, `ref.${img.ext}`);
+      fs.writeFileSync(run.refPath, img.buf);
+      const sha = crypto.createHash('sha1').update(img.buf).digest('hex').slice(0, 12);
+      const cached = path.join(PROJ, 'knowledge', 'plans-cache', `${sha}.plan.json`);
+      if (fs.existsSync(cached)) {
+        fs.copyFileSync(cached, path.join(run.jobDir, 'plan.json'));
+        cache = `${rel(cached)} (sha ${sha}) — measured and passed for this exact image; already copied to ${rel(run.jobDir)}/plan.json`;
+      }
+    }
+    fs.writeFileSync(path.join(run.jobDir, 'request.json'), JSON.stringify({ text, mode, fileKey, fileName: run.fileName,
+      selection, image: img ? { file: path.basename(run.refPath), nodeId: img.nodeId, bytes: img.buf.length } : null,
+      at: new Date().toISOString() }, null, 2));
+    const prompt = fillTpl('job.md', {
+      jobId: run.id, builder: mode === 'agent' ? 'figma-agent' : 'claude',
+      text: text || '(no text — build the screen shown in the reference image)',
+      fileKey, fileName: run.fileName, selection: selection.length ? JSON.stringify(selection) : 'none',
+      ref: img ? `${rel(run.refPath)} (Figma node ${img.nodeId || '— dropped file, not on the canvas'})` : 'none',
+      cache, jobDir: rel(run.jobDir),
+    });
+    emit(run, 'progress', { text: 'Starting Claude…' });
+    spawnJob(run, prompt, false);
+    send(res, 200, { jobId: run.id });
+    return true;
+  }
+  if (p === '/mbx/push') {
+    if (who !== 'cli') { send(res, 403, { error: 'CLI only' }); return true; }
+    if (isBusy()) { send(res, 409, { error: 'Claude is busy with another job', jobId: currentJobId }); return true; }
+    const b = await readBody(req, 5e6);
+    if (b.__tooBig) return bad('plan too big');
+    const plan = b.plan;
+    if (!plan || !Array.isArray(plan.rows) || !plan.rows.length) return bad('the plan needs rows');
+    let refSrc = null;
+    if (b.ref) {
+      refSrc = path.resolve(PROJ, String(b.ref));
+      if (!refSrc.startsWith(PROJ + path.sep) || !fs.existsSync(refSrc)) return bad('ref must be an image inside the repo');
+    }
+    const fileKey = KEY_RE.test(String(b.fileKey || '')) ? String(b.fileKey) : (figmaSeen && figmaSeen.fileKey) || '';
+    const run = newJob({ mode: 'agent', fileKey, fileName: figmaSeen ? figmaSeen.fileName : '',
+      text: '(plan pushed from a Claude Code session)', selection: [], source: 'cli' });
+    run.planPath = path.join(run.jobDir, 'plan.json');
+    fs.writeFileSync(run.planPath, JSON.stringify(plan, null, 1));
+    if (refSrc) {
+      run.refPath = path.join(run.jobDir, `ref${path.extname(refSrc) || '.png'}`);
+      fs.copyFileSync(refSrc, run.refPath);
+      try {
+        execFileSync('python3', ['build/crop-logos.py', run.planPath, run.refPath, path.join(run.jobDir, 'logos')],
+          { cwd: PROJ, timeout: 30000, stdio: 'ignore' });
+      } catch (_) {}
+    }
+    stage(run, 'plan', `${(plan.sections || []).length} sections · ${plan.rows.length} rows · from Claude Code`);
+    sendPlanMailbox(run, plan);
+    send(res, 200, { jobId: run.id });
+    return true;
+  }
+
+  const b = await readBody(req);
+  const run = getJob(b.jobId);
+  if (!run) { send(res, 404, { error: 'unknown job' }); return true; }
+  if (p === '/answer') {
+    if (run.phase !== 'ask') { send(res, 409, { error: `not asking (phase ${run.phase})` }); return true; }
+    const ans = clean(b.text, 1000).replace(/>>>|<<</g, '> > >');
+    if (!ans) return bad('empty answer');
+    emit(run, 'progress', { text: 'Answer sent — continuing…' });
+    spawnJob(run, `Answer from the user (data):\n<<<\n${ans}\n>>>\nContinue the job from where you stopped. Same rules, same STAGE and AGENT_ markers.`, true);
+    send(res, 202, { ok: true });
+    return true;
+  }
+  if (p === '/job/logos-done') {
+    if (run.phase !== 'logos') { send(res, 409, { error: `not placing logos (phase ${run.phase})` }); return true; }
+    run.logosPlaced = Math.max(0, Math.round(Number(b.placed) || 0));
+    stage(run, 'logos', `${run.logosPlaced} logo(s) placed`);
+    startCheck(run);
+    send(res, 202, { ok: true });
+    return true;
+  }
+  if (p === '/mbx/done') {
+    if (run.mode !== 'agent' || run.phase !== 'waiting-agent') { send(res, 409, { error: `not waiting for the Figma Agent (phase ${run.phase})` }); return true; }
+    if (!NODE_RE.test(String(b.nodeId || ''))) return bad('bad node id');
+    const warn = (Array.isArray(b.WARN) ? b.WARN : []).slice(0, 50).map((w) => clean(w, 200));
+    stage(run, 'execute', `built by the Figma Agent · ${b.nodeId} · WARN ${warn.length}`);
+    afterBuilt(run, String(b.nodeId));
+    send(res, 202, { ok: true });
+    return true;
+  }
+  if (p === '/job/cancel') {
+    if (run.child && !run.childExited) { try { run.child.kill('SIGTERM'); } catch (_) {} }
+    fail(run, 'cancelled');
+    send(res, 202, { ok: true });
+    return true;
+  }
+  return bad('unknown route');
 }
 
 // ── Server ────────────────────────────────────────────────────────────────────
@@ -398,13 +975,13 @@ const server = http.createServer(async (req, res) => {
     return res.end();
   }
 
-  // /health — safe unauthenticated probe. NEVER returns the token or absolute path
-  // (SECURITY FIX 2026-07-21: previously returned token:TOKEN + proj:PROJ, handing the auth
-  // secret to any loopback caller / browser page performing a fetch).
-  if (url.pathname === '/health') {
-    const pendingRun = [...runs.values()].find(r => r.phase === 'need-approval' && r.sessionId);
-    return send(res, 200, { ok: true, runs: runs.size, needToken: true,
-      pendingApproval: pendingRun ? { runId: pendingRun.id } : null });
+  // v4 routes + /health (never returns a token or an absolute path) + /pair + /poll.
+  try {
+    if (await handleV4(req, res, url)) return;
+  } catch (e) {
+    console.log(`[v4] ${url.pathname} failed: ${e.message}`);
+    if (!res.headersSent) return send(res, 500, { error: 'bridge error' });
+    return;
   }
 
   // NOTE: the /token route was REMOVED (SECURITY FIX 2026-07-21). The token must be configured
@@ -523,29 +1100,6 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  // /poll — long-poll FALLBACK if SSE is blocked/buffered in the Figma sandbox.
-  if (url.pathname === '/poll') {
-    const run = runs.get(url.searchParams.get('runId'));
-    if (!run) return send(res, 404, { error: 'unknown runId' });
-    const since = Number(url.searchParams.get('since') || 0);
-    const flush = () => {
-      const events = run.events.filter((e) => e.seq >= since);
-      send(res, 200, { events, cursor: run.events.length });
-    };
-    const pending = run.events.filter((e) => e.seq >= since);
-    if (pending.length) return flush();
-    // hold up to 25s for new events
-    run._pollWaiters = run._pollWaiters || [];
-    const waiter = () => { clearTimeout(t); flush(); };
-    const t = setTimeout(() => {
-      run._pollWaiters = (run._pollWaiters || []).filter((w) => w !== waiter);
-      send(res, 200, { events: [], cursor: run.events.length });
-    }, 25000);
-    run._pollWaiters.push(waiter);
-    req.on('close', () => { clearTimeout(t); });
-    return;
-  }
-
   return send(res, 404, { error: 'not found' });
 });
 
@@ -561,18 +1115,17 @@ for (const m of FORBIDDEN_MARKERS) {
   }
 }
 
-server.listen(PORT, HOST, () => {
-  console.log('');
-  console.log('  ┌───────────────────────────────────────────────┐');
-  console.log('  │  SAP Agent v2 — bridge running                  │');
-  console.log('  └───────────────────────────────────────────────┘');
-  console.log(`  URL:    http://${HOST}:${PORT}`);
-  console.log(`  Project: ${PROJ}`);
-  console.log('');
-  console.log('  Paste this token into the v2 plugin (one time):');
-  console.log('');
-  console.log(`     ${TOKEN}`);
-  console.log('');
-  console.log('  Keep this terminal open while you use the Agent tab. Ctrl+C to stop.');
-  console.log('');
+try { fs.mkdirSync(OUT, { recursive: true }); } catch (_) {}
+server.on('error', (e) => {
+  console.error(e.code === 'EADDRINUSE'
+    ? `Port ${PORT} is in use — another bridge runs. Stop it, then: node build/mailbox.js ensure`
+    : `bridge error: ${e.message}`);
+  process.exit(1);
 });
+if (require.main === module) {
+  server.listen(PORT, HOST, () => {
+    console.log(`[${new Date().toISOString()}] SAP Bridge v4 on http://localhost:${PORT} · repo ${path.basename(PROJ)} · model ${CFG.model}`);
+    console.log('  Figma: open the SAP Bridge plugin — it connects by itself. CLI token: .claude/.bridge-token');
+  });
+}
+module.exports = { server, handleV4 };

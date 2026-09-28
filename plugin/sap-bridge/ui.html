@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SAP Bridge</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  font-size:11px;
+  color:var(--figma-color-text);
+  background:var(--figma-color-bg);
+  display:flex;
+  flex-direction:column;
+  height:100vh;
+  overflow:hidden;
+}
+
+/* ── header ── */
+.header{
+  display:flex;align-items:center;gap:6px;
+  padding:8px 10px 6px;
+  border-bottom:1px solid var(--figma-color-border);
+  flex-shrink:0;
+}
+.header-title{font-size:12px;font-weight:600;flex:1}
+.dot{width:8px;height:8px;border-radius:50%;background:#888;flex-shrink:0}
+.dot.looking{background:#888;animation:pulse 1.4s ease-in-out infinite}
+.dot.connected{background:#1bc47d}
+.dot.pair-locked,.dot.wrong-bridge{background:#f6a623}
+.dot.error-state{background:#f24822}
+@keyframes pulse{0%,100%{opacity:.4}50%{opacity:1}}
+.status-text{color:var(--figma-color-text-secondary);font-size:10px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ── scrollable body ── */
+.body{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:6px;padding:8px 10px}
+
+/* ── chips ── */
+.chips{display:flex;flex-wrap:wrap;gap:4px;min-height:0}
+.chip{
+  display:flex;align-items:center;gap:3px;
+  padding:2px 6px;border-radius:4px;
+  background:var(--figma-color-bg-secondary);
+  color:var(--figma-color-text);
+  font-size:10px;border:1px solid var(--figma-color-border);
+}
+.chip.img{border-color:var(--figma-color-bg-brand)}
+
+/* ── textarea + drop zone ── */
+.input-wrap{position:relative}
+textarea{
+  width:100%;resize:none;
+  padding:6px 8px;
+  border:1px solid var(--figma-color-border);
+  border-radius:6px;
+  background:var(--figma-color-bg);
+  color:var(--figma-color-text);
+  font-size:11px;font-family:inherit;
+  line-height:1.4;
+  outline:none;
+  min-height:60px;
+}
+textarea:focus{border-color:var(--figma-color-bg-brand)}
+textarea::placeholder{color:var(--figma-color-text-tertiary)}
+
+.drop-zone{
+  border:1px dashed var(--figma-color-border);
+  border-radius:6px;padding:8px;
+  text-align:center;
+  color:var(--figma-color-text-secondary);
+  font-size:10px;cursor:pointer;
+  transition:background .15s,border-color .15s;
+  position:relative;
+}
+.drop-zone.over,.drop-zone:hover{
+  background:var(--figma-color-bg-secondary);
+  border-color:var(--figma-color-bg-brand);
+}
+.drop-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.img-thumb{
+  display:flex;align-items:center;gap:6px;
+  padding:4px 6px;
+  background:var(--figma-color-bg-secondary);
+  border-radius:4px;border:1px solid var(--figma-color-border);
+  font-size:10px;
+}
+.img-thumb img{width:32px;height:32px;object-fit:cover;border-radius:3px}
+.img-clear{margin-left:auto;cursor:pointer;color:var(--figma-color-text-secondary);background:none;border:none;font-size:12px;line-height:1;padding:0 2px}
+
+/* ── mode toggle ── */
+.mode-row{display:flex;gap:4px}
+.mode-btn{
+  flex:1;padding:4px 6px;
+  border:1px solid var(--figma-color-border);
+  border-radius:4px;cursor:pointer;
+  background:var(--figma-color-bg);
+  color:var(--figma-color-text);
+  font-size:10px;font-family:inherit;
+  transition:background .1s,border-color .1s;
+}
+.mode-btn.active{
+  background:var(--figma-color-bg-brand);
+  color:#fff;border-color:var(--figma-color-bg-brand);
+}
+
+/* ── go / cancel ── */
+.go-btn{
+  width:100%;padding:7px;
+  border:none;border-radius:6px;cursor:pointer;
+  font-size:12px;font-weight:600;font-family:inherit;
+  background:var(--figma-color-bg-brand);
+  color:#fff;
+  transition:opacity .15s;
+}
+.go-btn:disabled{opacity:.4;cursor:not-allowed}
+.go-btn.cancel{background:#f24822}
+
+/* ── stage list ── */
+.stages{display:flex;flex-direction:column;gap:2px}
+.stage-row{display:flex;align-items:center;gap:6px;padding:3px 0}
+.stage-icon{width:14px;height:14px;flex-shrink:0;border-radius:50%;border:1px solid var(--figma-color-border);position:relative}
+.stage-icon.done{background:var(--figma-color-bg-brand);border-color:var(--figma-color-bg-brand)}
+.stage-icon.done::after{content:'';position:absolute;left:3px;top:2px;width:5px;height:4px;border-left:1.5px solid #fff;border-bottom:1.5px solid #fff;transform:rotate(-45deg)}
+.stage-icon.active{border-color:var(--figma-color-bg-brand);animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.stage-icon.error{background:#f24822;border-color:#f24822}
+.stage-name{font-size:10px;font-weight:500;flex:1}
+.stage-name.active{color:var(--figma-color-bg-brand)}
+.stage-name.done{color:var(--figma-color-text-secondary)}
+.progress-text{font-size:9px;color:var(--figma-color-text-secondary);padding-left:20px;word-break:break-all}
+
+/* ── cards ── */
+.card{
+  border:1px solid var(--figma-color-border);
+  border-radius:6px;padding:8px 10px;
+  display:flex;flex-direction:column;gap:6px;
+}
+.card.ask{border-color:#f6a623}
+.card.mailbox{border-color:var(--figma-color-bg-brand)}
+.card.result.pass{border-color:#1bc47d}
+.card.result.fail{border-color:#f24822}
+.card.error-card{border-color:#f24822;background:rgba(242,72,34,.08)}
+.card-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--figma-color-text-secondary)}
+
+.ask-question{font-size:11px;line-height:1.4}
+.ask-input{
+  width:100%;padding:5px 7px;
+  border:1px solid var(--figma-color-border);
+  border-radius:4px;
+  background:var(--figma-color-bg);
+  color:var(--figma-color-text);
+  font-size:11px;font-family:inherit;outline:none;
+}
+.ask-input:focus{border-color:var(--figma-color-bg-brand)}
+.ask-btn{
+  align-self:flex-end;
+  padding:4px 10px;border:none;border-radius:4px;
+  background:var(--figma-color-bg-brand);
+  color:#fff;font-size:11px;font-family:inherit;cursor:pointer;
+}
+
+.mbx-hint{font-size:11px;line-height:1.4}
+.mbx-hint strong{color:var(--figma-color-text)}
+
+.score-row{display:flex;gap:8px}
+.score{font-size:18px;font-weight:700}
+.score.pass{color:#1bc47d}
+.score.fail{color:#f24822}
+.score-label{font-size:9px;color:var(--figma-color-text-secondary);margin-top:2px}
+.blocks{font-size:10px;color:#f24822;margin-top:2px}
+.show-btn{
+  align-self:flex-start;
+  padding:4px 10px;border:none;border-radius:4px;
+  background:var(--figma-color-bg-secondary);
+  color:var(--figma-color-text);
+  font-size:10px;font-family:inherit;cursor:pointer;
+  border:1px solid var(--figma-color-border);
+}
+
+.error-msg{font-size:11px;color:#f24822;word-break:break-all}
+
+/* ── footer ── */
+.footer{
+  padding:4px 10px 6px;
+  border-top:1px solid var(--figma-color-border);
+  flex-shrink:0;
+  display:flex;justify-content:flex-end;
+}
+.footer-btn{
+  background:none;border:none;
+  font-size:9px;color:var(--figma-color-text-tertiary);
+  cursor:pointer;padding:0;
+}
+.footer-btn:hover{color:var(--figma-color-text)}
+</style>
+</head>
+<body>
+
+<!-- header -->
+<div class="header">
+  <span class="header-title">SAP Bridge</span>
+  <span class="status-text" id="statusText">Looking for bridge…</span>
+  <span class="dot looking" id="statusDot"></span>
+</div>
+
+<!-- scrollable body -->
+<div class="body" id="bodyEl">
+
+  <!-- selection chips -->
+  <div class="chips" id="chips" style="display:none"></div>
+
+  <!-- textarea -->
+  <div class="input-wrap">
+    <textarea id="prompt" rows="3" placeholder="What do you want?"></textarea>
+  </div>
+
+  <!-- image drop zone -->
+  <div id="dropZone" class="drop-zone">
+    Drop a reference image here, or click to browse
+    <input type="file" id="fileInput" accept="image/*">
+  </div>
+  <div id="imgThumb" class="img-thumb" style="display:none">
+    <img id="imgPreview" src="" alt="ref">
+    <span id="imgName" style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+    <button class="img-clear" id="imgClear">×</button>
+  </div>
+
+  <!-- mode toggle -->
+  <div class="mode-row">
+    <button class="mode-btn active" id="modeClaude">Claude builds</button>
+    <button class="mode-btn" id="modeAgent">Figma Agent builds</button>
+  </div>
+
+  <!-- go button -->
+  <button class="go-btn" id="goBtn" disabled>Go</button>
+
+  <!-- stages (hidden until job starts) -->
+  <div class="stages" id="stages" style="display:none" aria-live="polite"></div>
+  <div class="progress-text" id="progressText" style="display:none"></div>
+
+  <!-- ask card -->
+  <div class="card ask" id="askCard" style="display:none">
+    <div class="card-label">Question</div>
+    <div class="ask-question" id="askQuestion"></div>
+    <input class="ask-input" id="askInput" type="text" placeholder="Your answer…">
+    <button class="ask-btn" id="askBtn">Answer</button>
+  </div>
+
+  <!-- mailbox card -->
+  <div class="card mailbox" id="mbxCard" style="display:none">
+    <div class="card-label">Figma Agent</div>
+    <div class="mbx-hint" id="mbxHint"></div>
+  </div>
+
+  <!-- result card -->
+  <div class="card result" id="resultCard" style="display:none">
+    <div class="card-label">Result</div>
+    <div class="score-row">
+      <div>
+        <div class="score" id="matchScore">—</div>
+        <div class="score-label">MATCH %</div>
+      </div>
+      <div>
+        <div class="score" id="eyeScore">—</div>
+        <div class="score-label">EYE %</div>
+      </div>
+    </div>
+    <div class="blocks" id="blocksList" style="display:none"></div>
+    <button class="show-btn" id="showBtn">Show in canvas</button>
+  </div>
+
+  <!-- error card -->
+  <div class="card error-card" id="errCard" style="display:none">
+    <div class="card-label">Error</div>
+    <div class="error-msg" id="errMsg"></div>
+  </div>
+
+</div>
+
+<!-- footer -->
+<div class="footer">
+  <button class="footer-btn" id="unpairBtn">Unpair</button>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  var STAGES = ['route','plan','analyse','execute','logos','check','fix','done'];
+  var connected = false;
+  var running   = false;
+  var currentJobId = null;
+  var doneNodeId   = null;
+  var mode         = 'claude';
+  var imageBase64  = null;
+  var imageMime    = null;
+
+  // ── DOM refs ──────────────────────────────────────────────────────────────
+  var el = {
+    dot:        document.getElementById('statusDot'),
+    statusText: document.getElementById('statusText'),
+    chips:      document.getElementById('chips'),
+    prompt:     document.getElementById('prompt'),
+    dropZone:   document.getElementById('dropZone'),
+    fileInput:  document.getElementById('fileInput'),
+    imgThumb:   document.getElementById('imgThumb'),
+    imgPreview: document.getElementById('imgPreview'),
+    imgName:    document.getElementById('imgName'),
+    imgClear:   document.getElementById('imgClear'),
+    modeClaude: document.getElementById('modeClaude'),
+    modeAgent:  document.getElementById('modeAgent'),
+    goBtn:      document.getElementById('goBtn'),
+    stages:     document.getElementById('stages'),
+    progress:   document.getElementById('progressText'),
+    askCard:    document.getElementById('askCard'),
+    askQ:       document.getElementById('askQuestion'),
+    askInput:   document.getElementById('askInput'),
+    askBtn:     document.getElementById('askBtn'),
+    mbxCard:    document.getElementById('mbxCard'),
+    mbxHint:    document.getElementById('mbxHint'),
+    resultCard: document.getElementById('resultCard'),
+    matchScore: document.getElementById('matchScore'),
+    eyeScore:   document.getElementById('eyeScore'),
+    blocksList: document.getElementById('blocksList'),
+    showBtn:    document.getElementById('showBtn'),
+    errCard:    document.getElementById('errCard'),
+    errMsg:     document.getElementById('errMsg'),
+    unpairBtn:  document.getElementById('unpairBtn'),
+    body:       document.getElementById('bodyEl')
+  };
+
+  // ── status ────────────────────────────────────────────────────────────────
+  function setStatus(value, info) {
+    el.dot.className = 'dot ' + value;
+    switch (value) {
+      case 'looking':
+        el.statusText.textContent = 'Looking for Claude…';
+        connected = false; break;
+      case 'connected':
+        el.statusText.textContent = 'Connected to Claude · ' + (info && info.branch || 'v4') + (info && info.busy ? ' · busy' : '');
+        connected = true; break;
+      case 'wrong-bridge':
+        el.statusText.textContent = 'Port 41778 is used by another program';
+        connected = false; break;
+      case 'pair-locked':
+        el.statusText.textContent = 'Paired with another Figma — ask Claude: node build/mailbox.js unpair';
+        connected = false; break;
+      case 'paired':
+        el.statusText.textContent = 'Paired ✓';
+        connected = true; break;
+      default:
+        el.statusText.textContent = value;
+    }
+    updateGoBtn();
+  }
+
+  // ── go button ─────────────────────────────────────────────────────────────
+  function updateGoBtn() {
+    var hasContent = el.prompt.value.trim().length > 0 || imageBase64 !== null;
+    if (running) {
+      el.goBtn.disabled = false;
+      el.goBtn.textContent = 'Cancel';
+      el.goBtn.className = 'go-btn cancel';
+    } else {
+      el.goBtn.disabled = !connected || !hasContent;
+      el.goBtn.textContent = 'Go';
+      el.goBtn.className = 'go-btn';
+    }
+  }
+
+  el.prompt.addEventListener('input', updateGoBtn);
+  el.prompt.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      if (!el.goBtn.disabled && !running) fireGo();
+    }
+  });
+
+  // ── mode ──────────────────────────────────────────────────────────────────
+  el.modeClaude.addEventListener('click', function() {
+    mode = 'claude';
+    el.modeClaude.className = 'mode-btn active';
+    el.modeAgent.className  = 'mode-btn';
+  });
+  el.modeAgent.addEventListener('click', function() {
+    mode = 'agent';
+    el.modeAgent.className  = 'mode-btn active';
+    el.modeClaude.className = 'mode-btn';
+  });
+
+  // ── chips ─────────────────────────────────────────────────────────────────
+  function renderChips(nodes) {
+    if (!nodes || nodes.length === 0) { el.chips.style.display = 'none'; el.chips.innerHTML = ''; return; }
+    el.chips.style.display = 'flex';
+    el.chips.innerHTML = nodes.map(function(n) {
+      return '<span class="chip' + (n.isImage ? ' img' : '') + '" title="' + escape(n.name) + '">' +
+        (n.isImage ? '🖼 ' : '') + truncate(n.name, 18) + '</span>';
+    }).join('');
+  }
+  function escape(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'); }
+  function truncate(s, n) { return s.length > n ? s.slice(0, n) + '…' : s; }
+
+  // ── image drop / pick ─────────────────────────────────────────────────────
+  el.dropZone.addEventListener('dragover', function(e) { e.preventDefault(); el.dropZone.classList.add('over'); });
+  el.dropZone.addEventListener('dragleave', function() { el.dropZone.classList.remove('over'); });
+  el.dropZone.addEventListener('drop', function(e) {
+    e.preventDefault(); el.dropZone.classList.remove('over');
+    var f = e.dataTransfer && e.dataTransfer.files[0];
+    if (f && f.type.indexOf('image') === 0) readImageFile(f);
+  });
+  el.fileInput.addEventListener('change', function() {
+    var f = el.fileInput.files[0];
+    if (f) readImageFile(f);
+    el.fileInput.value = '';
+  });
+  el.imgClear.addEventListener('click', function() {
+    imageBase64 = null; imageMime = null;
+    el.imgThumb.style.display = 'none';
+    el.dropZone.style.display = '';
+    updateGoBtn();
+  });
+
+  function readImageFile(file) {
+    var reader = new FileReader();
+    reader.onload = function(ev) {
+      var dataUrl = ev.target.result;
+      // strip "data:image/...;base64," prefix
+      var idx = dataUrl.indexOf(',');
+      imageBase64 = idx >= 0 ? dataUrl.slice(idx + 1) : dataUrl;
+      imageMime   = file.type || 'image/png';
+      el.imgPreview.src = dataUrl;
+      el.imgName.textContent = file.name;
+      el.dropZone.style.display = 'none';
+      el.imgThumb.style.display = 'flex';
+      updateGoBtn();
+    };
+    reader.readAsDataURL(file);
+  }
+
+  // ── stages ────────────────────────────────────────────────────────────────
+  var stageState = {}; // name → 'pending'|'active'|'done'|'error'
+
+  function initStages() {
+    stageState = {};
+    STAGES.forEach(function(n) { stageState[n] = 'pending'; });
+    renderStages();
+    el.stages.style.display = 'flex';
+    el.progress.style.display = 'none';
+  }
+
+  function renderStages() {
+    el.stages.innerHTML = STAGES.map(function(n) {
+      var s = stageState[n] || 'pending';
+      return '<div class="stage-row">' +
+        '<div class="stage-icon ' + s + '"></div>' +
+        '<span class="stage-name ' + s + '">' + n.charAt(0).toUpperCase() + n.slice(1) + '</span>' +
+        '</div>';
+    }).join('');
+  }
+
+  function setStage(name, state) {
+    // mark preceding stages done if not already
+    var idx = STAGES.indexOf(name);
+    if (idx >= 0) {
+      STAGES.slice(0, idx).forEach(function(n) {
+        if (stageState[n] === 'pending' || stageState[n] === 'active') stageState[n] = 'done';
+      });
+      stageState[name] = state;
+    }
+    renderStages();
+  }
+
+  // ── ask ───────────────────────────────────────────────────────────────────
+  var askJobId = null;
+  el.askBtn.addEventListener('click', function() {
+    var answer = el.askInput.value.trim();
+    if (!answer) return;
+    postMsg({ type: 'answer', jobId: askJobId, text: answer });
+    el.askCard.style.display = 'none';
+    el.askInput.value = '';
+  });
+  el.askInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') el.askBtn.click();
+  });
+
+  // ── show in canvas ────────────────────────────────────────────────────────
+  el.showBtn.addEventListener('click', function() {
+    if (doneNodeId) postMsg({ type: 'show-node', nodeId: doneNodeId });
+  });
+
+  // ── unpair ────────────────────────────────────────────────────────────────
+  el.unpairBtn.addEventListener('click', function() { postMsg({ type: 'unpair' }); });
+
+  // ── go / cancel ───────────────────────────────────────────────────────────
+  el.goBtn.addEventListener('click', function() {
+    if (running) {
+      postMsg({ type: 'cancel' });
+      return;
+    }
+    fireGo();
+  });
+
+  function fireGo() {
+    if (!connected) return;
+    var text = el.prompt.value.trim();
+    if (!text && !imageBase64) return;
+    hideCards();
+    initStages();
+    postMsg({
+      type:        'go',
+      text:        text,
+      mode:        mode,
+      imageBase64: imageBase64,
+      imageMime:   imageMime,
+      imageNodeId: null
+    });
+    running = true;
+    updateGoBtn();
+  }
+
+  function hideCards() {
+    el.askCard.style.display = 'none';
+    el.mbxCard.style.display = 'none';
+    el.resultCard.style.display = 'none';
+    el.errCard.style.display = 'none';
+  }
+
+  // ── messages from code.js ─────────────────────────────────────────────────
+  window.onmessage = function(ev) {
+    var msg = ev.data && ev.data.pluginMessage;
+    if (!msg) return;
+    switch (msg.type) {
+      case 'status':
+        setStatus(msg.value, msg);
+        break;
+      case 'selection':
+        renderChips(msg.nodes);
+        break;
+      case 'job-started':
+        currentJobId = msg.jobId;
+        break;
+      case 'job-resumed':
+        currentJobId = msg.jobId;
+        running = true;
+        initStages();
+        updateGoBtn();
+        break;
+      case 'stage':
+        setStage(msg.name, 'active');
+        if (msg.text) { el.progress.style.display = ''; el.progress.textContent = msg.text; }
+        break;
+      case 'progress':
+        el.progress.style.display = '';
+        el.progress.textContent = msg.text;
+        break;
+      case 'ask':
+        askJobId = msg.jobId;
+        el.askQ.textContent = msg.question;
+        el.askCard.style.display = 'flex';
+        el.askInput.focus();
+        scroll();
+        break;
+      case 'mailbox':
+        el.mbxHint.innerHTML = msg.kind === 'plan'
+          ? 'Now type <strong>build plan</strong> in the Figma Agent.'
+          : 'Now type <strong>apply fixes</strong> in the Figma Agent.';
+        el.mbxCard.style.display = 'flex';
+        scroll();
+        break;
+      case 'logos-placed':
+        setStage('logos', 'done');
+        break;
+      case 'done':
+        running = false;
+        updateGoBtn();
+        var d = msg.data;
+        doneNodeId = d.nodeId || null;
+        setStage('done', 'done');
+        var pass = d.pass !== false;
+        el.resultCard.className = 'card result ' + (pass ? 'pass' : 'fail');
+        el.matchScore.textContent = d.match != null ? d.match + '%' : '—';
+        el.matchScore.className   = 'score ' + (pass ? 'pass' : 'fail');
+        el.eyeScore.textContent   = d.eye   != null ? d.eye   + '%' : '—';
+        el.eyeScore.className     = 'score ' + (pass ? 'pass' : 'fail');
+        if (d.blocks && d.blocks.length) {
+          el.blocksList.style.display = '';
+          el.blocksList.textContent = d.blocks.join(' · ');
+        } else {
+          el.blocksList.style.display = 'none';
+        }
+        el.resultCard.style.display = 'flex';
+        scroll();
+        break;
+      case 'cancelled':
+        running = false;
+        updateGoBtn();
+        break;
+      case 'error':
+        running = false;
+        updateGoBtn();
+        el.errMsg.textContent = msg.message;
+        el.errCard.style.display = 'flex';
+        if (stageState) {
+          STAGES.forEach(function(n) { if (stageState[n] === 'active') stageState[n] = 'error'; });
+          renderStages();
+        }
+        scroll();
+        break;
+      default:
+        break;
+    }
+  };
+
+  function postMsg(msg) {
+    parent.postMessage({ pluginMessage: msg }, '*');
+  }
+
+  function scroll() {
+    el.body.scrollTop = el.body.scrollHeight;
+  }
+
+  // ── init ──────────────────────────────────────────────────────────────────
+  postMsg({ type: 'reopen' });
+})();
+</script>
+</body>
+</html>

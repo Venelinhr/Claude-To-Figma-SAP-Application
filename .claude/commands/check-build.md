@@ -5,6 +5,9 @@ argument-hint: <Figma node link> [plan.json] [gold node link]
 
 # /check-build — v4 split flow, step 2 of 2 (the last control)
 
+**SAP Bridge runs this check by itself** after every bridge build (`bridge/prompts/check.md`, files in
+`bridge-out/<jobId>/`). Run it by hand only for a build made without the bridge.
+
 Budget: ≤ 10k tokens. Read-only in Figma except the logo upload. Input: $ARGUMENTS
 Plan = the given file, else the scratchpad `plan.json` from `/plan-screen`.
 Target = the gold node when the user named one (memory `gold-nodes`), else the reference image.

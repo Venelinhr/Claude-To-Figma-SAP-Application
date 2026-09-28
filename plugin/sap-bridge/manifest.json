@@ -1,0 +1,14 @@
+{
+  "name": "SAP Bridge",
+  "id": "sap-bridge-v4",
+  "api": "1.0.0",
+  "main": "code.js",
+  "ui": "ui.html",
+  "editorType": ["figma"],
+  "documentAccess": "dynamic-page",
+  "networkAccess": {
+    "allowedDomains": ["none"],
+    "devAllowedDomains": ["http://localhost:41778"]
+  },
+  "relaunchButtons": [{ "command": "open", "name": "SAP Bridge" }]
+}

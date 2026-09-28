@@ -90,3 +90,7 @@ build/.bin/
 see-out/
 /see-*/
 /ref.webp
+
+# SAP Bridge v4: job folders, run log, plugin pairing secret
+bridge-out/
+.claude/.bridge-pair.json

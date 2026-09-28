@@ -36,7 +36,12 @@ Reply to the user in short, plain sentences. Input: $ARGUMENTS
 6. **Validate.** `node build/route.js --plan plan.json --map --min` — fix every ✗ and re-run until
    exit 0. Answer each `?` with the SAP option you recommend.
 7. **Logos.** `python3 build/crop-logos.py plan.json ref.png logos/` — look at the crops once.
-8. **Hand off.** `pbcopy < plan.min.json`. Show the user: the ASCII + SAP map, the suggestions,
-   the questions, and this line to paste in the Figma Agent together with the clipboard:
+8. **Hand off — no paste (SAP Bridge).** `node build/mailbox.js push plan.min.json --ref ref.png` → the
+   SAP Bridge plugin (open in Figma) writes the plan into the file. Show the user the ASCII + SAP map, the
+   suggestions, the questions, and one line: *In the Figma Agent type: `build plan`*. Then run
+   `node build/mailbox.js wait <jobId>` in the background: the bridge places the logos and runs the check
+   (MATCH + EYE, fix rounds via `apply fixes`) by itself; report its result when it ends.
+   Exit 3 (bridge or plugin not reachable) → old way: `pbcopy < plan.min.json` and this line to paste:
    > Build this plan (PLAN MODE): every row, in order, exact kind/component/props/style/token/icon/text. Keep the text language. New frame next to the last one. Name layers after the plan elements. Return WARN and the node link.
-9. Stop. Do not call `use_figma`. Step 2 of 2 = `/check-build <node link>` after the build.
+9. Stop. Do not call `use_figma`. Without the bridge, step 2 of 2 = `/check-build <node link>`.
+   (Fastest path of all: the user types or drops the image in SAP Bridge and presses Go — no terminal.)

@@ -1,0 +1,6 @@
+{
+  "model": "opus",
+  "maxFixRounds": 2,
+  "timeoutMin": 45,
+  "agentWaitMin": 120
+}
