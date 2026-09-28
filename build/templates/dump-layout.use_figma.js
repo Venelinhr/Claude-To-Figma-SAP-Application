@@ -25,10 +25,13 @@ async function paintTok(paints) {
 }
 const A = { MIN: 'M', CENTER: 'C', MAX: 'X', SPACE_BETWEEN: 'S', BASELINE: 'C' };
 const r1 = x => Math.round(x * 10) / 10;
+// only props that differ from the component's default (a Table Cell has ~20 props; most are noise)
 function propsOf(inst) {
-  const out = {};
+  const out = {}, set = inst.mainComponent && inst.mainComponent.parent && inst.mainComponent.parent.type === 'COMPONENT_SET' ? inst.mainComponent.parent : null;
+  const defs = set ? set.componentPropertyDefinitions : (inst.mainComponent ? inst.mainComponent.componentPropertyDefinitions : {});
   for (const [k, v] of Object.entries(inst.componentProperties || {})) {
-    if (v.type === 'INSTANCE_SWAP') continue;                      // resolved below by name
+    if (v.type === 'INSTANCE_SWAP' || String(v.value) === 'undefined') continue;   // swaps resolved below; slots skipped
+    if (defs[k] && String(defs[k].defaultValue) === String(v.value)) continue;
     out[k.replace(/#.*$/, '')] = v.type === 'BOOLEAN' ? v.value : String(v.value);
   }
   return out;
@@ -52,17 +55,23 @@ async function walk(n, parentAL) {
     const mc = n.mainComponent, set = mc && mc.parent && mc.parent.type === 'COMPONENT_SET' ? mc.parent : null;
     const pr = propsOf(n);
     const swaps = {};
-    for (const [k, v] of Object.entries(n.componentProperties || {})) if (v.type === 'INSTANCE_SWAP') {
+    const defs = set ? set.componentPropertyDefinitions : (mc ? mc.componentPropertyDefinitions : {});
+    for (const [k, v] of Object.entries(n.componentProperties || {})) if (v.type === 'INSTANCE_SWAP' && !(defs[k] && defs[k].defaultValue === v.value)) {
       const c = await figma.getNodeByIdAsync(v.value);
       if (c) swaps[k.replace(/#.*$/, '')] = (c.parent && c.parent.type === 'COMPONENT_SET' ? c.parent.name : c.name).split('/').pop();
     }
-    if (!Object.keys(pr).length && !Object.keys(swaps).length && n.width <= 40 && n.height <= 40) {   // an icon
+    if (!set && !Object.keys(defs).length) {                         // an icon: a single component, no props
       o.k = 'ic'; o.ic = (set || mc).name.split('/').pop();
       const vec = n.findOne(v => (v.type === 'VECTOR' || v.type === 'BOOLEAN_OPERATION') && v.fills && v.fills.length);
       if (vec) { const f = await paintTok(vec.fills); if (f) o.bg = f; }
       return o;
     }
     o.k = 'i'; o.cp = (set || mc).name; o.pr = Object.assign(pr, swaps);
+    const tx = {};                                                  // text typed inside the instance (not a prop)
+    for (const ov of n.overrides || []) if (ov.overriddenFields.includes('characters')) {
+      const t = await figma.getNodeByIdAsync(ov.id); if (t && t.type === 'TEXT') tx[t.name] = t.characters;
+    }
+    if (Object.keys(tx).length) o.tx = tx;
     return o;
   }
   if (n.type === 'RECTANGLE' || n.type === 'ELLIPSE') {
@@ -96,5 +105,9 @@ async function walk(n, parentAL) {
   return o;
 }
 const tree = await walk(root, false);
-delete tree.xy;
-return JSON.stringify(tree);
+delete tree.xy; tree.sz = 'x';                                     // sizing letters are explicit (X fixed, F fill, H hug)
+const s = JSON.stringify(tree), SIZE = 18000;                      // use_figma replies are cut at 20 KB
+if (s.length <= SIZE) return s;
+figma.root.setSharedPluginData('sapfiori', 'v5dump', s);
+return { part: 0, parts: Math.ceil(s.length / SIZE), chunk: s.slice(0, SIZE),
+  next: "for part i: return figma.root.getSharedPluginData('sapfiori','v5dump').slice(i*18000,(i+1)*18000)" };

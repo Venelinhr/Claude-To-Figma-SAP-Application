@@ -83,9 +83,8 @@ if (cmd === 'c') {
     else if (lt[l]) K.t[nm] = kit.text[lt[l]].split('|')[0];
     else if (kit.vars[nm]) K.v[nm] = kit.vars[nm].split('|')[0];
     else if (vShort[l]) { K.v[nm] = kit.vars[vShort[l][0]].split('|')[0]; if (vShort[l].length > 1) miss.push(`${nm}: ${vShort[l].length} vars share this short name, used ${vShort[l][0]}`); }
-    else if (li[l]) K.i[nm] = kit.icons[li[l]];
-    else if (iShort[l]) K.i[nm] = kit.icons[iShort[l]];
-    else miss.push(`${nm}: NOT FOUND — use kit.js list / v / t / i to find the right name`); }
+    else if (!li[l] && !iShort[l]) miss.push(`${nm}: NOT FOUND — use kit.js list / v / t / i to find the right name`);
+    if (li[l] || iShort[l]) K.i[nm] = kit.icons[li[l] || iShort[l]]; }   // "settings" is a component AND an icon: Icon props need the icon
   out('const KIT = ' + JSON.stringify(K) + ';');
   if (miss.length) console.error('// ' + miss.join('\n// '));
 } else out(require('fs').readFileSync(__filename, 'utf8').split('\n').slice(1, 11).join('\n'));

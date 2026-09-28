@@ -28,9 +28,11 @@ async function _paintNode(node, o) {
   if (o.r && 'cornerRadius' in node) node.cornerRadius = o.r;
 }
 // sizing letter per axis: X fixed, H hug, F fill. Old trees wrote F for fixed too → fill only when it spans the parent's free space.
+let _EXPLICIT = false;                                  // tree.sz === 'x': F always means FILL
 function _axis(o, par, i) {
   const L = (o.s || 'XX')[i];
   if (L !== 'F') return L === 'H' ? 'HUG' : 'FIXED';
+  if (_EXPLICIT) return 'FILL';
   if (!par || !par.d) return 'FIXED';
   const p = Array.isArray(par.p) ? par.p : [par.p || 0, par.p || 0, par.p || 0, par.p || 0];
   const along = (par.d === 'H') === (i === 0), dim = i === 0 ? 'w' : 'h';
@@ -60,6 +62,12 @@ async function NODE(o, parent, par) {
     if (o.wrap) { n.textAutoResize = 'HEIGHT'; n.resize(o.w, n.height); }
   } else if (o.k === 'i') {
     n = await I(o.cp, o.pr || {}, o.n); if (!n) return null;
+    for (const [nm, ch] of Object.entries(o.tx || {})) {           // text typed inside the instance
+      const t = n.findOne(x => x.type === 'TEXT' && x.name === nm);
+      if (!t) { WARN.push(`${o.n}: no inner text "${nm}"`); continue; }
+      for (const f of t.characters.length ? t.getRangeAllFontNames(0, t.characters.length) : [t.fontName]) await figma.loadFontAsync(f);
+      t.characters = String(ch);
+    }
   } else if (o.k === 'ic') {
     n = await _icon(o.ic, _ok(o.bg) ? o.bg : null); if (!n) return null;
     n.name = o.n;
@@ -97,6 +105,7 @@ async function NODE(o, parent, par) {
   return n;
 }
 async function BUILD_TREE(tr) {
+  _EXPLICIT = tr.sz === 'x';
   const root = await NODE(tr, null, null);
   let maxX = 0; for (const k of figma.currentPage.children) if (k !== root) maxX = Math.max(maxX, k.x + k.width);
   root.x = maxX + 200; root.y = 0;

@@ -1,9 +1,20 @@
-# SAP Figma Build System v4 — read this file only
+# SAP Figma Build System v5 — read this file only
 
-**Branch must be `v4`.** If `git branch --show-current` is not `v4`, stop and tell the user
-`git checkout v4` — `main` is the old v2 system (18 min / 59k tokens per screen), `v3` is history.
-v2 is archived in `.archive-v2/`; it is not loaded. This file is the whole system. The v4 idea
-and the evidence behind it: `docs/V4-PLAN.md`.
+**Branch must be `v5`.** If `git branch --show-current` is not `v5`, stop and tell the user
+`git checkout v5` — `v4` is the previous proven system (fallback), `main` is the old v2 system
+(18 min / 59k tokens per screen), `v3` is history. Work and commit on `v5` only. Plan: `docs/V5-PLAN.md`.
+
+## v5 — the default: ask Claude in chat → Claude builds in Figma → Claude checks (`/screen`)
+`/screen <image | "text"> <figma link>`. **The bar: ≥ 95 % or it is a failure** — reference match (EYE)
+AND SAP execution (kit components + states, text styles, colour variables, layer names; MATCH + HYGIENE 0).
+How: start from a **gold layout tree** (`knowledge/gold/trees/` — a dumped approved build: frames with
+gap/padding/size, kit instances with non-default props + inner texts, styles and variables by name) →
+adapt it (image: `see.py spec` numbers; text: real business content, never kit placeholders) →
+`node build/tree.js show` (first screen: ASCII · layers · lists · lint) → `node build/render.js --lean`
+(one `use_figma`, runtime installed once per file with `--install`) → `gates.js` (image) or
+`verify-tree.js` (text). The renderer rebuilds gold 435:9066 pixel-exact (0 px diff).
+Proven 2026-09-28: 440:9214 image EYE 95 % · MATCH 100 % · hygiene 0; 445:9214 text MATCH 100 % · hygiene 0.
+The v4 flows below still work (SAP Bridge plugin, Figma Agent split) — use them only when asked.
 
 ## v4 in one line — Claude Code plans, the Figma Agent builds, Claude Code checks
 Targets: **MATCH ≥ 90%** (audit-plan score), plan session **≤ 12k tokens / ≤ 5 min**, **≤ 1 fix
