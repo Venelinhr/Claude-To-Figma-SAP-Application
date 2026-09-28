@@ -313,30 +313,52 @@ textarea::placeholder{color:var(--figma-color-text-tertiary)}
   var mode         = 'claude';
   var imageBase64  = null;
   var imageMime    = null;
-  var jobStartedAt = null;
   var jobElapsedMs = null;
   var timerHandle  = null;
 
   // ── timer ─────────────────────────────────────────────────────────────────
+  // Counts only the time Claude is actually working. Paused while we wait on
+  // the user (a question, or "type build plan in the Figma Agent") so those
+  // minutes don't get counted as build time.
+  var timerAccumMs  = 0;    // ms counted so far, across pauses
+  var timerRunSince = null; // Date.now() of the current running stretch, or null if paused/stopped
   function fmtElapsed(ms) {
     var s = Math.max(0, Math.round(ms / 1000));
     var m = Math.floor(s / 60);
     s = s % 60;
     return m + 'm ' + (s < 10 ? '0' : '') + s + 's';
   }
+  function currentElapsed() {
+    return timerAccumMs + (timerRunSince ? Date.now() - timerRunSince : 0);
+  }
   function startTimer() {
-    jobStartedAt = Date.now();
+    timerAccumMs = 0;
+    timerRunSince = Date.now();
     jobElapsedMs = null;
     el.timer.style.display = '';
     tickTimer();
+    if (timerHandle) clearInterval(timerHandle);
     timerHandle = setInterval(tickTimer, 1000);
   }
   function tickTimer() {
-    el.timer.textContent = 'Running · ' + fmtElapsed(Date.now() - jobStartedAt);
+    el.timer.textContent = (timerRunSince ? 'Running · ' : 'Waiting on you · ') + fmtElapsed(currentElapsed());
+  }
+  function pauseTimer() {
+    if (!timerRunSince) return;
+    timerAccumMs += Date.now() - timerRunSince;
+    timerRunSince = null;
+    tickTimer();
+  }
+  function resumeTimer() {
+    if (timerRunSince || !timerHandle) return; // not paused, or job already ended
+    timerRunSince = Date.now();
+    tickTimer();
   }
   function stopTimer() {
+    if (timerRunSince) timerAccumMs += Date.now() - timerRunSince;
+    timerRunSince = null;
     if (timerHandle) { clearInterval(timerHandle); timerHandle = null; }
-    if (jobStartedAt) jobElapsedMs = Date.now() - jobStartedAt;
+    jobElapsedMs = timerAccumMs;
   }
 
   // ── DOM refs ──────────────────────────────────────────────────────────────
@@ -527,6 +549,7 @@ textarea::placeholder{color:var(--figma-color-text-tertiary)}
     postMsg({ type: 'answer', jobId: askJobId, text: answer });
     el.askCard.style.display = 'none';
     el.askInput.value = '';
+    resumeTimer();
   });
   el.askInput.addEventListener('keydown', function(e) {
     if (e.key === 'Enter') el.askBtn.click();
@@ -596,6 +619,7 @@ textarea::placeholder{color:var(--figma-color-text-tertiary)}
         updateGoBtn();
         break;
       case 'stage':
+        resumeTimer(); // Claude is working again — a stage only fires while it runs
         setStage(msg.name, 'active');
         if (msg.text) { el.progress.style.display = ''; el.progress.textContent = msg.text; }
         break;
@@ -604,6 +628,7 @@ textarea::placeholder{color:var(--figma-color-text-tertiary)}
         el.progress.textContent = msg.text;
         break;
       case 'ask':
+        pauseTimer(); // waiting on the user's answer — not build time
         askJobId = msg.jobId;
         el.askQ.textContent = msg.question;
         el.askCard.style.display = 'flex';
@@ -611,6 +636,7 @@ textarea::placeholder{color:var(--figma-color-text-tertiary)}
         scroll();
         break;
       case 'mailbox':
+        pauseTimer(); // waiting for the user to type in the Figma Agent — not build time
         el.mbxHint.innerHTML = msg.kind === 'plan'
           ? 'Now type <strong>build plan</strong> in the Figma Agent.'
           : 'Now type <strong>apply fixes</strong> in the Figma Agent.';
