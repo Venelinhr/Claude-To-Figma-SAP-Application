@@ -196,7 +196,7 @@ test('spec2tree.js (from zero): measured alignment, role colours, aligned text w
   fs.writeFileSync(path.join(d, 'spec.json'), JSON.stringify({ frame: { w: 400, h: 200, fill: 'sapBaseColor' }, sections: [
     { type: 'box', box: [10, 10, 380, 180], fill: 'sapBaseColor', border: '1px sapTile_SeparatorColor', radius: 8, layout: { dir: 'column' }, children: [
       { type: 'row', box: [20, 20, 360, 40], children: [
-        { type: 'text', text: 'Title', style: 'H5/Bold', token: 'sapTextColor', box: [20, 32, 60, 16] },
+        { type: 'text', text: 'Спирки', style: 'H5/Bold', token: 'sapTextColor', box: [20, 32, 60, 16] },
         { type: 'icon', icon: 'decline', token: 'sapField_BorderColor', box: [364, 32, 16, 16] }] },
       { type: 'stack', box: [20, 80, 200, 60], children: [
         { type: 'text', text: '365,72 €', style: 'H4/Bold', token: '?', color: '#de307c', box: [120, 80, 100, 20] },
@@ -206,8 +206,8 @@ test('spec2tree.js (from zero): measured alignment, role colours, aligned text w
   const T = JSON.parse(fs.readFileSync(path.join(d, 't.json'), 'utf8')), all = [];
   (function w(o) { all.push(o); (o.c || []).forEach(w); })(T);
   const get = n => all.find(o => o.n === n);
-  assert.strictEqual(get('Card Title').bc, 'sapList_BorderColor', 'border by role, not pixel distance');
-  assert.strictEqual(get('Title row').a, 'SM', 'two far-apart children, same top edge → space-between, top');
+  assert.strictEqual(get('Card Спирки').bc, 'sapList_BorderColor', 'border by role, not pixel distance');
+  assert.strictEqual(get('Спирки row').a, 'SM', 'two far-apart children, same top edge → space-between, top');
   assert.strictEqual(get('decline').bg, 'sapContent_NonInteractiveIconColor', 'icon painted with an icon colour');
   assert.strictEqual(get('decline').w, 20, 'icon frame = drawing / 0.8');
   const p = get('365,72 €');

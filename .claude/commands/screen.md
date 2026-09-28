@@ -32,6 +32,12 @@ run 451:9507 took 219 turns / 34 min / $9.5 for one screen):
    never open `spec.json`, the gold JSON or PNGs. New screen type with no gold (few texts placed): adapt the closest
    gold by hand from the OUT lines, never from zero. Gold trees: `knowledge/gold/trees/` (dump of an approved build,
    schema in `build/templates/dump-layout.use_figma.js`). Text jobs: real business content in every field.
+   **From zero (user says "no reference / no gold", or no gold places ≥ 95 % of the texts):**
+   `node build/spec2tree.js <job>/see-ref/spec.json <job>/tree.json --icons "WxH=icon,…" [--colors "#hex=token"]` —
+   the measured layout becomes the tree (auto-layout where spacing is even, measured alignment, colour by role, kit
+   components with their measured state). Name each `ICONS with no SAP name` from what the image shows (one quick
+   decision each, real kit icons only). Then the door, as below. Always send `dump-geometry` too before `gates.js`
+   (without it every SAP icon counts as a miss: 467:9740 EYE 67 % → 76 % with it).
 2. **Fix every door `OUT` in one pass** (edit `bridge-out/<job>/tree.json`), re-run `node build/door.js … [--ref …]`
    until `✓ ALL IN`. Never show a plan with an OUT; never ask the user about an OUT (it is a defect, not a choice).
 3. **Face control done → propose.** Only the right parts are in: real kit components with allowed states, variables
