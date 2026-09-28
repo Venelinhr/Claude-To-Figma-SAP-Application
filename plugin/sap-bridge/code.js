@@ -12,6 +12,7 @@ let lastJobId = null;
 let watchJobId = null;
 let lastDoneAt = 0;
 let pollTimer = null;
+let lastRequest = { text: '', mode: '' };
 const handledMailbox = new Set();
 
 // ─── helpers ───────────────────────────────────────────────────────────────
@@ -70,6 +71,7 @@ figma.root.setRelaunchData({ open: 'Build SAP screens with Claude' });
   token = (await figma.clientStorage.getAsync('sapBridgeToken')) || null;
   lastJobId = figma.root.getPluginData('lastJobId') || null;
   sendSelection();
+  sendHistory(true);
   healthCheck();
   setInterval(healthCheck, 3000);
   inboxPoll();
@@ -185,7 +187,9 @@ async function postJob(msg) {
     return;
   }
   lastJobId = r.json.jobId;
+  lastRequest = { text: cleanText || (image ? 'Reference image' : ''), mode: msg.mode || 'claude' };
   figma.root.setPluginData('lastJobId', lastJobId);
+  figma.root.setPluginData('lastRequest', JSON.stringify(lastRequest));
   send({ type: 'job-started', jobId: lastJobId });
   startPollLoop(lastJobId);
 }
@@ -323,11 +327,26 @@ async function handleLogos(d) {
   send({ type: 'logos-placed', placed: placed });
 }
 
+// Work history lives in the file (shared plugin data would be readable by other plugins; plugin data is ours).
+const HISTORY_KEY = 'sapBridgeHistory';
+function readHistory() {
+  try { const h = JSON.parse(figma.root.getPluginData(HISTORY_KEY) || '[]'); return Array.isArray(h) ? h : []; } catch (_) { return []; }
+}
+function sendHistory(showLatest) { send({ type: 'history', items: readHistory(), showLatest: !!showLatest }); }
+
 async function handleDone(d) {
-  send({ type: 'done', data: d });
-  if (!d.nodeId) return;
-  const node = await showNode(d.nodeId);
+  const node = d.nodeId ? await showNode(d.nodeId) : null;
   if (node) { try { node.setRelaunchData({ open: 'Build SAP screens with Claude' }); } catch (_) {} }
+  let req = lastRequest;
+  try { if (!req.text) req = JSON.parse(figma.root.getPluginData('lastRequest') || '{}'); } catch (_) {}
+  const entry = { jobId: d.jobId || lastJobId, at: Date.now(), name: node ? node.name : (d.name || 'Screen'), nodeId: d.nodeId || null,
+    match: d.match == null ? null : d.match, eye: d.eye == null ? null : d.eye, pass: d.pass !== false,
+    mode: req.mode || '', request: String(req.text || '').slice(0, 140), blocks: d.blocks || [] };
+  const items = readHistory().filter(function (h) { return h.jobId !== entry.jobId; });
+  items.unshift(entry);
+  figma.root.setPluginData(HISTORY_KEY, JSON.stringify(items.slice(0, 30)));
+  send({ type: 'done', data: Object.assign({}, d, { name: entry.name, request: entry.request, mode: entry.mode, at: entry.at }) });
+  sendHistory(false);
 }
 
 // ─── reopen: follow a job that is still running for this file ──────────────
@@ -340,8 +359,6 @@ async function reopenLastJob() {
     lastJobId = j.jobId;
     send({ type: 'job-resumed', jobId: j.jobId });
     startPollLoop(j.jobId);
-  } else if (j.result) {
-    send({ type: 'done', data: j.result });
   }
 }
 

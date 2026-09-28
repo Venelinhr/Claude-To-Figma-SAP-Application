@@ -169,6 +169,16 @@ textarea::placeholder{color:var(--figma-color-text-tertiary)}
 .score.fail{color:#f24822}
 .score-label{font-size:9px;color:var(--figma-color-text-secondary);margin-top:2px}
 .blocks{font-size:10px;color:#f24822;margin-top:2px}
+.res-name{font-size:13px;font-weight:700;color:var(--figma-color-text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.res-sub{font-size:10px;color:var(--figma-color-text-secondary);line-height:1.35}
+.hist-item{display:flex;flex-direction:column;gap:2px;padding:6px 8px;border-radius:5px;border:1px solid var(--figma-color-border);border-left:3px solid #1bc47d;cursor:pointer}
+.hist-item.fail{border-left-color:#f24822}
+.hist-item:hover{background:var(--figma-color-bg-hover)}
+.hist-top{display:flex;gap:6px;align-items:baseline}
+.hist-name{flex:1;font-size:11px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hist-score{font-size:11px;font-weight:700;color:#1bc47d}
+.hist-item.fail .hist-score{color:#f24822}
+.hist-list{display:flex;flex-direction:column;gap:5px}
 .show-btn{
   align-self:flex-start;
   padding:4px 10px;border:none;border-radius:4px;
@@ -256,6 +266,8 @@ textarea::placeholder{color:var(--figma-color-text-tertiary)}
   <!-- result card -->
   <div class="card result" id="resultCard" style="display:none">
     <div class="card-label">Result</div>
+    <div class="res-name" id="resName"></div>
+    <div class="res-sub" id="resSub"></div>
     <div class="score-row">
       <div>
         <div class="score" id="matchScore">—</div>
@@ -268,6 +280,12 @@ textarea::placeholder{color:var(--figma-color-text-tertiary)}
     </div>
     <div class="blocks" id="blocksList" style="display:none"></div>
     <button class="show-btn" id="showBtn">Show in canvas</button>
+  </div>
+
+  <!-- history card: every result of this file, kept in the file -->
+  <div class="card" id="histCard" style="display:none">
+    <div class="card-label">History · this file</div>
+    <div class="hist-list" id="histList"></div>
   </div>
 
   <!-- error card -->
@@ -320,6 +338,10 @@ textarea::placeholder{color:var(--figma-color-text-tertiary)}
     mbxCard:    document.getElementById('mbxCard'),
     mbxHint:    document.getElementById('mbxHint'),
     resultCard: document.getElementById('resultCard'),
+    resName:    document.getElementById('resName'),
+    resSub:     document.getElementById('resSub'),
+    histCard:   document.getElementById('histCard'),
+    histList:   document.getElementById('histList'),
     matchScore: document.getElementById('matchScore'),
     eyeScore:   document.getElementById('eyeScore'),
     blocksList: document.getElementById('blocksList'),
@@ -577,6 +599,7 @@ textarea::placeholder{color:var(--figma-color-text-tertiary)}
         updateGoBtn();
         var d = msg.data;
         doneNodeId = d.nodeId || null;
+        fillResultText(d);
         setStage('done', 'done');
         var pass = d.pass !== false;
         el.resultCard.className = 'card result ' + (pass ? 'pass' : 'fail');
@@ -592,6 +615,10 @@ textarea::placeholder{color:var(--figma-color-text-tertiary)}
         }
         el.resultCard.style.display = 'flex';
         scroll();
+        break;
+      case 'history':
+        renderHistory(msg.items || []);
+        if (msg.showLatest && msg.items && msg.items.length && !running) showResult(msg.items[0]);
         break;
       case 'cancelled':
         running = false;
@@ -612,6 +639,51 @@ textarea::placeholder{color:var(--figma-color-text-tertiary)}
         break;
     }
   };
+
+  var MODE = { claude: 'Claude built', agent: 'Figma Agent built' };
+  function when(t) {
+    if (!t) return '';
+    var d = new Date(t);
+    return d.toLocaleDateString(undefined, { day: 'numeric', month: 'short' }) + ' ' + d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+  }
+  function pct(v) { return v != null ? v + '%' : '—'; }
+  function fillResultText(d) {
+    el.resName.textContent = d.name || 'Screen';
+    var bits = [when(d.at || Date.now()), MODE[d.mode] || '', d.request ? '“' + d.request + '”' : ''].filter(Boolean);
+    el.resSub.textContent = bits.join(' · ');
+  }
+  function showResult(h) {
+    doneNodeId = h.nodeId || null;
+    fillResultText(h);
+    var pass = h.pass !== false;
+    el.resultCard.className = 'card result ' + (pass ? 'pass' : 'fail');
+    el.matchScore.textContent = pct(h.match);
+    el.matchScore.className = 'score ' + (pass ? 'pass' : 'fail');
+    el.eyeScore.textContent = pct(h.eye);
+    el.eyeScore.className = 'score ' + (pass ? 'pass' : 'fail');
+    el.blocksList.style.display = h.blocks && h.blocks.length ? '' : 'none';
+    el.blocksList.textContent = (h.blocks || []).join(' · ');
+    el.resultCard.style.display = 'flex';
+  }
+  function renderHistory(items) {
+    el.histCard.style.display = items.length ? 'flex' : 'none';
+    el.histList.innerHTML = '';
+    items.forEach(function (h) {
+      var row = document.createElement('div');
+      row.className = 'hist-item' + (h.pass === false ? ' fail' : '');
+      var top = document.createElement('div'); top.className = 'hist-top';
+      var name = document.createElement('span'); name.className = 'hist-name'; name.textContent = h.name || 'Screen';
+      var score = document.createElement('span'); score.className = 'hist-score';
+      score.textContent = 'MATCH ' + pct(h.match) + (h.eye != null ? ' · EYE ' + pct(h.eye) : '');
+      top.appendChild(name); top.appendChild(score);
+      var sub = document.createElement('div'); sub.className = 'res-sub';
+      sub.textContent = [when(h.at), MODE[h.mode] || '', h.request ? '“' + h.request + '”' : ''].filter(Boolean).join(' · ');
+      row.appendChild(top); row.appendChild(sub);
+      row.title = 'Show in canvas';
+      row.addEventListener('click', function () { showResult(h); if (h.nodeId) postMsg({ type: 'show-node', nodeId: h.nodeId }); });
+      el.histList.appendChild(row);
+    });
+  }
 
   function postMsg(msg) {
     parent.postMessage({ pluginMessage: msg }, '*');
