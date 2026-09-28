@@ -9,6 +9,17 @@ The bar: **≥ 95 % or it is a failure** — reference match AND SAP execution (
 styles, colour variables, layer names). Reply in short plain sentences. Input: $ARGUMENTS
 Work folder: `bridge-out/<job>/` (git-ignored). Time the run from the first step (report `Done in Xm Ys`).
 
+**Budget — cheap and fast, same quality** (every turn re-sends the whole chat, so turns × chat size = the bill;
+run 451:9507 took 219 turns / 34 min / $9.5 for one screen):
+- Target ≤ 40 turns, ≤ 10 min. Start `/screen` in a fresh session (`/clear` first).
+- Never hand-write or edit build code. Send the generated `i.js` / `b.js` as they are: `cat` once, paste the
+  content into `use_figma`. A guard-hook block on it = a bug to report, not a thing to patch around.
+- Never open a PNG in the chat (`build@2x.png`, `diff-sheet.png`, `zooms.png`, screenshots) — each one is
+  re-sent on every later turn. The scripts print the result as text. To see one doubt, crop ≤ 400 px:
+  `python3 -c "import cv2;i=cv2.imread('build@2x.png');cv2.imwrite('c.png',i[y0:y1,x0:x1])"` and look at `c.png`.
+- No probe calls (one `use_figma` per property to "check"). Read the dump files instead.
+- Do not chase lines marked `SAP LOOK`, `(brand→SAP)` or `EXTRA` — they are expected.
+
 0. **Branch** — `git branch --show-current` = `v5`, else stop: `git checkout v5`.
    **Route** — `node build/route.js "<text>"`. ACT (a small edit on a selected node) → one `use_figma` with the
    router's `act`, read back, done. Otherwise continue.
@@ -20,7 +31,9 @@ Work folder: `bridge-out/<job>/` (git-ignored). Time the run from the first step
    long dumps come back in parts) → save to `knowledge/gold/trees/<name>.tree.json`.
 2. **Adapt the tree** to the request (copy to `bridge-out/<job>/tree.json`):
    - **image**: `python3 build/see.py spec ref.png --out see-ref` (+ `measure-ref.py --json`) — take the numbers
-     (frame size = the reference, boxes, gaps, paddings, sizes, text styles, states) into the tree. Colours by
+     (frame size = the reference, boxes, gaps, paddings, sizes, text styles, states) into the tree.
+     **Build at the reference size — never snap an image job to 1024/1280/1440** (the EYE check compares
+     layout 1:1; 451:9507 built at 1280 for a 1159 reference and scored 49 %). Text steps down per the spec (16→14). Colours by
      SAP role, never by photo. Cached reference? `shasum -a 1 ref.png | cut -c1-12` → `knowledge/plans-cache/`.
    - **text**: real business content in EVERY field — no "Placeholder", "Typed Text", "Description",
      "Product Identifier", default status words. Inputs → `pr["✏️ Placeholder"]`; Select value, Shell title,
@@ -31,19 +44,21 @@ Work folder: `bridge-out/<job>/` (git-ignored). Time the run from the first step
    picture, the layer tree, the lists (components + states, text styles, variables, icons, density) and the lint.
    Lint must say ✓ (unknown kit name, raw colour, unstyled text, generic layer name = fix first).
 4. **Build — one call, no hand-written code.** Once per Figma file: `node build/render.js --install --out i.js`
-   → run it (stores the runtime in the file). Then `node build/render.js tree.json --lean --out b.js` → one
-   `use_figma` with its content. Returns `{nodeId, made, WARN}` — WARN must be `[]`. `'INSTALL FIRST'` → install.
+   → send its content (stores the runtime in the file). Then `node build/render.js tree.json --lean --out b.js` →
+   one `use_figma` with its content, unchanged. Never the full (non-lean) build. Returns `{nodeId, made, WARN}` — WARN must be `[]`. `'INSTALL FIRST'` → install.
    Logos: frames named like the tree node; `crop-logos.py` + `upload_assets` onto them (image fill hash only
    works inside the same file).
 5. **Check — only numbers a script prints count.**
    - image: `download_assets` (png, scale 2) → `curl -s -A Mozilla/5.0 -o build@2x.png` (retry on a 74-byte
      reply); `dump-geometry.use_figma.js` → `geometry.json`; `dump-tree.use_figma.js` → `tree.json` (audit) →
-     `node build/gates.js <plan> bridge-out/<job> --ref ref.png` → MATCH · HYGIENE · EYE. Look at
-     `see-out/diff-sheet.png` once.
+     `node build/gates.js <plan> bridge-out/<job> --ref ref.png` → MATCH · HYGIENE · EYE. Read the printed
+     lines (and `see-out/fix.md`), not the pictures.
    - text: `dump-compact.use_figma.js` → `built.json` → `node build/verify-tree.js tree.json built.json`
-     (every layer: component, props, inner texts, style, variables + hygiene) and one `get_screenshot` by eye.
+     (every layer: component, props, inner texts, style, variables + hygiene) and one `get_screenshot`
+     (`maxDimension: 800`) by eye.
    Save big replies with a heredoc (`cat > file <<'EOF'`), not Write — it avoids a double send.
-6. **Fix** ≤ 2 rounds: small `use_figma` patches on the node AND the same change in the tree file. Re-check.
+6. **Fix** ≤ 2 rounds: ONE `use_figma` per round with all fixes on the node, AND the same change in the tree
+   file. Re-check. After round 2 stop and report what is left — no round 3.
 7. **Done** = PASS. Reply: node link · `MATCH n% · EYE n% · hygiene 0 · Done in Xm Ys`. Record:
    `node build/gates.js <plan> <jobDir> --ref ref.png --record "<request>" --node <id> --ms <ms>` (image), and
    an approved new screen → its tree into `knowledge/gold/trees/`.

@@ -126,3 +126,17 @@ test('verify-tree.js: a built layer that differs from the tree is named; an exac
   assert.match(r.out, /Status: Semantic=Error, tree Warning · inner text "Pending" missing/);
   assert.match(r.out, /"Title": font Inter/);
 });
+
+test('see.py match: text 16→14 on the same frame keeps layout ×1 (text scale is separate) — 451:9507 false MISSING', () => {
+  const py = `
+import sys; sys.path.insert(0, 'build'); import see
+def T(i, t, x, y, px): return {'id': i, 'kind': 'text', 'text': t, 'size_px': px, 'box': [x, y, 8 * len(t), px], 'parent': None}
+W = ['Stops', 'Hours', 'Baggage', 'Best', 'Cheapest', 'Fastest', 'Select']
+P = [(40, 50), (40, 450), (40, 830), (800, 40), (1200, 40), (1600, 40), (1800, 370)]
+A = [T(i, w, x, y, 16) for i, (w, (x, y)) in enumerate(zip(W, P))]
+B = [T(i, w, x, y, 14) for i, (w, (x, y)) in enumerate(zip(W, P))]
+_, M = see.match(A, B)
+print(round(M.s, 2), round(M.t, 3))`;
+  const out = execFileSync('python3', ['-c', py], { cwd: ROOT }).toString().trim();
+  assert.strictEqual(out, '1.0 0.875');
+});

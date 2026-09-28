@@ -14,6 +14,10 @@ adapt it (image: `see.py spec` numbers; text: real business content, never kit p
 (one `use_figma`, runtime installed once per file with `--install`) → `gates.js` (image) or
 `verify-tree.js` (text). The renderer rebuilds gold 435:9066 pixel-exact (0 px diff).
 Proven 2026-09-28: 440:9214 image EYE 95 % · MATCH 100 % · hygiene 0; 445:9214 text MATCH 100 % · hygiene 0.
+**Cheap + fast (same quality):** fresh session per screen · image job = build at the reference size (no 1280
+snap — that is for text jobs) · send the generated `i.js`/`b.js` unchanged, never hand-written build code ·
+never open PNGs in the chat (scripts print text) · one `use_figma` per fix round, ≤ 2 rounds. Target ≤ 40 turns,
+≤ 10 min. Why: 451:9507 = 219 turns, 34 min, $9.5 (hand-written builds hit the guard; big PNGs re-sent each turn).
 The v4 flows below still work (SAP Bridge plugin, Figma Agent split) — use them only when asked.
 
 ## v4 in one line — Claude Code plans, the Figma Agent builds, Claude Code checks

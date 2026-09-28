@@ -603,8 +603,9 @@ def ntext(t):
     return re.sub(r'^[•·.,:;\-–]+|[•·.,:;\-–]+$', '', re.sub(r'[\s|]+', '', t.translate(LAT2CYR).lower()).translate(LAT2CYR))
 
 class Map:
-    """ref position → expected build position: global scale (from text sizes) + local shift of the nearest matched texts"""
-    def __init__(self): self.s, self.A = 1.0, []
+    """ref position → expected build position: layout scale s (from anchor distances) + local shift of the nearest matched
+    texts. Text scale t (from text sizes) is separate: a brand site steps 16→14 px while its layout can grow (1159→1280)."""
+    def __init__(self): self.s, self.t, self.A = 1.0, 1.0, []
     def add(self, ea, eb): self.A.append((center(ea['box']), center(eb['box']), ea['id']))
     def __call__(self, p, skip=None):
         c = sorted(((np.linalg.norm(a - p), b - self.s * a) for a, b, i in self.A if i != skip), key=lambda t: t[0])[:4]
@@ -634,8 +635,13 @@ def match(A, B, GA=(), GB=()):
             for ea, eb in zip(xa, xb):
                 pairs.append((ea, eb, 1.0)); ua.add(ea['id']); ub.add(eb['id'])
     r = [eb['size_px'] / ea['size_px'] for ea, eb, _ in pairs if ea['size_px'] >= 10]
-    M.s = float(np.median(r)) if r else 1.0
-    if abs(M.s - 1) < 0.06: M.s = 1.0
+    M.t = float(np.median(r)) if r else 1.0
+    if abs(M.t - 1) < 0.06: M.t = 1.0
+    ca, cb = [center(ea['box']) for ea, _, _ in pairs], [center(eb['box']) for _, eb, _ in pairs]
+    d = [np.linalg.norm(cb[i] - cb[j]) / da for i in range(len(ca)) for j in range(i + 1, len(ca))
+         if (da := np.linalg.norm(ca[i] - ca[j])) > 40]
+    M.s = float(np.median(d)) if len(d) >= 3 else M.t
+    if abs(M.s - 1) < 0.03: M.s = 1.0
     for ea, eb, _ in pairs: M.add(ea, eb)
     cands = []                                      # 2. repeated and changed texts, by expected position
     for ea in TA:
@@ -645,7 +651,7 @@ def match(A, B, GA=(), GB=()):
             if eb['id'] in ub: continue
             sim = 1.0 if na[ea['id']] == nb[eb['id']] else difflib.SequenceMatcher(None, na[ea['id']], nb[eb['id']]).ratio()
             d = np.linalg.norm(pa - center(eb['box']))
-            same_size = abs(ea['size_px'] * M.s - eb['size_px']) <= 4
+            same_size = abs(ea['size_px'] * M.t - eb['size_px']) <= 4
             if (sim == 1 and d <= 140) or (sim >= 0.75 and d <= 50 and same_size): cands.append(((1 - sim) * 200 + d, ea, eb, sim))
     greedy(cands, pairs, ua, ub, M)
     for ea in TA:                                   # 2a. a text read as part of a longer line on the other screen (OCR joined two labels)
@@ -721,8 +727,8 @@ def cmp(ea, eb, sim, M, bmap):
     k = ea['kind']
     if k == 'text':
         if sim < 1: out.append(('TEXT', f'"{ea["text"]}" → "{eb["text"]}"'))
-        sa = min(SAP_SIZES, key=lambda v: abs(v - ea['size_px'] * s))
-        if not ea.get('_part') and sa != eb['size'] and abs(ea['size_px'] * s - eb['size_px']) > max(1.5, 0.12 * eb['size_px']):
+        sa = min(SAP_SIZES, key=lambda v: abs(v - ea['size_px'] * M.t))
+        if not ea.get('_part') and sa != eb['size'] and abs(ea['size_px'] * M.t - eb['size_px']) > max(1.5, 0.12 * eb['size_px']):
             out.append(('FONT SIZE', f'"{eb["text"]}" {sa}px → {eb["size"]}px'))
         if not ea.get('_part') and ea.get('wrel', ea['weight']) != eb.get('wrel', eb['weight']) and not (ea.get('wamb') or eb.get('wamb')):
             out.append(('WEIGHT', f'"{eb["text"]}" {ea.get("wrel", ea["weight"])} → {eb.get("wrel", eb["weight"])} (stroke {ea["stroke"]:.3f} → {eb["stroke"]:.3f})'))
@@ -849,12 +855,12 @@ def cmd_diff(a):
     if zooms:
         wz = max(z.shape[1] for z in zooms)
         cv2.imwrite(os.path.join(a.out, 'zooms.png'), cv2.cvtColor(np.vstack([np.pad(z, ((0, 6), (0, wz - z.shape[1]), (0, 0)), constant_values=255) for z in zooms]), cv2.COLOR_RGB2BGR))
-    json.dump({'eye_match': eye, 'scale': M.s, 'frames': [RA['frame'], RB['frame']],
+    json.dump({'eye_match': eye, 'scale': M.s, 'text_scale': M.t, 'frames': [RA['frame'], RB['frame']],
                'diffs': [{'n': n, 'kind': d['kind'], 'what': d['what'], 'ref': d['a'] and d['a'].get('box'), 'build': d['b'] and d['b'].get('box'),
                           'ref_id': d['a'] and d['a'].get('id'), 'build_id': d['b'] and d['b'].get('id')} for n, d in enumerate(diffs, 1)]},
               open(os.path.join(a.out, 'diff.json'), 'w'), ensure_ascii=False, indent=1)
     fr = '' if RA['frame'] == RB['frame'] else f" · FRAME {RA['frame'][0]}×{RA['frame'][1]} → {RB['frame'][0]}×{RB['frame'][1]}"
-    print(f"EYE MATCH {eye}%  ({total - len(bad)} of {total} reference elements look the same · scale ×{M.s:.2f}{fr})")
+    print(f"EYE MATCH {eye}%  ({total - len(bad)} of {total} reference elements look the same · layout ×{M.s:.2f} · text ×{M.t:.2f}{fr})")
     def line(n, d):
         at = f"ref {d['a']['box'][0]},{d['a']['box'][1]}" if d['a'] else ''
         bt = f"build {d['b']['box'][0]},{d['b']['box'][1]}" if d['b'] else ''
