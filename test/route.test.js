@@ -506,3 +506,20 @@ print(json.dumps([m.junk('6XZ', 'bg'), m.junk('0xx', 'bg'), m.junk('3h', 'bg'), 
   // brand pink text shown as the SAP label colour = the SAP translation; a darker grey border than sapList_BorderColor = a real mistake
   assert.deepStrictEqual(r, [true, true, false, false, 'агенцията от 37,27 €', true, true, false]);
 });
+
+test('audit-plan pairs a plan row with the layer of the same name, and True == true (403:6701 false WRONG PROP)', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'pair-'));
+  const plan = { frame: { w: 100 }, sections: [{ id: 'A' }], rows: [
+    { section: 'A', element: 'R1 Supplier', kind: 'component', component: 'Table Cell', props: { Type: 'Text', Alignment: 'Left' } },
+    { section: 'A', element: 'R1 Amount', kind: 'component', component: 'Table Cell', props: { Type: 'Currency', Alignment: 'Right' } },
+    { section: 'A', element: 'Shell Bar', kind: 'component', component: 'Shell Bar', props: { 'Shell Search': 'true' } }] };
+  const tree = [
+    { id: '1:1', type: 'INSTANCE', name: 'R1 Amount', component: 'Table Cell', props: { Type: 'Currency', Alignment: 'Right' } },
+    { id: '1:2', type: 'INSTANCE', name: 'R1 Supplier', component: 'Table Cell', props: { Type: 'Text', Alignment: 'Left' } },
+    { id: '1:3', type: 'INSTANCE', name: 'Shell Bar', component: 'Shell Bar', props: { 'Shell Search': 'True' } }];
+  fs.writeFileSync(path.join(dir, 'p.json'), JSON.stringify(plan));
+  fs.writeFileSync(path.join(dir, 't.json'), JSON.stringify(tree));
+  const out = execFileSync('node', [path.join(ROOT, 'build/audit-plan.js'), path.join(dir, 'p.json'), path.join(dir, 't.json')]).toString();
+  assert.match(out, /MATCH 100%/);
+  assert.match(out, /WRONG PROP \(0\)/);
+});

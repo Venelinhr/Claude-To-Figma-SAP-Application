@@ -21,25 +21,29 @@ const R = T.colour_roles;
 const take = test => { const i = tree.findIndex((n, j) => !used.has(j) && test(n)); if (i >= 0) used.add(i); return i < 0 ? null : tree[i]; };
 
 // components: count per component + props; the Form Factor prop is density
+// Each plan row takes its node in 3 passes: same layer name (builds name layers after the plan
+// element), then same props, then any node of the component. Taking nodes in tree order alone
+// paired "R2 Supplier" with the plan's Currency cell (403:6701: 22 false WRONG PROP lines).
 function wantComponents(items) {
-  const want = new Map();
-  for (const { component, props } of items) {
-    const k = component + JSON.stringify(props || {});
-    const w = want.get(k) || { component, props: props || {}, count: 0 }; w.count++; want.set(k, w);
-  }
+  const same = (a, b) => String(a).toLowerCase() === String(b).toLowerCase();      // True == true
+  const propsOk = (n, props) => Object.entries(props || {}).every(([p, v]) => !(p in (n.props || {})) || same(n.props[p], v));
+  const pick = test => { for (const [i, n] of tree.entries()) if (!used.has(i) && test(n)) { used.add(i); return n; } return null; };
+  const got = new Map();
+  const pass = test => items.forEach((it, k) => { if (!got.has(k)) { const n = pick(n => n.component === it.component && test(n, it)); if (n) got.set(k, n); } });
+  pass((n, it) => it.element && norm(n.name) === norm(it.element));
+  pass((n, it) => propsOk(n, it.props));
+  pass(() => true);
   let ok = 0;
-  for (const w of want.values()) {
-    let got = 0;
-    for (const [i, n] of tree.entries()) {
-      if (got >= w.count || used.has(i) || n.component !== w.component) continue;
-      used.add(i); got++;
-      let good = true;
-      for (const [p, v] of Object.entries(w.props))
-        if (p in (n.props || {}) && n.props[p] !== v) { good = false; (p === 'Form Factor' ? L.density : L.prop).push(`${w.component} "${n.name}": ${p}=${n.props[p]}, plan says ${v}`); }
-      if (good) ok++;
-    }
-    if (got < w.count) L.missing.push(`${w.count - got}× ${w.component}${Object.keys(w.props).length ? ' ' + JSON.stringify(w.props) : ''}`);
-  }
+  const missing = new Map();
+  items.forEach((it, k) => {
+    const n = got.get(k);
+    if (!n) { const key = `${it.component}${Object.keys(it.props || {}).length ? ' ' + JSON.stringify(it.props) : ''}`; missing.set(key, (missing.get(key) || 0) + 1); return; }
+    let good = true;
+    for (const [p, v] of Object.entries(it.props || {}))
+      if (p in (n.props || {}) && !same(n.props[p], v)) { good = false; (p === 'Form Factor' ? L.density : L.prop).push(`${it.component} "${n.name}": ${p}=${n.props[p]}, plan says ${v}`); }
+    if (good) ok++;
+  });
+  for (const [key, c] of missing) L.missing.push(`${c}× ${key}`);
   return ok;
 }
 
@@ -57,7 +61,7 @@ if (plan.rows) {                                   // ── element plan ──
     if (allowed.length && !allowed.includes(n.fill)) { good = false; L.colour.push(`"${r.text}": ${n.fill || 'no token'}, role ${r.role} needs ${allowed.join(' / ')}`); }
     if (good) ok++;
   }
-  ok += wantComponents(rows.filter(r => r.kind === 'component').map(r => ({ component: r.component, props: r.props })));
+  ok += wantComponents(rows.filter(r => r.kind === 'component').map(r => ({ component: r.component, props: r.props, element: r.element })));
   for (const r of rows.filter(r => r.kind === 'icon'))
     if (take(n => n.type === 'INSTANCE' && (n.component === r.icon || n.name === r.icon))) ok++;
     else L.missing.push(`icon "${r.icon}" (${r.meaning || r.element}, ${r.section})`);
