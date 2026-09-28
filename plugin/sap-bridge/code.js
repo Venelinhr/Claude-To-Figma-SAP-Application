@@ -380,7 +380,7 @@ figma.ui.onmessage = async function (msg) {
     case 'reopen': await reopenLastJob(); break;
     case 'show-node': if (msg.nodeId) await showNode(msg.nodeId); break;
     case 'unpair':
-      send({ type: 'error', message: 'To pair another Figma, ask Claude to run: node build/mailbox.js unpair' });
+      send({ type: 'error', message: 'Nothing to do: SAP Bridge pairs once and reconnects by itself. Only to connect a different Figma (another computer), ask Claude: node build/mailbox.js unpair' });
       break;
     default: break;
   }
