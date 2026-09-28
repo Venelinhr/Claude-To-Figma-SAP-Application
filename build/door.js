@@ -16,8 +16,8 @@ const cat = t => /Border|Separator/.test(t) ? 'border' : /Background|BaseColor|S
 const norm = s => String(s).toLowerCase().replace(/[\s.•·,:;|()\-–]+/g, '');
 
 function door(T, file, ref) {
-  const out = [], ask = [], all = [];
-  (function walk(o, parent) { o._p = parent; all.push(o); (o.c || []).forEach(k => walk(k, o)); })(T, null);
+  const out = [], ask = [], all = [], par = new Map();          // parents kept aside: the tree stays plain JSON
+  (function walk(o, parent) { par.set(o, parent); all.push(o); (o.c || []).forEach(k => walk(k, o)); })(T, null);
   const O = (what, msg) => out.push([what, msg]);
   // 1. every kit name (component, text style, variable, icon) exists — kit.js is the one lookup
   const k = spawnSync(process.execPath, [path.join(__dirname, 'kit.js'), 'pack', '--plan', file], { encoding: 'utf8' });
@@ -61,7 +61,7 @@ function door(T, file, ref) {
     if (!o.k && /(^|\s)(button|input|select|check ?box|radio( button)?|switch|slider|tag|chip|badge|toggle|dropdown|search field)$/i.test(o.n)
       && !(function has(x) { return (x.c || []).some(c => c.k === 'i' || has(c)); })(o))
       O('fake component', `${at} is a frame drawn like a ${o.n.split(' ').pop()} — use the real kit component (node build/kit.js list ${o.n.split(' ').pop()})`);
-    if (T.sz === 'x' && o._p && o._p.d && !o.abs && !/^[XFH]{2}$/.test(o.s || '')) O('sizing', `${at} has no sizing decision — set s (F fill · H hug · X fixed), e.g. "FH"`);
+    if (T.sz === 'x' && par.get(o) && par.get(o).d && !o.abs && !/^[XFH]{2}$/.test(o.s || '')) O('sizing', `${at} has no sizing decision — set s (F fill · H hug · X fixed), e.g. "FH"`);
   }
   if (ref) {                                                     // 5. against the reference
     const f = ref.frame;

@@ -180,3 +180,13 @@ test('door.js --ref: a build frame that is not the reference size and a referenc
   assert.doesNotMatch(r.out, /"Спирки" is not placed/);
   assert.match(r.out, /ASK {2}brand colour #de307c/);
 });
+
+test('front.js (front door in one command): text request → the right gold tree, door ✓ ALL IN, the 4-step answer, under 1 s', () => {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'front-')), t0 = Date.now();
+  const r = node(['build/front.js', 'purchase order list report, filter by supplier and status', '--job', d]);
+  assert.ok(Date.now() - t0 < 3000, 'front door must be fast');
+  assert.strictEqual(r.code, 0, r.out);
+  for (const re of [/^1 ANALYZE {2}7 key words/m, /^2 UNSURE/m, /^3 DECIDE {3}gold po-list-report-1440 — places 7\/7 request words/m, /DOOR {2}✓ ALL IN/, /^4 PROPOSE {2}node build\/tree.js plan/m])
+    assert.match(r.out, re);
+  assert.ok(fs.existsSync(path.join(d, 'tree.json')));
+});

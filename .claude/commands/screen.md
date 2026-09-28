@@ -23,34 +23,24 @@ run 451:9507 took 219 turns / 34 min / $9.5 for one screen):
 0. **Branch** — `git branch --show-current` = `v5`, else stop: `git checkout v5`.
    **Route** — `node build/route.js "<text>"`. ACT (a small edit on a selected node) → one `use_figma` with the
    router's `act`, read back, done. Otherwise continue.
-1. **Start from a gold TREE, never from zero.** `ls knowledge/gold/trees/` — pick the closest one
-   (flight-results-1000 = results list with filters and cards · po-list-report-1440 = shell + filter bar + table).
-   A gold tree is a dumped approved build: every frame (direction, gap, padding, size), every kit instance with
-   its non-default props and inner texts, text styles and colour variables by name. Schema: header of
-   `build/templates/dump-layout.use_figma.js`. New gold = an approved build → run that script (ROOT = node,
-   long dumps come back in parts) → save to `knowledge/gold/trees/<name>.tree.json`.
-2. **Adapt the tree** to the request (copy to `bridge-out/<job>/tree.json`):
-   - **image**: `python3 build/see.py spec ref.png --out see-ref` (+ `measure-ref.py --json`) — take the numbers
-     (frame size = the reference, boxes, gaps, paddings, sizes, text styles, states) into the tree.
-     **Build at the reference size — never snap an image job to 1024/1280/1440** (the EYE check compares
-     layout 1:1; 451:9507 built at 1280 for a 1159 reference and scored 49 %). Text steps down per the spec (16→14). Colours by
-     SAP role, never by photo. Cached reference? `shasum -a 1 ref.png | cut -c1-12` → `knowledge/plans-cache/`.
-   - **text**: real business content in EVERY field — no "Placeholder", "Typed Text", "Description",
-     "Product Identifier", default status words. Inputs → `pr["✏️ Placeholder"]`; Select value, Shell title,
-     Object Status label, table headers → `tx` (text typed inside the instance); ID cell → `"✏️ By Text Description"`.
-     Equal row heights (cells `s:"FF"`), cell wrappers get `bg: sapList_Background`. Trees you write use `sz:"x"`
-     (sizing letters explicit: F fill · H hug · X fixed).
-3. **FRONT DOOR — face control, before the user sees anything.** `node build/door.js bridge-out/<job>/tree.json
-   [--ref bridge-out/<job>/see-ref/spec.json]` (local, < 1 s, no Figma). Only the right parts get in: real kit
-   component, real prop names, allowed state values, no kit placeholder text or default icon on show, colour
-   variables by role (text ink · fill · border), no fake components, explicit sizing, and with a reference: the
-   reference size, every reference text placed, the icons placed. Every `OUT` = fix the tree and run the door
-   again — never show a plan with an OUT, never ask the user about an OUT. `ASK` lines (brand colour role,
-   density, icon shapes with no SAP match) go to the user in the approval message. Be quick: fix all OUT in one pass.
+1. **ANALYZE + DECIDE in one command (~1-2 s, no Figma, ~30 lines):** `node build/front.js <ref.png | "text request">
+   --job bridge-out/<job>`. It measures the reference (`see.py spec`), picks the closest **gold tree** by the reference
+   texts it already places (tie → the one the door lets in), fits it (same screen at another width → widths, gaps and
+   side paddings scale, heights follow content, checked against the measured boxes), and runs the **front door**.
+   Output: `1 ANALYZE` (measured facts) · `2 UNSURE` (assumptions it decided — low impact — and the questions that could
+   change the screen) · `3 DECIDE` (gold, fit + check, door) · `4 PROPOSE` (next command). Read only this output —
+   never open `spec.json`, the gold JSON or PNGs. New screen type with no gold (few texts placed): adapt the closest
+   gold by hand from the OUT lines, never from zero. Gold trees: `knowledge/gold/trees/` (dump of an approved build,
+   schema in `build/templates/dump-layout.use_figma.js`). Text jobs: real business content in every field.
+2. **Fix every door `OUT` in one pass** (edit `bridge-out/<job>/tree.json`), re-run `node build/door.js … [--ref …]`
+   until `✓ ALL IN`. Never show a plan with an OUT; never ask the user about an OUT (it is a defect, not a choice).
+3. **Face control done → propose.** Only the right parts are in: real kit components with allowed states, variables
+   by role, real content, explicit sizing, the reference size, every reference text and icon placed.
    **Analysis for approval — same as `main`, engine v5.** `node build/tree.js plan bridge-out/<job>/tree.json
    [--ref …/spec.json]` (its DOOR line must say ✓ ALL IN). The user does not see tool output, so write it into the reply, in this order:
-   (1) **Reading** — 2-4 lines: image size (retina → real size), what the screen is, floorplan, frame size, density,
-   which gold tree it starts from.
+   (1) **Analyze** — 2-4 lines of measured facts (from `1 ANALYZE`): size, what the screen is, floorplan, density.
+   (1b) **Uncertainty & assumptions** — facts vs decided assumptions (from `2 UNSURE`), then only the questions that
+   could change the screen (max 3). Confidence high → say so and ask nothing extra.
    (2) **Gate 0 — zones table** `Zone | Content | SAP component (kit name) | Key properties` — A, B, C… in Z order,
    one row per section, written from the tree's top-level frames + `see.py spec`. Logos = image crops (no SAP match).
    (3) **Wireframe + L1-L5 layer tree** — paste the `WIREFRAME` and `L1-L5` blocks of `tree.js plan` as printed
@@ -60,7 +50,7 @@ run 451:9507 took 219 turns / 34 min / $9.5 for one screen):
    (5) **Confidence table** `Area | Conf. | Notes` with ● (sure) / ○ (guess): layout, each key component, colours,
    icons, logos, frame size. Say plainly what is not 1:1: brand colour → SAP token, text 16→14 px, no kit match.
    Anything < 85 % is named as a question, together with the door's ASK lines (max 4, most important first).
-   End with ONE line: **"Approve and build? (yes / change: …)"**. STOP — do not build before the user says yes.
+   End with ONE line: **"Approve / Reject / Modify?"**. STOP — do not build before the user says yes.
    "change" → edit `tree.json`, re-run `tree.js plan`, show only what differs, ask again. "yes" → step 4 at once.
 4. **Build — one call, no hand-written code.** Once per Figma file: `node build/render.js --install --out i.js`
    → send its content (stores the runtime in the file). Then `node build/render.js tree.json --lean --out b.js` →

@@ -45,7 +45,7 @@ function ascii(maxDepth) {
   const g = Array.from({ length: H + 1 }, () => Array(W + 1).fill(' '));
   const X = o => [Math.round(o._x * sx), Math.round(o._y * sy), Math.min(W, Math.round((o._x + o.w) * sx)), Math.min(H, Math.round((o._y + o.h) * sy))];
   const put = (x, y, t, max, over = ' ') => { if (y < 0 || y > H) return; if (x <= W && '|+'.includes(g[y][x])) x++;
-    for (let i = 0; i < Math.min(t.length, max); i++) if (x + i <= W && (g[y][x + i] === ' ' || g[y][x + i] === over)) g[y][x + i] = t[i]; };
+    for (let i = 0; i < Math.min(t.length, max) && x + i <= W; i++) { if (g[y][x + i] !== ' ' && g[y][x + i] !== over) break; g[y][x + i] = t[i]; } };   // stop at a border
   for (const o of all.filter(o => !o.k && o._d <= maxDepth && o.w * sx >= 8 && o.h * sy >= 2)) {   // containers = boxes
     const [x0, y0, x1, y1] = X(o);
     for (let x = x0; x <= x1; x++) for (const y of [y0, y1]) g[y][x] = g[y][x] === '|' ? '+' : '-';
