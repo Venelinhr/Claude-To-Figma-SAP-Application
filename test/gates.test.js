@@ -190,3 +190,28 @@ test('front.js (front door in one command): text request → the right gold tree
     assert.match(r.out, re);
   assert.ok(fs.existsSync(path.join(d, 'tree.json')));
 });
+
+test('spec2tree.js (from zero): measured alignment, role colours, aligned text with spare width, icon frame around the drawing', () => {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 's2t-'));
+  fs.writeFileSync(path.join(d, 'spec.json'), JSON.stringify({ frame: { w: 400, h: 200, fill: 'sapBaseColor' }, sections: [
+    { type: 'box', box: [10, 10, 380, 180], fill: 'sapBaseColor', border: '1px sapTile_SeparatorColor', radius: 8, layout: { dir: 'column' }, children: [
+      { type: 'row', box: [20, 20, 360, 40], children: [
+        { type: 'text', text: 'Title', style: 'H5/Bold', token: 'sapTextColor', box: [20, 32, 60, 16] },
+        { type: 'icon', icon: 'decline', token: 'sapField_BorderColor', box: [364, 32, 16, 16] }] },
+      { type: 'stack', box: [20, 80, 200, 60], children: [
+        { type: 'text', text: '365,72 €', style: 'H4/Bold', token: '?', color: '#de307c', box: [120, 80, 100, 20] },
+        { type: 'component', component: 'Button', text: 'Избор', box: [60, 110, 160, 30] }] }] }] }));
+  const r = node(['build/spec2tree.js', path.join(d, 'spec.json'), path.join(d, 't.json')]);
+  assert.strictEqual(r.code, 0, r.out);
+  const T = JSON.parse(fs.readFileSync(path.join(d, 't.json'), 'utf8')), all = [];
+  (function w(o) { all.push(o); (o.c || []).forEach(w); })(T);
+  const get = n => all.find(o => o.n === n);
+  assert.strictEqual(get('Card Title').bc, 'sapList_BorderColor', 'border by role, not pixel distance');
+  assert.strictEqual(get('Title row').a, 'SM', 'two far-apart children, same top edge → space-between, top');
+  assert.strictEqual(get('decline').bg, 'sapContent_NonInteractiveIconColor', 'icon painted with an icon colour');
+  assert.strictEqual(get('decline').w, 20, 'icon frame = drawing / 0.8');
+  const p = get('365,72 €');
+  assert.deepStrictEqual([p.ta, p.bg, p.w, p.xy[0] + p.w], ['R', 'sapContent_Selected_ForegroundColor', 150, 200], 'right edge kept, spare width, brand → SAP accent');
+  assert.strictEqual(get('Избор').s, 'XH', 'button keeps its measured width');
+  assert.strictEqual(node(['build/door.js', path.join(d, 't.json')]).code, 0, 'the tree gets through the front door');
+});

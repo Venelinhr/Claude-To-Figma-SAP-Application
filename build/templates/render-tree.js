@@ -59,7 +59,7 @@ async function NODE(o, parent, par) {
     n = await T(o.t, o.st, _ok(o.bg) ? o.bg : null, { name: o.n });
     if (o.bg && !_ok(o.bg)) _raw(n, o.bg);
     if (o.ta) n.textAlignHorizontal = { C: 'CENTER', R: 'RIGHT', J: 'JUSTIFIED' }[o.ta];
-    if (o.wrap) { n.textAutoResize = 'HEIGHT'; n.resize(o.w, n.height); }
+    if (o.wrap || (o.ta && (o.s || '')[0] === 'X')) { n.textAutoResize = 'HEIGHT'; n.resize(o.w, n.height); }   // aligned text keeps its box
   } else if (o.k === 'i') {
     n = await I(o.cp, o.pr || {}, o.n); if (!n) return null;
     for (const [nm, ch] of Object.entries(o.tx || {})) {           // text typed inside the instance
@@ -100,6 +100,7 @@ async function NODE(o, parent, par) {
     // an SVG's box can be bigger than the vector's (a 0-high line exports 6 high) → centre it on the vector's box
     if (o.xy) { n.x = o.xy[0] + (o.k === 'v' ? (o.w - n.width) / 2 : 0); n.y = o.xy[1] + (o.k === 'v' ? (o.h - n.height) / 2 : 0); }
     _size(n, o, par);
+    if (par && !par.d && o.k === 'i' && (o.s || '')[0] === 'X' && Math.abs(n.width - o.w) > 0.5) try { n.resize(o.w, n.height); } catch (_) {}   // free-placed: fixed width too
   }
   if (o.c && !o.k) for (const ch of o.c) await NODE(ch, n, o);
   return n;
