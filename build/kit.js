@@ -13,6 +13,36 @@ const kit = require('./kit-live.js');
 // + SAP icons the kit's Iconography page lacks (suitcase, meal, share-arrow…) — see icons-extra.json
 for (const [n, v] of Object.entries(require('../knowledge/live/icons-extra.json').icons)) kit.icons['sap-icons/' + n] = v.key;
 const [cmd, q = '', n = '6'] = process.argv.slice(2);
+// every kit name a plan needs: components, text styles, icons, and the first SAP token of each colour role
+function planNames(file) {
+  const plan = JSON.parse(require('fs').readFileSync(file, 'utf8'));
+  const R = require('./router-table.json').colour_roles, s = new Set();
+  const tree = plan.tree || (plan.c && plan.n ? plan : null);
+  if (tree) {                                          // a v5 layout tree: components, styles, icons, tokens as written
+    const tok = t => { if (typeof t === 'string' && !t.startsWith('RAW')) s.add(t); };
+    (function walk(o) {
+      if (o.cp) s.add(o.cp); if (o.st) s.add(o.st); if (o.ic) s.add(o.ic);
+      if (o.pr && o.pr.Icon) s.add(o.pr.Icon);
+      tok(o.bg); tok(o.bc);
+      (o.c || []).forEach(walk);
+    })(tree);
+    return [...s];
+  }
+  const role = r => { if (R[r]) s.add(R[r][0]); };
+  role('page_background'); role('divider');
+  for (const r of plan.rows || []) {
+    if (r.selected) role('selected_border');
+    if (r.component) s.add(r.component);
+    if (r.style) s.add(r.style);
+    if (r.token) s.add(r.token);
+    if (r.icon) s.add(r.icon);
+    if (r.props && r.props.Icon) s.add(r.props.Icon);
+    for (const k of ['role', 'border_role', 'fill_role']) if (r[k]) role(r[k]);
+    if (r.kind === 'text' && !r.token && !r.role) role('body_text');
+    if (r.kind === 'icon') role('icon');
+  }
+  return [...s];
+}
 const re = new RegExp(q, 'i');
 const out = s => console.log(s);
 const hexRgb = h => { h = h.replace('#', ''); return [0, 2, 4].map(i => parseInt(h.substr(i, 2), 16)); };
@@ -43,7 +73,7 @@ if (cmd === 'c') {
 } else if (cmd === 'e') {
   for (const [name, key] of Object.entries(kit.effects)) if (re.test(name)) out(`${name}  ${key}`);
 } else if (cmd === 'pack') {
-  const names = process.argv.slice(3), K = { c: {}, v: {}, t: {}, i: {} }, miss = [];
+  const names = q === '--plan' ? planNames(n) : process.argv.slice(3), K = { c: {}, v: {}, t: {}, i: {} }, miss = [];
   const low = o => Object.fromEntries(Object.keys(o).map(k => [k.toLowerCase(), k]));
   const lc = low(kit.components), lt = low(kit.text), li = low(kit.icons);
   const vShort = {}; for (const f of Object.keys(kit.vars)) { const s = f.split('/').pop(); (vShort[s.toLowerCase()] ||= []).push(f); }

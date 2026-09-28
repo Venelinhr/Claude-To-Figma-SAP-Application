@@ -28,7 +28,7 @@
 'use strict';
 
 const http = require('node:http');
-const { spawn, execFile, execFileSync } = require('node:child_process');
+const { spawn, execFileSync } = require('node:child_process');
 const crypto = require('node:crypto');
 const fs = require('node:fs');
 const path = require('node:path');
@@ -680,55 +680,15 @@ function fixReady(run, fixFile) {
 }
 // The bridge runs the gates itself: a headless run once reported "EYE 97" for a build that
 // measured EYE 9 % (384:6551). Only numbers printed by audit-plan.js / see.py count.
-function sh(cmd, args) {
-  return new Promise((resolve) => {
-    execFile(cmd, args, { cwd: PROJ, timeout: 240000, maxBuffer: 16 << 20 }, (err, stdout, stderr) =>
-      resolve({ code: err ? (typeof err.code === 'number' ? err.code : 1) : 0, out: String(stdout || '') + String(stderr || '') }));
-  });
-}
-async function measureGates(run) {
-  const plan = run.planPath || path.join(run.jobDir, 'plan.json');
-  if (!fs.existsSync(plan)) return null;
-  const tree = path.join(run.jobDir, 'tree.json');
-  const shot = path.join(run.jobDir, 'build@2x.png');
-  const geom = path.join(run.jobDir, 'geometry.json');
-  const ref = refOf(run);
-  const g = { match: null, hygiene: null, eye: null, missing: [] };
-  if (fs.existsSync(tree)) {
-    const a = await sh(process.execPath, ['build/audit-plan.js', plan, tree]);
-    fs.writeFileSync(path.join(run.jobDir, 'audit-bridge.txt'), a.out);
-    const m = a.out.match(/MATCH\s+(\d+)%/); if (m) g.match = Number(m[1]);
-    const h = a.out.match(/HYGIENE\s*\((\d+)\)/); if (h) g.hygiene = Number(h[1]);
-  } else g.missing.push('tree.json');
-  if (ref) {
-    if (fs.existsSync(shot)) {
-      const args = ['build/see.py', 'diff', ref, shot, '--out', path.join(run.jobDir, 'see-bridge')];
-      if (fs.existsSync(geom)) args.push('--tree', geom);
-      const e = await sh('python3', args);
-      const m = e.out.match(/EYE MATCH\s+(\d+)%/); if (m) g.eye = Number(m[1]); else g.missing.push('eye result');
-    } else g.missing.push('build@2x.png');
-  }
-  g.pass = !g.missing.length && g.match >= 90 && g.hygiene === 0 && (!ref || g.eye >= 95);
-  return g;
+const gates = require('../build/gates.js');
+function measureGates(run) {
+  return gates.measure({ plan: run.planPath || path.join(run.jobDir, 'plan.json'), jobDir: run.jobDir, ref: refOf(run),
+    auditName: 'audit-bridge.txt', seeName: 'see-bridge' });
 }
 // Only a MEASURED pass may write the plan cache and the run log (a claimed pass once overwrote a gold plan).
 function recordPass(run, g) {
-  const ref = refOf(run);
-  const plan = run.planPath || path.join(run.jobDir, 'plan.json');
-  try {
-    if (ref && fs.existsSync(plan)) {
-      const sha = crypto.createHash('sha1').update(fs.readFileSync(ref)).digest('hex').slice(0, 12);
-      const dest = path.join(PROJ, 'knowledge', 'plans-cache', `${sha}.plan.json`);
-      if (!fs.existsSync(dest)) fs.copyFileSync(plan, dest);
-    }
-  } catch (_) {}
-  try {
-    const line = `- ${new Date().toISOString().slice(0, 10)} · "${String(run.text || '').slice(0, 60)}" → ${run.nodeId} · via SAP Bridge (${run.mode}) · measured MATCH ${g.match}% · EYE ${g.eye == null ? '—' : g.eye + '%'} · gate rounds ${run.gateRounds || 0} · PASS\n`;
-    const logf = path.join(MEMORY_DIR, 'v4-run-log.md');
-    const cur = fs.existsSync(logf) ? fs.readFileSync(logf, 'utf8') : '';
-    const at = cur.lastIndexOf('\nRelated:');
-    fs.writeFileSync(logf, at >= 0 ? cur.slice(0, at + 1) + line + cur.slice(at + 1) : cur + line);
-  } catch (_) {}
+  gates.record({ plan: run.planPath || path.join(run.jobDir, 'plan.json'), ref: refOf(run), g, text: run.text,
+    nodeId: run.nodeId, via: `SAP Bridge (${run.mode})`, rounds: run.gateRounds || 0, ms: run.createdAt ? Date.now() - run.createdAt : 0 });
 }
 function gatePrompt(run, g, blocks) {
   const d = rel(run.jobDir);

@@ -67,9 +67,12 @@ if (plan.rows) {                                   // ── element plan ──
     else L.missing.push(`icon "${r.icon}" (${r.meaning || r.element}, ${r.section})`);
   for (const r of rows.filter(r => r.kind === 'logo'))
     if (take(n => n.image)) ok++; else L.missing.push(`logo "${r.element}" (image crop from the reference)`);
+  // a divider is a 1-px rectangle/line (token as fill or stroke) or a frame's stroke. Rectangles first:
+  // taking frames first used up the card borders and reported 4 false "no border" lines (440:9214).
   for (const r of rows.filter(r => r.kind === 'divider')) {
     const toks = r.token ? [r.token] : R[r.role || 'divider'];
-    if (take(n => n.type !== 'TEXT' && n.type !== 'INSTANCE' && toks.includes(n.stroke))) ok++;
+    if (take(n => (n.type === 'RECTANGLE' || n.type === 'LINE') && (toks.includes(n.fill) || toks.includes(n.stroke)))
+      || take(n => n.type !== 'TEXT' && n.type !== 'INSTANCE' && toks.includes(n.stroke))) ok++;
     else L.missing.push(`divider "${r.element}" (${r.section}) — stroke ${toks[0]}`);
   }
   for (const r of rows.filter(r => r.kind === 'container')) {
