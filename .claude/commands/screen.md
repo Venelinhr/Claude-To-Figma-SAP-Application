@@ -43,6 +43,10 @@ run 451:9507 took 219 turns / 34 min / $9.5 for one screen):
 3. **First screen — show it before building:** `node build/tree.js show bridge-out/<job>/tree.json 4` → the ASCII
    picture, the layer tree, the lists (components + states, text styles, variables, icons, density) and the lint.
    Lint must say ✓ (unknown kit name, raw colour, unstyled text, generic layer name = fix first).
+   **Then PASTE it into your reply as text — the user does not see tool output.** Three blocks, in this order:
+   (1) the ASCII picture in a code block, (2) the components table: SAP component · state · count, plus text
+   styles and colour variables, (3) the layer tree to depth 2. Add one line: frame size · density · floorplan.
+   Then build straight away (no "OK?" wait) — the user can interrupt. ~1.5k tokens once, and it is text, not a picture.
 4. **Build — one call, no hand-written code.** Once per Figma file: `node build/render.js --install --out i.js`
    → send its content (stores the runtime in the file). Then `node build/render.js tree.json --lean --out b.js` →
    one `use_figma` with its content, unchanged. Never the full (non-lean) build. Returns `{nodeId, made, WARN}` — WARN must be `[]`. `'INSTALL FIRST'` → install.
