@@ -2,6 +2,8 @@
 // tree.js — the v5 layout tree, before and after the build (0 tokens, no Figma).
 //   node build/tree.js show <tree.json> [depth]   the first screen: ASCII picture · layer tree · lists (components +
 //                                                  states, text styles, colour variables, icons) · lint
+//   node build/tree.js plan <tree.json>            the same as `main` shows before an approval: wireframe · L1-L5 layers (repeated
+//                                                  rows folded) · SAP components with real kit keys + states · lists · lint
 //   node build/tree.js lint <tree.json>            exit 1 on: unknown kit name, raw colour, text without a SAP style,
 //                                                  generic layer name
 //   node build/tree.js rows <tree.json>            element-plan rows for audit-plan.js (when there is no image plan)
@@ -37,14 +39,27 @@ place(T, 0, 0);
 const all = []; (function walk(o, d) { o._d = d; all.push(o); (o.c || []).forEach(k => walk(k, d + 1)); })(T, 0);
 
 function ascii(maxDepth) {
-  const W = 110, sx = W / T.w, sy = sx / 2.2, H = Math.max(6, Math.round(T.h * sy));
+  const W = 118, sx = W / T.w, sy = sx / 2, H = Math.max(6, Math.round(T.h * sy));
   const g = Array.from({ length: H + 1 }, () => Array(W + 1).fill(' '));
-  for (const o of all.filter(o => !o.k && o._d <= maxDepth && o.w * sx >= 6 && o.h * sy >= 2)) {
-    const x0 = Math.round(o._x * sx), y0 = Math.round(o._y * sy), x1 = Math.min(W, Math.round((o._x + o.w) * sx)), y1 = Math.min(H, Math.round((o._y + o.h) * sy));
+  const X = o => [Math.round(o._x * sx), Math.round(o._y * sy), Math.min(W, Math.round((o._x + o.w) * sx)), Math.min(H, Math.round((o._y + o.h) * sy))];
+  const put = (x, y, t, max, over = ' ') => { if (y < 0 || y > H) return; if (x <= W && '|+'.includes(g[y][x])) x++;
+    for (let i = 0; i < Math.min(t.length, max); i++) if (x + i <= W && (g[y][x + i] === ' ' || g[y][x + i] === over)) g[y][x + i] = t[i]; };
+  for (const o of all.filter(o => !o.k && o._d <= maxDepth && o.w * sx >= 8 && o.h * sy >= 2)) {   // containers = boxes
+    const [x0, y0, x1, y1] = X(o);
     for (let x = x0; x <= x1; x++) for (const y of [y0, y1]) g[y][x] = g[y][x] === '|' ? '+' : '-';
     for (let y = y0; y <= y1; y++) for (const x of [x0, x1]) g[y][x] = g[y][x] === '-' ? '+' : '|';
-    const label = o.n.slice(0, Math.max(0, x1 - x0 - 2));
-    for (let i = 0; i < label.length; i++) g[y0][x0 + 1 + i] = label[i];
+    put(x0 + 1, y0, o.n, x1 - x0 - 1, '-');
+  }
+  const lab = o => o.k === 't' ? String(o.t).replace(/\s+/g, ' ')
+    : o.k === 'ic' ? '◇'
+    : o.k === 'i' ? (/Radio/.test(o.cp) ? (o.pr && /true/i.test(String(o.pr.Selected)) ? '◉ ' : '○ ') + (o.tx ? Object.values(o.tx)[0] : o.pr && o.pr['✏️ Label'] || '')
+      : /Check Box/.test(o.cp) ? '☐ ' + (o.pr && o.pr['✏️ Label'] || '')
+      : '[' + ((o.tx && Object.values(o.tx)[0]) || (o.pr && (Object.entries(o.pr).find(([k]) => k.startsWith('✏️')) || [])[1]) || (o.pr && o.pr.Icon) || o.cp) + ']')
+    : o.k === 'r' && o.w * sx >= 8 ? '─'.repeat(Math.round(o.w * sx)) : '';
+  for (const o of all.filter(o => o.k)) {                                          // leaves = labels in place
+    const [x0, , x1] = X(o), t = lab(o), y = Math.round((o._y + o.h / 2) * sy);
+    const w = Math.max(4, x1 - x0), box = t && t[0] === '[';                      // a [component] never runs into its neighbour
+    if (t) put(x0, y, box && t.length > w ? t.slice(0, w - 2) + '…]' : t, box ? w + 1 : t.length);
   }
   return g.map(r => r.join('').replace(/\s+$/, '')).join('\n');
 }
@@ -98,7 +113,46 @@ function rows() {
   return { frame: { w: T.w, h: T.h }, sections: [{ id: 'A', name: T.n }], rows: out };
 }
 if (cmd === 'rows') { process.stdout.write(JSON.stringify(rows(), null, 1)); process.exit(0); }
+// `plan`: the analysis a person approves. Same order as main's Gate 3: wireframe, L1-L5 layers, components + keys.
+function sig(o) { return [o.n.replace(/\d+/g, '#'), o.k || '', o.cp || '', (o.c || []).map(sig).join(',')].join('|'); }
+function lTree(max) {
+  const out = [];
+  (function walk(o, d, pre) {
+    const p = Array.isArray(o.p) ? o.p.join('/') : o.p, pr = Object.entries(o.pr || {}).map(([k, v]) => `${k}=${v}`).join(' ');
+    const what = o.k === 't' ? `text "${String(o.t).slice(0, 30)}" · ${o.st || 'NO STYLE'} · ${o.bg || ''}`
+      : o.k === 'i' ? `SAP ${o.cp}${pr ? ' · ' + pr : ''}${o.tx ? ' · "' + Object.values(o.tx).join('" "').slice(0, 40) + '"' : ''}`
+      : o.k === 'ic' ? `icon ${o.ic}` : o.k === 'r' ? `rect ${o.w}×${o.h} · ${o.bg || ''}` : o.k === 'v' ? 'vector'
+      : `${o.d ? (o.d === 'H' ? 'HORIZONTAL' : 'VERTICAL') : 'free'}${o.g ? ' gap ' + o.g : ''}${p ? ' pad ' + p : ''}${o.bg ? ' · fill ' + o.bg : ''}${o.bc ? ' · border ' + o.bc : ''}${o.img ? ' · image fill' : ''} · ${o.w}×${o.h}`;
+    out.push(`L${d + 1}${' '.repeat(2 * d + 1)}${o.n}   ${what}${o.s ? ' [' + o.s + ']' : ''}`);
+    if (d + 1 >= max) { if (o.c) out.push(`${' '.repeat(2 * d + 6)}… ${o.c.length} inside`); return; }
+    for (let i = 0; i < (o.c || []).length; i++) {
+      const k = o.c[i]; let j = i; while (j + 1 < o.c.length && sig(o.c[j + 1]) === sig(k)) j++;
+      walk(k, d + 1);
+      if (j > i) { out.push(`L${d + 2}${' '.repeat(2 * d + 3)}… ×${j - i} more with the same structure (texts differ): ${o.c.slice(i + 1, j + 1).map(x => x.n).join(', ').slice(0, 90)}`); i = j; }
+    }
+  })(T, 0);
+  return out.join('\n');
+}
+function compTable() {
+  const kit = require('./kit-live.js'), by = {};
+  for (const o of all.filter(o => o.k === 'i')) {
+    const st = Object.fromEntries(Object.entries(o.pr || {}).filter(([k]) => !/^✏️|By Text/.test(k)));   // states, not typed text
+    const key = o.cp + '|' + JSON.stringify(st), e = by[key] || (by[key] = { cp: o.cp, pr: st, n: 0 });
+    e.n++;
+  }
+  const rows = Object.values(by).sort((a, b) => a.cp.localeCompare(b.cp) || b.n - a.n);
+  const w = ['Component', 'Key', 'Variant props (non-default)', '×'];
+  const body = rows.map(e => { const c = kit.components[e.cp];
+    return [e.cp, c ? c.key.slice(0, 10) + '…' : 'NOT FOUND', Object.entries(e.pr).map(([k, v]) => `${k}=${v}`).join(', ') || 'default', String(e.n)]; });
+  const wd = w.map((h, i) => Math.min(60, Math.max(h.length, ...body.map(r => r[i].length))));
+  const fmt = r => '| ' + r.map((c, i) => c.slice(0, wd[i]).padEnd(wd[i])).join(' | ') + ' |';
+  return [fmt(w), '|' + wd.map(x => '-'.repeat(x + 2)).join('|') + '|', ...body.map(fmt)].join('\n');
+}
 const problems = lint();
+if (cmd === 'plan') {
+  console.log(`FRAME  ${T.w}×${T.h} · ${T.n} · ${all.length} layers\n\nWIREFRAME\n${ascii(3)}\n\nL1-L5 LAYER TREE (names = what the Figma layers will be called)\n${lTree(Number(depthArg || 5))}\n\nSAP COMPONENTS (real kit keys)\n${compTable()}\n\nLISTS\n${lists()}\n\nLINT  ${problems.length ? problems.length + ' problem(s)\n' + problems.map(p => '  ✗ ' + p).join('\n') : '✓ clean — ready to build'}`);
+  process.exit(problems.length ? 1 : 0);
+}
 if (cmd === 'lint') { console.log(problems.length ? problems.map(p => '✗ ' + p).join('\n') : '✓ lint clean'); process.exit(problems.length ? 1 : 0); }
 const depth = Number(depthArg || 4);
 console.log(`SCREEN  ${T.n} · ${T.w}×${T.h} · ${all.length} layers\n\n${ascii(3)}\n\nLAYERS (depth ≤ ${depth})\n${layers(depth)}\n\nLISTS\n${lists()}\n\nLINT  ${problems.length ? problems.length + ' problem(s)\n' + problems.map(p => '  ✗ ' + p).join('\n') : '✓ clean — ready to build'}`);

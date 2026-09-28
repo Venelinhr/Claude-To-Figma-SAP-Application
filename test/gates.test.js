@@ -140,3 +140,13 @@ print(round(M.s, 2), round(M.t, 3))`;
   const out = execFileSync('python3', ['-c', py], { cwd: ROOT }).toString().trim();
   assert.strictEqual(out, '1.0 0.875');
 });
+
+test('tree.js plan: the main-style analysis — wireframe, L1-L5 layers with folded rows, components with real kit keys and states', () => {
+  const r = node(['build/tree.js', 'plan', TREE_PO, '5']);
+  assert.strictEqual(r.code, 0, r.out);
+  for (const re of [/^WIREFRAME[\s\S]*\[Search supplier\]/m, /^L1 Purchase Orders — List Report {3}VERTICAL/m, /^L2 {3}Shell Bar {3}SAP Shell Bar/m,
+    /… ×5 more with the same structure/, /\| Object Status +\| 748d609ead… \| Semantic=Warning +\| 2 +\|/, /LINT {2}✓ clean/])
+    assert.match(r.out, re);
+  assert.doesNotMatch(r.out, /NOT FOUND/);
+  assert.ok(r.out.split('\n').length < 110, 'the analysis must stay short enough to paste');
+});

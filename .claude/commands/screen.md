@@ -40,19 +40,21 @@ run 451:9507 took 219 turns / 34 min / $9.5 for one screen):
      Object Status label, table headers → `tx` (text typed inside the instance); ID cell → `"✏️ By Text Description"`.
      Equal row heights (cells `s:"FF"`), cell wrappers get `bg: sapList_Background`. Trees you write use `sz:"x"`
      (sizing letters explicit: F fill · H hug · X fixed).
-3. **First screen — show it before building:** `node build/tree.js show bridge-out/<job>/tree.json 4` → the ASCII
-   picture, the layer tree, the lists (components + states, text styles, variables, icons, density) and the lint.
-   Lint must say ✓ (unknown kit name, raw colour, unstyled text, generic layer name = fix first).
-   **APPROVAL GATE — show everything as text, then STOP and wait. Do not build before the user says yes.**
-   The user does not see tool output, so paste it into the reply. Blocks, in this order:
-   (1) **Reading** — 3-6 plain lines: what the reference/request is, floorplan, frame size, density.
-   (2) **ASCII picture** of the screen in a code block.
-   (3) **What will be placed** — the SAP components table (component · state · count), text styles, colour
-   variables, icons, and for image jobs what has no SAP match (logos = image crops, brand colour → SAP token).
-   (4) **Layer tree** to depth 3 (names exactly as they will appear in Figma).
-   (5) Lint result and the engine: `v5 layout tree · one render call · gates ≥ 95 %`.
-   End with ONE question: **"Approve and build? (yes / change: …)"** — max 2 options. A "change" edits
-   `tree.json`, re-runs `tree.js show`, shows only what differs, and asks again. After "yes" → step 4 at once.
+3. **Analysis for approval — same as `main`, engine v5.** `node build/tree.js plan bridge-out/<job>/tree.json` (fix
+   every lint ✗ first). The user does not see tool output, so write it into the reply, in this order:
+   (1) **Reading** — 2-4 lines: image size (retina → real size), what the screen is, floorplan, frame size, density,
+   which gold tree it starts from.
+   (2) **Gate 0 — zones table** `Zone | Content | SAP component (kit name) | Key properties` — A, B, C… in Z order,
+   one row per section, written from the tree's top-level frames + `see.py spec`. Logos = image crops (no SAP match).
+   (3) **Wireframe + L1-L5 layer tree** — paste the `WIREFRAME` and `L1-L5` blocks of `tree.js plan` as printed
+   (names = the Figma layer names; repeated rows are folded).
+   (4) **SAP components table** — paste `SAP COMPONENTS` (real kit keys, states); add text styles + variables from
+   `LISTS` in one line each.
+   (5) **Confidence table** `Area | Conf. | Notes` with ● (sure) / ○ (guess): layout, each key component, colours,
+   icons, logos, frame size. Say plainly what is not 1:1: brand colour → SAP token, text 16→14 px, no kit match.
+   Anything < 85 % is named as a question.
+   End with ONE line: **"Approve and build? (yes / change: …)"**. STOP — do not build before the user says yes.
+   "change" → edit `tree.json`, re-run `tree.js plan`, show only what differs, ask again. "yes" → step 4 at once.
 4. **Build — one call, no hand-written code.** Once per Figma file: `node build/render.js --install --out i.js`
    → send its content (stores the runtime in the file). Then `node build/render.js tree.json --lean --out b.js` →
    one `use_figma` with its content, unchanged. Never the full (non-lean) build. Returns `{nodeId, made, WARN}` — WARN must be `[]`. `'INSTALL FIRST'` → install.
