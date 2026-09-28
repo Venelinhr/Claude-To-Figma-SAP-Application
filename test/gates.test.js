@@ -145,8 +145,38 @@ test('tree.js plan: the main-style analysis — wireframe, L1-L5 layers with fol
   const r = node(['build/tree.js', 'plan', TREE_PO, '5']);
   assert.strictEqual(r.code, 0, r.out);
   for (const re of [/^WIREFRAME[\s\S]*\[Search supplier\]/m, /^L1 Purchase Orders — List Report {3}VERTICAL/m, /^L2 {3}Shell Bar {3}SAP Shell Bar/m,
-    /… ×5 more with the same structure/, /\| Object Status +\| 748d609ead… \| Semantic=Warning +\| 2 +\|/, /LINT {2}✓ clean/])
+    /… ×5 more with the same structure/, /\| Object Status +\| 748d609ead… \| Semantic=Warning +\| 2 +\|/, /DOOR {2}✓ ALL IN/])
     assert.match(r.out, re);
   assert.doesNotMatch(r.out, /NOT FOUND/);
   assert.ok(r.out.split('\n').length < 110, 'the analysis must stay short enough to paste');
+});
+
+test('door.js (front door): the approved gold trees get in; wrong state, placeholder, colour role, fake component, missing sizing stay out', () => {
+  for (const t of [TREE_PO, TREE_FLIGHT]) { const r = node(['build/door.js', t]); assert.strictEqual(r.code, 0, r.out); assert.match(r.out, /DOOR {2}✓ ALL IN/); }
+  const f = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'door-')), 'bad.tree.json');
+  fs.writeFileSync(f, JSON.stringify({ n: 'Screen', sz: 'x', w: 400, h: 200, d: 'V', bg: 'sapBackgroundColor', c: [
+    { n: 'Save', k: 'i', cp: 'Button', s: 'HH', w: 60, h: 26, pr: { Type: 'Primry' } },
+    { n: 'Price', k: 't', t: '12 €', st: 'H4/Bold', bg: 'sapList_BorderColor', s: 'HH', w: 40, h: 20 },
+    { n: 'Card', s: 'FH', w: 400, h: 40, bc: 'sapTextColor', d: 'H', c: [{ n: 'Hint', k: 't', t: 'Typed Text', st: 'H4/Bold', bg: 'sapTextColor', w: 60, h: 20 }] },
+    { n: 'Go button', s: 'HH', w: 60, h: 26, bg: 'sapButton_Background', d: 'H', c: [{ n: 'Go', k: 't', t: 'Go', st: 'H4/Bold', bg: 'sapTextColor', s: 'HH', w: 20, h: 16 }] }] }));
+  const r = node(['build/door.js', f]);
+  assert.strictEqual(r.code, 1);
+  for (const re of [/state +"Save" <Button> Type=Primry — allowed: Primary, Secondary/, /placeholder +"Save" <Button> shows the kit default "Button"/,
+    /colour role +"Price" text painted with sapList_BorderColor \(a border variable\)/, /colour role +"Card" border sapTextColor is a ink variable/,
+    /placeholder +"Hint" text "Typed Text"/, /sizing +"Hint" has no sizing decision/, /fake component +"Go button" is a frame drawn like a button/])
+    assert.match(r.out, re);
+});
+
+test('door.js --ref: a build frame that is not the reference size and a reference text that is not placed stay out; brand colours become questions', () => {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'door-ref-'));
+  fs.writeFileSync(path.join(d, 't.json'), JSON.stringify({ n: 'Results', sz: 'x', w: 1280, h: 680, d: 'V', bg: 'sapBackgroundColor', c: [
+    { n: 'Title', k: 't', t: 'Спирки', st: 'H5/Bold', bg: 'sapTextColor', s: 'HH', w: 60, h: 16 }] }));
+  fs.writeFileSync(path.join(d, 'spec.json'), JSON.stringify({ frame: { w: 1159, h: 616 }, sections: [{ type: 'row', children: [
+    { type: 'text', text: 'Спирки' }, { type: 'text', text: 'Часове' }] }], ask: ['brand colour #de307c on 8 texts — which SAP role?'] }));
+  const r = node(['build/door.js', path.join(d, 't.json'), '--ref', path.join(d, 'spec.json')]);
+  assert.strictEqual(r.code, 1);
+  assert.match(r.out, /frame size +frame 1280×680 — the reference is 1159×616/);
+  assert.match(r.out, /missing +reference text "Часове" is not placed/);
+  assert.doesNotMatch(r.out, /"Спирки" is not placed/);
+  assert.match(r.out, /ASK {2}brand colour #de307c/);
 });

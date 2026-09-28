@@ -40,8 +40,15 @@ run 451:9507 took 219 turns / 34 min / $9.5 for one screen):
      Object Status label, table headers → `tx` (text typed inside the instance); ID cell → `"✏️ By Text Description"`.
      Equal row heights (cells `s:"FF"`), cell wrappers get `bg: sapList_Background`. Trees you write use `sz:"x"`
      (sizing letters explicit: F fill · H hug · X fixed).
-3. **Analysis for approval — same as `main`, engine v5.** `node build/tree.js plan bridge-out/<job>/tree.json` (fix
-   every lint ✗ first). The user does not see tool output, so write it into the reply, in this order:
+3. **FRONT DOOR — face control, before the user sees anything.** `node build/door.js bridge-out/<job>/tree.json
+   [--ref bridge-out/<job>/see-ref/spec.json]` (local, < 1 s, no Figma). Only the right parts get in: real kit
+   component, real prop names, allowed state values, no kit placeholder text or default icon on show, colour
+   variables by role (text ink · fill · border), no fake components, explicit sizing, and with a reference: the
+   reference size, every reference text placed, the icons placed. Every `OUT` = fix the tree and run the door
+   again — never show a plan with an OUT, never ask the user about an OUT. `ASK` lines (brand colour role,
+   density, icon shapes with no SAP match) go to the user in the approval message. Be quick: fix all OUT in one pass.
+   **Analysis for approval — same as `main`, engine v5.** `node build/tree.js plan bridge-out/<job>/tree.json
+   [--ref …/spec.json]` (its DOOR line must say ✓ ALL IN). The user does not see tool output, so write it into the reply, in this order:
    (1) **Reading** — 2-4 lines: image size (retina → real size), what the screen is, floorplan, frame size, density,
    which gold tree it starts from.
    (2) **Gate 0 — zones table** `Zone | Content | SAP component (kit name) | Key properties` — A, B, C… in Z order,
@@ -52,7 +59,7 @@ run 451:9507 took 219 turns / 34 min / $9.5 for one screen):
    `LISTS` in one line each.
    (5) **Confidence table** `Area | Conf. | Notes` with ● (sure) / ○ (guess): layout, each key component, colours,
    icons, logos, frame size. Say plainly what is not 1:1: brand colour → SAP token, text 16→14 px, no kit match.
-   Anything < 85 % is named as a question.
+   Anything < 85 % is named as a question, together with the door's ASK lines (max 4, most important first).
    End with ONE line: **"Approve and build? (yes / change: …)"**. STOP — do not build before the user says yes.
    "change" → edit `tree.json`, re-run `tree.js plan`, show only what differs, ask again. "yes" → step 4 at once.
 4. **Build — one call, no hand-written code.** Once per Figma file: `node build/render.js --install --out i.js`

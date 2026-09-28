@@ -14,6 +14,8 @@ const [cmd, file, depthArg] = process.argv.slice(2);
 if (!cmd || !file) { console.log(fs.readFileSync(__filename, 'utf8').split('\n').slice(1, 8).join('\n')); process.exit(2); }
 const raw = JSON.parse(fs.readFileSync(file, 'utf8'));
 const T = raw.tree || raw;
+const ri = process.argv.indexOf('--ref'), REF = ri > 0 ? JSON.parse(fs.readFileSync(process.argv[ri + 1], 'utf8')) : null;
+let ASKS = [];
 
 // a small auto-layout pass: absolute x/y for every node (enough for the ASCII picture)
 function place(o, x, y) {
@@ -85,16 +87,9 @@ function lists() {
     `Icons        ${count(all.filter(o => o.k === 'ic').map(o => o.ic)) || '—'}`,
     `Density      ${count(all.filter(o => o.pr && o.pr['Form Factor']).map(o => o.pr['Form Factor'])) || '—'}`].join('\n');
 }
-function lint() {
-  const L = [];
-  const k = spawnSync(process.execPath, [path.join(__dirname, 'kit.js'), 'pack', '--plan', file], { encoding: 'utf8' });
-  for (const l of String(k.stderr || '').split('\n').filter(l => /NOT FOUND/.test(l))) L.push('kit: ' + l.replace(/^\/\/ /, ''));
-  for (const o of all) {
-    for (const t of [o.bg, o.bc]) if (typeof t === 'string' && t.startsWith('RAW')) L.push(`"${o.n}": raw colour ${t.slice(3)} — use a SAP variable`);
-    if (o.k === 't' && !o.st) L.push(`"${o.n}": text "${String(o.t).slice(0, 20)}" has no SAP text style`);
-    if (!o.k && /^(frame|group|rectangle|auto layout)\s*\d*$/i.test(o.n)) L.push(`"${o.n}": generic layer name — name it after what it is`);
-  }
-  return [...new Set(L)];
+function lint() {                                             // the front door (build/door.js) is the one gate
+  const r = require('./door.js').door(T, file, REF); ASKS = r.ask;
+  return r.out.map(([w, m]) => `${w}: ${m}`);
 }
 function rows() {
   const R = require('./router-table.json').colour_roles;
@@ -150,10 +145,10 @@ function compTable() {
 }
 const problems = lint();
 if (cmd === 'plan') {
-  console.log(`FRAME  ${T.w}×${T.h} · ${T.n} · ${all.length} layers\n\nWIREFRAME\n${ascii(3)}\n\nL1-L5 LAYER TREE (names = what the Figma layers will be called)\n${lTree(Number(depthArg || 5))}\n\nSAP COMPONENTS (real kit keys)\n${compTable()}\n\nLISTS\n${lists()}\n\nLINT  ${problems.length ? problems.length + ' problem(s)\n' + problems.map(p => '  ✗ ' + p).join('\n') : '✓ clean — ready to build'}`);
+  console.log(`FRAME  ${T.w}×${T.h} · ${T.n} · ${all.length} layers\n\nWIREFRAME\n${ascii(3)}\n\nL1-L5 LAYER TREE (names = what the Figma layers will be called)\n${lTree(Number(/^\d+$/.test(depthArg || '') ? depthArg : 5))}\n\nSAP COMPONENTS (real kit keys)\n${compTable()}\n\nLISTS\n${lists()}\n\nDOOR  ${problems.length ? '✗ ' + problems.length + ' OUT — fix the tree, run again, never show a plan with OUT\n' + problems.map(p => '  ✗ ' + p).join('\n') : '✓ ALL IN — show the plan'}${ASKS.length ? '\nASK THE USER\n' + ASKS.map(a => '  ? ' + a).join('\n') : ''}`);
   process.exit(problems.length ? 1 : 0);
 }
 if (cmd === 'lint') { console.log(problems.length ? problems.map(p => '✗ ' + p).join('\n') : '✓ lint clean'); process.exit(problems.length ? 1 : 0); }
-const depth = Number(depthArg || 4);
+const depth = Number(/^\d+$/.test(depthArg || '') ? depthArg : 4);
 console.log(`SCREEN  ${T.n} · ${T.w}×${T.h} · ${all.length} layers\n\n${ascii(3)}\n\nLAYERS (depth ≤ ${depth})\n${layers(depth)}\n\nLISTS\n${lists()}\n\nLINT  ${problems.length ? problems.length + ' problem(s)\n' + problems.map(p => '  ✗ ' + p).join('\n') : '✓ clean — ready to build'}`);
 process.exit(problems.length ? 1 : 0);

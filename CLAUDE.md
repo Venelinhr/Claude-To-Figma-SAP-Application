@@ -10,7 +10,9 @@ AND SAP execution (kit components + states, text styles, colour variables, layer
 How: start from a **gold layout tree** (`knowledge/gold/trees/` — a dumped approved build: frames with
 gap/padding/size, kit instances with non-default props + inner texts, styles and variables by name) →
 adapt it (image: `see.py spec` numbers; text: real business content, never kit placeholders) →
-`node build/tree.js show` (first screen: ASCII · layers · lists · lint) → `node build/render.js --lean`
+**front door** `node build/door.js tree.json [--ref spec.json]` (face control: only real kit
+components + allowed states + variables by role + real content get in; OUT = fix, ASK = the user) →
+`node build/tree.js plan` (wireframe · L1-L5 layers · components with keys) → **user approves** → `node build/render.js --lean`
 (one `use_figma`, runtime installed once per file with `--install`) → `gates.js` (image) or
 `verify-tree.js` (text). The renderer rebuilds gold 435:9066 pixel-exact (0 px diff).
 Proven 2026-09-28: 440:9214 image EYE 95 % · MATCH 100 % · hygiene 0; 445:9214 text MATCH 100 % · hygiene 0.
