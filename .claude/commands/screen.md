@@ -1,5 +1,6 @@
 ---
 description: v5 — image or text (+ Figma file link) → Claude builds the SAP screen in Figma from a layout tree → checks it (≥ 95 % or it is a failure).
+model: claude-sonnet-5
 argument-hint: <image path | "text request"> <figma file or node link>
 ---
 
@@ -58,7 +59,11 @@ run 451:9507 took 219 turns / 34 min / $9.5 for one screen):
    Anything < 85 % is named as a question, together with the door's ASK lines (max 4, most important first).
    End with ONE line: **"Approve / Reject / Modify?"**. STOP — do not build before the user says yes.
    "change" → edit `tree.json`, re-run `tree.js plan`, show only what differs, ask again. "yes" → step 4 at once.
-4. **Build — one call, no hand-written code.** Once per Figma file: `node build/render.js --install --out i.js`
+4. **Build + check = the `screen-builder` subagent** (Agent tool, subagent_type `screen-builder`, prompt: `JOB=bridge-out/<job>
+   FILE=<file key>`). It sends the build, places logos, dumps and runs the gates in ITS OWN context and returns 5 lines —
+   the 20-40 KB build/dump payloads never enter this chat (451:9507 and 467:9740 cost $9-28 mostly from that).
+   The steps it follows (for reference / when it is not available):
+   **Build — one call, no hand-written code.** Once per Figma file: `node build/render.js --install --out i.js`
    → send its content (stores the runtime in the file). Then `node build/render.js tree.json --lean --out b.js` →
    one `use_figma` with its content, unchanged. Never the full (non-lean) build. Returns `{nodeId, made, WARN}` — WARN must be `[]`. `'INSTALL FIRST'` → install.
    Logos: frames named like the tree node; `crop-logos.py` + `upload_assets` onto them (image fill hash only
