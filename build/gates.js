@@ -3,7 +3,8 @@
 //   node build/gates.js <plan.json> <jobDir> [--ref ref.png] [--record "<request>" --node <id> [--via <how>] [--rounds n] [--ms n]]
 // Reads <jobDir>/tree.json (dump-tree), <jobDir>/build@2x.png + geometry.json (with a reference).
 // Writes <jobDir>/audit.txt and <jobDir>/see-out/ (diff-sheet.png, fix.md).
-// Pass = MATCH ≥ 90 %, hygiene 0, and with a reference EYE ≥ 95 %. Exit 0 = pass, 1 = not, 2 = usage.
+// Pass = MATCH ≥ 90 %, hygiene 0, STRUCTURE 0 (build/structure.js: boxes, nesting, collapsed, hidden, overlapping), and with a
+// reference EYE ≥ 95 %. MATCH cannot see where things are; a low EYE is never 'a known limitation'. Exit 0 = pass, 1 = not, 2 = usage.
 // --record: only on a measured pass — plan → knowledge/plans-cache/<sha>.plan.json, one line → run log.
 const fs = require('fs');
 const os = require('os');
@@ -22,12 +23,12 @@ function sh(cmd, args) {
 }
 
 // { plan, jobDir, ref?, auditName?, seeName? } → { match, hygiene, eye, missing[], pass }
-async function measure({ plan, jobDir, ref, auditName = 'audit.txt', seeName = 'see-out' }) {
+async function measure({ plan, jobDir, ref, spec, auditName = 'audit.txt', seeName = 'see-out' }) {
   if (!plan || !fs.existsSync(plan)) return null;
   const tree = path.join(jobDir, 'tree.json');
   const shot = path.join(jobDir, 'build@2x.png');
   const geom = path.join(jobDir, 'geometry.json');
-  const g = { match: null, hygiene: null, eye: null, missing: [] };
+  const g = { match: null, hygiene: null, eye: null, structure: null, structureLines: [], missing: [] };
   if (fs.existsSync(tree)) {
     const a = await sh(process.execPath, [path.join('build', 'audit-plan.js'), plan, tree]);
     fs.writeFileSync(path.join(jobDir, auditName), a.out);
@@ -42,7 +43,12 @@ async function measure({ plan, jobDir, ref, auditName = 'audit.txt', seeName = '
       const m = e.out.match(/EYE MATCH\s+(\d+)%/); if (m) g.eye = Number(m[1]); else g.missing.push('eye result');
     } else g.missing.push('build@2x.png');
   }
-  g.pass = !g.missing.length && g.match >= 90 && g.hygiene === 0 && (!ref || g.eye >= 95);
+  if (fs.existsSync(geom)) {                                       // where things are (MATCH is blind to it)
+    const sp = spec || [path.join(jobDir, 'spec.json'), path.join(jobDir, 'see-ref', 'spec.json'), path.join(jobDir, '..', 'see-ref', 'spec.json')].find(f => fs.existsSync(f));
+    try { g.structureLines = require('./structure.js').check(JSON.parse(fs.readFileSync(geom, 'utf8')), ref && sp ? JSON.parse(fs.readFileSync(sp, 'utf8')) : null); g.structure = g.structureLines.length; }
+    catch (e) { g.missing.push('geometry.json unreadable'); }
+  } else if (ref) g.missing.push('geometry.json');
+  g.pass = !g.missing.length && g.match >= 90 && g.hygiene === 0 && !g.structure && (!ref || g.eye >= 95);
   return g;
 }
 
@@ -51,6 +57,7 @@ function blocksOf(g) {
   if (g.missing.length) b.push(`gate files missing: ${g.missing.join(', ')}`);
   if (g.match != null && g.match < 90) b.push(`MATCH ${g.match}% < 90`);
   if (g.hygiene) b.push(`hygiene ${g.hygiene}`);
+  if (g.structure) b.push(`structure ${g.structure}`);
   if (g.eye != null && g.eye < 95) b.push(`EYE ${g.eye}% < 95`);
   return b;
 }
@@ -91,8 +98,12 @@ if (require.main === module) {
     const g = await measure({ plan, jobDir, ref });
     if (!g) { console.log(`plan not found: ${plan}`); process.exit(2); }
     const pc = (v) => (v == null ? '—' : v + '%');
-    console.log(`MATCH ${pc(g.match)} · HYGIENE ${g.hygiene == null ? '?' : g.hygiene} · EYE ${ref ? pc(g.eye) : '— (no reference)'}`);
+    console.log(`MATCH ${pc(g.match)} · HYGIENE ${g.hygiene == null ? '?' : g.hygiene} · STRUCTURE ${g.structure == null ? '?' : g.structure} · EYE ${ref ? pc(g.eye) : '— (no reference)'}`);
+    for (const l of g.structureLines.slice(0, 8)) console.log('  ' + l);
     console.log(`lines: ${path.join(jobDir, 'audit.txt')}${ref ? ` · ${path.join(jobDir, 'see-out', 'fix.md')} · ${path.join(jobDir, 'see-out', 'diff-sheet.png')}` : ''}`);
+    if (ref && g.eye != null && g.eye < 95) {                      // never dismissed: the fix list is read, line by line
+      try { const f = fs.readFileSync(path.join(jobDir, 'see-out', 'fix.md'), 'utf8').split('\n').filter(l => /^\s*\d+ |^- /.test(l) && !/SAP LOOK|brand→SAP|EXTRA/.test(l)); if (f.length) console.log('FIX LINES (read them — a low EYE is not "a known limitation"):\n' + f.slice(0, 8).map(l => '  ' + l.trim().slice(0, 150)).join('\n')); } catch (_) {}
+    }
     const b = blocksOf(g);
     console.log(g.pass ? 'PASS' : `NOT PASSED — ${b.join('; ')}`);
     if (argv.includes('--record')) {

@@ -17,5 +17,7 @@ Work in the repo root. Never hand-write or edit build code; send generated files
    `curl -sL -A Mozilla/5.0 -o check/build@2x.png "<url>"` (retry on a non-PNG reply), copy ref.png in;
    `node build/tree.js rows JOB/tree.json > check/plan.json`; `node build/gates.js check/plan.json check [--ref check/ref.png]`.
    Text job: `dump-compact` → check/built.json → `node build/verify-tree.js JOB/tree.json check/built.json`.
-4. Never open PNGs. Return ONLY: node link · WARN · the gates/verify line · the top 5 non-expected diff lines
+   ALWAYS dump geometry (structure.js needs it) and copy the reference spec next to it: `cp JOB/see-ref/spec.json check/spec.json`.
+   If gates.js prints STRUCTURE lines or FIX LINES, quote them; never call a low EYE "a known limitation".
+4. Never open PNGs. Return ONLY: node link · WARN · the gates/verify line (with STRUCTURE) · every STRUCTURE line · the top 5 non-expected diff lines
    (`check/see-out/diff.json`, skip `SAP LOOK`, `(brand→SAP)`, `EXTRA`) · number of Figma calls.

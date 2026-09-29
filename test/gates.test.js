@@ -32,7 +32,7 @@ test('gates.js: the real gold build — measured MATCH 97 %, its 3 real hygiene 
   const d = jobDir(JSON.parse(fs.readFileSync(TREE, 'utf8')));
   const r = run([PLAN, d]);
   assert.strictEqual(r.code, 1, r.out);
-  assert.match(r.out, /MATCH 97% · HYGIENE 3 · EYE — \(no reference\)/);
+  assert.match(r.out, /MATCH 97% · HYGIENE 3 · STRUCTURE \? · EYE — \(no reference\)/);
   assert.match(r.out, /NOT PASSED — hygiene 3/);
   assert.ok(fs.existsSync(path.join(d, 'audit.txt')));
 });
@@ -214,4 +214,31 @@ test('spec2tree.js (from zero): measured alignment, role colours, aligned text w
   assert.deepStrictEqual([p.ta, p.bg, p.w, p.xy[0] + p.w], ['R', 'sapContent_Selected_ForegroundColor', 150, 200], 'right edge kept, spare width, brand → SAP accent');
   assert.strictEqual(get('Избор').s, 'XH', 'button keeps its measured width');
   assert.strictEqual(node(['build/door.js', path.join(d, 't.json')]).code, 0, 'the tree gets through the front door');
+});
+
+test('structure.js: a strip where the reference has a nested pink box, a collapsed tab, an overlap, a hidden layer and a wrong frame size all fail; the right build passes', () => {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'struct-'));
+  const R = (id, type, name, x, y, w, h, text = '', parent = '') => [id, type, name, x, y, w, h, 0, '', '', '', '', '', text, parent];
+  const spec = { frame: { w: 400, h: 300 }, sections: [{ type: 'box', box: [10, 40, 380, 150], children: [{ type: 'box', box: [14, 76, 372, 110], children: [] }] }] };
+  const good = [R('1', 'FRAME', 'Screen', 0, 0, 400, 300), R('2', 'FRAME', 'Tabs', 10, 0, 380, 36), R('3', 'TEXT', 'A', 20, 10, 40, 14, 'Tab', '2'),
+    R('4', 'FRAME', 'Recommended', 10, 40, 380, 150), R('5', 'FRAME', 'Card', 14, 76, 372, 110), R('6', 'TEXT', 'B', 30, 90, 40, 14, '06:00')];
+  const run = (rows, sp = spec) => { fs.writeFileSync(path.join(d, 'g.json'), JSON.stringify(rows)); fs.writeFileSync(path.join(d, 's.json'), JSON.stringify(sp)); return node(['build/structure.js', path.join(d, 'g.json'), '--spec', path.join(d, 's.json')]); };
+  let r = run(good); assert.strictEqual(r.code, 0, r.out); assert.match(r.out, /STRUCTURE {2}✓ 0/);
+  const strip = good.map(g => g[0] === '4' ? R('4', 'FRAME', 'Recommended', 10, 40, 380, 36) : g);          // the 471:9819 defect: pink strip, not a box
+  r = run(strip); assert.strictEqual(r.code, 1); assert.match(r.out, /BOX {2}the reference has a box 380×150 at 10,40.*nearest "Recommended" 380×36/);
+  r = run([...good.slice(0, 1), R('2', 'FRAME', 'Sort tabs', 10, 0, 380, 1), ...good.slice(2)]); assert.match(r.out, /COLLAPSED {2}"Sort tabs"/);
+  r = run([...good, R('7', 'TEXT', 'C', 40, 92, 30, 14, 'SOF')]); assert.match(r.out, /OVERLAP {2}"06:00".*"SOF"/);
+  r = run([...good, R('8', 'FRAME', 'Baggage', 10, 290, 100, 30)]); assert.match(r.out, /OUTSIDE {2}"Baggage"/);
+  r = run(good.map(g => g[0] === '1' ? R('1', 'FRAME', 'Screen', 0, 0, 380, 290) : g)); assert.match(r.out, /FRAME {2}build 380×290, the reference is 400×300/);
+});
+
+test('gates.js: MATCH 100 % with a structure defect is NOT a pass, and the defect line is printed', () => {
+  const { d, plan } = cleanJob();
+  fs.writeFileSync(path.join(d, 'geometry.json'), JSON.stringify([['1', 'FRAME', 'Screen', 0, 0, 200, 100, 0, '', '', '', '', '', '', ''], ['2', 'FRAME', 'Tabs', 0, 0, 200, 1, 0, '', '', '', '', '', '', '1'],
+    ['3', 'TEXT', 'T', 5, 5, 40, 14, 0, '', '', '', '', '', 'Orders', '2']]));
+  const r = run([plan, d]);
+  assert.strictEqual(r.code, 1, r.out);
+  assert.match(r.out, /MATCH 100% · HYGIENE 0 · STRUCTURE 1/);
+  assert.match(r.out, /COLLAPSED {2}"Tabs"/);
+  assert.match(r.out, /NOT PASSED — structure 1/);
 });

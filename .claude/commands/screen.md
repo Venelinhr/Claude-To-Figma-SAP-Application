@@ -77,6 +77,17 @@ run 451:9507 took 219 turns / 34 min / $9.5 for one screen):
      (every layer: component, props, inner texts, style, variables + hygiene) and one `get_screenshot`
      (`maxDimension: 800`) by eye.
    Save big replies with a heredoc (`cat > file <<'EOF'`), not Write — it avoids a double send.
+5b. **What the check cannot be trusted to see — read this every time** (451:9507, 471:9819 missed a nested pink box, a
+   1-px tab bar and a wrong frame size and still said "MATCH 100 %"):
+   - MATCH only asks "does the layer exist with the right props" — never WHERE it is or WHAT it sits in. `gates.js` now also
+     runs `structure.js` on the geometry dump (boxes + nesting vs the reference, collapsed layers, layers hidden past the
+     frame, overlapping texts, frame size). **Always send `dump-geometry` and pass the reference spec**; STRUCTURE ≠ 0 = fail.
+   - A low EYE is never "a known limitation". Read the `FIX LINES` that `gates.js` prints (MISSING / BOX SIZE / POSITION) and
+     fix them, or report the build as FAILED with those lines. Never write "MATCH is authoritative".
+   - A root frame with `clip` hides broken layers — trust the geometry numbers, not the screenshot.
+   - A fix must not remove structure the reference has: a card inside a pink box stays inside it (moving it out "to fix a
+     bug" made 471:9819 worse). Change nesting only when the reference shows it.
+   - Report provenance: the `GOLD` line of `front.js` (which tree) or "from zero"; and the frame size vs the reference.
 6. **Fix** ≤ 2 rounds: ONE `use_figma` per round with all fixes on the node, AND the same change in the tree
    file. Re-check. After round 2 stop and report what is left — no round 3.
 7. **Done** = PASS. Reply: node link · `MATCH n% · EYE n% · hygiene 0 · Done in Xm Ys`. Record:

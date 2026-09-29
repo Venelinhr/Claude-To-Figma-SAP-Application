@@ -20,6 +20,9 @@ Proven 2026-09-28: 440:9214 image EYE 95 % · MATCH 100 % · hygiene 0; 445:9214
 snap — that is for text jobs) · send the generated `i.js`/`b.js` unchanged, never hand-written build code ·
 never open PNGs in the chat (scripts print text) · one `use_figma` per fix round, ≤ 2 rounds. Target ≤ 40 turns,
 ≤ 10 min. Why: 451:9507 = 219 turns, 34 min, $9.5 (hand-written builds hit the guard; big PNGs re-sent each turn).
+**MATCH is blind to structure.** The gate also runs `build/structure.js` (needs `dump-geometry`): every reference box present
+(nested pink box, cards), no collapsed / hidden / overlapping layers, build = reference size. STRUCTURE ≠ 0 or EYE < 95 = FAILED —
+never "a known limitation", never "MATCH is authoritative". Report provenance (gold tree or from zero). Why: 471:9819.
 The v4 flows below still work (SAP Bridge plugin, Figma Agent split) — use them only when asked.
 
 ## v4 in one line — Claude Code plans, the Figma Agent builds, Claude Code checks
