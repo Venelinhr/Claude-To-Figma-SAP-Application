@@ -23,6 +23,7 @@ never open PNGs in the chat (scripts print text) · one `use_figma` per fix roun
 **MATCH is blind to structure.** The gate also runs `build/structure.js` (needs `dump-geometry`): every reference box present
 (nested pink box, cards), no collapsed / hidden / overlapping layers, build = reference size. STRUCTURE ≠ 0 or EYE < 95 = FAILED —
 never "a known limitation", never "MATCH is authoritative". Report provenance (gold tree or from zero). Why: 471:9819.
+**Responsive is a gate.** Every tree must resize: width = FILL (follows parent) or HUG (follows content); fixed width only for small parts (≤ 120 px), kit instances, or one side column beside a FILL sibling; no free placement; every row has one FILL child. `door.js` rule `responsive` rejects the rest; `spec2tree.js` builds bands/rows with FILL spacers. Never say a screen "resizes" without the door passing.
 The v4 flows below still work (SAP Bridge plugin, Figma Agent split) — use them only when asked.
 
 ## v4 in one line — Claude Code plans, the Figma Agent builds, Claude Code checks

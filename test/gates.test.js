@@ -210,9 +210,11 @@ test('spec2tree.js (from zero): measured alignment, role colours, aligned text w
   assert.strictEqual(get('Спирки row').a, 'SM', 'two far-apart children, same top edge → space-between, top');
   assert.strictEqual(get('decline').bg, 'sapContent_NonInteractiveIconColor', 'icon painted with an icon colour');
   assert.strictEqual(get('decline').w, 20, 'icon frame = drawing / 0.8');
-  const p = get('365,72 €');
-  assert.deepStrictEqual([p.ta, p.bg, p.w, p.xy[0] + p.w], ['R', 'sapContent_Selected_ForegroundColor', 150, 200], 'right edge kept, spare width, brand → SAP accent');
-  assert.strictEqual(get('Избор').s, 'XH', 'button keeps its measured width');
+  const p = get('365,72 €'), row = all.find(o => (o.c || []).includes(p));
+  assert.strictEqual(p.bg, 'sapContent_Selected_ForegroundColor', 'brand → SAP accent');
+  assert.ok(row.d === 'H' && p.ta === 'R' && p.s[0] === 'F', 'price: FILL width + right-aligned → its right edge follows the screen');
+  assert.ok(!all.some(o => o.xy), 'responsive: no free-placed layer is left');
+  assert.ok(/^X/.test(get('Избор').s), 'button keeps its measured width');
   assert.strictEqual(node(['build/door.js', path.join(d, 't.json')]).code, 0, 'the tree gets through the front door');
 });
 
@@ -241,4 +243,13 @@ test('gates.js: MATCH 100 % with a structure defect is NOT a pass, and the defec
   assert.match(r.out, /MATCH 100% · HYGIENE 0 · STRUCTURE 1/);
   assert.match(r.out, /COLLAPSED {2}"Tabs"/);
   assert.match(r.out, /NOT PASSED — structure 1/);
+});
+
+test('door.js responsive rule: a fixed-width card in a column, a free-placed frame and a row with no FILL child stay out', () => {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'resp-'));
+  const bad = { n: 'Screen', sz: 'x', w: 800, h: 400, bg: 'sapBaseColor', c: [{ n: 'Card', d: 'V', g: 0, p: [0, 0, 0, 0], s: 'XH', w: 700, h: 100, bg: 'sapTile_Background', c: [{ n: 'Free', xy: [5, 5], s: 'XX', w: 50, h: 20, bg: 'sapBaseColor' }] }] };
+  fs.writeFileSync(path.join(d, 'b.json'), JSON.stringify(bad));
+  const r = node(['build/door.js', path.join(d, 'b.json')]);
+  assert.notStrictEqual(r.code, 0);
+  assert.match(r.out, /responsive/);
 });

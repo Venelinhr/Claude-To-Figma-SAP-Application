@@ -62,7 +62,20 @@ function door(T, file, ref) {
       && !(function has(x) { return (x.c || []).some(c => c.k === 'i' || has(c)); })(o))
       O('fake component', `${at} is a frame drawn like a ${o.n.split(' ').pop()} — use the real kit component (node build/kit.js list ${o.n.split(' ').pop()})`);
     if (T.sz === 'x' && par.get(o) && par.get(o).d && !o.abs && !/^[XFH]{2}$/.test(o.s || '')) O('sizing', `${at} has no sizing decision — set s (F fill · H hug · X fixed), e.g. "FH"`);
+    // 6. RESPONSIVE: the screen must resize. Width follows the parent (FILL) or the content (HUG); a fixed width
+    //    is allowed only for small parts (≤ 120), or one fixed side column next to a FILL sibling. No free placement.
+    const p = par.get(o);
+    if (T.sz === 'x' && p && !o.abs) {
+      const W = (o.s || 'XX')[0], big = o.w > 120;
+      if (!p.d && !o.k) O('responsive', `${at} sits in a frame without auto-layout (free-placed) — it will not resize; put it in an auto-layout row/column`);
+      else if (p.d === 'V' && W === 'X' && big && o.k !== 'i') O('responsive', `${at} has a fixed width ${o.w} in a column — set width to FILL (F) so it follows the screen`);
+      else if (p.d === 'V' && W === 'X' && o.k === 't' && o.wrap) O('responsive', `${at} is wrapping text with a fixed width — set width to FILL`);
+      else if (p.d === 'H' && W === 'X' && big && o.k !== 'i' && !(p.c || []).some(x => x !== o && !x.abs && (x.s || '')[0] === 'F') && (p.s || '')[0] !== 'H')
+        O('responsive', `${at} has a fixed width ${o.w} and no sibling in the row is FILL — one part of the row must flex`);
+    }
   }
+  if (T.sz === 'x' && T.d === 'H' && !(T.c || []).some(x => !x.abs && (x.s || '')[0] === 'F'))
+    O('responsive', `root "${T.n}" is a row and no child is FILL — nothing flexes when the screen is resized`);
   if (ref) {                                                     // 5. against the reference
     const f = ref.frame;
     if (Math.abs(T.w - f.w) > 2 || Math.abs(T.h - f.h) > 2) O('frame size', `frame ${T.w}×${T.h} — the reference is ${f.w}×${f.h}: build at the reference size (EYE compares 1:1)`);

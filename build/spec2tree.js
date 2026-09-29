@@ -92,8 +92,53 @@ function conv(o, px, py) {
   }
   return n;
 }
+// RESPONSIVE: no free placement. A frame with placed children becomes auto-layout: children are grouped into bands
+// (overlap in y), each band is a row (H) with spacer frames for the measured gaps; bands stack in a column (V).
+// The widest gap (>40) is a FILL spacer, so the row flexes. Then a sizing pass: FILL width for containers in columns,
+// one FILL child in every row, HUG height for containers.
+const SP = (d, g, fill) => ({ n: 'Spacer', d, s: fill ? (d === 'H' ? 'FX' : 'XF') : 'XX', w: d === 'H' ? R(g) : 1, h: d === 'H' ? 1 : R(g) });
+function flow(n) {
+  const kids = n.c || []; if (n.d || !kids.length || !kids.some(c => c.xy)) return;
+  const [W, Ht] = [n.w, n.h], b = c => c._b || (c._b = [c.xy[0], c.xy[1], c.xy[0] + c.w, c.xy[1] + c.h]);
+  const pl = Math.max(0, Math.min(...kids.map(c => b(c)[0]))), pt = Math.max(0, Math.min(...kids.map(c => b(c)[1])));
+  const pr = Math.max(0, W - Math.max(...kids.map(c => b(c)[2]))), pb = Math.max(0, Ht - Math.max(...kids.map(c => b(c)[3])));
+  const sorted = kids.slice().sort((a, c) => b(a)[1] - b(c)[1] || b(a)[0] - b(c)[0]), bands = [];
+  sorted.forEach(c => { const cur = bands[bands.length - 1]; if (cur && b(c)[1] < cur.bot - 1) { cur.k.push(c); cur.bot = Math.max(cur.bot, b(c)[3]); } else bands.push({ k: [c], top: b(c)[1], bot: b(c)[3] }); });
+  const inner = W - pr, out = [];
+  bands.forEach((bd, bi) => {
+    if (bi) out.push(SP('V', bd.top - bands[bi - 1].bot));
+    const ks = bd.k.sort((a, c) => b(a)[0] - b(c)[0]), lead = b(ks[0])[0] - pl, trail = inner - b(ks[ks.length - 1])[2];
+    ks.forEach(c => { if (c.k === 't' && !c.ta) c.s = 'HH'; });
+    if (ks.length === 1 && lead <= 3) { const c = ks[0]; if (trail <= 3 && c.k !== 'i' && c.k !== 'ic') c.s = 'F' + (c.s || 'XX')[1]; delete c.xy; out.push(c); if (trail > 3 || c.k === 'ic') { /* keep left */ } return; }
+    const row = []; let prev = pl, gaps = [];
+    ks.forEach(c => {
+      const g = b(c)[0] - prev; if (g > 3) { const sp = SP('H', g); row.push(sp); gaps.push(sp); }
+      const dy = b(c)[1] - bd.top; let it = c; delete it.xy;
+      if (dy > 3) it = { n: c.n + ' offset', d: 'V', g: 0, p: [0, 0, 0, 0], a: 'MM', s: 'HH', c: [SP('V', dy), c] };
+      row.push(it); prev = b(c)[2];
+    });
+    if (inner - prev > 3) { const sp = SP('H', inner - prev); row.push(sp); gaps.push(sp); }
+    const wide = gaps.filter(g => g.w > 40).sort((a, c) => c.w - a.w)[0]; if (wide) wide.s = 'FX';
+    const cent = ks.every(c => Math.abs(b(c)[1] + c.h / 2 - (bd.top + bd.bot) / 2) <= 3), top = ks.every(c => Math.abs(b(c)[1] - bd.top) <= 3);
+    out.push({ n: (ks.map(c => c.t || c.n)[0] || 'Band') + ' row', d: 'H', g: 0, p: [0, 0, 0, 0], a: 'M' + (cent ? 'C' : 'M'), s: 'FH', c: row });
+  });
+  kids.forEach(c => delete c._b);
+  n.d = 'V'; n.g = 0; n.p = [pt, pr, pb, pl]; n.a = 'MM'; n.c = out;
+}
+function size(o, root) {
+  (o.c || []).forEach(c => size(c));
+  const kids = (o.c || []).filter(c => !c.abs);
+  if (o.d && !root && !o.k && o.n !== 'Spacer') o.s = (o.s || 'XX')[0] + 'H';
+  if (o.d === 'V') kids.forEach(c => { const cont = !c.k || c.k === 'r' || (c.k === 't' && c.w > 120); if (cont && c.n !== 'Spacer' && (c.s || 'XX')[0] === 'X' && (c.w > 120 || c.d)) c.s = 'F' + (c.s || 'XX')[1]; });
+  if (o.d === 'H' && !kids.some(c => (c.s || '')[0] === 'F')) {
+    const cand = kids.filter(c => c.k !== 'i' && c.k !== 'ic' && c.w > 40).sort((a, c) => c.w - a.w)[0];
+    if (cand) cand.s = 'F' + (cand.s || 'XX')[1];
+  }
+}
 const f = spec.frame, root = { n: 'Flight results', sz: 'x', w: f.w, h: f.h, bg: f.fill || 'sapBaseColor', clip: 1,
   c: spec.sections.map(s => conv(s, 0, 0)) };
+(function fl(o) { (o.c || []).forEach(fl); flow(o); })(root);
+size(root, true);
 fs.writeFileSync(outF, JSON.stringify(root));
 let n = 0; (function c(o) { n++; (o.c || []).forEach(c); })(root);
 console.log(`TREE  ${outF} · ${f.w}×${f.h} · ${n} layers from the measured reference (no gold)`);
