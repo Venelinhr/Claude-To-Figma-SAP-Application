@@ -42,6 +42,10 @@ function leaf(o) {
     // the box to the glyph top (real dump: text.y == glyph.y). Use the line-height box top-aligned on the measured glyph so
     // the tree predicts real Figma; the extra height extends downward (a stacked text below then sits a line-height gap lower).
     const sz = Number(((KIT_TEXT[o.style] || '').split('|')[2])), H = sz ? Math.floor(sz * 1.17) : h;
+    // Keep the MEASURED width for a plain text: it is left-anchored (or edge-anchored via ta), so its box being a few px
+    // wider than SAP renders does not move it — whereas shrinking every text in an H leg accumulated a ~60 px drift on the
+    // right side (baked gaps were measured on the un-shrunk boxes). SAP's ~0.89 narrowing is applied only to labelled
+    // controls (Radio/Check Box), which sit in V columns where width does not cascade sideways.
     return { n: name(o.text.length > 24 ? o.text.slice(0, 24) + '…' : o.text), k: 't', t: o.text, st: o.style, bg: tok(o.token, 'ink', o.color), w, h: H, s: 'HH', box: [x, y] };
   }
   if (o.type === 'icon') {
@@ -59,11 +63,19 @@ function leaf(o) {
     if (/Radio|Check Box/.test(o.component) && o.text) { pr.Label = true; pr['✏️ Text'] = o.text; }
     if (/^Button/.test(o.component) && o.text) pr['✏️ Text'] = o.text;
     if (/Range Slider/.test(o.component) && !pr['Right Value']) pr['Right Value'] = '100%';   // a filter shows its full range
-    // a kit component renders at its INTRINSIC height (Range Slider 20, Button 26…), not the thin measured strip the OCR
+    // a kit component renders at its INTRINSIC height (Range Slider 20, Radio 16…), not the thin measured strip the OCR
     // saw (a slider track measured 4 px but Figma draws it 20 px tall). Use the kit height so the tree predicts real Figma.
-    const kh = KIT_COMP[o.component] && KIT_COMP[o.component].h, H = kh && Math.abs(kh - h) > 3 ? kh : h;
+    // A few controls render taller than the kit's default-variant height in this density — override from the real dump
+    // (a Button with a label lays out 36 px tall in Figma, not the kit's 26). Radio/Check Box/Range Slider match the kit.
+    const REAL_H = { Button: 36 };
+    const kh = REAL_H[o.component] || (KIT_COMP[o.component] && KIT_COMP[o.component].h), H = kh && Math.abs(kh - h) > 3 ? kh : h;
     const box = H !== h ? [x, R(y + h / 2 - H / 2)] : undefined;   // grow around the measured centre (the track sat mid-component)
-    return { n: name(o.text || o.component), k: 'i', cp: o.component, pr, w: o.width || w, h: H, s: /Slider|Input|Select|^Button/.test(o.component) ? 'XH' : 'HH', box };
+    // a labelled control (Radio/Check Box with a label) is as wide as its SAP-rendered label, ~0.89× the OCR width — the
+    // same font-narrowing as plain text. Verified on the real dump (Директни 99→88≈85, До 1 спирка 115→102≈101). Without
+    // this its option column runs ~15 px too wide. Sliders/Inputs/Buttons keep their measured/explicit width.
+    const labelled = /Radio|Check Box/.test(o.component) && o.text;
+    const W = o.width || (labelled ? Math.max(16, Math.round(w * 0.89)) : w);
+    return { n: name(o.text || o.component), k: 'i', cp: o.component, pr, w: W, h: H, s: /Slider|Input|Select|^Button/.test(o.component) ? 'XH' : 'HH', box };
   }
   if (o.type === 'divider' || o.type === 'separator') return { n: name(o.type === 'divider' ? 'Divider' : 'Separator'), k: 'r', w: Math.max(w, 1), h: Math.max(h, 1), bg: tok(o.token, 'line', o.color), s: 'XX' };
   if (o.type === 'image') return { n: name('Logo'), w, h, r: 4, crop: o.crop || o.box, s: 'XX' };
@@ -80,7 +92,8 @@ function conv(o, px, py) {
   // Every container just free-places its children (xy in parent coords); the recursive XY-cut in flow() does ALL layout
   // inference exactly (baked gaps + cross offsets), so there is one layout path and no median-gap drift.
   n.c = kids.map(k => conv(k, x, y));
-  const E = n.c.map(c => [c.xy[0], c.xy[0] + c.w / 2, c.xy[0] + c.w]);
+  // edge-match ta on the MEASURED width (a text's _ow), not the SAP-shrunk width, or the right edge no longer lines up
+  const E = n.c.map(c => { const ew = c.k === 't' && c._ow ? c._ow : c.w; return [c.xy[0], c.xy[0] + ew / 2, c.xy[0] + ew]; });
   n.c.forEach((c, i) => {                            // a text keeps the edge it shares with a sibling (SAP text is narrower)
     if (c.k !== 't') return;
     const near = j => E.some((e, k) => k !== i && Math.abs(e[j] - E[i][j]) <= 3);
@@ -277,19 +290,31 @@ function size(o, root, par) {
   const fillable = c => (!c.k && c.d) || (c.k === 'r' && c.w > c.h && c.w > 120) || c.k == null;
   const wFill = o.d && o.w > 120 && fillable(o) && spansWidth(o, par);
   const hAbs = (o.c || []).some(c => c.abs);
-  o.s = (wFill ? 'F' : 'H') + (hAbs ? 'X' : 'H');   // HEIGHT: HUG (line-height/kit-height boxes reconstruct it), FIXED only to hold an abs child
+  // HEIGHT: HUG, EXCEPT a bordered box/card — it keeps its MEASURED reference height, FIXED (it already has clip:1), so SAP
+  // line-height and any taller kit component clip inside instead of growing the card past the reference and overflowing the
+  // frame. That is what keeps STRUCTURE matching the reference box sizes and the filter column inside 616. A frame pinning an
+  // abs child also stays FIXED height (an abs child does not add to HUG).
+  const boxed = o.bg != null || o.bc != null || o.r;
+  o.s = (wFill ? 'F' : 'H') + (hAbs || boxed ? 'X' : 'H');
   // Propagate FILL down the responsive path: a COLUMN's spanning child FILLs (so the column's width reaches its content),
   // but a ROW's child only FILLs when the ROW itself is FILL-width — otherwise a FILL child in a HUG row just eats the
   // row's slack and nudges the measured content sideways.
   const allowChildFill = o.d === 'V' || wFill;
+  // a container holding a flight-leg route (a wide horizontal rule deep inside) must FILL its width so the route can spread
+  // to the block width and the arrival column + baggage move to the far right (matching the reference), even if the child's
+  // own hugged width falls a bit short of spanning.
+  const hasRule = c => (function seek(x) { return (x.k === 'r' && x.w > x.h && x.w > 80) || (x.c || []).some(seek); })(c);
   kids.forEach(c => {
     if ((c.s || 'XX')[0] === 'F' || !allowChildFill) return;
-    if (fillable(c) && c.w > 120 && spansWidth(c, o)) c.s = 'F' + (c.s || 'XX')[1];
+    if (fillable(c) && c.w > 120 && (spansWidth(c, o) || (o.d === 'V' && hasRule(c)))) c.s = 'F' + (c.s || 'XX')[1];
   });
   if (o.d === 'H' && wFill && !kids.some(c => (c.s || '')[0] === 'F')) {
-    // a FILL-width row with no FILL child yet: the LAST wide flexible child flexes (expanding rightward never shifts the
-    // earlier items), so the row resizes without moving measured positions.
-    const cand = [...kids].reverse().find(c => fillable(c) && c.w > 40);
+    // a FILL-width row needs one FILL child so it grows with the screen. Prefer the ROUTE column — the group that holds a
+    // wide horizontal divider (a flight leg's duration/arrow line), so the extra width lands on the route and the arrival
+    // column + baggage after it move to the far right, matching the reference. Otherwise the LAST wide flexible child flexes
+    // (expanding rightward never shifts the earlier items).
+    const hasRule = c => (function seek(x) { return (x.k === 'r' && x.w > x.h && x.w > 80) || (x.c || []).some(seek); })(c);
+    const cand = kids.find(c => fillable(c) && c.w > 40 && hasRule(c)) || [...kids].reverse().find(c => fillable(c) && c.w > 40);
     if (cand) cand.s = 'F' + (cand.s || 'XX')[1];
   }
 }
@@ -310,12 +335,29 @@ if (root.d === 'H') {
     if (idx > 0 && pm[3] > 0) { root.g = (root.g || 0) + pm[3]; pm[3] = 0; main.p = pm; }   // fold left padding into the row gap
   } else if (main) main.s = 'F' + (main.s || 'XX')[1];
 }
+// no section column may run past the frame: SAP line-height can push a HUG column a few px taller than its reference, and
+// the frame clips it. Cap each top-level section column to FIXED height that fits inside the frame (clip:1) so nothing
+// leaves the frame at any scale — the last row clips instead of the filter column spilling below 616.
+{
+  // A tall section column (a V column near the top level, taller than a card) must not run past the frame: SAP line-height
+  // can push a HUG column a few px over its reference height (605 vs a 599 fit) and spill past 616. FIX such a column to a
+  // height that fits (clip:1) so its last row clips instead of leaving the frame. Cards (bg/bc/r) are already FIXED.
+  const rp = Array.isArray(root.p) ? root.p : [0, 0, 0, 0], avail = root.h - rp[0] - rp[2];
+  (function cap(o, depth) {
+    for (const c of (o.c || []).filter(x => !x.abs)) {
+      if (depth <= 2 && c.d === 'V' && !c.k && !c.bg && !c.bc && !c.r && c.h > avail - 40) {
+        c.h = Math.min(c.h, avail); c.s = (c.s || 'XX')[0] + 'X'; c.clip = 1;
+      } else cap(c, depth + 1);
+    }
+  })(root, 0);
+}
 // clean tree, like the gold trees: drop keys that equal their default (the renderer defaults them anyway) so the
 // build call the model types stays small. Kept: s (the door needs a sizing decision on every laid-out child).
 (function strip(o) {
   if (o.g === 0) delete o.g;
   if (Array.isArray(o.p) && o.p.every(v => v === 0)) delete o.p;
   if (o.a === 'MM') delete o.a;
+  delete o._ow;                                        // internal: the pre-shrink text width, only used for ta edge-matching
   (o.c || []).forEach(strip);
 })(root);
 fs.writeFileSync(outF, JSON.stringify(root));

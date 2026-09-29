@@ -26,6 +26,7 @@ async function _paintNode(node, o) {
     node.strokeAlign = 'INSIDE';
   }
   if (o.r && 'cornerRadius' in node) node.cornerRadius = o.r;
+  if (o.fxk) { try { const es = await _imp('s', o.fxk); await node.setEffectStyleIdAsync(es.id); } catch (e) { WARN.push(`${o.n}: shadow style — ${e.message}`); } }
 }
 // sizing letter per axis: X fixed, H hug, F fill. Old trees wrote F for fixed too → fill only when it spans the parent's free space.
 let _EXPLICIT = false;                                  // tree.sz === 'x': F always means FILL
@@ -53,6 +54,27 @@ function _size(n, o, par) {
       try { n.resize(i === 0 ? want : n.width, i === 0 ? n.height : want); } catch (_) {}
   }
 }
+async function _nav(sn, items) {
+  const slot = sn.findOne(x => x.name === '⿻ Navigation Items'); if (!slot) { WARN.push('Side Navigation: no items slot'); return; }
+  const all = slot.children.filter(c => c.type === 'INSTANCE'), plain = [];
+  for (const c of all) { const m = await c.getMainComponentAsync(); if (m && /Type=Navigation Item/.test(m.name) && Math.round(c.height) <= 34) plain.push(c); }
+  const base = plain[0] ? await plain[0].getMainComponentAsync() : null;
+  for (let i = 0; i < all.length; i++) {
+    const it = all[i];
+    if (i >= items.length) { it.visible = false; continue; }
+    if (base && !/Type=Navigation Item/.test((await it.getMainComponentAsync()).name)) it.swapComponent(base);
+    const d = items[i], keys = Object.keys(it.componentProperties), p = {};
+    for (const k of keys) { if (k.startsWith('✏️ Text#')) p[k] = d.text; if (k === 'Selected') p[k] = d.selected ? 'True' : 'False'; if (k === 'Expanded') p[k] = 'True'; if (k.startsWith('Icon#') && d.icon) { const ik = _k('i', d.icon); if (ik) p[k] = (await _imp('c', ik)).id; } }
+    try { it.setProperties(p); } catch (e) { WARN.push('nav item ' + i + ': ' + e.message); }
+  }
+  const foot = sn.findOne(x => x.name === '⿻ Footer'); if (foot) foot.children.forEach(c => { c.visible = false; });
+  const fr = sn.findOne(x => x.name === 'Footer'); if (fr) fr.visible = false;
+}
+async function _avatar(sb, initials) {
+  const av = sb.findOne(x => x.type === 'INSTANCE' && x.name === 'Avatar'); if (!av) { WARN.push('Shell Bar: no avatar'); return; }
+  const ik = Object.keys(av.componentProperties).find(k => k.startsWith('✏️ Initials#'));
+  try { av.setProperties({ Type: 'Initials', Color: '6', ...(ik ? { [ik]: initials } : {}) }); } catch (e) { WARN.push('avatar: ' + e.message); }
+}
 async function NODE(o, parent, par) {
   let n;
   if (o.k === 't') {
@@ -62,6 +84,8 @@ async function NODE(o, parent, par) {
     if (o.wrap || (o.ta && (o.s || '')[0] === 'X')) { n.textAutoResize = 'HEIGHT'; n.resize(o.w, n.height); }   // aligned text keeps its box
   } else if (o.k === 'i') {
     n = await I(o.cp, o.pr || {}, o.n); if (!n) return null;
+    if (o.nav) await _nav(n, o.nav);                                 // Side Navigation: the slot's items become the app's items
+    if (o.av) await _avatar(n, o.av);                                // Shell Bar: avatar initials
     for (const [nm, ch] of Object.entries(o.tx || {})) {           // text typed inside the instance
       const t = n.findOne(x => x.type === 'TEXT' && x.name === nm);
       if (!t) { WARN.push(`${o.n}: no inner text "${nm}"`); continue; }

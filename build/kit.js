@@ -23,6 +23,7 @@ function planNames(file) {
     (function walk(o) {
       if (o.cp) s.add(o.cp); if (o.st) s.add(o.st); if (o.ic) s.add(o.ic);
       if (o.pr && o.pr.Icon) s.add(o.pr.Icon);
+      (o.nav || []).forEach(x => x.icon && s.add(x.icon));
       tok(o.bg); tok(o.bc);
       (o.c || []).forEach(walk);
     })(tree);
@@ -73,7 +74,8 @@ if (cmd === 'c') {
 } else if (cmd === 'e') {
   for (const [name, key] of Object.entries(kit.effects)) if (re.test(name)) out(`${name}  ${key}`);
 } else if (cmd === 'pack') {
-  const names = q === '--plan' ? planNames(n) : process.argv.slice(3), K = { c: {}, v: {}, t: {}, i: {} }, miss = [];
+  const allNames = () => [...new Set([...Object.keys(kit.components), ...Object.keys(kit.text), ...Object.keys(kit.vars).map(f => f.split('/').pop()), ...Object.keys(kit.icons).map(f => f.split('/').pop())])];
+  const names = q === '--plan' ? planNames(n) : q === '--all' ? allNames() : process.argv.slice(3), K = { c: {}, v: {}, t: {}, i: {} }, miss = [];
   const low = o => Object.fromEntries(Object.keys(o).map(k => [k.toLowerCase(), k]));
   const lc = low(kit.components), lt = low(kit.text), li = low(kit.icons);
   const vShort = {}; for (const f of Object.keys(kit.vars)) { const s = f.split('/').pop(); (vShort[s.toLowerCase()] ||= []).push(f); }

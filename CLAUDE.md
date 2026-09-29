@@ -24,6 +24,7 @@ never open PNGs in the chat (scripts print text) · one `use_figma` per fix roun
 (nested pink box, cards), no collapsed / hidden / overlapping layers, build = reference size. STRUCTURE ≠ 0 or EYE < 95 = FAILED —
 never "a known limitation", never "MATCH is authoritative". Report provenance (gold tree or from zero). Why: 471:9819.
 **Responsive is a gate.** Every tree must resize: width = FILL (follows parent) or HUG (follows content); fixed width only for small parts (≤ 120 px), kit instances, or one side column beside a FILL sibling; no free placement; every row has one FILL child. `door.js` rule `responsive` rejects the rest; `spec2tree.js` builds bands/rows with FILL spacers. Never say a screen "resizes" without the door passing.
+**Make app → Figma (no Claude):** bookmark on the running Make (SAPUI5) app → Cmd+V in the SAP Bridge plugin → SAP frame. Converter `build/make-convert.js` + `make-map.json` (compiled into the plugin by `plugin-bundle.js`); steps, coverage and gaps: `docs/MAKE-TO-FIGMA.md`; golden test `test/make2tree.test.js`.
 The v4 flows below still work (SAP Bridge plugin, Figma Agent split) — use them only when asked.
 
 ## v4 in one line — Claude Code plans, the Figma Agent builds, Claude Code checks

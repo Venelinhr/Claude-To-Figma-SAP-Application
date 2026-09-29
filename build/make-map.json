@@ -1,0 +1,14 @@
+{
+  "_doc": "UI5 control -> SAP Web UI Kit mapping data for build/make2tree.js. Logic lives in make2tree.js; names here are checked against knowledge/live/kit.json by build/door.js.",
+  "skip_cls": ["sap.m.FlexItemData", "sap.m.IconTabFilterExpandButtonBadge", "sap.m.IconTabHeader", "sap.m.ToolbarSpacer"],
+  "skip_in_dynamic_header": ["sap.m.Button", "sap.m.ToggleButton"],
+  "icon_alias": {
+    "menu2": "menu", "flight": "flight", "customer": "group", "map": "globe", "appointment": "calendar",
+    "employee": "group", "person-placeholder": "group", "pushpin-off": "flag"
+  },
+  "button_type": { "Emphasized": "Primary", "Default": "Secondary", "Transparent": "Tertiary", "Accept": "Accept", "Reject": "Reject", "Attention": "Attention", "Ghost": "Secondary", "Neutral": "Secondary", "Up": "Secondary", "Back": "Tertiary" },
+  "avatar_color": { "Accent1": "1", "Accent2": "2", "Accent3": "3", "Accent4": "4", "Accent5": "5", "Accent6": "6", "Accent7": "7", "Accent8": "8", "Accent9": "9", "Accent10": "10", "Transparent": "Transparent", "Placeholder": "Placeholder" },
+  "fill_pref": ["sapBackgroundColor", "sapBaseColor", "sapShell_Background", "sapList_Background", "sapTile_Background", "sapPageHeader_Background", "sapGroup_ContentBackground", "sapObjectHeader_Background", "sapList_SelectionBackgroundColor"],
+  "border_pref": ["sapList_BorderColor", "sapTile_BorderColor", "sapGroup_ContentBorderColor", "sapPageHeader_BorderColor", "sapContent_Selected_ForegroundColor", "sapSelectedColor"],
+  "ink_pref": ["sapTextColor", "sapContent_LabelColor", "sapLinkColor", "sapPositiveTextColor", "sapNegativeTextColor", "sapCriticalTextColor", "sapTitleColor", "sapContent_IconColor", "sapContent_NonInteractiveIconColor"]
+}
