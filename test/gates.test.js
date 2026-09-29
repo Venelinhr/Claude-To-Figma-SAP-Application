@@ -206,14 +206,15 @@ test('spec2tree.js (from zero): measured alignment, role colours, aligned text w
   const T = JSON.parse(fs.readFileSync(path.join(d, 't.json'), 'utf8')), all = [];
   (function w(o) { all.push(o); (o.c || []).forEach(w); })(T);
   const get = n => all.find(o => o.n === n);
-  assert.strictEqual(get('Card Спирки').bc, 'sapList_BorderColor', 'border by role, not pixel distance');
-  assert.strictEqual(get('Спирки row').a, 'SM', 'two far-apart children, same top edge → space-between, top');
+  assert.strictEqual(get('Card Спирки').bc, 'sapList_BorderColor', 'border by role, not pixel distance; the card frame survives the flow');
+  const hrow = all.find(o => o.d === 'H' && (o.c || []).some(c => c.n === 'Спирки'));
+  assert.ok(hrow, 'title + trailing icon → a horizontal row (baked gap, not free-placed)');
   assert.strictEqual(get('decline').bg, 'sapContent_NonInteractiveIconColor', 'icon painted with an icon colour');
-  assert.strictEqual(get('decline').w, 20, 'icon frame = drawing / 0.8');
-  const p = get('365,72 €'), row = all.find(o => (o.c || []).includes(p));
+  assert.strictEqual(get('decline').w, 16, 'icon keeps its measured footprint (no 1/0.8 inflation)');
+  const p = get('365,72 €');
   assert.strictEqual(p.bg, 'sapContent_Selected_ForegroundColor', 'brand → SAP accent');
-  assert.ok(row.d === 'H' && p.ta === 'R' && p.s[0] === 'F', 'price: FILL width + right-aligned → its right edge follows the screen');
-  assert.ok(!all.some(o => o.xy), 'responsive: no free-placed layer is left');
+  assert.ok(p.ta === 'R' && p.s[0] === 'H', 'price: right-aligned + HUG width (a FILL text wraps in Figma; textAlignHorizontal keeps its edge)');
+  assert.ok(!all.some(o => o.xy && !o.abs), 'responsive: no free-placed layer left (abs overlap pins are allowed)');
   assert.ok(/^X/.test(get('Избор').s), 'button keeps its measured width');
   assert.strictEqual(node(['build/door.js', path.join(d, 't.json')]).code, 0, 'the tree gets through the front door');
 });
@@ -252,4 +253,140 @@ test('door.js responsive rule: a fixed-width card in a column, a free-placed fra
   const r = node(['build/door.js', path.join(d, 'b.json')]);
   assert.notStrictEqual(r.code, 0);
   assert.match(r.out, /responsive/);
+});
+
+// ── compact wire format (build/tree-codec.js) + smaller, cleaner spec2tree output ──
+const codec = require(path.join(ROOT, 'build/tree-codec.js'));
+const GOLD_TREES = ['flight-results-1000.tree.json', 'po-list-report-1440.tree.json'].map(f => path.join(ROOT, 'knowledge/gold/trees', f));
+
+test('tree-codec: decode(encode(tree)) deep-equals every gold tree (lossless round-trip)', () => {
+  for (const f of GOLD_TREES) {
+    const t = JSON.parse(fs.readFileSync(f, 'utf8'));
+    assert.deepStrictEqual(codec.decode(codec.encode(t)), t, path.basename(f));
+    const env = codec.encode(t);
+    assert.strictEqual(env.$c, 1); assert.ok(Array.isArray(env.d) && env.d.length, 'dictionary is built');
+    // the checksum is over the tree the runtime reconstructs, so it verifies on the decoded tree
+    assert.strictEqual(codec.fnv(JSON.stringify(codec.decode(env))), env.k, 'checksum matches the decoded tree of ' + path.basename(f));
+  }
+});
+
+test('tree-codec: a plain tree passes through decode unchanged; a corrupted envelope fails its checksum', () => {
+  // two texts share a text style + colour → those strings land in the dictionary, so corrupting one is caught
+  const plain = { n: 'X', sz: 'x', w: 10, h: 40, d: 'V', c: [
+    { n: 'A', k: 't', t: 'Hi', st: 'H4/Bold', bg: 'sapTextColor', s: 'HH', w: 5, h: 5 },
+    { n: 'B', k: 't', t: 'Yo', st: 'H4/Bold', bg: 'sapTextColor', s: 'HH', w: 5, h: 5 }] };
+  assert.deepStrictEqual(codec.decode(plain), plain, 'a tree with no $c is returned as-is');
+  const env = codec.encode(plain);
+  assert.ok(env.d.length >= 1 && env.d.includes('sapTextColor'), 'the repeated colour is dictionaried');
+  env.d[env.d.indexOf('sapTextColor')] = 'CORRUPTED';   // a typo by the typing model in a dictionary entry
+  assert.notStrictEqual(codec.fnv(JSON.stringify(codec.decode(env))), env.k, 'checksum no longer matches');
+});
+
+test('tree-codec: the decode + checksum inlined in render-tree.js reproduces the tree and returns PAYLOAD CORRUPTED on a mismatch', () => {
+  const rt = fs.readFileSync(path.join(ROOT, 'build/templates/render-tree.js'), 'utf8');
+  const src = rt.match(/const _DKEYS = \[[\s\S]*?function _decode\(env\)\{[\s\S]*?\n\}/);
+  assert.ok(src, 'render-tree.js still contains the inlined _DKEYS/_fnv/_decode');
+  const sb = {}; new Function('e', src[0] + '\ne._decode=_decode;e._fnv=_fnv;')(sb);
+  const t = JSON.parse(fs.readFileSync(GOLD_TREES[0], 'utf8')), env = codec.encode(t);
+  assert.deepStrictEqual(sb._decode(env), t, 'runtime decode matches the original tree');
+  assert.strictEqual(sb._fnv(JSON.stringify(sb._decode(env))), env.k, 'runtime fnv agrees with the encoder checksum');
+  // simulate BUILD_TREE's guard: a bad checksum → PAYLOAD CORRUPTED (no build)
+  const bad = { ...env, k: '00000000' };
+  const verdict = sb._fnv(JSON.stringify(sb._decode(bad))) !== bad.k ? 'PAYLOAD CORRUPTED' : 'ok';
+  assert.strictEqual(verdict, 'PAYLOAD CORRUPTED');
+});
+
+test('render.js --lean: the flight tree ships as a compact checksummed envelope, no plain tree, and stays small', () => {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'lean-'));
+  assert.strictEqual(node(['build/render.js', '--install', '--out', path.join(d, 'i.js')]).code, 0);
+  assert.strictEqual(node(['build/render.js', GOLD_TREES[0], '--lean', '--out', path.join(d, 'l.js')]).code, 0);
+  const l = fs.readFileSync(path.join(d, 'l.js'), 'utf8');
+  assert.match(l, /const TREE = \{"\$c":1,"d":\[/, 'the tree is the compact envelope, not a plain tree');
+  assert.ok(!l.includes('function NODE'), 'the runtime is not inlined (lean)');
+  assert.ok(l.length < fs.readFileSync(GOLD_TREES[0], 'utf8').length + 2000, 'lean is not bigger than the raw tree + KIT overhead');
+  new Function('figma', '(async()=>{' + l + '})');   // compiles
+});
+
+test('spec2tree.js: the responsive tree carries no "Spacer" or "offset" frames — designer containers (row/column/group) instead', () => {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 's2t-clean-'));
+  // three bands with uneven spacing and a cross-axis offset → the old flow() would emit spacers + offset wrappers
+  fs.writeFileSync(path.join(d, 'spec.json'), JSON.stringify({ frame: { w: 600, h: 300, fill: 'sapBaseColor' }, sections: [
+    { type: 'box', box: [10, 10, 580, 280], fill: 'sapBaseColor', border: '1px sapTile_SeparatorColor', radius: 8, children: [
+      { type: 'text', text: 'Резултати', style: 'H4/Bold', token: 'sapTitleColor', box: [24, 24, 120, 20] },
+      { type: 'component', component: 'Button', text: 'Избор', box: [470, 22, 100, 26] },
+      { type: 'component', component: 'Button', text: 'Директни', box: [24, 90, 110, 24] },
+      { type: 'text', text: 'от 365 €', style: 'SmallText/LHAuto/Regular', token: 'sapTextColor', box: [40, 118, 60, 12] },
+      { type: 'text', text: 'Най-евтино', style: 'SmallText/LHAuto/Bold', token: 'sapTextColor', box: [24, 170, 90, 12] },
+      { type: 'text', text: '191,00 € • 15ч', style: 'SmallText/LHAuto/Regular', token: 'sapTextColor', box: [24, 190, 130, 12] }] }] }));
+  assert.strictEqual(node(['build/spec2tree.js', path.join(d, 'spec.json'), path.join(d, 't.json')]).code, 0);
+  const T = JSON.parse(fs.readFileSync(path.join(d, 't.json'), 'utf8')), all = [];
+  (function w(o) { all.push(o); (o.c || []).forEach(w); })(T);
+  assert.ok(!all.some(o => o.n === 'Spacer'), 'no Spacer frame is emitted');
+  assert.ok(!all.some(o => / offset$/.test(o.n)), 'no "offset" wrapper frame is emitted');
+  assert.ok(!all.some(o => o.xy && !o.abs), 'no layer is free-placed (abs overlap pins allowed)');
+  assert.ok(!all.some(o => Array.isArray(o.p) && o.p.some(v => v < 0)), 'never negative padding');
+  assert.ok(!all.some(o => o.g === 0), 'default gap 0 is dropped');
+  assert.ok(!all.some(o => Array.isArray(o.p) && o.p.every(v => v === 0)), 'default padding [0,0,0,0] is dropped');
+  assert.ok(!all.some(o => o.a === 'MM'), 'default alignment MM is dropped');
+  assert.strictEqual(node(['build/door.js', path.join(d, 't.json')]).code, 0, 'the clean tree still passes the front door');
+});
+
+test('spec2tree.js (hairline XY-cut): a card with a full-height vertical separator and a full-width divider lays out geometrically right (POSITION ≥ 95, no negative padding)', () => {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 's2t-hair-'));
+  // a mini flight card: left leg content | full-height separator | right price column; a full-width divider under the leg.
+  // the old flow() banded by y-overlap, so the full-height separator + full-width divider collapsed the whole card into one
+  // row and pushed the price ~1000 px away. The hairline-aware XY-cut must pull each rule out as an item and place the rest.
+  fs.writeFileSync(path.join(d, 'spec.json'), JSON.stringify({ frame: { w: 600, h: 200, fill: 'sapBaseColor' }, sections: [
+    { type: 'box', box: [10, 10, 580, 180], fill: 'sapBaseColor', border: '1px sapTile_SeparatorColor', radius: 8, children: [
+      { type: 'text', text: '06:00', style: 'H4/Bold', token: 'sapTextColor', box: [30, 40, 60, 18] },
+      { type: 'text', text: 'SOF', style: 'SmallText/LHAuto/Regular', token: 'sapTextColor', box: [30, 66, 40, 12] },
+      { type: 'text', text: '07:15', style: 'H4/Bold', token: 'sapTextColor', box: [300, 40, 60, 18] },
+      { type: 'text', text: 'LTN', style: 'SmallText/LHAuto/Regular', token: 'sapTextColor', box: [300, 66, 40, 12] },
+      { type: 'divider', box: [30, 120, 380, 2], token: 'sapList_BorderColor' },                 // full-width horizontal rule
+      { type: 'separator', box: [430, 20, 2, 160], token: 'sapList_BorderColor' },               // full-height vertical rule
+      { type: 'text', text: '365,72 €', style: 'H4/Bold', token: 'sapTextColor', box: [470, 40, 90, 22] },
+      { type: 'component', component: 'Button', text: 'Избор', box: [470, 130, 100, 30] }] }] }));
+  assert.strictEqual(node(['build/spec2tree.js', path.join(d, 'spec.json'), path.join(d, 't.json')]).code, 0);
+  const T = JSON.parse(fs.readFileSync(path.join(d, 't.json'), 'utf8')), all = [];
+  (function w(o) { all.push(o); (o.c || []).forEach(w); })(T);
+  assert.ok(!all.some(o => Array.isArray(o.p) && o.p.some(v => v < 0)), 'never negative padding');
+  // the vertical separator is a real item in a horizontal flow (its parent frame lays out left→right)
+  const sep = all.find(o => o.k === 'r' && o.h > o.w && o.h >= 120);
+  assert.ok(sep, 'the full-height separator survives as a rectangle item');
+  const r = node(['build/layout-sim.js', path.join(d, 't.json'), '--expect', path.join(d, 't.expect.json')]);
+  assert.strictEqual(r.code, 0, r.out);
+  assert.match(r.out, /POSITION\s+\d+\/\d+ leaves within 4 px of the reference = (9[5-9]|100) %/);
+  assert.match(r.out, /OVERFLOW\s+0 leaves/);
+  // and it resizes: the door's responsive rule passes, and no child spills the frame when scaled
+  assert.strictEqual(node(['build/door.js', path.join(d, 't.json')]).code, 0, 'front door incl. responsive rule');
+  for (const s of ['0.85', '1.15']) assert.match(node(['build/layout-sim.js', path.join(d, 't.json'), '--expect', path.join(d, 't.expect.json'), '--scale', s]).out, /OVERFLOW\s+0 leaves/, 'no overflow at scale ' + s);
+});
+
+test('spec2tree.js: a text box uses the kit LINE HEIGHT (floor(size×1.17)), top-aligned on the glyph, and never FILL (would wrap in Figma)', () => {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 's2t-lh-'));
+  // H5/Bold is 16 px in the kit → line height floor(16×1.17)=18; the measured glyph was 14 → the box must be 18, top-aligned
+  fs.writeFileSync(path.join(d, 'spec.json'), JSON.stringify({ frame: { w: 300, h: 120, fill: 'sapBaseColor' }, sections: [
+    { type: 'box', box: [10, 10, 280, 100], fill: 'sapBaseColor', border: '1px sapTile_SeparatorColor', children: [
+      { type: 'text', text: 'Спирки', style: 'H5/Bold', token: 'sapTextColor', box: [24, 24, 60, 14] },
+      { type: 'text', text: '365 €', style: 'H5/Bold', token: 'sapTextColor', box: [200, 24, 40, 14] }] }] }));
+  assert.strictEqual(node(['build/spec2tree.js', path.join(d, 'spec.json'), path.join(d, 't.json')]).code, 0);
+  const T = JSON.parse(fs.readFileSync(path.join(d, 't.json'), 'utf8')), all = [];
+  (function w(o) { all.push(o); (o.c || []).forEach(w); })(T);
+  const title = all.find(o => o.t === 'Спирки');
+  assert.strictEqual(title.h, 18, 'text height = kit line height floor(16×1.17), not the 14-px glyph');
+  assert.ok(!all.some(o => o.k === 't' && (o.s || 'XX')[0] === 'F'), 'no text is FILL width (a FILL text wraps in Figma)');
+});
+
+test('layout-sim --geometry: reports how the SIMULATED layout diverges from a REAL Figma dump (calibration tool)', () => {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'geo-'));
+  const tree = { n: 'Screen', sz: 'x', w: 200, h: 100, d: 'V', bg: 'sapBaseColor', p: [10, 0, 0, 10], c: [
+    { n: 'Title', k: 't', t: 'Orders', st: 'H4/Bold', bg: 'sapTitleColor', w: 60, h: 20, s: 'HH' }] };
+  fs.writeFileSync(path.join(d, 't.json'), JSON.stringify(tree));
+  // a real dump where "Title" is 30 px lower than the simulator places it (row: [id,type,name,x,y,w,h,...])
+  fs.writeFileSync(path.join(d, 'geo.json'), JSON.stringify([
+    ['1', 'FRAME', 'Screen', 0, 0, 200, 100, 0, '', '', '', 0, 'VERTICAL', '', ''],
+    ['2', 'TEXT', 'Title', 10, 40, 60, 20, 0, '', '', '', 0, '', 'Orders', '1']]));
+  const r = node(['build/layout-sim.js', path.join(d, 't.json'), '--geometry', path.join(d, 'geo.json'), '--tol', '4']);
+  assert.match(r.out, /GEOMETRY\s+\d+\/\d+ uniquely-named nodes match real Figma/);
+  assert.match(r.out, /Title: real 10,40 .* sim 10,10 .*Δxy 0,-30/, 'names the node and its real-vs-sim divergence');
 });

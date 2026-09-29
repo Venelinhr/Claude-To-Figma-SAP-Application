@@ -74,7 +74,7 @@ async function NODE(o, parent, par) {
     if (o.w && Math.abs(n.width - o.w) > 0.5) n.rescale(o.w / n.width);   // rescale keeps the icon's shape; resize distorts it
   } else if (o.k === 'r') {
     n = o.el ? figma.createEllipse() : figma.createRectangle(); n.name = o.n;
-    n.resize(Math.max(0.01, o.w), Math.max(0.01, o.h)); await _paintNode(n, o);
+    n.resize(Math.max(0.01, o.w || 1), Math.max(0.01, o.h || 1)); await _paintNode(n, o);
   } else if (o.k === 'v') {
     n = figma.createNodeFromSvg(o.svg); n.name = o.n; n.fills = [];
     const t = o.bg || o.bc;
@@ -89,7 +89,7 @@ async function NODE(o, parent, par) {
       const a = o.a || 'MM'; n.primaryAxisAlignItems = _AL[a[0]]; n.counterAxisAlignItems = a[1] === 'S' ? 'MIN' : _AL[a[1]];
       n.strokesIncludedInLayout = false;
     }
-    n.resize(Math.max(0.01, o.w), Math.max(0.01, o.h));
+    n.resize(Math.max(0.01, o.w || 1), Math.max(0.01, o.h || 1));
     await _paintNode(n, o);
     n.clipsContent = !!o.clip;
   }
@@ -105,7 +105,17 @@ async function NODE(o, parent, par) {
   if (o.c && !o.k) for (const ch of o.c) await NODE(ch, n, o);
   return n;
 }
+// ── COMPACT WIRE FORMAT (build/tree-codec.js RUNTIME_SRC — keep in sync; the gates test guards it) ──
+const _DKEYS = ["cp","st","bg","bc","ic"];
+function _fnv(s){let h=0x811c9dc5;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=(h+((h<<1)+(h<<4)+(h<<7)+(h<<8)+(h<<24)))>>>0;}return h.toString(16).padStart(8,'0');}
+function _decode(env){
+  const D=env.d;
+  const dec=o=>{const r={};for(const k in o){const v=o[k];if(k==='c')continue;r[k]=(_DKEYS.indexOf(k)>=0&&typeof v==='number')?D[v]:v;}if(o.c)r.c=o.c.map(dec);return r;};
+  return dec(env.t);
+}
+// ── end compact wire format ──
 async function BUILD_TREE(tr) {
+  if (tr && tr.$c) { const plain = _decode(tr); if (_fnv(JSON.stringify(plain)) !== tr.k) return 'PAYLOAD CORRUPTED'; tr = plain; }
   _EXPLICIT = tr.sz === 'x';
   const root = await NODE(tr, null, null);
   let maxX = 0; for (const k of figma.currentPage.children) if (k !== root) maxX = Math.max(maxX, k.x + k.width);

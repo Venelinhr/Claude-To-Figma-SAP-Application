@@ -17,6 +17,22 @@ const T = raw.tree || raw;
 const ri = process.argv.indexOf('--ref'), REF = ri > 0 ? JSON.parse(fs.readFileSync(process.argv[ri + 1], 'utf8')) : null;
 let ASKS = [];
 
+// a HUG container (a designer's row/column) carries no w/h — the renderer sizes it from content. Resolve _w/_h
+// bottom-up so the ASCII placement below never divides by an undefined width (a NaN would corrupt the whole grid).
+function measure(o) {
+  const kids = (o.c || []).filter(k => !k.abs);
+  kids.forEach(measure);
+  const pd = Array.isArray(o.p) ? o.p : [o.p || 0, o.p || 0, o.p || 0, o.p || 0];
+  if (o.d) {
+    const H = o.d === 'H', along = kids.reduce((s, k) => s + (H ? k._w : k._h), 0) + (o.g || 0) * Math.max(0, kids.length - 1);
+    const cross = kids.reduce((m, k) => Math.max(m, H ? k._h : k._w), 0);
+    o._w = o.w != null ? o.w : (H ? along + pd[1] + pd[3] : cross + pd[1] + pd[3]);
+    o._h = o.h != null ? o.h : (H ? cross + pd[0] + pd[2] : along + pd[0] + pd[2]);
+  } else {
+    const ext = (i, dim) => kids.reduce((m, k) => Math.max(m, (k.xy ? k.xy[i] : 0) + k['_' + dim]), 0);
+    o._w = o.w != null ? o.w : ext(0, 'w'); o._h = o.h != null ? o.h : ext(1, 'h');
+  }
+}
 // a small auto-layout pass: absolute x/y for every node (enough for the ASCII picture)
 function place(o, x, y) {
   o._x = x; o._y = y;
@@ -24,29 +40,30 @@ function place(o, x, y) {
   if (o.d) {
     const p = Array.isArray(o.p) ? o.p : [o.p || 0, o.p || 0, o.p || 0, o.p || 0];
     const H = o.d === 'H', a = o.a || 'MM';
-    const used = kids.reduce((s, k) => s + (H ? k.w : k.h), 0) + (o.g || 0) * Math.max(0, kids.length - 1);
-    const free = (H ? o.w - p[1] - p[3] : o.h - p[0] - p[2]) - used;
+    const used = kids.reduce((s, k) => s + (H ? k._w : k._h), 0) + (o.g || 0) * Math.max(0, kids.length - 1);
+    const free = (H ? o._w - p[1] - p[3] : o._h - p[0] - p[2]) - used;
     let cur = (H ? p[3] : p[0]) + (a[0] === 'C' ? free / 2 : a[0] === 'X' ? free : 0);
     const gap = a[0] === 'S' && kids.length > 1 ? (o.g || 0) + free / (kids.length - 1) : (o.g || 0);
     for (const k of kids) {
-      const cross = H ? o.h - p[0] - p[2] - k.h : o.w - p[1] - p[3] - k.w;
+      const cross = H ? o._h - p[0] - p[2] - k._h : o._w - p[1] - p[3] - k._w;
       const off = (H ? p[0] : p[3]) + (a[1] === 'C' ? cross / 2 : a[1] === 'X' ? cross : 0);
       place(k, H ? x + cur : x + off, H ? y + off : y + cur);
-      cur += (H ? k.w : k.h) + gap;
+      cur += (H ? k._w : k._h) + gap;
     }
   } else for (const k of kids) place(k, x + (k.xy ? k.xy[0] : 0), y + (k.xy ? k.xy[1] : 0));
   for (const k of (o.c || []).filter(k => k.abs)) place(k, x + (k.xy ? k.xy[0] : 0), y + (k.xy ? k.xy[1] : 0));
 }
+measure(T);
 place(T, 0, 0);
 const all = []; (function walk(o, d) { o._d = d; all.push(o); (o.c || []).forEach(k => walk(k, d + 1)); })(T, 0);
 
 function ascii(maxDepth) {
   const W = 118, sx = W / T.w, sy = sx / 2, H = Math.max(6, Math.round(T.h * sy));
   const g = Array.from({ length: H + 1 }, () => Array(W + 1).fill(' '));
-  const X = o => [Math.round(o._x * sx), Math.round(o._y * sy), Math.min(W, Math.round((o._x + o.w) * sx)), Math.min(H, Math.round((o._y + o.h) * sy))];
-  const put = (x, y, t, max, over = ' ') => { if (y < 0 || y > H) return; if (x <= W && '|+'.includes(g[y][x])) x++;
+  const X = o => [Math.round(o._x * sx), Math.round(o._y * sy), Math.min(W, Math.round((o._x + o._w) * sx)), Math.min(H, Math.round((o._y + o._h) * sy))];
+  const put = (x, y, t, max, over = ' ') => { if (!(y >= 0 && y <= H) || !(x >= 0)) return; if (x <= W && '|+'.includes(g[y][x])) x++;
     for (let i = 0; i < Math.min(t.length, max) && x + i <= W; i++) { if (g[y][x + i] !== ' ' && g[y][x + i] !== over) break; g[y][x + i] = t[i]; } };   // stop at a border
-  for (const o of all.filter(o => !o.k && o._d <= maxDepth && o.w * sx >= 8 && o.h * sy >= 2)) {   // containers = boxes
+  for (const o of all.filter(o => !o.k && o._d <= maxDepth && o._w * sx >= 8 && o._h * sy >= 2)) {   // containers = boxes
     const [x0, y0, x1, y1] = X(o);
     for (let x = x0; x <= x1; x++) for (const y of [y0, y1]) g[y][x] = g[y][x] === '|' ? '+' : '-';
     for (let y = y0; y <= y1; y++) for (const x of [x0, x1]) g[y][x] = g[y][x] === '-' ? '+' : '|';
@@ -117,7 +134,7 @@ function lTree(max) {
     const what = o.k === 't' ? `text "${String(o.t).slice(0, 30)}" · ${o.st || 'NO STYLE'} · ${o.bg || ''}`
       : o.k === 'i' ? `SAP ${o.cp}${pr ? ' · ' + pr : ''}${o.tx ? ' · "' + Object.values(o.tx).join('" "').slice(0, 40) + '"' : ''}`
       : o.k === 'ic' ? `icon ${o.ic}` : o.k === 'r' ? `rect ${o.w}×${o.h} · ${o.bg || ''}` : o.k === 'v' ? 'vector'
-      : `${o.d ? (o.d === 'H' ? 'HORIZONTAL' : 'VERTICAL') : 'free'}${o.g ? ' gap ' + o.g : ''}${p ? ' pad ' + p : ''}${o.bg ? ' · fill ' + o.bg : ''}${o.bc ? ' · border ' + o.bc : ''}${o.img ? ' · image fill' : ''} · ${o.w}×${o.h}`;
+      : `${o.d ? (o.d === 'H' ? 'HORIZONTAL' : 'VERTICAL') : 'free'}${o.g ? ' gap ' + o.g : ''}${p ? ' pad ' + p : ''}${o.bg ? ' · fill ' + o.bg : ''}${o.bc ? ' · border ' + o.bc : ''}${o.img ? ' · image fill' : ''} · ${o.w != null && o.h != null ? o.w + '×' + o.h : 'auto size'}`;
     out.push(`L${d + 1}${' '.repeat(2 * d + 1)}${o.n}   ${what}${o.s ? ' [' + o.s + ']' : ''}`);
     if (d + 1 >= max) { if (o.c) out.push(`${' '.repeat(2 * d + 6)}… ${o.c.length} inside`); return; }
     for (let i = 0; i < (o.c || []).length; i++) {

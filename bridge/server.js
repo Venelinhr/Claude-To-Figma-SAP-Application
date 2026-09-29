@@ -416,6 +416,59 @@ const jobIndex = new Map();                    // jobId → summary (outlives ru
 const lastJobByFile = new Map();               // fileKey → jobId
 let currentJobId = null;
 
+// ── v5: TREE JOBS — the SAP Bridge plugin BUILDS the tree itself (the MODEL TYPES NOTHING) ──
+// The CLI (build/send.js) posts a ready payload {version, runtime, kit, tree} (from render.js --json);
+// the open+paired plugin polls /tree/next for the current file, runs the payload, dumps geometry + the
+// audit tree, exports a PNG, and posts the lot back to /tree/result. The CLI long-polls /tree/wait.
+// No use_figma, no model typing — the renderer runs where fetch reaches localhost (the plugin main thread).
+// State dir is separate from v4's bridge-out so a test port never touches the LaunchAgent's jobs.
+const TREE_DIR = process.env.SAP_BRIDGE_TREE_DIR || path.join(OUT, 'tree-jobs');
+const treeJobs = new Map();                     // jobId → tree-job record
+let treeSeq = 0;
+const TREE_JOB_TTL_MS = 30 * 60 * 1000;         // evict a settled tree job after 30 min
+try { fs.mkdirSync(TREE_DIR, { recursive: true }); } catch (_) {}
+function treeGc() {
+  const now = Date.now();
+  for (const [id, j] of treeJobs) if ((j.status === 'done' || j.status === 'error') && now - j.settledAt > TREE_JOB_TTL_MS) treeJobs.delete(id);
+}
+// The /tree/wait reply: the result without the big blobs (they are already on disk in <jobDir>/check/).
+function treeResultLite(j) {
+  const r = j.result || {};
+  return { jobId: j.id, status: j.status, ok: r.ok !== false && j.status === 'done',
+    error: r.error || null, nodeId: r.nodeId || null, made: r.made == null ? null : r.made,
+    WARN: Array.isArray(r.WARN) ? r.WARN : [], ms: r.ms == null ? null : r.ms,
+    wrote: r.wrote || [], fileKey: j.fileKey };
+}
+// Write the plugin's payload into <jobDir>/check/ so build/send.js can run the gates on it.
+function writeTreeResult(job, b) {
+  const wrote = [];
+  if (!job.jobDir) return wrote;
+  const dir = path.join(job.jobDir, 'check');
+  try { fs.mkdirSync(dir, { recursive: true }); } catch (_) {}
+  const put = (name, buf) => { try { fs.writeFileSync(path.join(dir, name), buf); wrote.push(name); } catch (_) {} };
+  if (b.geometry != null) put('geometry.json', JSON.stringify(b.geometry));
+  if (b.audit != null) put('tree.json', JSON.stringify(b.audit));   // dump-tree output = the audit tree
+  if (typeof b.pngBase64 === 'string' && b.pngBase64) {
+    try { put('build@2x.png', Buffer.from(b.pngBase64, 'base64')); } catch (_) {}
+  }
+  const summary = { jobId: job.id, ok: b.ok !== false, error: b.error || null, nodeId: b.nodeId || null,
+    made: b.made == null ? null : b.made, WARN: Array.isArray(b.WARN) ? b.WARN : [],
+    ms: b.ms == null ? null : b.ms, at: new Date().toISOString() };
+  put('result.json', JSON.stringify(summary, null, 2));
+  job._wrote = wrote;
+  return wrote;
+}
+function settleTreeJob(job, b) {
+  job.status = b.ok === false ? 'error' : 'done';
+  job.settledAt = Date.now();
+  job.result = { ok: b.ok !== false, error: b.error || null, nodeId: b.nodeId || null,
+    made: b.made == null ? null : b.made, WARN: Array.isArray(b.WARN) ? b.WARN : [],
+    ms: b.ms == null ? null : b.ms, wrote: job._wrote || [] };
+  console.log(`[tree ${job.id}] ${job.status}${b.error ? ' · ' + String(b.error).slice(0, 120) : ''} · node ${b.nodeId || '—'}`);
+  const w = job._waiters || []; job._waiters = [];
+  for (const f of w) { try { f(); } catch (_) {} }
+}
+
 const sha256 = (s) => crypto.createHash('sha256').update(String(s)).digest('hex');
 const rel = (p) => path.relative(PROJ, p);
 const clean = (s, n) => String(s == null ? '' : s).replace(/[\x00-\x08\x0b-\x1f]/g, ' ').slice(0, n).trim();
@@ -770,7 +823,8 @@ async function handleV4(req, res, url) {
     return true;
   }
   const routes = ['/poll', '/inbox', '/job', '/answer', '/job/logos-done', '/mbx/done', '/mbx/push',
-    '/job/status', '/job/last', '/job/cancel'];
+    '/job/status', '/job/last', '/job/cancel',
+    '/tree', '/tree/next', '/tree/result', '/tree/wait'];
   if (!routes.includes(p)) return false;
   const who = authOf(req, url);
   if (!who) { send(res, 401, { error: 'bad or missing token' }); return true; }
@@ -798,6 +852,39 @@ async function handleV4(req, res, url) {
   if (p === '/job/last') {
     const id = lastJobByFile.get(url.searchParams.get('fileKey') || '');
     send(res, 200, (id && jobIndex.get(id)) || {});
+    return true;
+  }
+  // v5 tree jobs — GET side (plugin polls /tree/next; CLI long-polls /tree/wait).
+  if (p === '/tree/next') {
+    if (who !== 'plugin') { send(res, 403, { error: 'plugin only' }); return true; }
+    treeGc();
+    const fileKey = String(url.searchParams.get('fileKey') || '');
+    let picked = null;
+    for (const j of treeJobs.values()) {
+      if (j.status === 'pending' && (!fileKey || j.fileKey === fileKey)) { if (!picked || j.seq < picked.seq) picked = j; }
+    }
+    if (!picked) { send(res, 200, {}); return true; }
+    picked.status = 'running';
+    picked.startedAt = Date.now();
+    send(res, 200, { jobId: picked.id, name: picked.name, fileKey: picked.fileKey,
+      payload: picked.payload, logos: picked.logos || [], want: picked.want });
+    return true;
+  }
+  if (p === '/tree/wait') {
+    if (who !== 'cli') { send(res, 403, { error: 'CLI only' }); return true; }
+    const j = treeJobs.get(String(url.searchParams.get('jobId') || ''));
+    if (!j) { send(res, 404, { error: 'unknown tree job' }); return true; }
+    const timeoutMs = Math.min(300, Math.max(1, Number(url.searchParams.get('timeout') || 120))) * 1000;
+    const settled = () => j.status === 'done' || j.status === 'error';
+    if (settled()) { send(res, 200, treeResultLite(j)); return true; }
+    let done = false;
+    const finish = () => { if (done) return; done = true; clearTimeout(t);
+      j._waiters = (j._waiters || []).filter((w) => w !== finish);
+      send(res, 200, settled() ? treeResultLite(j) : { status: 'pending' }); };
+    const t = setTimeout(finish, timeoutMs);
+    j._waiters = j._waiters || [];
+    j._waiters.push(finish);
+    req.on('close', () => { done = true; clearTimeout(t); j._waiters = (j._waiters || []).filter((w) => w !== finish); });
     return true;
   }
   if (req.method !== 'POST') { send(res, 405, { error: 'POST only' }); return true; }
@@ -879,6 +966,46 @@ async function handleV4(req, res, url) {
     stage(run, 'plan', `${(plan.sections || []).length} sections · ${plan.rows.length} rows · from Claude Code`);
     sendPlanMailbox(run, plan);
     send(res, 200, { jobId: run.id });
+    return true;
+  }
+
+  // v5 tree job — queue a ready payload for the plugin to build (CLI only).
+  if (p === '/tree') {
+    if (who !== 'cli') { send(res, 403, { error: 'CLI only' }); return true; }
+    treeGc();
+    const b = await readBody(req, 5.2e6);        // payload + logos may reach ~5 MB
+    if (b.__tooBig) return bad('tree job too big (over ~5 MB)');
+    const fileKey = String(b.fileKey || '');
+    if (!KEY_RE.test(fileKey)) return bad('bad or missing fileKey');
+    const pl = b.payload;
+    if (!pl || typeof pl.runtime !== 'string' || !pl.runtime || pl.tree == null || pl.kit == null) {
+      return bad('payload must be {version, runtime, kit, tree} from render.js --json');
+    }
+    const logos = (Array.isArray(b.logos) ? b.logos : []).slice(0, 40)
+      .filter((l) => l && l.name && typeof l.pngBase64 === 'string' && l.pngBase64)
+      .map((l) => ({ name: clean(l.name, 120), pngBase64: String(l.pngBase64) }));
+    const jobDir = b.jobDir ? path.resolve(PROJ, String(b.jobDir)) : null;
+    const id = crypto.randomBytes(8).toString('hex');
+    const job = { id, seq: treeSeq++, status: 'pending', createdAt: Date.now(), settledAt: 0,
+      fileKey, name: clean(b.name, 200) || 'Screen', jobDir,
+      payload: { version: String(pl.version || ''), runtime: pl.runtime, kit: pl.kit, tree: pl.tree },
+      logos, want: Object.assign({ geometry: true, audit: true, pngScale: 2 }, b.want || {}),
+      result: null, _waiters: [] };
+    treeJobs.set(id, job);
+    console.log(`[tree ${id}] queued · file ${fileKey} · ${logos.length} logo(s) · payload ${JSON.stringify(pl.tree).length}b`);
+    send(res, 200, { jobId: id });
+    return true;
+  }
+  // v5 tree job — the plugin posts the built result (plugin only). Writes into <jobDir>/check/.
+  if (p === '/tree/result') {
+    if (who !== 'plugin') { send(res, 403, { error: 'plugin only' }); return true; }
+    const b = await readBody(req, 5.2e6);        // decoded PNG base64 may be large
+    if (b.__tooBig) return bad('tree result too big (over ~5 MB)');
+    const job = treeJobs.get(String(b.jobId || ''));
+    if (!job) { send(res, 404, { error: 'unknown tree job' }); return true; }
+    writeTreeResult(job, b);
+    settleTreeJob(job, b);
+    send(res, 202, { ok: true });
     return true;
   }
 

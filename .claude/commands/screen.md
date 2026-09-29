@@ -1,6 +1,6 @@
 ---
 description: v5 — image or text (+ Figma file link) → Claude builds the SAP screen in Figma from a layout tree → checks it (≥ 95 % or it is a failure).
-model: claude-sonnet-5
+model: sonnet
 argument-hint: <image path | "text request"> <figma file or node link>
 ---
 
@@ -43,6 +43,11 @@ run 451:9507 took 219 turns / 34 min / $9.5 for one screen):
    until `✓ ALL IN`. Never show a plan with an OUT; never ask the user about an OUT (it is a defect, not a choice).
 3. **Face control done → propose.** Only the right parts are in: real kit components with allowed states, variables
    by role, real content, explicit sizing, the reference size, every reference text and icon placed.
+   **MANDATORY, no exceptions (user rule 2026-09-29): every plan reply MUST contain, PASTED VERBATIM inside ``` fences, (a) the ASCII
+   `WIREFRAME`, (b) the `L1-L5 LAYER TREE`, (c) the `SAP COMPONENTS` table — plus the zones table and the confidence table below.
+   The terminal folds tool output, so the user sees ONLY what you write. "See the tool output", a summary, or "layers: 198" instead
+   of the tree is a FAILED reply (the user had to ask "where is the ASCII / tree?" twice). Never shorten them to save tokens. Check
+   your own reply before sending: it has the ```WIREFRAME```, the ```L1-L5``` block, and the components table, or you rewrite it.**
    **Analysis for approval — same as `main`, engine v5.** `node build/tree.js plan bridge-out/<job>/tree.json
    [--ref …/spec.json]` (its DOOR line must say ✓ ALL IN). The user does not see tool output, so write it into the reply, in this order:
    (1) **Analyze** — 2-4 lines of measured facts (from `1 ANALYZE`): size, what the screen is, floorplan, density.
@@ -59,9 +64,17 @@ run 451:9507 took 219 turns / 34 min / $9.5 for one screen):
    Anything < 85 % is named as a question, together with the door's ASK lines (max 4, most important first).
    End with ONE line: **"Approve / Reject / Modify?"**. STOP — do not build before the user says yes.
    "change" → edit `tree.json`, re-run `tree.js plan`, show only what differs, ask again. "yes" → step 4 at once.
-4. **Build + check = the `screen-builder` subagent** (Agent tool, subagent_type `screen-builder`, prompt: `JOB=bridge-out/<job>
-   FILE=<file key>`). It sends the build, places logos, dumps and runs the gates in ITS OWN context and returns 5 lines —
-   the 20-40 KB build/dump payloads never enter this chat (451:9507 and 467:9740 cost $9-28 mostly from that).
+4. **Build + check = ONE command, no model typing (plugin path, ~11 s, ~0 tokens):**
+   `node build/send.js bridge-out/<job> --file <file key> [--ref bridge-out/<job>/ref.png]` — the SAP Bridge plugin (open in the
+   user's Figma file: Plugins → Development → SAP Bridge, "Connected to Claude") builds the tree, places `logo*.png`, dumps geometry
+   + audit, exports the PNG, and `send.js` runs `gates.js`. It prints: node link · WARN · MATCH/HYGIENE/STRUCTURE/EYE · BOX lines.
+   If it says "open SAP Bridge in the file" or the bridge is down (`node build/mailbox.js ensure`): ask the user to open the plugin
+   (never type the build code into `use_figma` unless the user says the plugin cannot be used). After ANY change to
+   `build/templates/*` run `node build/plugin-bundle.js` and ask the user to close + reopen the plugin (the runtime is compiled in).
+   Fallback only (plugin unusable) = the `screen-builder` subagent (Agent tool, subagent_type `screen-builder`, prompt: `JOB=bridge-out/<job>
+   FILE=<file key>`): it types the build into `use_figma` — slow (5-10 min, 40-60k tokens).
+   Before ANY build of a from-zero tree run the offline layout check: `node build/layout-sim.js bridge-out/<job>/tree.json --expect
+   bridge-out/<job>/tree.expect.json` (POSITION ≥ 95 %, OVERFLOW 0; also `--scale 0.85` and `1.15` = the responsive test).
    The steps it follows (for reference / when it is not available):
    **Build — one call, no hand-written code.** Once per Figma file: `node build/render.js --install --out i.js`
    → send its content (stores the runtime in the file). Then `node build/render.js tree.json --lean --out b.js` →

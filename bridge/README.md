@@ -59,6 +59,27 @@ ends, print `result.json`).
 
 Legacy SAP Agent v2 routes stay: `/run`, `/approve`, `/stream` (CLI token only).
 
+### v5 tree jobs — the plugin BUILDS the tree, the model types nothing
+`use_figma` has no `fetch` and no file input, so a subagent had to TYPE the whole build call (17–28k chars,
+40–60k tokens per build). Instead the SAP Bridge plugin — whose main thread reaches `http://localhost:41778`
+by `fetch` — runs the ready build itself. `build/send.js <JOB> --file <key>` renders the payload
+(`render.js --json` → `{version, runtime, kit, tree}`), queues it, the open+paired plugin builds it, dumps
+geometry + the audit tree, exports a PNG, posts it back; `send.js` then runs the gates and prints ≤ 8 lines.
+
+| Route | Auth | Request | Response |
+|---|---|---|---|
+| `POST /tree` | CLI | `{fileKey, jobDir, name, payload:{version,runtime,kit,tree}, logos?:[{name,pngBase64}], want:{geometry,audit,pngScale}}` | `{jobId}` (queued in memory) |
+| `GET /tree/next?fileKey=` | plugin | – | oldest pending job for that file (marked running): `{jobId,name,fileKey,payload,logos,want}`, or `{}` |
+| `POST /tree/result` | plugin | `{jobId, ok, error?, nodeId, made, WARN, ms, geometry?, audit?, pngBase64?}` (≤ ~5 MB) | `202`; the bridge writes `<jobDir>/check/`: `geometry.json`, `tree.json` (audit dump), `build@2x.png`, `result.json` |
+| `GET /tree/wait?jobId=&timeout=120` | CLI | – | long-poll → `result.json` without the big blobs when done, else `{status:"pending"}` on timeout |
+
+The plugin runs the payload exactly as the `use_figma` path does:
+`new (Object.getPrototypeOf(async()=>{}).constructor)('KIT','TREE', payload.runtime + '\nreturn await BUILD_TREE(TREE);')(payload.kit, payload.tree)`,
+then runs the `dump-geometry`/`dump-tree` template bodies (kept character-identical in `code.js`, asserted by
+`test/bridge-tree.test.js`) and `node.exportAsync`. State lives in `bridge-out/tree-jobs/` (env
+`SAP_BRIDGE_TREE_DIR`); tests use `SAP_BRIDGE_PORT` + `SAP_BRIDGE_TREE_DIR` so they never touch the LaunchAgent
+on 41778. Test: `node --test test/bridge-tree.test.js`.
+
 ### Events (`{seq, type, data, at}`)
 | type | data | plugin does |
 |---|---|---|

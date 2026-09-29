@@ -43,10 +43,20 @@ else {
   const ROLE = Object.fromEntries(Object.entries(R).filter(([, v]) => Array.isArray(v)).map(([k, v]) => [k, v[0]]));
   data = `const PLAN = ${JSON.stringify(P)};\nconst ROLE = ${JSON.stringify(ROLE)};`; call = 'return await BUILD(PLAN);';
 }
+// --json: the payload for the SAP Bridge plugin (no model typing): { version, runtime, kit, tree }.
+//   The plugin runs  AsyncFunction('KIT','TREE', runtime + '\nreturn await BUILD_TREE(TREE);')(kit, tree).
+if (flag('--json')) {
+  if (!tree) { console.error('--json works with a layout tree only'); process.exit(1); }
+  const j = JSON.stringify({ version: VER, runtime: RUNTIME, kit: JSON.parse(kit.replace(/^const KIT = /, '').replace(/;\s*$/, '')), tree });
+  if (out) { fs.writeFileSync(out, j); console.log(`${out}: ${j.length} chars (plugin payload, ${VER})`); } else process.stdout.write(j);
+  process.exit(0);
+}
 if (flag('--lean') && !tree) { console.error('--lean works with a layout tree only'); process.exit(1); }
+// --lean: the model types this. Send the tree in the compact wire format (repeated SAP names in one dictionary,
+// default keys dropped, a checksum of the plain tree) — the stored runtime decodes it and verifies the checksum.
 if (flag('--lean')) emit(`const rt = figma.root.getSharedPluginData('sapfiori', 'v5rt');
 if (!rt || figma.root.getSharedPluginData('sapfiori', 'v5rt_ver') !== '${VER}') return 'INSTALL FIRST';
 ${kit}
-${data}
+const TREE = ${JSON.stringify(require('./tree-codec.js').encode(tree))};
 return await new (Object.getPrototypeOf(async () => {}).constructor)('KIT', 'TREE', rt + '\\nreturn await BUILD_TREE(TREE);')(KIT, TREE);`);
 emit([T('sap-kit.prelude.js'), kit, data, tree ? T('render-tree.js') : T('render-plan.js'), call].join('\n'));

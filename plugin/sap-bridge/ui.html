@@ -627,6 +627,11 @@ textarea::placeholder{color:var(--figma-color-text-tertiary)}
         el.progress.style.display = '';
         el.progress.textContent = msg.text;
         break;
+      case 'tree-status':
+        // v5 tree job (CLI build/send.js) — one live line so the user sees the plugin building.
+        el.progress.style.display = '';
+        el.progress.textContent = 'Tree job · ' + msg.text;
+        break;
       case 'ask':
         pauseTimer(); // waiting on the user's answer — not build time
         askJobId = msg.jobId;

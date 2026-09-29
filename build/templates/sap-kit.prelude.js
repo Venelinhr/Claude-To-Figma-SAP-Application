@@ -27,8 +27,9 @@ async function setP(inst, props) {
     if (!real) { WARN.push(`${inst.name}: no prop "${name}" (has: ${Object.keys(defs).map(_norm).join(', ')})`); continue; }
     const d = defs[real];
     if (d.type === 'VARIANT') {
-      const opts = inst.mainComponent.parent && inst.mainComponent.parent.type === 'COMPONENT_SET'
-        ? inst.mainComponent.parent.componentPropertyDefinitions[real].variantOptions : [];
+      const mc = await inst.getMainComponentAsync();   // async: plugins with documentAccess dynamic-page forbid .mainComponent
+      const opts = mc && mc.parent && mc.parent.type === 'COMPONENT_SET'
+        ? mc.parent.componentPropertyDefinitions[real].variantOptions : [];
       const v = String(val), hit = opts.find(o => o.toLowerCase() === v.toLowerCase());
       if (!hit) { WARN.push(`${inst.name}.${real}: "${v}" not in [${opts.join(', ')}]`); continue; }
       variants[real] = hit;
