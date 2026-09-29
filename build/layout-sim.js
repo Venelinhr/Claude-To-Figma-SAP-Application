@@ -70,6 +70,9 @@ function place(o, x, y, W, Hh) {
 }
 place(T, 0, 0, nat(T, 0), nat(T, 1));
 const all = [...boxes.keys()], leaves = all.filter(leaf), R = v => Math.round(v * 10) / 10;
+// --dump-boxes <file>: write the simulated box of EVERY node by index path ("0.1.2" = T.c[0].c[1].c[2]; "" = root) — build/make-verify.js compares them with the Make boxes
+const dbf = opt('--dump-boxes', null);
+if (dbf) { const o = {}; (function w(n, p) { const b = boxes.get(n); if (b) o[p.join('.')] = b.map(R); (n.c || []).forEach((k, i) => w(k, p.concat(i))); })(T, []); fs.writeFileSync(dbf, JSON.stringify(o)); }
 const lines = [`LAYOUT-SIM  ${tf} · scale ${scale} · frame ${T.w}×${T.h} · ${leaves.length} leaves, ${all.length - leaves.length} frames`];
 let bad = 0;
 if (args.includes('--sizes')) {

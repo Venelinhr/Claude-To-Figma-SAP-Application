@@ -341,7 +341,8 @@ function convert(D, KIT, MAP, EXTRA, nameArg) {
   D.controls.forEach(c => { if (c.cls === 'sap.m.FlexItemData' && by[c.parent]) lay[c.parent] = c.st; });
   const skip = new Set(MAP.skip_cls);
   const vparent = c => { let p = c.parent; while (p && by[p] && skip.has(by[p].cls)) p = by[p].parent; return p; };
-  D.controls.forEach(c => { if (!skip.has(c.cls)) (kids[vparent(c)] = kids[vparent(c)] || []).push(c); });
+  const off = c => c.box[0] > D.viewport[0] - 1 || c.box[0] + c.box[2] < 1 || /HiddenElement|InvisibleText/.test((c.css || []).join(' '));   // overflow clones sit far outside the page
+  D.controls.forEach(c => { if (!skip.has(c.cls) && !off(c)) (kids[vparent(c)] = kids[vparent(c)] || []).push(c); });
   const ch = c => (kids[c.id] || []).filter(k => !(c.cls === 'sap.f.DynamicPageHeader' && MAP.skip_in_dynamic_header.includes(k.cls)));
   const grow = c => parseFloat((lay[c.id] || {}).grow) || 0;
   const px = v => { const m = /^(\d+(\.\d+)?)(px|rem)$/.exec(v || ''); return m ? parseFloat(m[1]) * (m[3] === 'rem' ? 16 : 1) : null; };
@@ -389,16 +390,17 @@ function convert(D, KIT, MAP, EXTRA, nameArg) {
   // ── node makers ──────────────────────────────────────────────────────────────────────────
   const CONTAINERS = new Set(['sap.f.DynamicPage', 'sap.f.DynamicPageTitle', 'sap.f.DynamicPageHeader', 'sap.tnt.ToolPage', 'sap.tnt.NavigationList', 'sap.m.IconTabHeader', 'sap.m.ScrollContainer', 'sap.m.Page', 'sap.m.Panel', 'sap.m.List', 'sap.m.OverflowToolbar', 'sap.m.Toolbar', 'sap.ui.layout.VerticalLayout', 'sap.ui.layout.HorizontalLayout']);
   const box = c => c.box.slice();
-  const inst = (c, cp, pr, label, tx) => ({ _b: cp === 'Switch' && KIT.components[cp] ? [c.box[0], c.box[1] + (c.box[3] - KIT.components[cp].h) / 2, KIT.components[cp].w, KIT.components[cp].h] : box(c), _k: 'inst', _grow: grow(c), _w: px(c.props.width), n: label || cp, k: 'i', cp, pr, w: (cp === 'Switch' || cp === 'Icon Button') && KIT.components[cp] ? KIT.components[cp].w : R(c.box[2]), h: (KIT.components[cp] && KIT.components[cp].h && cp !== 'Shell Bar' && cp !== 'Tab' && cp !== 'Navigation Item') ? KIT.components[cp].h : R(c.box[3]), _intr: (KIT.components[cp] || {}).h, ...(tx ? { tx } : {}) });
+  const inst = (c, cp, pr, label, tx) => ({ _src: c.id, _b: cp === 'Switch' && KIT.components[cp] ? [c.box[0], c.box[1] + (c.box[3] - KIT.components[cp].h) / 2, KIT.components[cp].w, KIT.components[cp].h] : box(c), _k: 'inst', _grow: grow(c), _w: px(c.props.width), n: label || cp, k: 'i', cp, pr, w: (cp === 'Switch' || cp === 'Icon Button') && KIT.components[cp] ? KIT.components[cp].w : R(c.box[2]), h: (KIT.components[cp] && KIT.components[cp].h && cp !== 'Shell Bar' && cp !== 'Tab' && cp !== 'Navigation Item') ? KIT.components[cp].h : R(c.box[3]), _intr: (KIT.components[cp] || {}).h, ...(tx ? { tx } : {}) });
   function text(c, t) {
     const tx = c.tx || {}, fs = tx.fs || 14, wrap = c.box[3] > fs * 1.9;
-    return { _b: box(c), _k: 'text', _grow: grow(c), _wrap: wrap, _lineFix: !wrap, n: String(t).slice(0, 28), k: 't', t: String(t), w: R(c.box[2]), h: R(c.box[3]), st: style(c), bg: tok(hexOf(tx.fg), 'ink'), ...(wrap ? { wrap: 1 } : {}), ...(c.props.textAlign === 'Center' ? { ta: 'C' } : {}) };
+    return { _src: c.id, _b: box(c), _k: 'text', _grow: grow(c), _wrap: wrap, _lineFix: !wrap, n: String(t).slice(0, 28), k: 't', t: String(t), w: R(c.box[2]), h: R(c.box[3]), st: style(c), bg: tok(hexOf(tx.fg), 'ink'), ...(wrap ? { wrap: 1 } : {}), ...(c.props.textAlign === 'Center' ? { ta: 'C' } : {}) };
   }
-  function iconNode(name, c, w) { return name ? { _b: box(c), _k: 'icon', _grow: 0, n: 'Icon ' + name, k: 'ic', ic: name, bg: tok(hexOf((c.tx || {}).fg || c.st.fg), 'ink'), w } : null; }
+  function iconNode(name, c, w) { return name ? { _src: c.id, _b: box(c), _k: 'icon', _grow: 0, n: 'Icon ' + name, k: 'ic', ic: name, bg: tok(hexOf((c.tx || {}).fg || c.st.fg), 'ink'), w } : null; }
   const nameOf = c => c.css.includes('flyDateTile') ? 'Fare Tile' : c.css.includes('flyFlightRow') ? 'Flight Row' : c.css.includes('flyCardContent') ? 'Card Content'
     : { 'sap.m.VBox': 'Column', 'sap.m.HBox': 'Row', 'sap.m.FlexBox': 'Row', 'sap.f.DynamicPage': 'Dynamic Page', 'sap.f.DynamicPageTitle': 'Page Title', 'sap.f.DynamicPageHeader': 'Page Header', 'sap.f.Card': 'Card' }[c.cls] || c.cls.split('.').pop();
 
-  function conv(c) {
+  function conv(c) { const n = conv0(c); if (n && typeof n === 'object' && !n._src) n._src = c.id; return n; }   // _src = the Make control a node came from (make-verify.js traces it)
+  function conv0(c) {
     const p = c.props;
     switch (c.cls) {
       case 'sap.tnt.ToolHeader': return shell(c);
@@ -410,6 +412,9 @@ function convert(D, KIT, MAP, EXTRA, nameArg) {
           : inst(c, 'Icon Button', { Type: type === 'Primary' ? 'Primary' : type === 'Tertiary' ? 'Tertiary' : 'Secondary', 'Form Factor': 'Compact', ...(ic ? { Icon: ic } : {}) }, 'Icon Button ' + (ic || ''));
       }
       case 'sap.m.Input': return inst(c, 'Input', { 'Form Factor': 'Compact', Content: 'Typed Text', '✏️ Typed Text': p.value || '' }, 'Input ' + (p.value || '').slice(0, 24));
+      case 'sap.m.MultiComboBox': return inst(c, 'Multi Combobox', { 'Form Factor': 'Compact', 'Drop-Down': 'False' }, 'Multi Combobox ' + (p.placeholder || ''), { 'Input Text': p.placeholder || '' });
+      case 'sap.m.DateRangeSelection': case 'sap.m.DatePicker': return inst(c, 'Date (Range) Picker', { 'Form Factor': 'Compact', Calendar: false }, 'Date Picker ' + (p.placeholder || ''), { 'Input Text': p.placeholder || p.value || '' });
+      case 'sap.m.SearchField': return inst(c, 'Input', { 'Form Factor': 'Compact', Content: 'Typed Text', '✏️ Typed Text': p.value || p.placeholder || '' }, 'Search ' + (p.placeholder || ''));
       case 'sap.m.CheckBox': return inst(c, 'Check Box', { 'Form Factor': 'Compact', Label: true, '✏️ Text': p.text || '', Check: p.selected ? 'Checked' : 'Unchecked' }, 'Check Box ' + (p.text || ''));
       case 'sap.m.Switch': return inst(c, 'Switch', { 'Form Factor': 'Compact', Checked: p.state ? 'True' : 'False' }, 'Switch');
       case 'sap.m.Select': return inst(c, 'Select', { 'Form Factor': 'Compact' }, 'Select ' + (c.selText || ''), { 'Input Text': c.selText || '' });
@@ -575,6 +580,19 @@ function convert(D, KIT, MAP, EXTRA, nameArg) {
     if (st.br) n.r = Math.round(st.br);
     if (c.cls === 'sap.f.Card' && st.sh) { n.fxk = KIT.effects['Shadow/sapContent_Shadow1']; delete n.bc; delete n.bw; }   // Make draws a card with a shadow, not a border
     const kids = ch(c).map(conv).filter(Boolean);
+    const lineGroups = list => { const lines = []; let bottom = -1e9; for (const k of list) { if (!lines.length || k._b[1] >= bottom - 1) { lines.push([k]); bottom = k._b[1] + k._b[3]; } else { lines[lines.length - 1].push(k); bottom = Math.max(bottom, k._b[1] + k._b[3]); } } return lines; };
+    if (!flex && kids.length > 1) {                                        // not flexbox (table / grid / float / inline flow): read the direction from where the children really are
+      const lines = lineGroups(kids);
+      if (lines.length === 1) {                                            // side by side → a row; a row that spans the container shares its width (grid columns)
+        const total = kids.reduce((a, k) => a + k._b[2], 0), spans = total > 0.6 * c.box[2];
+        if (spans) kids.forEach(k => { if (k._k === 'frame' && !k._w && !k._grow) k._grow = 1; });
+        n.d = 'H'; return layout(n, kids, { V: false, st: { ai: 'flex-start', jc: 'flex-start' }, flex: true });
+      }
+      if (lines.some(l => l.length > 1)) {                                 // several lines → a column of line rows
+        n.d = 'V';
+        return layout(n, lines.map(ln => ln.length === 1 ? ln[0] : layout({ _b: union(ln), _k: 'frame', n: 'Row', d: 'H' }, ln, { V: false, st: { ai: 'flex-start' }, flex: true })), { V: true, st: {}, flex: false });
+      }
+    }
     if (flex && !V && /wrap/.test(st.wrap) && kids.length > 1) {          // a wrapped row that broke into several lines → a column of line rows
       const lines = []; let bottom = -1e9;
       for (const k of kids) { if (!lines.length || k._b[1] >= bottom - 1) { lines.push([k]); bottom = k._b[1] + k._b[3]; } else { lines[lines.length - 1].push(k); bottom = Math.max(bottom, k._b[1] + k._b[3]); } }
@@ -679,8 +697,11 @@ function convert(D, KIT, MAP, EXTRA, nameArg) {
   if (rootNode.c[0] && rootNode.c[0].cp === 'Shell Bar') rootNode.c[0].s = 'FX';
   const sn = body.c.find(k => k.n === 'Side Navigation'); if (sn) { sn.s = 'XF'; sn.w = 256; }
   if (page) body.c[body.c.length - 1].s = 'FF';
+  // trace: for every node that came from a Make control, its index path in the tree and the Make box it must land on (build/make-verify.js)
+  const TRACE = [];
+  (function walk(n, path) { if (n._src) TRACE.push({ p: path, id: n._src, b: n._b, k: n._k, ta: n.ta }); (n.c || []).forEach((k, i) => walk(k, path.concat(i))); })(rootNode, []);
   const tree = JSON.parse(JSON.stringify(rootNode, (k, v) => (k[0] === '_' || v === undefined) ? undefined : v));
-  return { tree, images: IMAGES, post: { nav: NAV, shell: SHELL }, warn: [...new Set(WARN)], controls: D.controls.length };
+  return { tree, images: IMAGES, post: { nav: NAV, shell: SHELL }, warn: [...new Set(WARN)], controls: D.controls.length, trace: TRACE };
 }
 
 return convert;
