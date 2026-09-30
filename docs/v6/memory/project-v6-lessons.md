@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: a1d0debc-88f1-4329-8ff6-34de9ce7bc61
-  modified: 2026-09-30T06:52:40.369Z
+  modified: 2026-09-30T07:17:47.318Z
 ---
 
 **Results:** flight ref, gold adapted (`job-09300515`): built in 12 s but STRUCTURE 17 / EYE 19 % (gold had another structure; 'Sort tabs' `FF` in a hug column collapsed to 1 px). Fix: `run.js` keeps a gold tree only if STRUCT-SIM finds 0 missing reference boxes, else builds from zero.
@@ -20,7 +20,7 @@ Hotel phone screen, dark, from the image with no gold (`job-09300557`): 20 min /
 - Kit icons that exist: favorite share slim-arrow-down pushpin-on travel-itinerary suitcase decline media-forward thumb-up accept …; NO map-pin / bus / location icon. Semantic colours in the cached vars: `sapErrorColor` only (no success/positive token found).
 - The plugin puts every new frame at the far right of the page (x ≈ 134,000) → the user could not find results ("missing", "gone"). Moving a frame I built is allowed (`use_figma`, position only). The user said they fixed the plugin placement (unverified).
 - The first hotel frame `566:64162` vanished (not deleted by Claude — only read calls were made); a rebuild from the saved tree takes ~4 s. The saved `tree.json` is the recovery.
-- A cropped reference (section cut at the bottom edge) makes `structure.js` report OUTSIDE → STRUCTURE ≠ 0 even when the build is right. A fix (tolerate OUTSIDE where the reference is itself cut within 24 px of the edge) was proposed; the classifier blocked the edit; the user has not decided.
+- A cropped reference (section cut at the bottom edge) makes `structure.js` report OUTSIDE → STRUCTURE ≠ 0 even when the build is right. **DECIDED 2026-09-30 (user: "leave it"): keep `structure.js` strict — do NOT add an edge tolerance.** A cropped reference stays a DRAFT with OUTSIDE lines; report them, never dismiss them.
 - The permission classifier blocks: writes to `.claude/commands/` and `SKILL.md`, loosening a gate, downloading a signed screenshot URL. It allowed: edits to `.claude/agents`, `.claude/settings.json`, `CLAUDE.md`, live `run.js` builds. The user runs `cp docs/v6/screen.md .claude/commands/screen.md` himself.
 - Another Claude session shares this folder and moved HEAD to v5 once. Check the branch before every write.
 
