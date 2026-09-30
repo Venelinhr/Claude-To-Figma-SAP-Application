@@ -125,6 +125,7 @@ const USAGE = `node build/mailbox.js <command>
   install                     always-on bridge (macOS LaunchAgent ${LABEL}), starts at login
   uninstall                   remove the LaunchAgent
   ensure                      start the bridge if it is down
+  restart [--force]           stop the running bridge, start it again (after a bridge update); refuses while a build runs
   status                      bridge + Figma connection
   unpair                      let the SAP Bridge plugin pair again
   push <plan.json> [--ref <image>] [--file-key <key>]   plan → Figma Agent mailbox
@@ -245,9 +246,23 @@ ${envXml}
     console.log('Bridge started.');
   },
 
+  async restart(...args) {
+    const h = await health();
+    if (h && h.app !== 'sap-v4-bridge') { console.error(`Port ${PORT} is used by another program, not the SAP bridge. Not touching it.`); process.exit(3); }
+    if (h && h.busy && !args.includes('--force')) { console.error('The bridge is running a job. Wait for it, or run: node build/mailbox.js restart --force'); process.exit(3); }
+    if (h) {
+      const pid = listenerPid();
+      if (pid) { try { process.kill(Number(pid), 'SIGTERM'); } catch (_) {} }
+      for (let i = 0; i < 24 && (await health()); i++) await sleep(250);
+      if (await health()) { console.error('The bridge did not stop. Stop it by hand, then run: node build/mailbox.js ensure'); process.exit(3); }
+      console.log('Bridge stopped.');
+    }
+    await COMMANDS.ensure();
+  },
+
   async status() {
     const h = await health();
-    const agent = fs.existsSync(PLIST) ? 'yes' : 'no';
+    const agent =fs.existsSync(PLIST) ? 'yes' : 'no';
     if (!h) { console.log(`bridge:      not running (LaunchAgent installed: ${agent})`); process.exit(3); }
     if (h.app !== 'sap-v4-bridge') { console.log(`bridge:      port ${PORT} is used by another bridge`); process.exit(3); }
     console.log(`bridge:      running · branch ${h.branch} · model ${h.model} · ${h.busy ? 'busy' : 'idle'} · LaunchAgent ${agent}`);

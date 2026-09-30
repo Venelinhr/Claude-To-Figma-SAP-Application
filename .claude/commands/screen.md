@@ -21,7 +21,7 @@ run 451:9507 took 219 turns / 34 min / $9.5 for one screen):
 - No probe calls (one `use_figma` per property to "check"). Read the dump files instead.
 - Do not chase lines marked `SAP LOOK`, `(brand→SAP)` or `EXTRA` — they are expected.
 
-0. **Branch** — `git branch --show-current` = `v5`, else stop: `git checkout v5`.
+0. **Branch** — `git branch --show-current` = `figma-make`, else stop: `git checkout figma-make`.
    **Route** — `node build/route.js "<text>"`. ACT (a small edit on a selected node) → one `use_figma` with the
    router's `act`, read back, done. Otherwise continue.
 1. **ANALYZE + DECIDE in one command (~1-2 s, no Figma, ~30 lines):** `node build/front.js <ref.png | "text request">

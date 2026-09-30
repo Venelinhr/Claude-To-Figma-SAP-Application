@@ -159,6 +159,15 @@ textarea::placeholder{color:var(--figma-color-text-tertiary)}
   color:#fff;font-size:11px;font-family:inherit;cursor:pointer;
 }
 
+.make-row{display:flex;gap:6px;align-items:stretch}
+.make-in{
+  flex:1;min-width:0;padding:4px 8px;
+  border:1px solid var(--figma-color-border);border-radius:6px;
+  background:var(--figma-color-bg);color:var(--figma-color-text);
+  font-size:11px;font-family:inherit;outline:none;
+}
+.make-in:focus{border-color:var(--figma-color-bg-brand)}
+.make-in::placeholder{color:var(--figma-color-text-tertiary)}
 .mbx-hint{font-size:11px;line-height:1.4}
 .mbx-hint strong{color:var(--figma-color-text)}
 
@@ -222,7 +231,8 @@ textarea::placeholder{color:var(--figma-color-text-tertiary)}
   <!-- Make → SAP: paste a Make dump (bookmark) or drop the .json — no bridge needed -->
   <div class="card" id="makeCard" style="display:flex">
     <div class="card-label">Make → SAP</div>
-    <div class="mbx-hint" id="makeHint">Copy the running Make app with the bookmark, then press <b>Cmd+V</b> here (or drop the .json file).</div>
+    <div class="mbx-hint" id="makeHint">Copy the Make link, then press <b>Cmd+V</b> here. The bridge opens the app and builds the frame. (A copied design or a dropped .json also works.)</div>
+    <div class="make-row"><input type="text" id="makeLink" class="make-in" placeholder="Paste a Make link (figma.com/make/… or *.figma.site)" spellcheck="false"><button class="show-btn" id="makeGo">Build</button></div>
     <div class="mbx-hint" id="makeStatus" style="display:none"></div>
     <div class="blocks" id="makeWarn" style="display:none"></div>
     <button class="show-btn" id="makeShow" style="display:none">Show in canvas</button>
@@ -409,6 +419,8 @@ textarea::placeholder{color:var(--figma-color-text-tertiary)}
     makeCard:   document.getElementById('makeCard'),
     makeHint:   document.getElementById('makeHint'),
     makeStatus: document.getElementById('makeStatus'),
+    makeLink:   document.getElementById('makeLink'),
+    makeGo:     document.getElementById('makeGo'),
     makeWarn:   document.getElementById('makeWarn'),
     makeShow:   document.getElementById('makeShow'),
     body:       document.getElementById('bodyEl')
@@ -785,9 +797,24 @@ textarea::placeholder{color:var(--figma-color-text-tertiary)}
   var makeNode = null;
   function looksLikeDump(t) { return t && t.charAt(0) === '{' && t.indexOf('"controls"') > -1; }
   function sendDump(t) { el.makeWarn.style.display = 'none'; el.makeShow.style.display = 'none'; el.makeStatus.style.display = ''; el.makeStatus.style.color = ''; el.makeStatus.textContent = 'Reading ' + Math.round(t.length / 1024) + ' KB…'; postMsg({ type: 'make-dump', json: t }); }
+  // A Make link (Cmd+V, or the link box + Build): the bridge opens it in headless Chrome and the plugin builds what it reads.
+  var MAKE_LINK_RE = /^https:\/\/(?:(?:[\w-]+\.)*figma\.site|(?:www\.)?figma\.com\/make\/[A-Za-z0-9]{10,})(?:[\/?#]\S*)?$/i;
+  function looksLikeMakeLink(t) { return !!t && t.length < 2000 && MAKE_LINK_RE.test(t.trim()); }
+  function sendLink(u) {
+    u = String(u || '').trim();
+    el.makeWarn.style.display = 'none'; el.makeShow.style.display = 'none'; el.makeStatus.style.display = ''; el.makeStatus.style.color = '';
+    if (!looksLikeMakeLink(u)) { el.makeStatus.style.color = 'var(--figma-color-text-danger)'; el.makeStatus.textContent = 'That is not a Make link. Use figma.com/make/… or a *.figma.site link.'; return; }
+    el.makeLink.value = u;
+    el.makeStatus.textContent = 'Sending the link…';
+    postMsg({ type: 'make-link', url: u });
+  }
+  el.makeGo.addEventListener('click', function () { sendLink(el.makeLink.value); });
+  el.makeLink.addEventListener('keydown', function (ev) { if (ev.key === 'Enter') { ev.preventDefault(); sendLink(el.makeLink.value); } });
   document.addEventListener('paste', function (ev) {
     var cd = ev.clipboardData; if (!cd) return;
     var text = cd.getData('text/plain') || '', html = cd.getData('text/html') || '';
+    var inRequestBox = ev.target && ev.target.tagName === 'TEXTAREA';       // a link pasted into the "What do you want?" box stays there
+    if (!inRequestBox && looksLikeMakeLink(text.trim())) { ev.preventDefault(); sendLink(text.trim()); return; }
     if (looksLikeDump(text.trim())) { ev.preventDefault(); sendDump(text.trim()); return; }
     if (html.indexOf('(figma)') > -1 || html.indexOf('figmeta') > -1) {   // a Figma "Copy design" clipboard — diagnostics for the spike
       ev.preventDefault();

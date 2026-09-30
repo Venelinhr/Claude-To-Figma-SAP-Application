@@ -44,3 +44,35 @@ test('plugin: the compiled-in converter (slim kit) gives the same tree as the no
   })(r.tree);
   assert.deepStrictEqual([...new Set(miss)], []);
 });
+
+// ── make-verify: the offline "does the Figma frame equal the Make app?" check (build/make-verify.js) ────────────────────────────────────────────
+// STRUCTURE = the share of nodes that land on their Make box when every part has its Make size (tests the layout logic only). GROSS = a node off by > 40 px / bigger than the screen.
+const verify = f => { let out; try { out = execFileSync(process.execPath, [path.join(__dirname, '..', 'build', 'make-verify.js'), path.join(__dirname, 'fixtures', f), '--quiet']).toString(); } catch (e) { out = e.stdout.toString(); }
+  return { structure: parseFloat(/STRUCTURE\s+\d+\/\d+ nodes land on their Make box = ([\d.]+) %/.exec(out)[1]), gross: parseInt(/GROSS\s+(\d+) nodes/.exec(out)[1], 10), out }; };
+
+test('make-verify: Purchase Orders (Grid + Table + toolbars, synthetic dump rebuilt from the failing Make app) lands on the Make boxes', () => {
+  const v = verify('make-po.dump.json');
+  assert.ok(v.structure >= 97, v.out); assert.strictEqual(v.gross, 0, v.out);
+  const r = convert(FX('make-po.dump.json'), kit, map, extra, null);
+  assert.deepStrictEqual(r.warn.filter(w => /^layout:|not mapped/.test(w)), []);               // nothing was left to guess
+  const find = (n, name, out = []) => { if (n.n === name) out.push(n); (n.c || []).forEach(k => find(k, name, out)); return out; };
+  const [header] = find(r.tree, 'Header Row'), rows = find(r.tree, 'Row').filter(x => x.c && x.c.length === header.c.length && x.h === 51);
+  assert.strictEqual(rows.length, 15);                                                          // 15 items, every row has one cell per column (+ the navigation arrow)
+  assert.deepStrictEqual(rows[0].c.map(k => k.w), header.c.map(k => k.w));                       // header and rows share the column widths, so they line up
+  assert.strictEqual(header.c.filter(k => /^F/.test(k.s)).length, 1);                           // exactly one column flexes: the table resizes
+  const [grid] = find(r.tree, 'Grid'); assert.strictEqual(grid.d, 'H'); assert.strictEqual(grid.c.length, 6);   // the six filter fields sit side by side, not stacked
+});
+
+test('make-verify: hidden / off-screen controls (OverflowToolbar clones, probe hid:1) never enter the tree', () => {
+  const D = FX('make-po.dump.json'), before = convert(D, kit, map, extra, null);
+  const clone = { ...D.controls.find(c => c.cls === 'sap.m.Button'), id: '__clone', box: [9000, 10, 32, 32], props: { icon: 'sap-icon://overflow' } }, hid = { ...clone, id: '__hid', box: [400, 60, 32, 32], hid: 1 };
+  D.controls.push(clone, hid);
+  const after = convert(D, kit, map, extra, null);
+  assert.deepStrictEqual(after.tree, before.tree);
+});
+
+test('make-verify: saved dumps do not get worse (regression floor per app)', () => {
+  // floors are what the converter reached when this check was written; raise them when the converter improves
+  const floors = { 'make-fly.dump.json': 46, 'make-search.dump.json': 56, 'make-tabs.dump.json': 98 };
+  for (const [f, min] of Object.entries(floors)) { const v = verify(f); assert.ok(v.structure >= min, `${f}: STRUCTURE ${v.structure} % < ${min} %\n${v.out}`); assert.strictEqual(v.gross, 0, `${f}\n${v.out}`); }
+});

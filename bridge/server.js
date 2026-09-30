@@ -409,8 +409,9 @@ const ALLOWED_TOOLS = [
   'mcp__figma__get_metadata', 'mcp__figma__search_design_system', 'mcp__figma__whoami',
 ].join(',');
 const mbx = () => require('../build/mailbox.js');
+const makeJobs = require('./make-link.js').createMakeJobs();   // Make link → probe dump via headless Chrome (no model); see bridge/make-link.js
 
-let figmaSeen = null;                          // {fileKey, fileName, lastSeen} — the plugin heartbeat
+let figmaSeen = null;                         // {fileKey, fileName, lastSeen} — the plugin heartbeat
 const inbox = { events: [], nextSeq: 0, _pollWaiters: [] };
 const jobIndex = new Map();                    // jobId → summary (outlives run eviction)
 const lastJobByFile = new Map();               // fileKey → jobId
@@ -824,12 +825,29 @@ async function handleV4(req, res, url) {
   }
   const routes = ['/poll', '/inbox', '/job', '/answer', '/job/logos-done', '/mbx/done', '/mbx/push',
     '/job/status', '/job/last', '/job/cancel',
-    '/tree', '/tree/next', '/tree/result', '/tree/wait'];
+    '/tree', '/tree/next', '/tree/result', '/tree/wait', '/make/fetch', '/make/job'];
   if (!routes.includes(p)) return false;
   const who = authOf(req, url);
   if (!who) { send(res, 401, { error: 'bad or missing token' }); return true; }
   const bad = (m) => { send(res, 400, { error: m }); return true; };
   const getJob = (id) => { const r = runs.get(String(id || '')); return r && r.kind === 'job' ? r : null; };
+
+  // Make link → dump (plugin or CLI). The bridge opens the link in headless Chrome; the plugin builds the dump itself.
+  if (p === '/make/fetch') {
+    const b = await readBody(req, 4000);
+    if (b.__tooBig) return bad('request too big');
+    const r = makeJobs.start(b.url, { width: b.width });
+    if (r.error) { send(res, r.code || 400, { error: r.error }); return true; }
+    console.log(`[make ${r.id}] fetch ${String(b.url).slice(0, 80)}`);
+    send(res, 200, { jobId: r.id });
+    return true;
+  }
+  if (p === '/make/job') {
+    const s = makeJobs.get(url.searchParams.get('jobId'));
+    if (!s) { send(res, 404, { error: 'unknown make job' }); return true; }
+    send(res, 200, s);
+    return true;
+  }
 
   if (p === '/poll') {
     const run = runs.get(url.searchParams.get('runId'));

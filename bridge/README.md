@@ -72,6 +72,8 @@ geometry + the audit tree, exports a PNG, posts it back; `send.js` then runs the
 | `GET /tree/next?fileKey=` | plugin | – | oldest pending job for that file (marked running): `{jobId,name,fileKey,payload,logos,want}`, or `{}` |
 | `POST /tree/result` | plugin | `{jobId, ok, error?, nodeId, made, WARN, ms, geometry?, audit?, pngBase64?}` (≤ ~5 MB) | `202`; the bridge writes `<jobDir>/check/`: `geometry.json`, `tree.json` (audit dump), `build@2x.png`, `result.json` |
 | `GET /tree/wait?jobId=&timeout=120` | CLI | – | long-poll → `result.json` without the big blobs when done, else `{status:"pending"}` on timeout |
+| `POST /make/fetch` | plugin, CLI | `{url, width?}` — only `https://*.figma.site/…` or `https://figma.com/make/…` (`400` otherwise, `409` while another link is being read) | `{jobId}`; the bridge opens the link in headless Chrome (`bridge/make-link.js`, `build/make-fetch.js`), no model |
+| `GET /make/job?jobId=` | plugin, CLI | – | `{status: running\|done\|error, step, ms, kind, error?, dump?}`; `dump` is the probe JSON text the plugin converts (jobs are kept 15 min) |
 
 The plugin runs the payload exactly as the `use_figma` path does:
 `new (Object.getPrototypeOf(async()=>{}).constructor)('KIT','TREE', payload.runtime + '\nreturn await BUILD_TREE(TREE);')(payload.kit, payload.tree)`,

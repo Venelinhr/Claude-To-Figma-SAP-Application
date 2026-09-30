@@ -1,6 +1,6 @@
 {
   "_doc": "UI5 control -> SAP Web UI Kit mapping data for build/make2tree.js. Logic lives in make2tree.js; names here are checked against knowledge/live/kit.json by build/door.js.",
-  "skip_cls": ["sap.m.FlexItemData", "sap.m.IconTabFilterExpandButtonBadge", "sap.m.IconTabHeader", "sap.m.ToolbarSpacer"],
+  "skip_cls": ["sap.m.FlexItemData", "sap.m.IconTabFilterExpandButtonBadge", "sap.m.IconTabHeader"],
   "skip_in_dynamic_header": ["sap.m.Button", "sap.m.ToggleButton"],
   "icon_alias": {
     "menu2": "menu", "flight": "flight", "customer": "group", "map": "globe", "appointment": "calendar",
