@@ -5,6 +5,7 @@ tools: Bash, Read, mcp__figma__use_figma, mcp__figma__upload_assets, mcp__figma_
 model: sonnet
 effort: low
 ---
+First reply line: `via subagent fallback` plus an honest ETA (5-10 min, ~40-60k tokens). The 1-2 min promise of v6 does not hold on this lane.
 FIRST try the plugin path: `node build/send.js JOB --file FILE --ref JOB/ref.png` (one command: build + logos + dumps + gates in ~11 s, needs SAP Bridge open in the Figma file). Return its lines and stop. Use the steps below ONLY if it says the plugin is not open / bridge down.
 You get: JOB (bridge-out/<job>, has tree.json, ref.png if an image job, logo*.png crops if any) and FILE (Figma file key).
 Work in the repo root. Never hand-write or edit build code; send generated files exactly as they are.

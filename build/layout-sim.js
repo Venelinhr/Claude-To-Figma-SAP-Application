@@ -2,6 +2,7 @@
 // layout-sim.js — OFFLINE auto-layout simulator: where would Figma put every leaf? No Figma call, ~50 ms.
 //   node build/layout-sim.js <tree.json> --expect <tree.expect.json> [--scale 0.85] [--tol 4]   position error vs the measured reference
 //   node build/layout-sim.js <tree.json> --sizes                                                simulated size vs recorded w/h (checks the simulator on gold trees)
+//   node build/layout-sim.js <tree.json> --geometry-out <file>                                  the simulated boxes as geometry rows (the shape structure.js reads) — v6 STRUCT-SIM
 // Prints POSITION (leaves within tol px of the reference) and OVERFLOW (leaves outside the frame when its width is scaled).
 // Exit 1 when POSITION < 95 % or a leaf overflows. Model: FIXED = w/h · HUG = content · FILL = equal share of the free space.
 const fs = require('fs');
@@ -73,6 +74,19 @@ const all = [...boxes.keys()], leaves = all.filter(leaf), R = v => Math.round(v 
 // --dump-boxes <file>: write the simulated box of EVERY node by index path ("0.1.2" = T.c[0].c[1].c[2]; "" = root) — build/make-verify.js compares them with the Make boxes
 const dbf = opt('--dump-boxes', null);
 if (dbf) { const o = {}; (function w(n, p) { const b = boxes.get(n); if (b) o[p.join('.')] = b.map(R); (n.c || []).forEach((k, i) => w(k, p.concat(i))); })(T, []); fs.writeFileSync(dbf, JSON.stringify(o)); }
+// --geometry-out <file>: every node's SIMULATED box as a geometry row [id,type,name,x,y,w,h,radius,stroke,fill,padding,gap,layout,text,parentId]
+// — the shape build/structure.js reads from dump-geometry — so run.js can run structure.check on the tree BEFORE anything is built (pre-filter only).
+const gof = opt('--geometry-out', null);
+if (gof) {
+  const rows = [], ids = new Map(); let n = 0;
+  (function w(o, pid) {
+    const id = 's' + n++, b = boxes.get(o), t = o.k === 't' ? 'TEXT' : o.k === 'r' ? 'RECTANGLE' : (o.k === 'i' || o.k === 'ic') ? 'INSTANCE' : o.k === 'v' ? 'VECTOR' : 'FRAME';
+    ids.set(o, id);
+    rows.push([id, t, o.n || '', R(b[0]), R(b[1]), R(b[2]), R(b[3]), o.r || 0, o.bc || null, typeof o.bg === 'string' ? o.bg : null, o.p || null, o.g || 0, o.d || 'NONE', o.k === 't' ? o.t : (o.cp || o.ic || null), pid]);
+    (o.c || []).forEach(k => w(k, id));
+  })(T, null);
+  fs.writeFileSync(gof, JSON.stringify(rows));
+}
 const lines = [`LAYOUT-SIM  ${tf} · scale ${scale} · frame ${T.w}×${T.h} · ${leaves.length} leaves, ${all.length - leaves.length} frames`];
 let bad = 0;
 if (args.includes('--sizes')) {

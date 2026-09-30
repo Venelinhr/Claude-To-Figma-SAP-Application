@@ -1,10 +1,22 @@
-# SAP Figma Build System v5 — read this file only
+# SAP Figma Build System v6 — read this file only
 
-**Branch must be `v5`.** If `git branch --show-current` is not `v5`, stop and tell the user
-`git checkout v5` — `v4` is the previous proven system (fallback), `main` is the old v2 system
-(18 min / 59k tokens per screen), `v3` is history. Work and commit on `v5` only. Plan: `docs/V5-PLAN.md`.
+**Branch must be `v6`.** If `git branch --show-current` is not `v6`, stop and tell the user `git switch v6` — `v5` is the proven previous
+system (fallback), `v4` before it, `main` is the old v2 system (18 min / 59k tokens per screen). Work and commit on `v6` only. Plan: `docs/V6-PLAN.md`.
 
-## v5 — the default: ask Claude in chat → Claude builds in Figma → Claude checks (`/screen`)
+## v6 — the default: BUILD FIRST, REVIEW AFTER (`/screen`)
+`/screen <image | "text"> <figma link>` → `node build/run.js <ref|"text"> --file <KEY>`: at t=0 in parallel bridge check ‖ `front.js` (OCR, gold
+match, door); then door → layout-sim (position, overflow ×1 ×0.85 ×1.15) → STRUCT-SIM → `send.js` builds a `DRAFT — <job>` frame → `gates.js`.
+No human wait in the middle; the user reviews the real screen + the ASSUMED ledger after (`--ask` restores the old stop). Bar unchanged:
+MATCH ≥ 90 · HYGIENE 0 · STRUCTURE 0 · EYE ≥ 95 · responsive; only numbers a script prints count; ≤ 2 fix rounds (the driver refuses the 4th build).
+**Geometry (w h xy p g) of measured nodes is script-owned** — `door.js --baseline` rejects a model edit of it (the headless EYE-9 % channel).
+Text jobs: `reskin.js` ops (content only). Verbs: `tweak · flip · show · gold · fix` (`route.js`). Gold flywheel: `gold.js` (measured admission).
+Exit codes of `run.js`: 0 PASS · 1 door/sim OUT · 2 the model must decide · 3 bridge down · 4 screen-changing ask · 5 `--ask` stop · 6 DRAFT / cap.
+**Every plan and every report shows ALL FIVE sections, in full, in this exact style (user rule 2026-09-30): 1 Analyze · 2 Zones (table) · 3 Wireframe (boxed, zone letters) · 4 Layers (`├─` tree) · 5 Confidence (● / ○ table), then the SAP components table and "Approve / Reject / Modify?".**
+Wireframe, layers and components are GENERATED — `node build/tree.js plan <tree.json>` (`build/sketch.js`) — pasted verbatim in ``` fences; never hand-drawn, never summarised. A NEW screen type (no gold match: a phone, dark, a wizard…) gets its plan shown and approved BEFORE the build; Horizon Light always.
+Lessons and kit facts from the live tests: memory `project-v6-lessons`; details `docs/V6-PLAN.md`; the `/screen` command text lives in `docs/v6/screen.md` (re-run `cp docs/v6/screen.md .claude/commands/screen.md` after edits).
+The v5 text below is the fallback description (it still works: `git switch v5`).
+
+## v5 — the previous default: ask Claude in chat → Claude builds in Figma → Claude checks (`/screen`)
 `/screen <image | "text"> <figma link>`. **The bar: ≥ 95 % or it is a failure** — reference match (EYE)
 AND SAP execution (kit components + states, text styles, colour variables, layer names; MATCH + HYGIENE 0).
 How: start from a **gold layout tree** (`knowledge/gold/trees/` — a dumped approved build: frames with
@@ -24,7 +36,7 @@ never open PNGs in the chat (scripts print text) · one `use_figma` per fix roun
 (nested pink box, cards), no collapsed / hidden / overlapping layers, build = reference size. STRUCTURE ≠ 0 or EYE < 95 = FAILED —
 never "a known limitation", never "MATCH is authoritative". Report provenance (gold tree or from zero). Why: 471:9819.
 **Responsive is a gate.** Every tree must resize: width = FILL (follows parent) or HUG (follows content); fixed width only for small parts (≤ 120 px), kit instances, or one side column beside a FILL sibling; no free placement; every row has one FILL child. `door.js` rule `responsive` rejects the rest; `spec2tree.js` builds bands/rows with FILL spacers. Never say a screen "resizes" without the door passing.
-**Make app → Figma (no Claude):** bookmark on the running Make (SAPUI5) app → Cmd+V in the SAP Bridge plugin → SAP frame. Converter `build/make-convert.js` + `make-map.json` (compiled into the plugin by `plugin-bundle.js`); steps, coverage and gaps: `docs/MAKE-TO-FIGMA.md`; golden test `test/make2tree.test.js`.
+**Make app → Figma (no Claude):** copy the Make link (published `*.figma.site`; bridge opens it in headless Chrome) → Cmd+V in the SAP Bridge plugin → SAP frame; fallback: extension/bookmark on the running app → Cmd+V. After a bridge change: `node build/mailbox.js restart`. Converter `build/make-convert.js` + `make-map.json` (compiled into the plugin by `plugin-bundle.js`); steps, coverage and gaps: `docs/MAKE-TO-FIGMA.md`; golden test `test/make2tree.test.js`.
 The v4 flows below still work (SAP Bridge plugin, Figma Agent split) — use them only when asked.
 
 ## v4 in one line — Claude Code plans, the Figma Agent builds, Claude Code checks

@@ -4,6 +4,10 @@
 // colour variables by role (text ink · fill · border), no fake components, explicit sizing, and — with a reference —
 // the reference size and every reference text placed. OUT = rejected (fix the tree), ASK = the user decides.
 //   node build/door.js <tree.json> [--ref see-ref/spec.json]      exit 1 when anything is OUT
+//   node build/door.js <tree.json> --baseline <tree.baseline.json> [--allow "name,name"]
+//        v6 geometry guard: the numbers of a MEASURED node (w h xy p g) are script-owned. The model may fix names, texts, props and
+//        sizing (s), never those numbers — a model rebuilding layout from prose is what scored EYE 9-13 % headless. New nodes are free.
+//        --allow re-opens exactly the named nodes (a gates BOX/POSITION line that names them).
 const fs = require('fs'), path = require('path'), { spawnSync } = require('child_process');
 const kit = require('./kit-live.js');
 const ICONS = new Set([...Object.keys(kit.icons).map(k => k.split('/').pop()), ...Object.keys(require('../knowledge/live/icons-extra.json').icons)]);
@@ -11,6 +15,7 @@ const PLACEHOLDER = /^(placeholder|typed text|text|label|description|product ide
 // a text field that shows only for some Type values (the kit hides it otherwise)
 const SHOWN_WHEN = { 'Table Cell': { '✏️ Text': ['Text', 'Link', 'Highlight', 'Object Identifier - Bold', 'Object Identifier - Link'],
   '✏️ Currency': ['Currency'], '✏️ By Text Description': ['Object Identifier - Bold', 'Object Identifier - Link'] } };
+const DEFAULT_ON_PLACEHOLDER = { 'List Item': { Attachment: 'Attachment' } };   // component → { switch: text it shows }
 const isRole = (t, want) => cat(t) === want || /_ForegroundColor$|Selected/.test(t);   // a selection bar may use the foreground colour
 const cat = t => /Border|Separator/.test(t) ? 'border' : /Background|BaseColor|ShellColor|AccentColor\d|_Hover|_Active/.test(t) ? 'fill' : 'ink';
 const norm = s => String(s).toLowerCase().replace(/[\s.•·,:;|()\-–]+/g, '');
@@ -39,6 +44,8 @@ function door(T, file, ref) {
       const shown = Object.keys(defs).filter(n => defs[n].startsWith('T:') && !(o.tx && Object.keys(o.tx).length) && (!when[n] || when[n].includes(eff('Type'))));
       for (const n of shown) if (!hidden && PLACEHOLDER.test(eff(n).trim())) O('placeholder', `${at} <${o.cp}> shows the kit default "${eff(n)}" — set ${n} to real content`);
       for (const [n, v] of Object.entries(o.tx || {})) if (PLACEHOLDER.test(String(v).trim())) O('placeholder', `${at} <${o.cp}> inner text "${n}" = "${v}" — real content`);
+      // a switch that is ON by default and draws kit placeholder content the tree never fills (the first hotel build showed a stray "Attachment")
+      for (const [n, label] of Object.entries(DEFAULT_ON_PLACEHOLDER[o.cp] || {})) if (defs[n] && /^true$/i.test(eff(n))) O('placeholder', `${at} <${o.cp}> shows the kit default "${label}" — set ${n}=false (or fill it)`);
       const iconOn = Object.keys(defs).some(n => defs[n].startsWith('B:') && /^icon/i.test(n) && /^true$/i.test(eff(n)));
       const iconOnly = !Object.keys(defs).some(n => defs[n].startsWith('B:') && /^icon/i.test(n));
       if ((iconOn || iconOnly) && Object.keys(defs).some(n => defs[n].startsWith('I:') && /^icon$/i.test(n)) && /^(globe|information)$/.test(eff('Icon')))
@@ -103,11 +110,31 @@ function report(r) {
   const head = r.out.length ? `DOOR  ✗ ${r.out.length} OUT · ${r.checked} layers checked — fix the tree, then run it again` : `DOOR  ✓ ALL IN · ${r.checked} layers checked — show the plan`;
   return [head, ...r.out.map(([w, m]) => ` OUT  ${w.padEnd(15)}${m}`), ...r.ask.map(a => ` ASK  ${a}`)].join('\n');
 }
-module.exports = { door, report };
+// v6 geometry guard — compare a tree with its baseline (the tree exactly as the scripts wrote it: gold fit or spec2tree).
+const GEO = ['w', 'h', 'xy', 'p', 'g'];
+const geo = (o, f) => { const v = o[f]; if (v == null) return 'null'; if (f === 'p') return JSON.stringify(Array.isArray(v) ? v : [v, v, v, v]); return JSON.stringify(v); };
+function keyed(T) {                                             // name-path key → node; repeated names get #n
+  const m = new Map(), cnt = {}, base = {};
+  (function walk(o, pre) { const k0 = pre + '/' + o.n; cnt[k0] = (cnt[k0] || 0) + 1; base[k0] = cnt[k0]; m.set(cnt[k0] > 1 ? k0 + '#' + cnt[k0] : k0, o); (o.c || []).forEach(c => walk(c, k0 + (cnt[k0] > 1 ? '#' + cnt[k0] : ''))); })(T, '');
+  return { m, base };
+}
+function baselineDiff(T, B, allow = []) {
+  const cur = keyed(T), old = keyed(B), out = [];
+  for (const [k, o] of cur.m) {
+    const b = old.m.get(k); if (!b || allow.includes(o.n)) continue;
+    const k0 = k.replace(/#\d+$/, '');                          // repeated siblings: only compare when the same number of them exist on both sides (an insert shifts the #n)
+    if (cur.base[k0] !== old.base[k0]) continue;
+    for (const f of GEO) if (geo(o, f) !== geo(b, f))
+      out.push(['geometry', `"${o.n}" ${f} ${geo(b, f)}→${geo(o, f)} — the numbers of a measured node are script-owned: fix sizing (s) or content instead; if a gates BOX/POSITION line names this exact node, run again with --allow "${o.n}"`]);
+  }
+  return out;
+}
+module.exports = { door, report, baselineDiff };
 if (require.main === module) {
   const [file, ...rest] = process.argv.slice(2);
   if (!file) { console.log(fs.readFileSync(__filename, 'utf8').split('\n').slice(1, 6).join('\n')); process.exit(2); }
-  const i = rest.indexOf('--ref'), raw = JSON.parse(fs.readFileSync(file, 'utf8'));
+  const i = rest.indexOf('--ref'), bi = rest.indexOf('--baseline'), ai = rest.indexOf('--allow'), raw = JSON.parse(fs.readFileSync(file, 'utf8'));
   const r = door(raw.tree || raw, file, i >= 0 ? JSON.parse(fs.readFileSync(rest[i + 1], 'utf8')) : null);
+  if (bi >= 0) { const B = JSON.parse(fs.readFileSync(rest[bi + 1], 'utf8')); r.out.push(...baselineDiff(raw.tree || raw, B.tree || B, ai >= 0 ? rest[ai + 1].split(',').map(x => x.trim()) : [])); }
   console.log(report(r)); process.exit(r.out.length ? 1 : 0);
 }

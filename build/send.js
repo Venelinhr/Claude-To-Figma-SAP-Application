@@ -71,7 +71,11 @@ function collectLogos(jobDir) {
   return out.slice(0, 40);
 }
 
+// a diff.json entry as one readable line: MISSING "Най-добро" ref 433,28 84×16 → none
+const fmtDiff = (d) => `${d.kind || 'DIFF'} ${d.what || ''}${d.ref ? ` ref ${d.ref[0]},${d.ref[1]} ${d.ref[2]}×${d.ref[3]}` : ''}${d.build ? ` → build ${d.build[0]},${d.build[1]} ${d.build[2]}×${d.build[3]}` : ' → none'}`;
+
 async function main() {
+  const tStart = Date.now();
   if (!jobDirArg) die('usage: node build/send.js <JOB dir> --file <fileKey> [--ref ref.png] [--timeout <sec>]', 2);
   const jobDir = path.resolve(PROJ, jobDirArg);
   if (!fs.existsSync(jobDir)) die(`JOB dir not found: ${jobDir}`, 2);
@@ -86,12 +90,19 @@ async function main() {
 
   // bridge up?
   const h = await health();
-  if (!h || h.app !== 'sap-v4-bridge') die('The bridge is not running. Start it: node build/mailbox.js ensure', 3);
+  if (!h || h.app !== 'sap-v4-bridge') die('The bridge is not running. Options: (1) node build/mailbox.js ensure, then open SAP Bridge in the file (~11 s build) · (2) say "fallback": the screen-builder subagent types the build (5-10 min, ~40-60k tokens, same gates)', 3);
   if (!readToken()) die('No CLI token (.claude/.bridge-token). Start the bridge: node build/mailbox.js ensure', 3);
+
+  // v6: the built frame is named `DRAFT — <job>` so a build-first screen is never mistaken for an approved one. The DRAFT copy of the tree
+  // is what is rendered AND what the gate rows are made from, so the layer names stay consistent. tree.json itself is never renamed.
+  const rawTree = JSON.parse(fs.readFileSync(treeF, 'utf8')), rootT = rawTree.tree || rawTree;
+  if (!/^DRAFT — /.test(String(rootT.n))) rootT.n = `DRAFT — ${path.basename(jobDir)}`;
+  const treeD = path.join(jobDir, 'tree.draft.json');
+  fs.writeFileSync(treeD, JSON.stringify(rawTree.tree ? { ...rawTree, tree: rootT } : rootT));
 
   // 1. render the payload from the tree (no model typing) → JOB/job.json
   const jobJson = path.join(jobDir, 'job.json');
-  try { node(['build/render.js', treeF, '--json', '--out', jobJson]); }
+  try { node(['build/render.js', treeD, '--json', '--out', jobJson]); }
   catch (e) { die(`render.js failed: ${String(e.stderr || e.message || e).slice(0, 300)}`, 1); }
   const payload = JSON.parse(fs.readFileSync(jobJson, 'utf8'));
 
@@ -128,7 +139,7 @@ async function main() {
   }
   if (!res) die(`Timed out after ${timeoutSec}s waiting for the plugin to build. Is SAP Bridge open in the file?`, 1);
 
-  const elapsedMs = Date.now() - t0;
+  const elapsedMs = Date.now() - tStart;                     // send → gates, not just the wait (a finished job returned at once)
   const nodeId = res.nodeId || '';
   const link = nodeId ? `https://www.figma.com/design/${fileKey}/?node-id=${String(nodeId).replace(/:/g, '-')}` : '(no node)';
   const WARN = Array.isArray(res.WARN) ? res.WARN : [];
@@ -148,7 +159,7 @@ async function main() {
   const specSrc = path.join(jobDir, 'see-ref', 'spec.json');
   if (fs.existsSync(specSrc)) { try { fs.copyFileSync(specSrc, path.join(checkDir, 'spec.json')); } catch (_) {} }
   const planF = path.join(checkDir, 'plan.json');
-  try { fs.writeFileSync(planF, node(['build/tree.js', 'rows', treeF])); }
+  try { fs.writeFileSync(planF, node(['build/tree.js', 'rows', treeD])); }
   catch (e) { die(`tree.js rows failed: ${String(e.stderr || e.message || e).slice(0, 300)}`, 1); }
 
   const gArgs = ['build/gates.js', planF, checkDir];
@@ -165,7 +176,7 @@ async function main() {
   try {
     const dj = JSON.parse(fs.readFileSync(path.join(checkDir, 'see-out', 'diff.json'), 'utf8'));
     diff = (Array.isArray(dj) ? dj : (dj.lines || dj.diffs || []))
-      .map((d) => (typeof d === 'string' ? d : (d.text || JSON.stringify(d))))
+      .map((d) => (typeof d === 'string' ? d : (d.text || fmtDiff(d))))
       .filter((s) => !/SAP LOOK|brand→SAP|\(brand->SAP\)|EXTRA/.test(s)).slice(0, 5);
   } catch (_) {}
 
@@ -174,7 +185,7 @@ async function main() {
   console.log(gateLine);
   for (const s of structLines) console.log('  ' + s.trim().slice(0, 150));
   for (const s of diff) console.log('  diff: ' + String(s).slice(0, 150));
-  console.log(`elapsed ${elapsedMs} ms`);
+  console.log(`elapsed ${elapsedMs} ms${res.ms ? ` (Figma build ${res.ms} ms)` : ''}`);
   const passed = /(^|\s)PASS\b/.test(gatesOut) && !/NOT PASSED/.test(gatesOut);
   process.exit(passed ? 0 : 1);
 }

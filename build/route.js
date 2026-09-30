@@ -390,6 +390,23 @@ module.exports = { route, routeImage, routeBox, defsOf, validatePlan, sapMap, as
 if (require.main === module) {
   const a = process.argv.slice(2);
   const onlyTrace = a[0] === '--trace' && a.shift();
+  // v6 verbs — /screen tweak | show | flip | gold | fix. A verb is dispatched before any word table (0 tokens).
+  const VERBS = ['tweak', 'show', 'flip', 'gold', 'fix'];
+  if (VERBS.includes(a[0])) {
+    const { spawnSync } = require('child_process'), B = __dirname, run = (f, args) => process.exit(spawnSync(process.execPath, [path.join(B, f), ...args], { stdio: 'inherit' }).status || 0);
+    const verb = a.shift();
+    if (verb === 'show') { const j = a[0]; if (!j) { console.log('usage: route.js show <job dir>'); process.exit(64); } run('tree.js', ['plan', path.join(j, 'tree.json'), ...(fs.existsSync(path.join(j, 'see-ref/spec.json')) ? ['--ref', path.join(j, 'see-ref/spec.json')] : [])]); }
+    if (verb === 'flip') run('flip.js', a);
+    if (verb === 'gold') run('gold.js', a);
+    if (verb === 'fix') {                                  // consent-gated round 3: the user asked for it, so the cap is lifted for this job
+      const j = a[0], sf = j && path.join(j, 'run.json');
+      if (!sf || !fs.existsSync(sf)) { console.log('usage: route.js fix <job dir> (a job that was built)'); process.exit(64); }
+      const st = JSON.parse(fs.readFileSync(sf, 'utf8')); st.allowRound3 = true; fs.writeFileSync(sf, JSON.stringify(st));
+      let lines = ''; try { lines = fs.readFileSync(path.join(j, 'check/see-out/fix.md'), 'utf8').split('\n').filter(l => /^\s*\d+ |^- /.test(l) && !/SAP LOOK|brand→SAP|EXTRA/.test(l)).slice(0, 8).join('\n'); } catch (_) {}
+      console.log(`ROUND 3 allowed for ${j} (builds so far: ${st.builds})${lines ? '\nFIX LINES:\n' + lines : ''}\nNEXT  edit ${j}/tree.json, then node build/run.js --job ${j} --file <key> --resume`); process.exit(0);
+    }
+    a.splice(0, a.length, ...a.filter(x => !/figma\.com/.test(x)));   // tweak: the words go through the ACT router below; the node link is only the target
+  }
   let r;
   if (a[0] === '--plan') {
     const pj = JSON.parse(fs.readFileSync(path.resolve(a[1]), 'utf8'));

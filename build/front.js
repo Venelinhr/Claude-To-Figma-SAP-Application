@@ -3,7 +3,9 @@
 //   node build/front.js <ref.png> [--job bridge-out/<job>]          image: see.py spec → closest gold tree (by the
 //        reference texts it already places) → fits the frame + fixed-size containers to the measured boxes → door
 //   node build/front.js "<text request>" [--job bridge-out/<job>]   text: closest gold tree by words → door
-// Writes <job>/tree.json (+ see-ref/spec.json). Claude then edits only what OUT/ASK names, and shows `tree.js plan`.
+// Writes <job>/tree.json (+ see-ref/spec.json), and for v6 <job>/tree.expect.json (measured text positions for layout-sim --expect),
+// <job>/assumed.json (the ASSUMED ledger, each entry with its flip key) and <job>/front.json (machine-readable summary run.js reads).
+// Claude then edits only what OUT/ASK names.
 const fs = require('fs'), path = require('path'), { execFileSync } = require('child_process');
 const { door, report } = require('./door.js');
 const ROOT = path.resolve(__dirname, '..'), GOLD = path.join(ROOT, 'knowledge/gold/trees');
@@ -16,7 +18,7 @@ const norm = s => String(s).toLowerCase().replace(/[\s.•·,:;|()\-–]+/g, '')
 const texts = o => { const out = []; (function w(x) { if (x.t) out.push(x.t); for (const v of Object.values(x.tx || {})) out.push(v);
   for (const [k, v] of Object.entries(x.pr || {})) if (k.startsWith('✏️')) out.push(v); (x.c || []).forEach(w); })(o); return out.map(norm).filter(Boolean); };
 const has = (pool, t) => pool.some(h => h.includes(t) || (h.length >= 4 && t.includes(h)));
-const golds = fs.readdirSync(GOLD).filter(f => f.endsWith('.tree.json')).map(f => ({ f, T: JSON.parse(fs.readFileSync(path.join(GOLD, f), 'utf8')) }));
+const golds = fs.readdirSync(GOLD).filter(f => f.endsWith('.tree.json')).map(f => ({ f, T: JSON.parse(fs.readFileSync(path.join(GOLD, f), 'utf8')) })).filter(g => g.T && Array.isArray(g.T.c));   // a broken dump (no children) is not a gold tree
 let spec = null, want;
 if (isImg) {
   const img = path.resolve(input), sd = path.resolve(job, 'see-ref');         // see.py reads best from the image's own folder
@@ -51,21 +53,39 @@ if (spec && T.w && Math.abs(spec.frame.w / T.w - 1) > 0.01) {   // same screen, 
   fit.push(`check: measured boxes ${chk.map(([b, n, ok]) => `${b}→${Math.round(n)} ${ok ? '✓' : '✗'}`).join(' · ')}`);
 } else if (spec && T.h !== spec.frame.h) { fit.push(`frame height ${T.h} → ${spec.frame.h}`); T.h = spec.frame.h; }
 const out = path.join(job, 'tree.json'); fs.writeFileSync(out, JSON.stringify(T));
+// v6: where each text leaf SHOULD land = the measured reference box, centred on the line box (a glyph box is shorter than its line).
+// Only texts that occur once in the reference and once in the tree are used, so a wrong match cannot produce a false position error.
+if (spec) {
+  const EXPECT = {}, specText = {}, seen = {};
+  (function w(x) { if (x.type === 'text' && x.box) (specText[norm(x.text)] = specText[norm(x.text)] || []).push(x.box); (x.children || []).forEach(w); })({ children: spec.sections });
+  (function w(o) { seen[o.n] = (seen[o.n] || 0) + 1; (o.c || []).forEach(w); })(T);
+  (function w(o) {
+    const b = o.k === 't' && seen[o.n] === 1 && (specText[norm(o.t)] || []).length === 1 ? specText[norm(o.t)][0] : null;
+    if (b) { const h = o.h || b[3]; EXPECT[o.n] = [b[0], Math.round((b[1] + b[3] / 2 - h / 2) * 10) / 10, b[2], h]; }
+    (o.c || []).forEach(w);
+  })(T);
+  fs.writeFileSync(path.join(job, 'tree.expect.json'), JSON.stringify(EXPECT));
+}
 const r = door(T, out, spec);
 const f = spec && spec.frame, full = want.length && G.hit / want.length >= 0.95, gname = G.f.replace('.tree.json', '');
 // uncertainty: what an approved gold tree or a proven rule already answers is an ASSUMPTION, not a question
-const assumed = [], asks = [];
+const assumedL = [], asks = [];                       // ledger entries: { id, text, flip } — flip = the /screen flip key that inverts it, or null
 for (const a of r.ask) {
   if (/^density:/.test(a)) { const ff = {}; (function w(o) { if (o.pr && o.pr['Form Factor']) ff[o.pr['Form Factor']] = (ff[o.pr['Form Factor']] || 0) + 1; (o.c || []).forEach(w); })(T);
     const d = Object.entries(ff).sort((x, y) => y[1] - x[1])[0];
-    assumed.push(full && d ? `density ${d[0]} and text styles as the approved gold "${gname}" (the reference is a brand site at ×${f.text_scale})` : 'density SAP Compact, texts step down ×' + (f ? f.text_scale : 0.85) + ' (proven rule, gold 270:6722)'); }
-  else if (/^brand colour/.test(a) && full) assumed.push(`brand colour ${a.match(/#[0-9a-f]{6}/i)[0]} → the SAP colour roles of the approved gold "${gname}" (CTA = Button Primary, no painted brand colour)`);
-  else if (/icon shapes have no SAP icon/.test(a) && full && !r.out.some(([w]) => w === 'missing')) assumed.push('icons = the gold tree\'s SAP icons for the same meanings');
-  else if (/OCR unsure/.test(a)) assumed.push(a.replace(/ is not in the tree.*/, ' kept as read'));
+    assumedL.push({ id: 'density', flip: 'density', text: full && d ? `density ${d[0]} and text styles as the approved gold "${gname}" (the reference is a brand site at ×${f.text_scale})` : 'density SAP Compact, texts step down ×' + (f ? f.text_scale : 0.85) + ' (proven rule, gold 270:6722)' }); }
+  else if (/^brand colour/.test(a) && full) assumedL.push({ id: 'brand-' + a.match(/#[0-9a-f]{6}/i)[0].slice(1), flip: null, text: `brand colour ${a.match(/#[0-9a-f]{6}/i)[0]} → the SAP colour roles of the approved gold "${gname}" (CTA = Button Primary, no painted brand colour)` });
+  else if (/icon shapes have no SAP icon/.test(a) && full && !r.out.some(([w]) => w === 'missing')) assumedL.push({ id: 'icons', flip: null, text: "icons = the gold tree's SAP icons for the same meanings" });
+  else if (/OCR unsure/.test(a)) { const tx = (a.match(/^text "(.+?)"/) || [])[1] || a.slice(0, 30); assumedL.push({ id: 'ocr-' + norm(tx).slice(0, 12), flip: 'text', text: a.replace(/ is not in the tree.*/, ' kept as read') }); }
   else asks.push(a);
 }
+const assumed = assumedL.map(x => x.text);
 const facts = isImg ? [`reference ${f.w}×${f.h} (screenshot at ×2 read as ×1)`, `${want.length} unique texts, ${(() => { let n = 0; (function w(x) { if (x.type === 'icon') n++; (x.children || []).forEach(w); })({ children: spec.sections }); return n; })()} icons`, `page ${f.fill}`, `accent ${f.accent}`]
   : [`${want.length} key words: ${want.join(', ')}`];
+fs.writeFileSync(path.join(job, 'assumed.json'), JSON.stringify({ assumed: assumedL, asks }, null, 1));
+fs.writeFileSync(path.join(job, 'front.json'), JSON.stringify({ input, isImg, ms: Date.now() - t0, frame: f || null, want: want.length,
+  gold: { name: gname, hit: G.hit, full, next: golds[1] ? golds[1].f.replace('.tree.json', '') : null }, fit,
+  door: { out: r.out, ask: r.ask, checked: r.checked }, assumed: assumedL, asks }, null, 1));
 console.log([
   `1 ANALYZE  ${facts.join(' · ')} · ${((Date.now() - t0) / 1000).toFixed(1)} s`,
   `2 UNSURE   facts above are measured; decided without asking (low impact):`, ...assumed.map(a => `           · ${a}`),

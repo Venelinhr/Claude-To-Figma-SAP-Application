@@ -1,5 +1,13 @@
 {
   "//": "v3 (2026-09-25): lean hooks. One build check (guard-build-v3.sh), privacy + token-saving guards, background feedback capture. The v2 approval gates, wireframe forcing, marker files and stop-gate are no longer registered (files kept in .claude/hooks/ for reference). v2 settings: git show main:.claude/settings.json",
+  "permissions": {
+    "deny": [
+      "Read(bridge-out/**/build@2x.png)",
+      "Read(bridge-out/**/ref.png)",
+      "Read(bridge-out/**/geometry.json)",
+      "Read(bridge-out/**/see-out/*.png)"
+    ]
+  },
   "hooks": {
     "UserPromptSubmit": [
       { "hooks": [
