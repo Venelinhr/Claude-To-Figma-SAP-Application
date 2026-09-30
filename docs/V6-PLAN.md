@@ -12,7 +12,7 @@ Applied: `CLAUDE.md` v6 block, `screen-builder` note, settings deny rules, the `
 
 Found on the way (details in the memory note `project-v6-lessons`): phone screenshots at 3× are read as 1× (crop the status bar, scale to the 2× export — not automated yet) · dark references give wrong fill tokens (build Horizon Light) ·
 MATCH/HYGIENE skip kit internals, so a kit switch that is ON by default showed a stray "Attachment" (door rule `DEFAULT_ON_PLACEHOLDER` added) · the plugin places every new frame at the far right of the page (user says the plugin is fixed) ·
-a cropped reference makes `structure.js` report OUTSIDE (proposed tolerance blocked by the classifier; user decision open) · `from zero` measures boxes but does not choose SAP components — for a **new screen type the plan (five sections) comes first** (`docs/v6/screen.md` step 1b) ·
+a cropped reference makes `structure.js` report OUTSIDE (**decided 2026-09-30: leave the check strict** — such a build stays a DRAFT and the lines are reported) · `from zero` measures boxes but does not choose SAP components — for a **new screen type the plan (five sections) comes first** (`docs/v6/screen.md` step 1b) ·
 the wireframe uses single-width glyphs only (emoji-capable ones such as ⛟ ✈ ⚙ ⚠ broke the right border in the user's app) and one-line notes.
 
 ## Report format (user rule 2026-09-30)
