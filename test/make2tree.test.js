@@ -50,17 +50,32 @@ test('plugin: the compiled-in converter (slim kit) gives the same tree as the no
 const verify = f => { let out; try { out = execFileSync(process.execPath, [path.join(__dirname, '..', 'build', 'make-verify.js'), path.join(__dirname, 'fixtures', f), '--quiet']).toString(); } catch (e) { out = e.stdout.toString(); }
   return { structure: parseFloat(/STRUCTURE\s+\d+\/\d+ nodes land on their Make box = ([\d.]+) %/.exec(out)[1]), gross: parseInt(/GROSS\s+(\d+) nodes/.exec(out)[1], 10), out }; };
 
-test('make-verify: Purchase Orders (Grid + Table + toolbars, synthetic dump rebuilt from the failing Make app) lands on the Make boxes', () => {
+test('make-verify: Purchase Orders (Grid + Table + toolbars, REAL dump read from the published app) lands on the Make boxes', () => {
   const v = verify('make-po.dump.json');
   assert.ok(v.structure >= 97, v.out); assert.strictEqual(v.gross, 0, v.out);
   const r = convert(FX('make-po.dump.json'), kit, map, extra, null);
   assert.deepStrictEqual(r.warn.filter(w => /^layout:|not mapped/.test(w)), []);               // nothing was left to guess
   const find = (n, name, out = []) => { if (n.n === name) out.push(n); (n.c || []).forEach(k => find(k, name, out)); return out; };
-  const [header] = find(r.tree, 'Header Row'), rows = find(r.tree, 'Row').filter(x => x.c && x.c.length === header.c.length && x.h === 51);
+  const [header] = find(r.tree, 'Header Row'), rows = find(r.tree, 'Row').filter(x => x.c && x.c.length === header.c.length && x.h >= 50 && x.h <= 56);   // a row is ~52 px; long supplier names wrap to ~54 px
   assert.strictEqual(rows.length, 15);                                                          // 15 items, every row has one cell per column (+ the navigation arrow)
   assert.deepStrictEqual(rows[0].c.map(k => k.w), header.c.map(k => k.w));                       // header and rows share the column widths, so they line up
   assert.strictEqual(header.c.filter(k => /^F/.test(k.s)).length, 1);                           // exactly one column flexes: the table resizes
   const [grid] = find(r.tree, 'Grid'); assert.strictEqual(grid.d, 'H'); assert.strictEqual(grid.c.length, 6);   // the six filter fields sit side by side, not stacked
+});
+
+test('convert(): status cells are kit Object Status components (state + badge), filter fields are Multi Combobox with the sample tokens hidden', () => {
+  const r = convert(FX('make-po.dump.json'), kit, map, extra, null), all = [];
+  (function w(n) { all.push(n); (n.c || []).forEach(w); })(r.tree);
+  const st = all.filter(n => n.k === 'i' && n.cp === 'Object Status');
+  assert.strictEqual(st.length, 15);                                                              // one per order, never plain text
+  assert.ok(st.every(n => n.tx && n.tx.Text));
+  assert.ok(st.filter(n => n.pr.Inverted === 'Yes').every(n => ['Warning', 'Error'].includes(n.pr.Semantic)));   // Pending Approval / Rejected are badges
+  assert.ok(st.some(n => n.pr.Inverted === 'Yes') && st.some(n => n.pr.Semantic === 'Success' && n.pr.Inverted === 'No'));
+  const mc = all.filter(n => n.k === 'i' && n.cp === 'Multi Combobox');
+  assert.strictEqual(mc.length, 5);
+  assert.ok(mc.every(n => ['1st Token', '2nd Token', 'Overflow Link / Typing'].every(x => n.hide.includes(x)) && n.add[0].into === '⿻ Tokens Compact' && n.add[0].t));   // sample tokens hidden, the placeholder text goes into the tokens slot
+  assert.ok(st.every(n => n.pr['Large Design'] === undefined && n.s === 'XX'));                 // normal size (Large Design = Yes is the 24 px display size); the box follows Make
+  assert.ok(st.filter(n => n.pr.Inverted === 'Yes').every(n => n.h >= 22) && st.filter(n => n.pr.Inverted === 'No').every(n => n.h >= 16 && n.h <= 20));   // badge taller than plain status, like Make (24 / 18 px)
 });
 
 test('make-verify: hidden / off-screen controls (OverflowToolbar clones, probe hid:1) never enter the tree', () => {

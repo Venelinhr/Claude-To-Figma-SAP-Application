@@ -86,6 +86,19 @@ async function NODE(o, parent, par) {
     n = await I(o.cp, o.pr || {}, o.n); if (!n) return null;
     if (o.nav) await _nav(n, o.nav);                                 // Side Navigation: the slot's items become the app's items
     if (o.av) await _avatar(n, o.av);                                // Shell Bar: avatar initials
+    for (const nm of (o.hide || [])) { const h = n.findOne(x => x.name === nm); if (h) h.visible = false; else WARN.push(`${o.n}: no layer "${nm}" to hide`); }   // e.g. the kit's sample tokens
+    for (const a of (o.add || [])) {                               // text put into a kit slot (e.g. the placeholder of an empty Multi Combobox)
+      const slot = n.findOne(x => x.name === a.into);
+      if (!slot || !('appendChild' in slot)) { WARN.push(`${o.n}: no slot "${a.into}" for the text`); continue; }
+      try { const t = await T(a.t, a.st, _ok(a.bg) ? a.bg : null, { name: a.t.slice(0, 28) }); slot.appendChild(t); } catch (e) { WARN.push(`${o.n}: slot text: ${e.message}`); }
+    }
+    for (const [nm, pr] of Object.entries(o.sub || {})) {          // properties of a nested instance (e.g. the Input inside a Multi Combobox)
+      const si = n.findOne(x => x.type === 'INSTANCE' && x.name === nm);
+      if (!si) { WARN.push(`${o.n}: no nested instance "${nm}"`); continue; }
+      const defs = si.componentProperties, p = {};
+      for (const [k, v] of Object.entries(pr)) { const key = Object.keys(defs).find(d => d === k || d.split('#')[0] === k); if (key) p[key] = v; else WARN.push(`${o.n}/${nm}: no property "${k}"`); }
+      try { si.setProperties(p); } catch (e) { WARN.push(`${o.n}/${nm}: ${e.message}`); }
+    }
     for (const [nm, ch] of Object.entries(o.tx || {})) {           // text typed inside the instance
       const t = n.findOne(x => x.type === 'TEXT' && x.name === nm);
       if (!t) { WARN.push(`${o.n}: no inner text "${nm}"`); continue; }

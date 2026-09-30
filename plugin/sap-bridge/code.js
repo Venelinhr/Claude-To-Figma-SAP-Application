@@ -23,7 +23,7 @@ const handledMailbox = new Set();
 let treePollTimer = null;
 let treeBusy = false;
 // ── GENERATED RUNTIME (node build/plugin-bundle.js) — do not edit by hand ──
-const RUNTIME_VER = '03a8a0c66b';
+const RUNTIME_VER = 'db931a6cd4';
 function _createAutoLayout(dir, o) {
   if (typeof figma.createAutoLayout === 'function') return figma.createAutoLayout(dir, o);
   const f = figma.createFrame(); f.layoutMode = dir; f.primaryAxisSizingMode = 'AUTO'; f.counterAxisSizingMode = 'AUTO';
@@ -208,6 +208,19 @@ async function NODE(o, parent, par) {
     n = await I(o.cp, o.pr || {}, o.n); if (!n) return null;
     if (o.nav) await _nav(n, o.nav);                                 // Side Navigation: the slot's items become the app's items
     if (o.av) await _avatar(n, o.av);                                // Shell Bar: avatar initials
+    for (const nm of (o.hide || [])) { const h = n.findOne(x => x.name === nm); if (h) h.visible = false; else WARN.push(`${o.n}: no layer "${nm}" to hide`); }   // e.g. the kit's sample tokens
+    for (const a of (o.add || [])) {                               // text put into a kit slot (e.g. the placeholder of an empty Multi Combobox)
+      const slot = n.findOne(x => x.name === a.into);
+      if (!slot || !('appendChild' in slot)) { WARN.push(`${o.n}: no slot "${a.into}" for the text`); continue; }
+      try { const t = await T(a.t, a.st, _ok(a.bg) ? a.bg : null, { name: a.t.slice(0, 28) }); slot.appendChild(t); } catch (e) { WARN.push(`${o.n}: slot text: ${e.message}`); }
+    }
+    for (const [nm, pr] of Object.entries(o.sub || {})) {          // properties of a nested instance (e.g. the Input inside a Multi Combobox)
+      const si = n.findOne(x => x.type === 'INSTANCE' && x.name === nm);
+      if (!si) { WARN.push(`${o.n}: no nested instance "${nm}"`); continue; }
+      const defs = si.componentProperties, p = {};
+      for (const [k, v] of Object.entries(pr)) { const key = Object.keys(defs).find(d => d === k || d.split('#')[0] === k); if (key) p[key] = v; else WARN.push(`${o.n}/${nm}: no property "${k}"`); }
+      try { si.setProperties(p); } catch (e) { WARN.push(`${o.n}/${nm}: ${e.message}`); }
+    }
     for (const [nm, ch] of Object.entries(o.tx || {})) {           // text typed inside the instance
       const t = n.findOne(x => x.type === 'TEXT' && x.name === nm);
       if (!t) { WARN.push(`${o.n}: no inner text "${nm}"`); continue; }
@@ -392,7 +405,7 @@ function convert(D, KIT, MAP, EXTRA, nameArg) {
   const CONTAINERS = new Set(['sap.f.DynamicPage', 'sap.f.DynamicPageTitle', 'sap.f.DynamicPageHeader', 'sap.tnt.ToolPage', 'sap.tnt.NavigationList', 'sap.m.IconTabHeader', 'sap.m.ScrollContainer', 'sap.m.Page', 'sap.m.Panel', 'sap.m.List', 'sap.m.OverflowToolbar', 'sap.m.Toolbar', 'sap.ui.layout.VerticalLayout', 'sap.ui.layout.HorizontalLayout', 'sap.ui.layout.Grid', 'sap.m.ObjectIdentifier']);   // layout containers: their children are placed by the measured boxes (frame())
   const WIDGET = /(ComboBox|MultiInput|Input|TextArea|Picker|Selection|StepInput|Slider|RangeSlider|RatingIndicator|ProgressIndicator|Tokenizer|Token)$/;   // input-like widgets whose children are internals, not content
   const box = c => c.box.slice();
-  const inst = (c, cp, pr, label, tx) => ({ _src: c.id, _b: cp === 'Switch' && KIT.components[cp] ? [c.box[0], c.box[1] + (c.box[3] - KIT.components[cp].h) / 2, KIT.components[cp].w, KIT.components[cp].h] : box(c), _k: 'inst', _grow: grow(c), _w: px(c.props.width), n: label || cp, k: 'i', cp, pr, w: (cp === 'Switch' || cp === 'Icon Button') && KIT.components[cp] ? KIT.components[cp].w : R(c.box[2]), h: (KIT.components[cp] && KIT.components[cp].h && cp !== 'Shell Bar' && cp !== 'Tab' && cp !== 'Navigation Item') ? KIT.components[cp].h : R(c.box[3]), _intr: (KIT.components[cp] || {}).h, ...(tx ? { tx } : {}) });
+  const inst = (c, cp, pr, label, tx) => ({ _src: c.id, _b: cp === 'Switch' && KIT.components[cp] ? [c.box[0], c.box[1] + (c.box[3] - KIT.components[cp].h) / 2, KIT.components[cp].w, KIT.components[cp].h] : box(c), _k: 'inst', _grow: grow(c), _w: px(c.props.width), n: label || cp, k: 'i', cp, pr, w: (cp === 'Switch' || cp === 'Icon Button') && KIT.components[cp] ? KIT.components[cp].w : R(c.box[2]), h: (KIT.components[cp] && KIT.components[cp].h && cp !== 'Shell Bar' && cp !== 'Tab' && cp !== 'Navigation Item' && cp !== 'Object Status') ? KIT.components[cp].h : R(c.box[3]), _intr: (KIT.components[cp] || {}).h, ...(tx ? { tx } : {}) });
   function text(c, t) {
     const tx = c.tx || {}, fs = tx.fs || 14, wrap = c.box[3] > fs * 1.9;
     return { _src: c.id, _b: box(c), _k: 'text', _grow: grow(c), _wrap: wrap, _lineFix: !wrap, n: String(t).slice(0, 28), k: 't', t: String(t), w: R(c.box[2]), h: R(c.box[3]), st: style(c), bg: tok(hexOf(tx.fg), 'ink'), ...(wrap ? { wrap: 1 } : {}), ...(c.props.textAlign === 'Center' ? { ta: 'C' } : {}) };
@@ -414,7 +427,12 @@ function convert(D, KIT, MAP, EXTRA, nameArg) {
           : inst(c, 'Icon Button', { Type: type === 'Primary' ? 'Primary' : type === 'Tertiary' ? 'Tertiary' : 'Secondary', 'Form Factor': 'Compact', ...(ic ? { Icon: ic } : {}) }, 'Icon Button ' + (ic || ''));
       }
       case 'sap.m.Input': return inst(c, 'Input', { 'Form Factor': 'Compact', Content: 'Typed Text', '✏️ Typed Text': p.value || '' }, 'Input ' + (p.value || '').slice(0, 24));
-      case 'sap.m.MultiComboBox': return inst(c, 'Multi Combobox', { 'Form Factor': 'Compact', 'Drop-Down': 'False' }, 'Multi Combobox ' + (p.placeholder || ''), { 'Input Text': p.placeholder || '' });
+      case 'sap.m.MultiComboBox': {                            // nothing selected: hide the kit's sample tokens, show the placeholder in the nested Input
+        const n = inst(c, 'Multi Combobox', { 'Form Factor': 'Compact', 'Drop-Down': 'False' }, 'Multi Combobox ' + (p.placeholder || ''));
+        n.hide = ['1st Token', '2nd Token', 'Overflow Link / Typing'];                       // the kit's sample tokens
+        if (p.placeholder) n.add = [{ into: '⿻ Tokens Compact', t: p.placeholder, st: 'MediumText/LHAuto/Regular', bg: 'sapField_PlaceholderTextColor' }];   // the kit has no placeholder layer: text goes into the tokens slot
+        return n;
+      }
       case 'sap.m.DateRangeSelection': case 'sap.m.DatePicker': return inst(c, 'Date (Range) Picker', { 'Form Factor': 'Compact', Calendar: false }, 'Date Picker ' + (p.placeholder || ''), { 'Input Text': p.placeholder || p.value || '' });
       case 'sap.m.SearchField': return inst(c, 'Input', { 'Form Factor': 'Compact', Content: 'Typed Text', '✏️ Typed Text': p.value || p.placeholder || '' }, 'Search ' + (p.placeholder || ''));
       case 'sap.m.CheckBox': return inst(c, 'Check Box', { 'Form Factor': 'Compact', Label: true, '✏️ Text': p.text || '', Check: p.selected ? 'Checked' : 'Unchecked' }, 'Check Box ' + (p.text || ''));
@@ -459,9 +477,8 @@ function convert(D, KIT, MAP, EXTRA, nameArg) {
       case 'sap.m.GenericTile': return tile(c);
       case 'sap.m.NumericContent': return numeric(c);
       case 'sap.m.ObjectStatus': {
-        const t = text(c, p.text || '');                       // the kit has no positive/negative TEXT variable: state colour needs a kit Object Number, so the text stays sapTextColor
-        if (p.state && p.state !== 'None') WARN.push(`Object Status "${p.text}" state ${p.state}: colour not available as a text variable — plain text colour`);
-        return t;
+        const sem = { None: 'None', Success: 'Success', Warning: 'Warning', Error: 'Error', Information: 'Information' }[p.state || 'None'] || 'None';   // the kit component carries the state colour (and the badge when Inverted)
+        return inst(c, 'Object Status', { Semantic: sem, Inverted: p.inverted === true ? 'Yes' : 'No' }, 'Object Status ' + (p.text || ''), { Text: p.text || '' });
       }
       case 'sap.ui.layout.DynamicSideContent': {              // side column (fixed) beside the main content (takes the free width)
         const kids = ch(c).map(conv).filter(Boolean);
@@ -741,6 +758,7 @@ function convert(D, KIT, MAP, EXTRA, nameArg) {
       const main = (V ? 1 : 0) === i, ext = k._b[i === 0 ? 2 : 3], spans = Math.abs(ext - inner[i]) <= 1.5, g = k._grow > 0;
       let l;
       if (k.cp === 'Switch' || k.cp === 'Icon Button' || k.n === 'Icon Tile') l = 'X';
+      else if (k.cp === 'Object Status') l = 'X';                                                  // follows Make's size exactly (width x height of the control)
       else if (k._flexSeg && main) l = 'F';
       else if (k._k === 'text') l = i === 1 ? (k._lineFix ? 'X' : 'H') : k._wrap ? ((main && g) || (!main && spans) ? 'F' : 'X') : 'H';
       else if (k._k === 'inst' || k._k === 'icon' || k._k === 'img') l = i === 1 ? 'X' : (i === 0 && k._w ? 'X' : ((main && g) || (!main && spans) ? 'F' : 'X'));
