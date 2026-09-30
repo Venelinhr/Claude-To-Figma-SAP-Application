@@ -1,0 +1,26 @@
+---
+name: project-make-to-figma
+description: "Make → Figma (SAP kit) bookmark + SAP Bridge Cmd+V flow — state, user's acceptance, root causes found, open gaps"
+metadata:
+  node_type: memory
+  type: project
+  originSessionId: 1d634a7a-1af1-4d70-baf8-55ab681fcfb4
+  modified: 2026-09-30T05:01:35.363Z
+---
+
+Flow works and the user accepted it as "perfect 1:1" on 2026-09-29 (frame 554:48488, second Make app "SAP-Screen-Reference"): open Make app via Play → its own tab (the bookmark now opens the iframe `*.makeproxy-c.figma.site` itself if run on the figma.com/make page) → click "Make → SAP" bookmark → Cmd+V inside the SAP Bridge plugin window. Steps: `docs/MAKE-TO-FIGMA.md`. Converter: `build/make-convert.js`; golden test `test/make2tree.test.js`.
+
+**Why:** user wants a no-Claude, repeatable Make → SAP-kit transfer for any Make source.
+
+**How to apply:**
+- After ANY change to make-convert.js run `node build/plugin-bundle.js`, then the user must close/reopen SAP Bridge. The golden fixture may need regenerating when a change is intended.
+- Debug method that found every root cause: read the real dump (a background loop polling `pbpaste` until it starts with `{"origin"` — never ask the user to "tell me when copied"), then compare Figma positions (read-only `use_figma` walk) against dump `box` values by text.
+- Root causes found: (1) probe named a wrong root (`__text0`) → converter picks the ToolPage itself; (2) Make text lines are 18.5 px vs SAP style 16 px → single-line text keeps Make height (`_lineFix`); (3) a wrapped HBox that breaks into lines → column of line rows; (4) `width:100%` must be FILL (`_wfill`), rem widths on instances are fixed; (5) lead wrapper must keep fixed row height; (6) inherited black ink → sapTextColor #131e29.
+- Known limits, user accepts: icons not in kit (journey-change, message-information, connected); green state colour on plain text has no text variable; search-row field widths differ up to 18 px (Make flex-basis vs Figma equal FILL).
+- Bookmarks fail on Make preview pages (CSP blocks `javascript:`) → use the Chrome extension: `node build/make-extension.js`, Load unpacked `bridge-out/make-extension`; it probes every frame. Three Make apps converted so far (Flugsuche ×2, "Flüge suchen" with tab content + raw HTML).
+- More root causes (third app): tab bar holds the page content → keep it; `sap.ui.core.HTML` carries title/banner as markup → `htmlNode()` reads it; DynamicPageTitle + OverflowToolbar = one row (a column stacked it and shifted everything 94 px); Panel white is on an inner element → give Panel white; HTML flex/gap must not be inherited by child divs; `border-left` accent → left-only stroke.
+- Dump may contain the app twice (two ToolPages) — first is used. Count controls by `"parent":` not `"cls":` (aria also has cls).
+- Never write `pbcopy` without `LC_ALL=en_US.UTF-8` (mojibake). The auto-mode classifier blocks headless Chrome, the built-in browser on external URLs, and `curl` of screenshot URLs.
+- ROOT CAUSE of "fourth app rendered badly first try" (Purchase Orders, Grid + sap.m.Table): converter was tuned on flexbox apps; non-flex containers (Grid floats, table-cells, toolbars with spacers, hidden overflow clones) fell into frame() that always stacked vertically → 1644 px header, 3033 px table, 10177 px item. Fixed generally in make-convert.js: geometry-derived direction for non-flex, `table()` handler, real FILL spacers, `hid` probe flag + off-screen drop, opaque unmapped widgets. Before pasting a NEW dump: `node build/make-verify.js <dump>` (STRUCTURE ≥ 97 %, GROSS 0); floors in test/make2tree.test.js. After changing the probe: `node build/make-extension.js` + reload extension on chrome://extensions. The PO fixture test/fixtures/make-po.dump.json is SYNTHETIC (real dump never arrived from clipboard).
+- **Project copy (2026-09-30):** user asked to move the project to `/Users/C5408360/Downloads/Figma Make ` (trailing space in the name; the change_directory tool cannot open it, use full paths). Whole repo copied with rsync (git, uncommitted work, branch v6); the ORIGINAL `Claude-To-Figma-SAP-Application` was left in place. The running bridge and the imported Figma plugin still point at the ORIGINAL path until re-set up from the copy (`node build/mailbox.js restart` in the new folder; re-import `plugin/sap-bridge/manifest.json`).
+- **Make LINK route (built 2026-09-30, plan staged-purring-quokka.md):** plugin link box / Cmd+V of a URL → `code.js makeLink()` → bridge `POST /make/fetch` + `GET /make/job` (`bridge/make-link.js`: allow-list https + `*.figma.site` / `figma.com/make/…`, one job at a time, 90 s) → `build/make-fetch.js` headless Chrome (follows the makeproxy iframe, waits for fonts, stops early on a login page, hard-kill timer) → dump → same `makeBuild`. Tests: `test/make-link.test.js` (11). NOT yet run against a real app (Claude's shell cannot start Chrome; user runs `node build/make-fetch.js <url> /tmp/d.json`). Editor links need a Figma login → headless cannot open them; published `*.figma.site` links work. Step 0 still open: does the `makeproxy-c` URL open in a private window? The Figma Agent chat cannot open links (verdict; a pasted-tree prompt is untested). After a bridge change: `node build/mailbox.js restart` (new command; refuses while busy).

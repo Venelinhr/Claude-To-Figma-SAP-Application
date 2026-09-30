@@ -601,6 +601,7 @@
                                   "st": "MediumText/LHAuto/Regular",
                                   "bg": "sapTextColor",
                                   "wrap": 1,
+                                  "ml": 2,
                                   "s": "FH"
                                 },
                                 {
@@ -1073,6 +1074,7 @@
                                   "st": "MediumText/LHAuto/Regular",
                                   "bg": "sapTextColor",
                                   "wrap": 1,
+                                  "ml": 2,
                                   "s": "FH"
                                 },
                                 {
@@ -1274,6 +1276,7 @@
                                   "st": "MediumText/LHAuto/Regular",
                                   "bg": "sapTextColor",
                                   "wrap": 1,
+                                  "ml": 2,
                                   "s": "FH"
                                 },
                                 {
@@ -1608,7 +1611,7 @@
                                                   "s": "HX"
                                                 }
                                               ],
-                                              "s": "HH"
+                                              "s": "XH"
                                             }
                                           ],
                                           "s": "HH"
@@ -1685,6 +1688,7 @@
                                               "st": "MediumText/LHAuto/Regular",
                                               "bg": "sapTextColor",
                                               "wrap": 1,
+                                              "ml": 2,
                                               "s": "FH"
                                             }
                                           ],
@@ -1814,7 +1818,7 @@
                                                   "s": "HX"
                                                 }
                                               ],
-                                              "s": "HH"
+                                              "s": "XH"
                                             }
                                           ],
                                           "s": "HH"
@@ -1903,6 +1907,7 @@
                                               "st": "MediumText/LHAuto/Regular",
                                               "bg": "sapTextColor",
                                               "wrap": 1,
+                                              "ml": 2,
                                               "s": "FH"
                                             }
                                           ],
@@ -2032,7 +2037,7 @@
                                                   "s": "HX"
                                                 }
                                               ],
-                                              "s": "HH"
+                                              "s": "XH"
                                             }
                                           ],
                                           "s": "HH"
@@ -2121,6 +2126,7 @@
                                               "st": "MediumText/LHAuto/Regular",
                                               "bg": "sapTextColor",
                                               "wrap": 1,
+                                              "ml": 2,
                                               "s": "FH"
                                             }
                                           ],

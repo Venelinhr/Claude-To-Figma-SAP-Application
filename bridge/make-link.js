@@ -71,4 +71,36 @@ function createMakeJobs(opt = {}) {
   return { start, get, _jobs: jobs };
 }
 
-module.exports = { checkUrl, createMakeJobs };
+// Link jobs for the Chrome extension (share links need the user's Figma login, which only the user's own Chrome has).
+//   plugin → makeJobs.start(url) → ext.request(url) queues a job → the extension long-polls GET /ext/next, opens the link in a
+//   background tab of the user's Chrome, reads the app, POSTs /ext/result {jobId, dump|error} → the request resolves.
+function createExtQueue(opt = {}) {
+  const now = opt.now || Date.now, aliveMs = opt.aliveMs || 45000, waitMs = opt.waitMs == null ? 20000 : opt.waitMs;
+  const waiting = [], open = new Map(); let lastPoll = 0, wake = null;
+  function request(url, o = {}) {
+    if (now() - lastPoll > aliveMs) return Promise.reject(new Error('The Chrome extension "Make → SAP" is not running. Load it once: Chrome → Extensions → Developer mode → Load unpacked → bridge-out/make-extension (or press reload on it).'));
+    const jobId = require('node:crypto').randomBytes(6).toString('hex');
+    return new Promise((resolve, reject) => {
+      const t = setTimeout(() => { open.delete(jobId); const i = waiting.findIndex(j => j.jobId === jobId); if (i >= 0) waiting.splice(i, 1); reject(new Error('Chrome did not answer in time.')); }, (o.timeoutMs || 90000));
+      open.set(jobId, { resolve, reject, t });
+      waiting.push({ jobId, url });
+      if (wake) { wake(); wake = null; }
+    });
+  }
+  async function next() {
+    lastPoll = now();
+    if (!waiting.length) await new Promise((r) => { const t = setTimeout(r, waitMs); wake = () => { clearTimeout(t); r(); }; });
+    lastPoll = now();
+    return waiting.shift() || null;
+  }
+  function result(b) {
+    const j = open.get(String(b && b.jobId || ''));
+    if (!j) return false;
+    open.delete(b.jobId); clearTimeout(j.t);
+    if (b.error) j.reject(new Error(String(b.error))); else j.resolve(String(b.dump || ''));
+    return true;
+  }
+  return { request, next, result, alive: () => now() - lastPoll <= aliveMs };
+}
+
+module.exports = { checkUrl, createMakeJobs, createExtQueue };

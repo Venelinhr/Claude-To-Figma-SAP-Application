@@ -1,0 +1,16 @@
+- [Workflow v5 trees](workflow-v5-trees.md) — DEFAULT: /screen, gold layout tree → one render call → gates; bar ≥ 95 % ref + SAP execution
+- [MATCH is blind: structure + EYE never dismissed](feedback-check-structure-eye.md) — structure.js in the gate; 471:9819 lessons
+- [Front door = face control](feedback-front-door.md) — door.js rejects wrong parts fast before the plan; user approves plan + ASCII
+- [/screen cheap + fast](feedback-screen-cheap-fast.md) — budget rules: generated files only, no PNGs in chat, ref size, ≤ 40 turns
+- [Workflow v4 split](workflow-v4-split.md) — v4 (fallback since v5): SAP Bridge plugin, Figma Agent split; v4 pipeline plan → build → MATCH+EYE check
+- [main is v2](pitfall-branch-main-is-v2.md) — build only on branch v5 (v4 = fallback); a failed checkout leaves you on main
+- [Figma Agent reads no files](pitfall-figma-agent-no-files.md) — paste plan JSON, never a path; Claude does logos
+- [No JSON copy from terminal](pitfall-terminal-json-copy.md) — `--min` + `pbcopy < plan.min.json`
+- [Gold nodes](gold-nodes.md) — 174:4211 (DE tickets), 270:6722 (BG results 99%) + their gold plans
+- [v4 run log](v4-run-log.md) — one line per v4 build: MATCH %, fixes, time, tokens, $
+- [Cyrillic = Bulgarian](feedback-cyrillic-is-bulgarian.md) — never say Russian; `see.py --lang bg`, texts stay Bulgarian
+- [Responsive FILL/HUG](feedback-responsive-fill-hug.md) — every screen must resize; door rule enforces it
+- [Make → Figma flow](project-make-to-figma.md) — bookmark + Cmd+V in SAP Bridge, accepted 1:1; root causes, rebundle rule, limits
+- [Plugin runner](project-plugin-runner.md) — send.js builds via SAP Bridge plugin in ~11 s, ~0 tokens; state + numbers + open issues
+- [Show plan fully](feedback-show-plan-fully.md) — paste ASCII + layer tree + components in every plan reply; never switch branches/stash
+- [Flight ticket build lessons](project-flight-ticket-build-lessons.md) — 251:4825 built v3-style, v5 gates not run; gaps, runtime traps, branch/stash mistake; snapshot 2026-09-30

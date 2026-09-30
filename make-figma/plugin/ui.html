@@ -1,0 +1,69 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Make → Figma</title>
+<style>
+  :root { color-scheme: light dark; }
+  * { box-sizing: border-box; }
+  html, body { height: auto; }
+  #app { display: flex; flex-direction: column; min-width: 0; }
+  .row { flex-wrap: wrap; }
+  .row input { flex: 1 1 160px; }
+  body { margin: 0; padding: 12px; font: 12px/1.45 Inter, system-ui, sans-serif; color: var(--figma-color-text); background: var(--figma-color-bg); }
+  h1 { font-size: 13px; margin: 0 0 8px; display: flex; justify-content: space-between; align-items: baseline; }
+  #conn { font-weight: 400; font-size: 11px; color: var(--figma-color-text-secondary); }
+  #conn.ok { color: var(--figma-color-text-success); }
+  #conn.bad { color: var(--figma-color-text-danger); }
+  p { margin: 0 0 8px; color: var(--figma-color-text-secondary); }
+  .row { display: flex; gap: 6px; }
+  input { flex: 1; min-width: 0; padding: 6px 8px; border: 1px solid var(--figma-color-border); border-radius: 6px; background: var(--figma-color-bg); color: var(--figma-color-text); font: inherit; }
+  button { padding: 6px 12px; border: 1px solid var(--figma-color-border); border-radius: 6px; background: var(--figma-color-bg-secondary); color: var(--figma-color-text); font: inherit; cursor: pointer; }
+  button.primary { background: var(--figma-color-bg-brand); border-color: transparent; color: var(--figma-color-text-onbrand); }
+  #status { margin: 10px 0 0; min-height: 18px; word-break: break-word; }
+  #status.err { color: var(--figma-color-text-danger); }
+  #warn { margin: 6px 0 0; padding: 0; list-style: none; color: var(--figma-color-text-danger); font-size: 11px; }
+  #show { margin-top: 8px; display: none; }
+</style>
+<div id="app">
+<h1>Make → Figma <span id="conn">looking for the bridge…</span></h1>
+<p>Copy a Make link (share link or published link), then press <b>Cmd+V</b> here.</p>
+<div class="row"><input id="link" placeholder="Paste a Make link (figma.com/make/… or *.figma.site)" spellcheck="false"><button class="primary" id="go">Build</button></div>
+<div id="status"></div>
+<ul id="warn"></ul>
+<button id="show">Show in canvas</button>
+</div>
+<script>
+  var $ = function (i) { return document.getElementById(i); }, node = null;
+  var LINK = /^https:\/\/(?:(?:[\w-]+\.)*figma\.site|(?:www\.)?figma\.com\/make\/[A-Za-z0-9]{10,})(?:[\/?#]\S*)?$/i;
+  function post(m) { parent.postMessage({ pluginMessage: m }, '*'); }
+  function say(t, err) { $('status').textContent = t; $('status').className = err ? 'err' : ''; }
+  function fit() { post({ type: 'resize', height: $('app').offsetHeight + 24 }); }
+  if (window.ResizeObserver) new ResizeObserver(function () { fit(); }).observe($('app'));
+  function sendLink(u) {
+    u = String(u || '').trim(); $('warn').innerHTML = ''; $('show').style.display = 'none';
+    if (!LINK.test(u) || u.length > 2000) return say('That is not a Make link. Use figma.com/make/… or a *.figma.site link.', true);
+    $('link').value = u; say('Sending the link…'); post({ type: 'make-link', url: u });
+  }
+  $('go').onclick = function () { sendLink($('link').value); };
+  $('link').onkeydown = function (e) { if (e.key === 'Enter') { e.preventDefault(); sendLink($('link').value); } };
+  document.addEventListener('paste', function (e) {
+    var t = ((e.clipboardData && e.clipboardData.getData('text/plain')) || '').trim();
+    if (LINK.test(t)) { e.preventDefault(); sendLink(t); }
+    else if (t.charAt(0) === '{' && t.indexOf('"controls"') > -1) { e.preventDefault(); say('Reading ' + Math.round(t.length / 1024) + ' KB…'); post({ type: 'make-dump', json: t }); }
+  }, true);
+  $('show').onclick = function () { if (node) post({ type: 'show-node', nodeId: node }); };
+  onmessage = function (ev) {
+    var m = ev.data && ev.data.pluginMessage; if (!m) return;
+    if (m.type === 'status') {
+      var c = $('conn'); c.className = m.value === 'connected' ? 'ok' : 'bad';
+      c.textContent = m.value === 'connected' ? 'connected' + (m.extension ? ' · Chrome extension on' : ' · Chrome extension off')
+        : m.value === 'pair-locked' ? 'bridge paired with another Figma' : m.value === 'wrong-bridge' ? 'wrong bridge on this port' : 'bridge not running (node make-figma/ctl.js start)';
+    }
+    if (m.type === 'make-status') {
+      say(m.text, m.ok === false);
+      if (m.ok === true && m.nodeId) { node = m.nodeId; $('show').style.display = 'inline-block'; }
+      if (m.warn && m.warn.length) $('warn').innerHTML = m.warn.slice(0, 8).map(function (w) { return '<li>' + String(w).replace(/[<&]/g, '') + '</li>'; }).join('');
+      fit();
+    }
+  };
+  fit();
+</script>

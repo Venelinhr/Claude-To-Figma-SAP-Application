@@ -14,7 +14,12 @@ function convert(D, KIT, MAP, EXTRA, nameArg) {
   const skip = new Set(MAP.skip_cls);
   const vparent = c => { let p = c.parent; while (p && by[p] && skip.has(by[p].cls)) p = by[p].parent; return p; };
   // a control the user cannot see in Make: hidden by CSS (probe: hid), far outside the page (OverflowToolbar clones, off-screen measuring copies), or an invisible-text helper
-  const off = c => c.hid === 1 || c.box[0] > D.viewport[0] - 1 || c.box[0] + c.box[2] < 1 || /HiddenElement|InvisibleText/.test((c.css || []).join(' '));
+  // Overlays (Dialog, Popover, Menu, Action Sheet…) live in the static area, outside the page tree, and are position:fixed (the probe flags them hidden).
+  // An OPEN one (it has a real box) becomes its own frame next to the screen; its controls count as visible.
+  const OVR = /^sap\.m\.(Dialog|Popover|ResponsivePopover|ActionSheet|Menu)$|^sap\.ui\.unified\.Menu$/;
+  const ovs = D.controls.filter(c => OVR.test(c.cls) && c.box[2] >= 100 && c.box[3] >= 60 && !by[c.parent]), ovIds = new Set(ovs.map(o => o.id));
+  const inOv = c => { for (let p = c, n = 0; p && n++ < 40; p = by[p.parent]) if (ovIds.has(p.id)) return true; return false; };
+  const off = c => (c.hid === 1 && !inOv(c)) || c.box[0] > D.viewport[0] - 1 || c.box[0] + c.box[2] < 1 || /HiddenElement|InvisibleText/.test((c.css || []).join(' '));
   D.controls.forEach(c => { if (!skip.has(c.cls) && !off(c)) (kids[vparent(c)] = kids[vparent(c)] || []).push(c); });
   const ch = c => (kids[c.id] || []).filter(k => !(c.cls === 'sap.f.DynamicPageHeader' && MAP.skip_in_dynamic_header.includes(k.cls)));
   const grow = c => parseFloat((lay[c.id] || {}).grow) || 0;
@@ -67,7 +72,10 @@ function convert(D, KIT, MAP, EXTRA, nameArg) {
   const inst = (c, cp, pr, label, tx) => ({ _src: c.id, _b: cp === 'Switch' && KIT.components[cp] ? [c.box[0], c.box[1] + (c.box[3] - KIT.components[cp].h) / 2, KIT.components[cp].w, KIT.components[cp].h] : box(c), _k: 'inst', _grow: grow(c), _w: px(c.props.width), n: label || cp, k: 'i', cp, pr, w: (cp === 'Switch' || cp === 'Icon Button') && KIT.components[cp] ? KIT.components[cp].w : R(c.box[2]), h: (KIT.components[cp] && KIT.components[cp].h && cp !== 'Shell Bar' && cp !== 'Tab' && cp !== 'Navigation Item' && cp !== 'Object Status') ? KIT.components[cp].h : R(c.box[3]), _intr: (KIT.components[cp] || {}).h, ...(tx ? { tx } : {}) });
   function text(c, t) {
     const tx = c.tx || {}, fs = tx.fs || 14, wrap = c.box[3] > fs * 1.9;
-    return { _src: c.id, _b: box(c), _k: 'text', _grow: grow(c), _wrap: wrap, _lineFix: !wrap, n: String(t).slice(0, 28), k: 't', t: String(t), w: R(c.box[2]), h: R(c.box[3]), st: style(c), bg: tok(hexOf(tx.fg), 'ink'), ...(wrap ? { wrap: 1 } : {}), ...(c.props.textAlign === 'Center' ? { ta: 'C' } : {}) };
+    // Lines Make really shows: the control's own maxLines, else what fits its measured box (line-clamp / fixed height). Figma then
+    // truncates with "…" at that many lines instead of letting the extra lines run out of the row and get clipped.
+    const lh = tx.lh || fs * 1.4, mx = Number(c.props.maxLines), ml = wrap ? (mx > 0 ? mx : Math.max(2, Math.round(c.box[3] / lh))) : 0;
+    return { _src: c.id, _b: box(c), _k: 'text', _grow: grow(c), _wrap: wrap, _lineFix: !wrap, n: String(t).slice(0, 28), k: 't', t: String(t), w: R(c.box[2]), h: R(c.box[3]), st: style(c), bg: tok(hexOf(tx.fg), 'ink'), ...(wrap ? { wrap: 1, ml } : {}), ...(c.props.textAlign === 'Center' ? { ta: 'C' } : {}) };
   }
   function iconNode(name, c, w) { return name ? { _src: c.id, _b: box(c), _k: 'icon', _grow: 0, n: 'Icon ' + name, k: 'ic', ic: name, bg: tok(hexOf((c.tx || {}).fg || c.st.fg), 'ink'), w } : null; }
   const nameOf = c => c.css.includes('flyDateTile') ? 'Fare Tile' : c.css.includes('flyFlightRow') ? 'Flight Row' : c.css.includes('flyCardContent') ? 'Card Content'
@@ -271,11 +279,20 @@ function convert(D, KIT, MAP, EXTRA, nameArg) {
     let flex = segs.filter(s => s.k && !px(s.k.props.width));
     if (!flex.length) flex = [segs.filter(s => s.k).sort((a, b) => b.w - a.w)[0]];
     flex.forEach(s => { s.flex = true; });
-    const segOf = k => { const m = k.box[0] + k.box[2] / 2; let j = segs.findIndex(s => m >= s.x - 0.5 && m <= s.x + s.w + 0.5); if (j < 0) j = m < segs[0].x ? 0 : segs.length - 1; return j; };
+    segs.forEach(s => { s.ox = s.x; s.ow = s.w; });                                                          // Make's own column geometry: cell contents keep their offsets from it
+    {                                                                                                          // Make lets a wide table scroll sideways; a Figma table must fit its width → the flexible column gives way first, then the others shrink in proportion
+      let over = Math.max(...segs.map(s => s.ox + s.ow)) - right;
+      if (over > 1.5) {
+        for (const s of flex) { const t = Math.min(over, Math.max(0, s.w - 96)); s.w -= t; over -= t; }
+        if (over > 1.5) { const rest = segs.filter(s => s.w > 48), tot = rest.reduce((q, s) => q + s.w, 0), f = Math.max(0.3, (tot - over) / tot); rest.forEach(s => { s.w = Math.max(40, s.w * f); }); }
+        let x = TX; segs.forEach(s => { s.x = x; s.w = R5(s.w); x += s.w; });
+      }
+    }
+    const segOf = k => { const m = k.box[0] + k.box[2] / 2; let j = segs.findIndex(s => m >= s.ox - 0.5 && m <= s.ox + s.ow + 0.5); if (j < 0) j = m < segs[0].ox ? 0 : segs.length - 1; return j; };
     const cell = (s, list, y, h) => {                                                                        // one cell: the control(s) of that column in that row, placed by their real offsets
       const nodes = list.map(conv).filter(Boolean), n = { _b: [s.x, y, s.w, h], _k: 'frame', _sized: true, n: 'Cell', d: 'H', a: 'MC', w: R(s.w), h: R(h), s: (s.flex ? 'F' : 'X') + 'F', c: [] };
       if (!nodes.length) return n;
-      const b = union(nodes), l = Math.max(0, R5(b[0] - s.x)), r = Math.max(0, R5(s.x + s.w - (b[0] + b[2]))), top = b[1] - y, bot = y + h - (b[1] + b[3]);
+      const b = union(nodes), l = Math.max(0, R5(b[0] - s.ox)), r = Math.max(0, R5(s.ox + s.ow - (b[0] + b[2]))), top = b[1] - y, bot = y + h - (b[1] + b[3]);
       const endAl = s.hA === 'End' || s.hA === 'Right' || (!s.k && r + 1.5 < l);                           // the column's hAlign decides; a leading / trailing cell has none, there the offsets decide
       const pt = Math.abs(top - bot) <= 2 ? 0 : Math.max(0, R5(top)), pb = Math.abs(top - bot) <= 2 ? 0 : Math.max(0, R5(bot));
       const k = nodes.length === 1 ? nodes[0] : layout({ _b: b, _k: 'frame', n: 'Column', d: 'V' }, nodes, { V: true, st: {}, flex: false });
@@ -332,6 +349,19 @@ function convert(D, KIT, MAP, EXTRA, nameArg) {
     if (flex && !V && /wrap/.test(st.wrap) && kids.length > 1) {          // a wrapped row that broke into several lines → a column of line rows
       const lines = []; let bottom = -1e9;
       for (const k of kids) { if (!lines.length || k._b[1] >= bottom - 1) { lines.push([k]); bottom = k._b[1] + k._b[3]; } else { lines[lines.length - 1].push(k); bottom = Math.max(bottom, k._b[1] + k._b[3]); } }
+      // Make wraps these items itself. When every item has its own width (no flex-grow), keep ONE row and let Figma wrap it (auto layout
+      // "wrap"): it then re-wraps when the frame gets narrower or wider, like the browser does. Line rows would freeze today's breaks.
+      if (lines.length > 1 && !kids.some(k => k._grow) && Math.max(...kids.map(k => k._b[2])) <= 0.4 * Math.max(...lines.map(ln => Math.max(...ln.map(k => k._b[0] + k._b[2])) - Math.min(...ln.map(k => k._b[0]))))) {
+        const rowGap = Math.max(0, R5(lines[1].reduce((m, k) => Math.min(m, k._b[1]), 1e9) - lines[0].reduce((m, k) => Math.max(m, k._b[1] + k._b[3]), -1e9)));
+        const l0 = lines[0], colGap = l0.length > 1 ? Math.max(0, R5(l0[1]._b[0] - l0[0]._b[0] - l0[0]._b[2])) : 16, top = Math.min(...l0.map(k => k._b[1]));
+        const ob = new Map(kids.map(k => [k, k._b])), onb = n._b; let x = kids[0]._b[0]; const flat = [];
+        lines.forEach(ln => { const t = Math.min(...ln.map(k => k._b[1])); ln.forEach(k => { const b = k._b.slice(); b[0] = x; b[1] = top + (b[1] - t); k._b = b; x += b[2] + colGap; flat.push(k); }); });
+        const one = layout(Object.assign(n, { d: 'H', _b: [kids[0]._b[0], top, x - colGap - kids[0]._b[0], Math.max(...flat.map(k => k._b[1] + k._b[3])) - top] }), flat, { V: false, st: { ai: 'flex-start', jc: 'flex-start' }, flex: true });
+        ob.forEach((b, k) => { k._b = b; }); one._b = onb; one.h = R(onb[3]);                  // the trace must compare with the REAL Make boxes
+        one.wrapRow = 1; one.cg = rowGap; one.s = 'F' + ((one.s || 'HH')[1] || 'H');
+        one.c = one.c.filter(k => !(k.n === 'Spacer' && k.w === 1));
+        return one;
+      }
       if (lines.length > 1) {
         n.d = 'V';
         const rows = lines.map(ln => {
@@ -443,9 +473,31 @@ function convert(D, KIT, MAP, EXTRA, nameArg) {
   const sn = body.c.find(k => k.n === 'Side Navigation'); if (sn) { sn.s = 'XF'; sn.w = 256; }
   if (page) body.c[body.c.length - 1].s = 'FF';
   // trace: for every node that came from a Make control, its index path in the tree and the Make box it must land on (build/make-verify.js)
+  // a wrapping row spans its parent (FILL width) so Figma can wrap it to the frame's width
+  const wrPass = (function wr(n, par) { if (n.wrapRow && par && par.d === 'V') { const pp = Array.isArray(par.p) ? par.p : [par.p || 0, par.p || 0, par.p || 0, par.p || 0]; n.w = R(par.w - pp[1] - pp[3]); n.s = 'F' + (n.s || 'HH')[1]; } (n.c || []).forEach(k => wr(k, n)); }); wrPass(rootNode, null);
+  // HUG parent + FILL child on the same axis has no definite width (Figma shrinks the child to its minimum: a 100%-wide field collapsed to its
+  // label). Make gave that parent a definite width, so it keeps it: FIXED at the Make width.
+  const hfPass = (function hf(n, par) {
+    (n.c || []).forEach(k => hf(k, n));
+    if (!n.d || !n.s || n === rootNode) return;
+    [0].forEach(i => {                                        // width only: a hugging row keeps growing in height with its content
+      if (n.s[i] !== 'H') return;
+      const fills = (n.c || []).some(k => (k.s || '')[i] === 'F' && !k.abs);
+      if (fills && (i === 0 ? n.w : n.h) > 0) n.s = n.s.slice(0, i) + 'X' + n.s.slice(i + 1);
+    });
+  }); hfPass(rootNode, null);
   const TRACE = [];
   (function walk(n, at) { if (n._src) TRACE.push({ p: at, id: n._src, b: n._b, k: n._k, ta: n.ta }); (n.c || []).forEach((k, i) => walk(k, at.concat(i))); })(rootNode, []);
+  const clean = (k, v) => (k[0] === '_' || v === undefined) ? undefined : v;
+  const extra = ovs.map(o => {
+    const t = String(o.props.title || '').trim(), n = frame(o, o.cls.split('.').pop(), { geo: true });
+    n.n = o.cls.split('.').pop() + (t ? ' — ' + t.slice(0, 40) : ''); n.sz = 'x'; delete n.s; n.clip = 1; n.r = 16;
+    if (!n.bg) n.bg = tok('#ffffff', 'fill') || 'sapGroup_ContentBackground';
+    const sh = KIT.effects && (KIT.effects['Shadow/sapContent_Shadow3'] || KIT.effects['Shadow/sapContent_Shadow1']); if (sh) n.fxk = sh;
+    n.w = R(o.box[2]); n.h = R(o.box[3]); wrPass(n, null); hfPass(n, null);
+    return { name: n.n, box: o.box.slice(), tree: JSON.parse(JSON.stringify(n, clean)) };
+  });
   const tree = JSON.parse(JSON.stringify(rootNode, (k, v) => (k[0] === '_' || v === undefined) ? undefined : v));
-  return { tree, images: IMAGES, post: { nav: NAV, shell: SHELL }, warn: [...new Set(WARN)], controls: D.controls.length, trace: TRACE };
+  return { tree, extra, images: IMAGES, post: { nav: NAV, shell: SHELL }, warn: [...new Set(WARN)], controls: D.controls.length, trace: TRACE };
 }
 if (typeof module !== 'undefined' && module.exports) module.exports = { convert };

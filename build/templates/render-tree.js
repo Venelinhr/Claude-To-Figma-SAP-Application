@@ -81,7 +81,8 @@ async function NODE(o, parent, par) {
     n = await T(o.t, o.st, _ok(o.bg) ? o.bg : null, { name: o.n });
     if (o.bg && !_ok(o.bg)) _raw(n, o.bg);
     if (o.ta) n.textAlignHorizontal = { C: 'CENTER', R: 'RIGHT', J: 'JUSTIFIED' }[o.ta];
-    if (o.wrap || (o.ta && (o.s || '')[0] === 'X')) { n.textAutoResize = 'HEIGHT'; n.resize(o.w, n.height); }   // aligned text keeps its box
+    if (o.wrap || (o.ta && (o.s || '')[0] === 'X')) { n.textAutoResize = 'HEIGHT'; n.resize(o.w, n.height); }
+    if (o.ml) { try { n.textTruncation = 'ENDING'; n.maxLines = o.ml; } catch (e) { WARN.push('max lines: ' + e.message); } }   // Make shows at most ml lines, then "…"   // aligned text keeps its box
   } else if (o.k === 'i') {
     n = await I(o.cp, o.pr || {}, o.n); if (!n) return null;
     if (o.nav) await _nav(n, o.nav);                                 // Side Navigation: the slot's items become the app's items
@@ -125,6 +126,7 @@ async function NODE(o, parent, par) {
       [n.paddingTop, n.paddingRight, n.paddingBottom, n.paddingLeft] = p;
       const a = o.a || 'MM'; n.primaryAxisAlignItems = _AL[a[0]]; n.counterAxisAlignItems = a[1] === 'S' ? 'MIN' : _AL[a[1]];
       n.strokesIncludedInLayout = false;
+      if (o.wrapRow) { try { n.layoutWrap = 'WRAP'; n.counterAxisSpacing = o.cg || 0; } catch (e) { WARN.push('wrap: ' + e.message); } }   // Make's flex-wrap row: re-wraps with the frame
     }
     n.resize(Math.max(0.01, o.w || 1), Math.max(0.01, o.h || 1));
     await _paintNode(n, o);

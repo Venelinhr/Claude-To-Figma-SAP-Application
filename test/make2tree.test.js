@@ -91,3 +91,42 @@ test('make-verify: saved dumps do not get worse (regression floor per app)', () 
   const floors = { 'make-fly.dump.json': 46, 'make-search.dump.json': 56, 'make-tabs.dump.json': 98 };
   for (const [f, min] of Object.entries(floors)) { const v = verify(f); assert.ok(v.structure >= min, `${f}: STRUCTURE ${v.structure} % < ${min} %\n${v.out}`); assert.strictEqual(v.gross, 0, `${f}\n${v.out}`); }
 });
+
+test('convert(): a wrapped Text keeps only the lines Make shows (maxLines, or what fits the measured box) — Figma truncates with "…"', () => {
+  const find = (t, s) => { let hit = null; JSON.stringify(t, (k, v) => { if (v && v.k === 't' && v.t === s) hit = v; return v; }); return hit; };
+  const run = mut => {
+    const d = FX('make-po.dump.json'), base = convert(d, kit, map, extra, 'T').tree, c = d.controls.find(x => x.cls === 'sap.m.Text' && x.props.text && find(base, x.props.text));
+    mut(c); return { c, node: find(convert(d, kit, map, extra, 'T').tree, c.props.text) };
+  };
+  const a = run(c => { c.box[3] = 32; c.tx = Object.assign({}, c.tx, { fs: 14, lh: 16 }); c.props.text = 'Seal leakage with pressure drop in the main pump housing'; });
+  assert.strictEqual(a.node.ml, 2, 'box of 2 lines → 2 lines');
+  const b = run(c => { c.box[3] = 64; c.tx = Object.assign({}, c.tx, { fs: 14, lh: 16 }); c.props.maxLines = 3; c.props.text = 'Belt misalignment on the conveyor line, please check the drive'; });
+  assert.strictEqual(b.node.ml, 3, 'the control maxLines wins');
+  const one = run(c => { c.box[3] = 16; c.tx = Object.assign({}, c.tx, { fs: 14, lh: 16 }); c.props.text = 'Single line'; });
+  assert.strictEqual(one.node.ml, undefined, 'a one-line text is not limited');
+});
+
+test('convert(): a flex-wrap row of small items becomes ONE Figma wrap row (re-wraps when the frame is resized), and still lands on the Make boxes', () => {
+  const r = convert(FX('make-maint.dump.json'), kit, map, extra, 'M');
+  const rows = []; JSON.stringify(r.tree, (k, v) => { if (v && v.wrapRow) rows.push(v); return v; });
+  assert.strictEqual(rows.length, 1, 'the filter bar');
+  assert.strictEqual(rows[0].d, 'H'); assert.match(rows[0].s, /^F/, 'wrap row spans its parent'); assert.ok(rows[0].c.length >= 6);
+  const out = execFileSync(process.execPath, [path.join(__dirname, '..', 'build', 'make-verify.js'), path.join(__dirname, 'fixtures', 'make-maint.dump.json'), '--quiet']).toString();
+  assert.match(out, /STRUCTURE .*100 %/); assert.match(out, /GROSS +0 /);
+});
+
+test('convert(): a table that Make scrolls sideways (columns wider than the table) is fitted to the table width — every row adds up', () => {
+  const r = convert(FX('make-support.dump.json'), kit, map, extra, 'S');
+  const rows = []; JSON.stringify(r.tree, (k, v) => { if (v && (v.n === 'Header Row' || v.n === 'Row') && v.c && v.c.length > 5 && v.c[0].n === 'Cell') rows.push(v); return v; });
+  assert.ok(rows.length >= 20, 'header + rows');
+  for (const row of rows) assert.ok(Math.abs(row.c.reduce((q, c) => q + c.w, 0) - row.w) <= 1.5, `cells ${row.c.reduce((q, c) => q + c.w, 0)} vs row ${row.w}`);
+});
+
+test('convert(): an OPEN Dialog (static area, position:fixed → probe says hidden) becomes its own frame; a page without one has none', () => {
+  const r = convert(FX('make-dialog.dump.json'), kit, map, extra, 'D');
+  assert.strictEqual(r.extra.length, 1);
+  const e = r.extra[0]; assert.match(e.name, /^Dialog — Case /); assert.deepStrictEqual(e.tree.w, 832); assert.ok(e.tree.c.length >= 3, 'title bar, content, footer');
+  const js = JSON.stringify(e.tree);
+  assert.ok(js.includes('"✏️ Label":"Customer"') && js.includes('"✏️ Label":"Response Deadline"') && js.includes('Conversation'), 'the dialog fields are there');
+  assert.strictEqual(convert(FX('make-support.dump.json'), kit, map, extra, 'S').extra.length, 0);
+});

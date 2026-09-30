@@ -409,7 +409,9 @@ const ALLOWED_TOOLS = [
   'mcp__figma__get_metadata', 'mcp__figma__search_design_system', 'mcp__figma__whoami',
 ].join(',');
 const mbx = () => require('../build/mailbox.js');
-const makeJobs = require('./make-link.js').createMakeJobs();   // Make link → probe dump via headless Chrome (no model); see bridge/make-link.js
+const makeLink = require('./make-link.js');
+const extQueue = makeLink.createExtQueue();      // share links are read by the "Make → SAP" Chrome extension (the user's own logged-in Chrome)
+const makeJobs = makeLink.createMakeJobs({ fetchDump: (u, o) => (makeLink.checkUrl(u).kind === 'editor' ? extQueue.request(u, o) : require('../build/make-fetch.js').fetchMakeDump(u, o)) });   // Make link → probe dump via headless Chrome (no model); see bridge/make-link.js
 
 let figmaSeen = null;                         // {fileKey, fileName, lastSeen} — the plugin heartbeat
 const inbox = { events: [], nextSeq: 0, _pollWaiters: [] };
@@ -821,6 +823,19 @@ async function handleV4(req, res, url) {
     fs.writeFileSync(PAIR_FILE, JSON.stringify({ sha256: sha256(tok), pairedAt: new Date().toISOString() }), { mode: 0o600 });
     console.log('[pair] SAP Bridge plugin paired');
     send(res, 200, { token: tok });
+    return true;
+  }
+  // Chrome extension routes (no token: only the extension's own origin may call them; a web page cannot forge that header)
+  if (p === '/ext/next' || p === '/ext/result') {
+    const org = String(req.headers.origin || '');
+    // /ext/next is a plain GET: Chrome may send no Origin on it, so only a web page origin is refused. Results (POST) must come from the extension.
+    if (p === '/ext/next' ? /^https?:/i.test(org) : !org.startsWith('chrome-extension://')) { send(res, 403, { error: 'only the Make → SAP extension' }); return true; }
+    if (p === '/ext/next') { if (!extQueue.alive()) console.log('[ext] Make → SAP extension connected'); send(res, 200, (await extQueue.next()) || {}); return true; }
+    const b = await readBody(req, 30e6);
+    if (b.__tooBig) return send(res, 413, { error: 'dump too big' }), true;
+    if (b.dump) { try { fs.mkdirSync(OUT, { recursive: true }); fs.writeFileSync(path.join(OUT, 'ext-last.json'), String(b.dump)); } catch (_) {} }
+    extQueue.result(b);
+    send(res, 200, { ok: true });
     return true;
   }
   const routes = ['/poll', '/inbox', '/job', '/answer', '/job/logos-done', '/mbx/done', '/mbx/push',
