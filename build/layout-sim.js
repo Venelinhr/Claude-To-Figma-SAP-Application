@@ -12,7 +12,7 @@ const tf = args[0];
 if (!tf || tf.startsWith('--')) { console.log(fs.readFileSync(__filename, 'utf8').split('\n').slice(1, 6).join('\n')); process.exit(2); }
 const raw = JSON.parse(fs.readFileSync(tf, 'utf8')), T = raw.tree || raw;
 if (T.$c) { console.error('layout-sim needs the plain tree (tree.json), not the compact wire format'); process.exit(2); }
-const scale = Number(opt('--scale', 1)), tol = Number(opt('--tol', 4));
+const scale = Number(opt('--scale', 1)), tol = Number(opt('--tol', 4)), refScale = Number(opt('--ref-scale', 1));   // --ref-scale 2: the reference is a 2× export of this frame
 T.w = Math.round(T.w * scale);
 const P = o => (Array.isArray(o.p) ? o.p : [o.p || 0, o.p || 0, o.p || 0, o.p || 0]);   // t r b l
 const leaf = o => !o.c || !!o.k;
@@ -99,7 +99,7 @@ const ef = opt('--expect', null);
 if (ef) {
   const E = JSON.parse(fs.readFileSync(ef, 'utf8')), rows = [];
   for (const o of leaves) {
-    const e = E[o.n]; if (!e) continue;
+    const e = E[o.n] && E[o.n].map(v => v / refScale); if (!e) continue;
     const b = boxes.get(o), ta = o.ta;                  // an aligned text keeps its right edge / centre
     const dx = ta === 'R' ? b[0] + b[2] - (e[0] + e[2]) : ta === 'C' ? b[0] + b[2] / 2 - (e[0] + e[2] / 2) : b[0] - e[0];
     rows.push({ n: o.n, dx, dy: b[1] - e[1], e, b });

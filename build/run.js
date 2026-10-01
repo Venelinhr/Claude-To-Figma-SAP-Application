@@ -189,7 +189,7 @@ function names(T) {                                  // what the model may addre
   // ── 3. layout-sim before Figma: position vs the measured reference, overflow at ×1 ×0.85 ×1.15, STRUCT-SIM on the simulated boxes
   const explicit = T.sz === 'x', fromZero = isImg && !(front && front.gold && front.gold.full);
   const expF = J('tree.expect.json'), hasExp = fs.existsSync(expF) && Object.keys(readJ(expF)).length > 0;
-  const simA = ['build/layout-sim.js', treeF, '--geometry-out', J('sim.geometry.json')]; if (hasExp) simA.push('--expect', expF);
+  const simA = ['build/layout-sim.js', treeF, '--geometry-out', J('sim.geometry.json')]; if (hasExp) simA.push('--expect', expF, '--ref-scale', String(spec && T.w && Math.abs(spec.frame.w / T.w - 2) < 0.05 ? 2 : 1));
   const s1 = nodeSync(simA), pos = (String(s1.stdout).match(/POSITION\s+(\d+)\/(\d+)[^\n]*= (\d+) %/) || []), ov1 = +(String(s1.stdout).match(/OVERFLOW\s+(\d+)/) || [0, 0])[1];
   const ovs = [0.85, 1.15].map(sc => +(String(nodeSync(['build/layout-sim.js', treeF, '--scale', String(sc)]).stdout).match(/OVERFLOW\s+(\d+)/) || [0, 0])[1]);
   let sim = [];

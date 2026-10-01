@@ -24,6 +24,7 @@ async function _paintNode(node, o) {
     if (_ok(o.bc)) await stroke(node, o.bc, Array.isArray(o.bw) ? { t: o.bw[0], r: o.bw[1], b: o.bw[2], l: o.bw[3] } : { a: o.bw || 1 });
     else _raw(node, o.bc, true);
     node.strokeAlign = 'INSIDE';
+    if (Array.isArray(o.dash) && o.dash.length) { try { node.dashPattern = o.dash; } catch (e) { WARN.push(`${o.n}: dash — ${e.message}`); } }
   }
   if (o.r && 'cornerRadius' in node) node.cornerRadius = o.r;
   if (o.fxk) { try { const es = await _imp('s', o.fxk); await node.setEffectStyleIdAsync(es.id); } catch (e) { WARN.push(`${o.n}: shadow style — ${e.message}`); } }

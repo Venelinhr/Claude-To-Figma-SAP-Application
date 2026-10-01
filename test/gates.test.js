@@ -142,7 +142,7 @@ print(round(M.s, 2), round(M.t, 3))`;
 });
 
 test('tree.js plan: the main-style analysis — wireframe, L1-L5 layers with folded rows, components with real kit keys and states', () => {
-  const r = node(['build/tree.js', 'plan', TREE_PO, '5']);
+  const r = node(['build/tree.js', 'plan', TREE_PO, '5', '--grid']);   // --grid = the detailed to-scale grid + L1-L5 list; the default style is covered in test/sketch.test.js
   assert.strictEqual(r.code, 0, r.out);
   for (const re of [/^WIREFRAME[\s\S]*\[Search supplier\]/m, /^L1 Purchase Orders — List Report {3}VERTICAL/m, /^L2 {3}Shell Bar {3}SAP Shell Bar/m,
     /… ×5 more with the same structure/, /\| Object Status +\| 748d609ead… \| Semantic=Warning +\| 2 +\|/, /DOOR {2}✓ ALL IN/])
@@ -233,6 +233,11 @@ test('structure.js: a strip where the reference has a nested pink box, a collaps
   r = run([...good, R('7', 'TEXT', 'C', 40, 92, 30, 14, 'SOF')]); assert.match(r.out, /OVERLAP {2}"06:00".*"SOF"/);
   r = run([...good, R('8', 'FRAME', 'Baggage', 10, 290, 100, 30)]); assert.match(r.out, /OUTSIDE {2}"Baggage"/);
   r = run(good.map(g => g[0] === '1' ? R('1', 'FRAME', 'Screen', 0, 0, 380, 290) : g)); assert.match(r.out, /FRAME {2}build 380×290, the reference is 400×300/);
+  // a kit instance is a box: a reference box that the build draws as a component instance (Radio Button ring) is found; a wrong-sized instance still fails
+  const ring = { frame: { w: 400, h: 300 }, sections: [{ type: 'box', box: [20, 200, 34, 35], children: [] }] };
+  const base = [R('1', 'FRAME', 'Screen', 0, 0, 400, 300)];
+  r = run([...base, R('2', 'INSTANCE', 'Marker 3', 20, 200, 34, 35)], ring); assert.strictEqual(r.code, 0, r.out);
+  r = run([...base, R('2', 'INSTANCE', 'Marker 3', 20, 200, 12, 12)], ring); assert.strictEqual(r.code, 1); assert.match(r.out, /BOX {2}the reference has a box 34×35 at 20,200/);
 });
 
 test('gates.js: MATCH 100 % with a structure defect is NOT a pass, and the defect line is printed', () => {

@@ -410,7 +410,7 @@ const ALLOWED_TOOLS = [
 ].join(',');
 const mbx = () => require('../build/mailbox.js');
 
-let figmaSeen = null;                          // {fileKey, fileName, lastSeen} — the plugin heartbeat
+let figmaSeen = null;                         // {fileKey, fileName, lastSeen} — the plugin heartbeat
 const inbox = { events: [], nextSeq: 0, _pollWaiters: [] };
 const jobIndex = new Map();                    // jobId → summary (outlives run eviction)
 const lastJobByFile = new Map();               // fileKey → jobId

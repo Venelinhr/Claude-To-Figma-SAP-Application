@@ -164,9 +164,10 @@ function compTable() {
 const problems = lint();
 if (cmd === 'plan') {
   // v6: a screen up to 600 px wide (a phone) is drawn as a readable boxed sketch + a box-drawing layer tree, both generated from THIS tree (build/sketch.js).
-  // A wide screen keeps the to-scale grid (columns side by side cannot be shown as one stack). `plan --grid` forces the old grid + the detailed L1-L5 list.
-  const NARROW = T.w <= 600 && !process.argv.includes('--grid'), SK = NARROW ? require('./sketch.js') : null;
-  console.log(`FRAME  ${T.w}×${T.h} · ${T.n} · ${all.length} layers\n\nWIREFRAME${NARROW ? ' (drawn from the tree, not to scale)' : ''}\n${NARROW ? SK.sketch(T) : ascii(3)}\n\nL1-L5 LAYER TREE (names = what the Figma layers will be called)\n${NARROW ? SK.layerTree(T) : lTree(Number(/^\d+$/.test(depthArg || '') ? depthArg : 5))}\n\nSAP COMPONENTS (real kit keys)\n${compTable()}\n\nLISTS\n${lists()}\n\nDOOR  ${problems.length ? '✗ ' + problems.length + ' OUT — fix the tree, run again, never show a plan with OUT\n' + problems.map(p => '  ✗ ' + p).join('\n') : '✓ ALL IN — show the plan'}${ASKS.length ? '\nASK THE USER\n' + ASKS.map(a => '  ? ' + a).join('\n') : ''}`);
+  // 2026-10-01: wide screens use the same style (columns side by side). `plan --grid` forces the old to-scale grid + the detailed L1-L5 list.
+  const NARROW = !process.argv.includes('--grid'), SK = NARROW ? require('./sketch.js') : null;
+  const BLOCKS = NARROW && T.w > 600 && !process.argv.includes('--dense'), BK = BLOCKS ? SK.scene(T) : null;   // 2026-10-01: wide screens = zone map (boxes where the zones sit); `--dense` = the text columns
+  console.log(`FRAME  ${T.w}×${T.h} · ${T.n} · ${all.length} layers\n\nWIREFRAME${NARROW ? ' (drawn from the tree, not to scale)' : ''}\n${BLOCKS ? BK.text + '\n\nZONE KEY (the letters in the drawing)\n' + BK.zones.map(z => z.letter + '  ' + z.name + (z.summary ? ' — ' + z.summary : '')).join('\n') : NARROW ? SK.sketch(T) : ascii(3)}\n\nL1-L5 LAYER TREE (names = what the Figma layers will be called)\n${NARROW ? SK.layerTree(T) : lTree(Number(/^\d+$/.test(depthArg || '') ? depthArg : 5))}\n\nSAP COMPONENTS (real kit keys)\n${compTable()}\n\nLISTS\n${lists()}\n\nDOOR  ${problems.length ? '✗ ' + problems.length + ' OUT — fix the tree, run again, never show a plan with OUT\n' + problems.map(p => '  ✗ ' + p).join('\n') : '✓ ALL IN — show the plan'}${ASKS.length ? '\nASK THE USER\n' + ASKS.map(a => '  ? ' + a).join('\n') : ''}`);
   process.exit(problems.length ? 1 : 0);
 }
 if (cmd === 'lint') { console.log(problems.length ? problems.map(p => '✗ ' + p).join('\n') : '✓ lint clean'); process.exit(problems.length ? 1 : 0); }

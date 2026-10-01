@@ -170,7 +170,7 @@ test('sketch: a phone tree is drawn as a boxed wireframe (aligned glyphs, zone l
   const { GLYPH, SAFE_GLYPHS } = require('../build/sketch.js');
   for (const [k, g] of Object.entries(GLYPH)) assert.ok(SAFE_GLYPHS.has(g), `icon ${k} uses a glyph that can break the border: ${g}`);
   assert.ok(!/[▓░◇⌖⛟…◉○☐]/.test(sketch(T)), 'no glyph that a font may draw with another width');
-  const t = layerTree(T).split('\n');
+  const t = layerTree(T).split('\n').map(l => l.replace(/\s+← L\d.*$/, ''));   // 2026-10-01: every line ends with a level marker
   assert.strictEqual(t[0], 'Phone 390×600 (V, FIXED)');
   assert.ok(t.includes('├─ Header row (H)') && t.some(l => /Bar ×2 \(Progress Indicator\)/.test(l)), t.join('\n'));
   assert.match(node(['build/tree.js', 'plan', path.join(ROOT, 'test/fixtures/make-fly.tree.json')]).out, /WIREFRAME/);

@@ -219,15 +219,6 @@ textarea::placeholder{color:var(--figma-color-text-tertiary)}
   <!-- selection chips -->
   <div class="chips" id="chips" style="display:none"></div>
 
-  <!-- Make → SAP: paste a Make dump (bookmark) or drop the .json — no bridge needed -->
-  <div class="card" id="makeCard" style="display:flex">
-    <div class="card-label">Make → SAP</div>
-    <div class="mbx-hint" id="makeHint">Copy the running Make app with the bookmark, then press <b>Cmd+V</b> here (or drop the .json file).</div>
-    <div class="mbx-hint" id="makeStatus" style="display:none"></div>
-    <div class="blocks" id="makeWarn" style="display:none"></div>
-    <button class="show-btn" id="makeShow" style="display:none">Show in canvas</button>
-  </div>
-
   <!-- textarea -->
   <div class="input-wrap">
     <textarea id="prompt" rows="3" placeholder="What do you want?"></textarea>
@@ -406,11 +397,6 @@ textarea::placeholder{color:var(--figma-color-text-tertiary)}
     errCard:    document.getElementById('errCard'),
     errMsg:     document.getElementById('errMsg'),
     unpairBtn:  document.getElementById('unpairBtn'),
-    makeCard:   document.getElementById('makeCard'),
-    makeHint:   document.getElementById('makeHint'),
-    makeStatus: document.getElementById('makeStatus'),
-    makeWarn:   document.getElementById('makeWarn'),
-    makeShow:   document.getElementById('makeShow'),
     body:       document.getElementById('bodyEl')
   };
 
@@ -641,17 +627,6 @@ textarea::placeholder{color:var(--figma-color-text-tertiary)}
         el.progress.style.display = '';
         el.progress.textContent = msg.text;
         break;
-      case 'make-status':
-        el.makeStatus.style.display = '';
-        el.makeStatus.textContent = msg.text;
-        el.makeStatus.style.color = msg.ok === false ? 'var(--figma-color-text-danger)' : '';
-        if (msg.nodeId) { makeNode = msg.nodeId; el.makeShow.style.display = ''; } else if (msg.ok === false) el.makeShow.style.display = 'none';
-        if (msg.warn) {
-          el.makeWarn.innerHTML = '';
-          msg.warn.slice(0, 8).forEach(function (w) { var d = document.createElement('div'); d.className = 'block'; d.textContent = w; el.makeWarn.appendChild(d); });
-          el.makeWarn.style.display = msg.warn.length ? '' : 'none';
-        } else if (msg.ok !== true) el.makeWarn.style.display = 'none';
-        break;
       case 'tree-status':
         // v5 tree job (CLI build/send.js) — one live line so the user sees the plugin building.
         el.progress.style.display = '';
@@ -780,27 +755,6 @@ textarea::placeholder{color:var(--figma-color-text-tertiary)}
       el.histList.appendChild(row);
     });
   }
-
-  // ── Make → SAP: paste / drop a probe dump; report what "Copy design" puts on the clipboard ──
-  var makeNode = null;
-  function looksLikeDump(t) { return t && t.charAt(0) === '{' && t.indexOf('"controls"') > -1; }
-  function sendDump(t) { el.makeWarn.style.display = 'none'; el.makeShow.style.display = 'none'; el.makeStatus.style.display = ''; el.makeStatus.style.color = ''; el.makeStatus.textContent = 'Reading ' + Math.round(t.length / 1024) + ' KB…'; postMsg({ type: 'make-dump', json: t }); }
-  document.addEventListener('paste', function (ev) {
-    var cd = ev.clipboardData; if (!cd) return;
-    var text = cd.getData('text/plain') || '', html = cd.getData('text/html') || '';
-    if (looksLikeDump(text.trim())) { ev.preventDefault(); sendDump(text.trim()); return; }
-    if (html.indexOf('(figma)') > -1 || html.indexOf('figmeta') > -1) {   // a Figma "Copy design" clipboard — diagnostics for the spike
-      ev.preventDefault();
-      el.makeStatus.style.display = ''; el.makeStatus.style.color = '';
-      el.makeStatus.textContent = 'Copy design detected (' + Math.round(html.length / 1024) + ' KB, types: ' + Array.prototype.slice.call(cd.types).join(', ') + '). Reading it needs the decoder — not built yet. For now click the Make bookmark.';
-    }
-  }, true);
-  el.makeCard.addEventListener('dragover', function (ev) { ev.preventDefault(); });
-  el.makeCard.addEventListener('drop', function (ev) {
-    ev.preventDefault(); var f = ev.dataTransfer && ev.dataTransfer.files && ev.dataTransfer.files[0];
-    if (!f) return; var r = new FileReader(); r.onload = function () { var t = String(r.result || '').trim(); if (looksLikeDump(t)) sendDump(t); else { el.makeStatus.style.display = ''; el.makeStatus.textContent = 'That file is not a Make dump.'; } }; r.readAsText(f);
-  });
-  el.makeShow.addEventListener('click', function () { if (makeNode) postMsg({ type: 'show-node', nodeId: makeNode }); });
 
   function postMsg(msg) {
     parent.postMessage({ pluginMessage: msg }, '*');

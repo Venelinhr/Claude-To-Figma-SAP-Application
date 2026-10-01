@@ -36,33 +36,9 @@ async function DUMP_TREE(ROOT) {
 ${body('dump-tree.use_figma.js')}
 }
 ` + Z;
-// ── second block: the Make converter, its tables and the FULL packed KIT — the plugin converts a pasted Make dump on its own ──
-const kitJson = require('../knowledge/live/kit.json'), extraJson = require('../knowledge/live/icons-extra.json').icons || {};
-const slim = {                                            // only what convert() reads from kit.json
-  vars: Object.fromEntries(Object.keys(kitJson.vars).map(k => [k, 1])),
-  text: Object.fromEntries(Object.entries(kitJson.text).map(([k, v]) => [k, '||' + String(v).split('|')[2]])),
-  icons: Object.fromEntries(Object.keys(kitJson.icons).map(k => [k, 1])),
-  components: Object.fromEntries(Object.entries(kitJson.components).map(([k, c]) => [k, { w: c.w, h: c.h }])),
-  effects: kitJson.effects,
-};
-const fullKit = require('child_process').execFileSync(process.execPath, [path.join(__dirname, 'kit.js'), 'pack', '--all'], { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim().replace(/^const KIT = /, '').replace(/;\s*$/, '');
-const convSrc = fs.readFileSync(path.join(__dirname, 'make-convert.js'), 'utf8').split('\n').filter(l => !/^if \(typeof module/.test(l)).join('\n');
-const A2 = '// ── GENERATED MAKE CONVERTER (node build/plugin-bundle.js) — do not edit by hand ──\n';
-const Z2 = '// ── end GENERATED MAKE CONVERTER ──\n';
-const block2 = A2 + `const MAKE_CONVERT = (function () {
-${convSrc}
-return convert;
-})();
-const MAKE_MAP = ${JSON.stringify(require('./make-map.json'))};
-const MAKE_EXTRA = ${JSON.stringify(extraJson)};
-const MAKE_KIT = ${JSON.stringify(slim)};
-const FULL_KIT = ${fullKit};
-` + Z2;
 const F = path.join(ROOT, 'plugin', 'sap-bridge', 'code.js');
 const fileCode = fs.readFileSync(F, 'utf8');
 let code = fileCode;
-if (code.indexOf(A2) < 0) { const zz = code.indexOf(Z); code = code.slice(0, zz + Z.length) + block2 + code.slice(zz + Z.length); }   // first run: insert after the runtime block
-{ const a2 = code.indexOf(A2), z2 = code.indexOf(Z2); code = code.slice(0, a2) + block2 + code.slice(z2 + Z2.length); }
 
 const a = code.indexOf(A), z = code.indexOf(Z);
 if (a < 0 || z < a) { console.error(`markers not found in ${F}`); process.exit(2); }
@@ -72,4 +48,4 @@ if (process.argv.includes('--check')) {
   console.log(`plugin runtime up to date (${VER})`); process.exit(0);
 }
 fs.writeFileSync(F, next);
-console.log(`plugin/sap-bridge/code.js: runtime ${VER} + Make converter compiled in (${block.length + block2.length} chars) — close and reopen SAP Bridge in Figma`);
+console.log(`plugin/sap-bridge/code.js: runtime ${VER} (${block.length} chars) — close and reopen SAP Bridge in Figma`);

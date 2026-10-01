@@ -11,9 +11,9 @@ function check(rows, spec) {
   const G = rows.map(r => ({ id: r[0], type: r[1], name: r[2], x: r[3], y: r[4], w: r[5], h: r[6], fill: r[9], text: r[13], parent: r[14] }));
   const root = G[0], out = [], hasParent = rows.some(r => r.length > 14 && r[14]);
   const s = spec ? root.w / spec.frame.w : 1;
-  if (spec && (Math.abs(root.w - spec.frame.w) > 2 || Math.abs(root.h - spec.frame.h) > 2))
+  if (spec && ![1, 2].some(m => Math.abs(root.w * m - spec.frame.w) <= 2 * m && Math.abs(root.h * m - spec.frame.h) <= 2 * m))
     out.push(`FRAME  build ${root.w}×${root.h}, the reference is ${spec.frame.w}×${spec.frame.h} — build at the reference size`);
-  const has = new Set(); for (const g of G) if (g.type === 'FRAME' || g.type === 'RECTANGLE') has.add(g);
+  const has = new Set(); for (const g of G) if (g.type === 'FRAME' || g.type === 'RECTANGLE' || g.type === 'INSTANCE') has.add(g);   // a kit component instance (Radio Button ring, Avatar, Object Status …) is a box too
   if (spec) {
     const boxes = []; (function w(x, d) { if (x.type === 'box' && x.box) boxes.push({ box: x.box, d }); (x.children || []).forEach(k => w(k, d + (x.type === 'box' ? 1 : 0))); })({ children: spec.sections }, 0);
     for (const { box: [bx, by, bw, bh] } of boxes) {

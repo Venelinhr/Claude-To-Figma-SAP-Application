@@ -85,7 +85,8 @@ function door(T, file, ref) {
     O('responsive', `root "${T.n}" is a row and no child is FILL — nothing flexes when the screen is resized`);
   if (ref) {                                                     // 5. against the reference
     const f = ref.frame;
-    if (Math.abs(T.w - f.w) > 2 || Math.abs(T.h - f.h) > 2) O('frame size', `frame ${T.w}×${T.h} — the reference is ${f.w}×${f.h}: build at the reference size (EYE compares 1:1)`);
+    const k = [1, 2].find(m => Math.abs(T.w * m - f.w) <= 2 * m && Math.abs(T.h * m - f.h) <= 2 * m);   // the reference is a 1× image, or a 2× export of the frame (the gates export the build at 2×)
+    if (!k) O('frame size', `frame ${T.w}×${T.h} — the reference is ${f.w}×${f.h}: build at the reference size, or at exactly half of it for a 2× export (EYE compares the 2× export 1:1)`);
     const have = all.flatMap(o => [o.t, ...Object.values(o.tx || {}), ...Object.entries(o.pr || {}).filter(([n]) => n.startsWith('✏️')).map(([, v]) => v)])
       .filter(x => x != null).map(norm).filter(Boolean);
     const unsure = new Set((ref.ask || []).map(a => (a.match(/^text "(.+?)": OCR unsure/) || [])[1]).filter(Boolean));
