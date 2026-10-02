@@ -824,7 +824,7 @@ async function handleV4(req, res, url) {
   }
   const routes = ['/poll', '/inbox', '/job', '/answer', '/job/logos-done', '/mbx/done', '/mbx/push',
     '/job/status', '/job/last', '/job/cancel',
-    '/tree', '/tree/next', '/tree/result', '/tree/wait'];
+    '/tree', '/tree/next', '/tree/result', '/tree/wait', '/v6/pack'];
   if (!routes.includes(p)) return false;
   const who = authOf(req, url);
   if (!who) { send(res, 401, { error: 'bad or missing token' }); return true; }
@@ -852,6 +852,15 @@ async function handleV4(req, res, url) {
   if (p === '/job/last') {
     const id = lastJobByFile.get(url.searchParams.get('fileKey') || '');
     send(res, 200, (id && jobIndex.get(id)) || {});
+    return true;
+  }
+  // v6 Figma Agent pack: runtime + tools + gold trees, written into the Figma file by the plugin (build/v6pack.js). ?ver=<have> → {current:true} when up to date.
+  if (p === '/v6/pack') {
+    try {
+      const pack = require('../build/v6pack.js').buildPack();
+      if (url.searchParams.get('ver') === pack.ver) send(res, 200, { current: true, ver: pack.ver });
+      else send(res, 200, pack);
+    } catch (e) { send(res, 500, { error: 'v6 pack failed: ' + e.message }); }
     return true;
   }
   // v5 tree jobs — GET side (plugin polls /tree/next; CLI long-polls /tree/wait).

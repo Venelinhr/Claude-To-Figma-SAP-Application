@@ -441,11 +441,32 @@ async function inboxPoll() {
 // ─── v5 tree jobs: poll /tree/next, build here, POST /tree/result ────────────
 function treeStatus(text) { send({ type: 'tree-status', text: text }); }
 
+// v6 for the Figma Agent: write the runtime, the tools and the gold trees into THIS file once (build/v6pack.js, served at /v6/pack),
+// so the Agent types ~400 chars per call. Skipped when the stored version is current. Data only — no code is built here.
+let v6CheckedFor = '';
+async function installV6(fileKey) {
+  if (v6CheckedFor === fileKey) return;
+  v6CheckedFor = fileKey;
+  const have = figma.root.getSharedPluginData(NS, 'v6_ver') || '';
+  const r = await api('/v6/pack?' + qs({ ver: have }));
+  if (r.status !== 200 || !r.json || r.json.current || !r.json.ver) return;
+  const pk = r.json, names = Object.keys(pk.golds || {});
+  const keys = figma.root.getSharedPluginDataKeys(NS);
+  for (let i = 0; i < keys.length; i++) if (keys[i].indexOf('gold_') === 0 && names.indexOf(keys[i].slice(5)) < 0) figma.root.setSharedPluginData(NS, keys[i], '');
+  figma.root.setSharedPluginData(NS, 'v6rt', pk.rt);
+  figma.root.setSharedPluginData(NS, 'v6tools', pk.tools);
+  figma.root.setSharedPluginData(NS, 'v6build', pk.build);
+  for (let i = 0; i < names.length; i++) figma.root.setSharedPluginData(NS, 'gold_' + names[i], pk.golds[names[i]]);
+  figma.root.setSharedPluginData(NS, 'v6_ver', pk.ver);
+  figma.notify('v6 installed for the Figma Agent (' + names.length + ' screens)', { timeout: 4000 });
+}
+
 async function treePoll() {
   if (treeBusy) { treePollTimer = later(treePoll, 500); return; }
   if (!token) { treePollTimer = later(treePoll, 3000); return; }
   const fileKey = fileKeyNow('');
   if (!fileKey) { treePollTimer = later(treePoll, 3000); return; }
+  try { await installV6(fileKey); } catch (_) {}
   const r = await api('/tree/next?' + qs({ fileKey: fileKey }));
   if (r.status === 200 && r.json && r.json.jobId) {
     treeBusy = true;
