@@ -100,3 +100,9 @@ bridge-out/
 /tests/
 /.archive-v2/
 /test-fixtures/
+/ARCHITECTURE.md
+/SAP_BUILD_MANIFEST.md
+/WORKFLOW-CONTRACT.md
+/audit-output.md
+/layer-naming.json
+/spec-schema.json
