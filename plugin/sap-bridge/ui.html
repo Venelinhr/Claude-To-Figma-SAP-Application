@@ -177,6 +177,8 @@ textarea::placeholder{color:var(--figma-color-text-tertiary)}
 .hist-name{flex:1;font-size:11px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .hist-score{font-size:11px;font-weight:700;color:#1bc47d}
 .hist-item.fail .hist-score{color:#f24822}
+.log-btn{border:0;background:none;padding:2px;cursor:pointer;color:var(--figma-color-text-secondary);display:inline-flex;border-radius:4px}
+.log-btn:hover{background:var(--figma-color-bg-hover);color:var(--figma-color-text)}
 .hist-list{display:flex;flex-direction:column;gap:5px;max-height:260px;overflow-y:auto}
 .show-btn{
   align-self:flex-start;
@@ -716,6 +718,13 @@ textarea::placeholder{color:var(--figma-color-text-tertiary)}
     el.blocksList.textContent = (h.blocks || []).join(' · ');
     el.resultCard.style.display = 'flex';
   }
+  function logButton(jobId) {
+    var b = document.createElement('button'); b.className = 'log-btn'; b.title = 'Open the log of this job (every step, timing and gate line)';
+    b.innerHTML = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 1.5h6l3 3v10h-9z"/><path d="M9.5 1.5v3h3M5.5 8h5M5.5 10.5h5M5.5 13h3"/></svg>';
+    b.addEventListener('click', function (e) { e.stopPropagation(); if (jobId) postMsg({ type: 'open-log', jobId: jobId }); });
+    return b;
+  }
+
   function renderHistory(items) {
     el.histCard.style.display = items.length ? 'flex' : 'none';
     el.histList.innerHTML = '';
@@ -726,7 +735,7 @@ textarea::placeholder{color:var(--figma-color-text-tertiary)}
       var name = document.createElement('span'); name.className = 'hist-name'; name.textContent = h.name || 'Screen';
       var score = document.createElement('span'); score.className = 'hist-score';
       score.textContent = 'MATCH ' + pct(h.match) + (h.eye != null ? ' · EYE ' + pct(h.eye) : '');
-      top.appendChild(name); top.appendChild(score);
+      top.appendChild(name); top.appendChild(score); top.appendChild(logButton(h.jobId));
       var sub = document.createElement('div'); sub.className = 'res-sub';
       sub.textContent = [when(h.at), MODE[h.mode] || '', fmtElapsedShort(h.elapsedMs), h.request ? '“' + h.request + '”' : ''].filter(Boolean).join(' · ');
       row.appendChild(top); row.appendChild(sub);

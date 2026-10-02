@@ -818,6 +818,7 @@ figma.ui.onmessage = async function (msg) {
       await api('/answer', { method: 'POST', body: { jobId: msg.jobId || followingJobId || lastJobId, text: msg.text } });
       break;
     case 'reopen': await reopenLastJob(); break;
+    case 'open-log': { const r = await api('/job/open-log', { method: 'POST', body: { jobId: msg.jobId } }); send({ type: 'log-opened', ok: r.status === 200, error: r.json && r.json.error || (r.status === 0 ? 'bridge not reachable' : '') }); break; }
     case 'show-node': if (msg.nodeId) await showNode(msg.nodeId); break;
     case 'resize':
       figma.ui.resize(340, Math.max(240, Math.min(760, Math.round(msg.height))));
