@@ -69,6 +69,9 @@ function audit(tree, baseline, request) {
     });
     (o.c || []).forEach(nz);
   })(tree);
+  // STATUS LENGTH: an Object Status label wider than its column pokes out of the table edge ("Awaiting Supplier Confirmation" ended 29 px past the border) — 22 chars fit
+  const seenLong = new Set();
+  (function sl(o) { if (o.k === 'i' && o.cp === 'Object Status' && o.tx && o.tx.Text && String(o.tx.Text).length > 22 && !seenLong.has(o.tx.Text)) { seenLong.add(o.tx.Text); problems.push(`LENGTH status "${o.tx.Text}" has ${String(o.tx.Text).length} chars; a status label holds 22 — shorten it (e.g. "Awaiting Confirmation")`); } (o.c || []).forEach(sl); })(tree);
   // STATUS: one label, one colour
   const sem = {};
   (function st(o) { if (o.k === 'i' && o.cp === 'Object Status' && o.tx && o.tx.Text) { const k = norm(o.tx.Text), v = (o.pr && o.pr.Semantic) || 'None'; if (sem[k] && sem[k] !== v) problems.push(`STATUS "${o.tx.Text}" is ${sem[k]} in one row and ${v} in another — one label, one colour`); else sem[k] = v; } (o.c || []).forEach(st); })(tree);

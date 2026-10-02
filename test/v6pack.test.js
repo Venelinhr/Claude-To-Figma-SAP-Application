@@ -190,3 +190,9 @@ test('audit: FILTER (date filter ↔ date picker) and NOISE (coloured status cel
   applyOps(N, { table: { keep: [0, 1, 2, 3, 4, 5, 7], header: ['PO', 'Supplier', 'Material', 'Qty', 'Date', 'Buyer', 'Status'], rows: ['120 pcs', '40 pcs', '500 pcs', '80 pcs'].map((q, i) => [{ t: 'P' + i, d: 'x' }, 'A', 'B', num(q, ['Error', 'Warning', 'None', 'Error'][i]), '01 Oct 2026', 'C', num('Late', 'Error')]) } });
   assert.ok(audit(N, g(), 'x').some(x => /^NOISE column "Qty"/.test(x)), audit(N, g(), 'x').join('\n'));
 });
+
+test('audit: a status label longer than 22 characters is refused (it pokes out of the table)', () => {
+  const g = () => { const x = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'knowledge', 'gold', 'v6', 'support-overview-1440.tree.json'), 'utf8')); return x.tree || x; };
+  const T = g(); applyOps(T, { table: { keep: [0, 1, 2, 4, 5, 3, 7], header: ['PO', 'Supplier', 'Material', 'Qty', 'Date', 'Buyer', 'Status'], rows: [0, 1, 2].map(i => [{ t: 'P' + i, d: 'x' }, 'A', 'B', '1 PC', '01 Oct 2026', { t: 'C', sem: 'None' }, { t: 'Awaiting Supplier Confirmation', sem: 'Information' }]) } });
+  assert.ok(audit(T, g(), 'x').some(x => /^LENGTH status "Awaiting Supplier Confirmation"/.test(x)));
+});
