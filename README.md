@@ -20,6 +20,19 @@
 
 All three use the same engine: stored SAP layouts, one content file written by the model, audits that refuse bad content before any Figma call, and scripts that build, check and name the frame.
 
+### How they differ
+
+| | **SAP Bridge plugin** | **Claude Code `/screen`** | **Figma Agent chat** |
+|---|---|---|---|
+| What it is | A Figma plugin plus a small bridge on your computer | Claude Code in this folder; it plans, then the same plugin builds | Figma's own Agent inside your file, with the skill |
+| Who builds the frame | Scripts (the plugin) | Scripts (the plugin) — Claude does **not** type the Figma build | Fixed tool calls stored in the file |
+| Model tokens | **Very few.** The model writes one short content file. Layout, build, checks and naming are scripts and cost no tokens. | More: a full chat (reads the rules, shows the 5-section plan and the report) | Runs on Figma's Agent, not on Claude Code |
+| Asks before it builds | No | Yes | Yes |
+| Time | 33–39 s | about 50 s | about 1 min 30 s |
+| Best for | The fastest new screen | A plan, your approval, and a full report | Plans and small edits inside the file |
+
+**Claude → Figma through MCP (the old way, kept only as a fallback).** Claude Code types the Figma Plugin API calls itself through the Figma MCP server (`use_figma`). That is slow and uses many tokens: one screen took about 18 min and 59k tokens in v2, and one hand-written build took 219 turns, 34 min and about $9.5. v6 replaced it: Claude writes the content, scripts do the building through the plugin.
+
 ## Examples — screens built by the system
 
 | Schedule Operation Dialog | Flight Result Card | Design System Governance |
@@ -44,14 +57,15 @@ cd Claude-To-Figma-SAP-Application
 1. Open the [SAP Web UI Kit on Figma Community](https://www.figma.com/community/file/1494295794601744471) → **Duplicate to your drafts** (free). Publish its styles and components.
 2. In your working Figma file: **Assets → Libraries →** switch **SAP Web UI Kit** on. (SAP-internal users: the kit is usually already shared in your organisation.)
 
-### 3. Load the plugin
-1. Figma desktop → **Plugins → Development → Import plugin from manifest…**
-2. Choose `plugin/sap-bridge/manifest.json` from this folder.
-3. Start the local bridge (from this folder, in a normal Terminal):
+### 3. Download and load the plugin
+1. **Download the project** (it contains the plugin): **[Download ZIP](https://github.com/Venelinhr/Claude-To-Figma-SAP-Application/archive/refs/heads/main.zip)**. Unzip it and keep the folder on your disk — Figma reads the plugin from there. (The plugin source: [`plugin/sap-bridge`](https://github.com/Venelinhr/Claude-To-Figma-SAP-Application/tree/main/plugin/sap-bridge).)
+2. Open the **Figma desktop app** → **Plugins → Development → Import plugin from manifest…**
+3. Choose the file `plugin/sap-bridge/manifest.json` inside the unzipped folder.
+4. Start the local bridge. Open Terminal in the unzipped folder and run:
 ```bash
 node build/mailbox.js restart
 ```
-4. Open **SAP Bridge** in your file. It shows **Connected to Claude · v6**.
+5. In your Figma file open **Plugins → Development → SAP Bridge**. It shows **Connected to Claude · v6**.
 
 ### 4. Build your first screen
 Type a request in the plugin text box and press **Go**:
@@ -72,37 +86,16 @@ Start a **fresh session for every screen** (it is faster). Then:
 ```
 Claude analyses the request, shows the plan (wireframe, layer tree, SAP components, confidence) and waits. Answer **Approve**, **Reject** or **Modify** — only then it builds. A reference image works too: `/screen <image path> <Figma link>`.
 
-## Figma Agent — set up once, then just type
+## Figma Agent
 
-The Figma Agent works inside your file. The heavy parts (runtime, SAP kit helpers, stored layouts, content tools, checker) are stored **in the Figma file**, so the Agent only types short fixed calls.
+**Install the skill (once):**
+1. Open the **SAP Bridge** plugin once in your Figma file (the bridge must be running). Wait for *v6 installed for the Figma Agent*, then close it. This stores the tools in the file.
+2. Download the skill: **[SKILL.md](https://github.com/Venelinhr/Claude-To-Figma-SAP-Application/blob/main/.claude/skills/sap-figma-agent/SKILL.md)** (use the download button on that page).
+3. In Figma click the **Agent** button → **Skills → Add skill** → upload `SKILL.md`. Replace an older version.
 
-1. **Link the SAP Web UI Kit** (step 2 above).
-2. **Install the tools into the file:** open the **SAP Bridge plugin once** in the file (the bridge must be running). Wait for the message *v6 installed for the Figma Agent*, then close it. Repeat once per file, and again after an update.
-3. **Add the skill:** open the skill folder, then in Figma click the Agent button → **Skills → Add skill** and upload `SKILL.md` of **sap-figma-agent** (replace an old version).
-```bash
-open .claude/skills/sap-figma-agent
-```
-4. **Start a new Agent chat** and write your request in plain words — no `/screen`, no command.
-
-**How the Agent works:**
-- **New screen:** it picks the closest stored layout, writes the content, then **shows you the plan and the layer tree and asks "Approve / Modify?"**. Only after your Approve it builds and checks. Its first line shows the route: `▸ NEW · <layout>`.
-- **Small change:** select the frame (or paste its link) and say what to change — it runs at once (`▸ EDIT`).
-- **Not for the Agent:** matching a reference image 1:1 — the Agent tells you to use Claude Code `/screen`.
-
-**What you can ask:**
-
-| Refine & change | Suggest the next step | Variant & extend |
-|---|---|---|
-| "Improve this layout" | "Suggest the next screen after this list" | "Build a variant of this screen" |
-| "Fix the status column" | "What's the next step in this wizard?" | "Add a filter bar and mass actions" |
-| "Make the actions SAP-compliant" | "Add the detail page for this row" | "Extend this into a full Object Page" |
-
-> **Which route when:** plugin = fastest new screen · Claude Code `/screen` = plan, approval and a full report · Figma Agent = plans and small edits inside the file.
-
-**Live SAP knowledge in the Figma Agent — how to load it and its real limit:** the `sap-figma-agent` skill's methodology and hard rules are static text uploaded to Figma. They don't call anything live by themselves. Two ways to actually ground the Figma Agent in current SAP data:
-
-1. **Native MCP connector (best, if your org allows it)** — Figma's Agent panel supports connecting directly to a live MCP server: `Add context → Connectors → Manage → Create` → name it, paste `https://sap-design-mcp.cfapps.us10-001.hana.ondemand.com/mcp`, no auth needed. Once connected, `@`-mention it in chat so the Agent pulls live SAP guidance itself. **This needs custom connectors enabled for your Figma org** (an admin-only toggle by default — `Admin → Settings → Connections → MCP connectors in Figma`). If `Connectors → Created by you` says your org doesn't allow it, this needs a request to your Figma admin, not a workaround.
-2. **Claude-Code-refreshed grounding (works today, no admin needed)** — ask Claude Code to pull current guidance from `sap-design-cf-live` and bake it into the skill file or a Figma tool's source (this is how the SAP Screen Builder generative tool's component choices are kept current). Not live-at-runtime, but genuinely verified as of the date stamped in the file — re-run it periodically to keep it fresh.
+**Use it:** open a **new Agent chat** and type what you want in plain words. No command needed.
+- **New screen** — the Agent shows you the plan and the layer tree and asks **Approve / Modify?**. After your Approve it builds the screen and checks it.
+- **Small change** — select the frame and say the change. It runs at once.
 
 ## Example — what Claude shows you at the PLAN stage
 
