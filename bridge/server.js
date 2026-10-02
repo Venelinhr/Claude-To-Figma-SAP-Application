@@ -572,6 +572,10 @@ function childEnv(run) {
   for (const k of ENV_KEEP) if (process.env[k]) env[k] = process.env[k];
   for (const k of Object.keys(process.env)) if (k.startsWith('SAP_')) env[k] = process.env[k];
   env.SAP_BRIDGE_JOB = run.id;
+  // The fact-forcing hook (GateGuard) costs two model turns per job (~10 s) and nobody reads those facts in a headless job. Narrow switches, this child only:
+  // routine Bash checks off (destructive-command checks stay ON), and first-touch facts skipped for the job's own folders.
+  env.GATEGUARD_BASH_ROUTINE_DISABLED = '1';
+  env.GATEGUARD_EXEMPT_GLOBS = 'bridge-out/**,**/bridge-out/**';
   return env;
 }
 
@@ -992,7 +996,8 @@ async function handleV4(req, res, url) {
     const fileKey = String(b.fileKey || '');
     if (!KEY_RE.test(fileKey)) return bad('bad or missing fileKey');
     const pl = b.payload;
-    if (!pl || typeof pl.runtime !== 'string' || !pl.runtime || pl.tree == null || pl.kit == null) {
+    const isRename = !!(pl && pl.rename && /^\d+:\d+$/.test(String(pl.rename.nodeId || '')) && String(pl.rename.name || '').trim());   // a one-line rename job (build/rename.js)
+    if (!isRename && (!pl || typeof pl.runtime !== 'string' || !pl.runtime || pl.tree == null || pl.kit == null)) {
       return bad('payload must be {version, runtime, kit, tree} from render.js --json');
     }
     const logos = (Array.isArray(b.logos) ? b.logos : []).slice(0, 40)
@@ -1002,11 +1007,11 @@ async function handleV4(req, res, url) {
     const id = crypto.randomBytes(8).toString('hex');
     const job = { id, seq: treeSeq++, status: 'pending', createdAt: Date.now(), settledAt: 0,
       fileKey, name: clean(b.name, 200) || 'Screen', jobDir,
-      payload: { version: String(pl.version || ''), runtime: pl.runtime, kit: pl.kit, tree: pl.tree },
+      payload: isRename ? { rename: { nodeId: String(pl.rename.nodeId), name: clean(pl.rename.name, 120) } } : { version: String(pl.version || ''), runtime: pl.runtime, kit: pl.kit, tree: pl.tree },
       logos, want: Object.assign({ geometry: true, audit: true, pngScale: 2 }, b.want || {}),
       result: null, _waiters: [] };
     treeJobs.set(id, job);
-    console.log(`[tree ${id}] queued · file ${fileKey} · ${logos.length} logo(s) · payload ${JSON.stringify(pl.tree).length}b`);
+    console.log(`[tree ${id}] queued · file ${fileKey} · ${isRename ? 'rename' : logos.length + ' logo(s) · payload ' + JSON.stringify(pl.tree).length + 'b'}`);
     send(res, 200, { jobId: id });
     return true;
   }

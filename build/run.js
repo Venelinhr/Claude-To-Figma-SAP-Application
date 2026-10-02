@@ -244,6 +244,13 @@ function names(T) {                                  // what the model may addre
   String(b.stdout || '').split('\n').filter(Boolean).forEach(l => say(short(l, 170)));
   if (b.status === 3) { say('BRIDGE unusable. Options: (1) node build/mailbox.js ensure and open SAP Bridge in the file · (2) say "fallback" (screen-builder subagent, 5-10 min, ~40-60k tokens)'); process.exit(3); }
   const pass = b.status === 0;
+  if (pass && !flag('--no-rename')) {                 // name the frame after its real title (script, ~1 s) — the model does not spend a turn on it
+    try {
+      const nid = (String(b.stdout || '').match(/node-id=(\d+-\d+)/) || [])[1], raw = readJ(treeF), root = raw.tree || raw;
+      const nm = String(root.n || '').replace(/^DRAFT — /, '').trim();
+      if (nid && nm && fileKey) { const rn = nodeSync(['build/rename.js', nid, nm, '--file', fileKey], { timeout: 30000 }); say(short(String(rn.stdout || rn.stderr).trim().split('\n').slice(-1)[0], 140)); }
+    } catch (e) { say('RENAME ✗ ' + short(e.message, 100)); }
+  }
   say(`STATUS ${pass ? 'PASS' : 'DRAFT'} · build ${st.builds} of 3 · ${elapsed()} s since the request · ${isImg ? 'provenance ' + (fromZero ? 'from zero' : 'gold ' + (front && front.gold.name)) : 'text lane'}`);
   say(pass ? `NEXT  final report: node build/tree.js plan ${job}/tree.json${spec ? ' --ref ' + job + '/see-ref/spec.json' : ''} — paste it VERBATIM; then offer /screen gold ${job}`
     : `NEXT  read the FIX/STRUCTURE lines above only, fix ${job}/tree.json (sizing/content; --allow "<node>" only for a node a gates line names), then --resume`);

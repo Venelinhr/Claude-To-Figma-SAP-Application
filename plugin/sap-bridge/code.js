@@ -513,6 +513,11 @@ async function placeTreeLogos(rootId, logos) {
 async function runTreeJob(job) {
   const t0 = Date.now();
   const post = function (body) { return api('/tree/result', { method: 'POST', body: Object.assign({ jobId: job.jobId || job.id }, body) }); };
+  if (job.payload && job.payload.rename) {          // a one-line rename (build/rename.js) — the model no longer spends a turn on it
+    try { const rn = await figma.getNodeByIdAsync(job.payload.rename.nodeId); if (!rn) throw new Error('no node ' + job.payload.rename.nodeId); rn.name = String(job.payload.rename.name); await post({ ok: true, nodeId: rn.id, renamed: rn.name, WARN: [], ms: Date.now() - t0 }); }
+    catch (err) { await post({ ok: false, error: 'rename failed: ' + (err && err.message ? err.message : String(err)), WARN: [], ms: Date.now() - t0 }); }
+    return;
+  }
   treeStatus('Building ' + (job.name || 'screen') + '…');
   let built;
   try {
