@@ -16,7 +16,6 @@
 | ![Schedule Operation](docs/canonical-screens/07-schedule-operation-monthly-end-date.png) | ![Flight Result Card](docs/canonical-screens/12-flight-result-card.png) | ![Design System Governance](docs/canonical-screens/01-design-system-governance-console.png) |
 | Complex dialog · timing · recurrence · monthly pattern · end date | Custom card layout · flight legs · price zone · action CTA | FCL layout · SideNav · nested table · review calendar |
 
-All screens built from a plain-language description or reference image — real SAP components, live Horizon tokens, verified layer structure.
 
 ## Quick start
 
