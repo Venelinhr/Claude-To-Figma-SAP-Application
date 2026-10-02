@@ -3,6 +3,7 @@
 // Pure function, no require — it must run inside Figma too.
 //   applyOps(tree, ops) → { errs, counts }   mutates `tree`; when errs is not empty the caller must NOT use the tree.
 // ops = { set:    [{ n, nth?, t?, pr?, tx?, st?, bg? }]                       text of a text leaf · props / inner texts of a kit instance · text style · colour variable
+//         (set also takes `name`: the new layer name — use it so layers never keep the old screen's words)
 //         remove: ["name" | { n, nth? }]                                       drop a node (a filter, a column)
 //         clone:  [{ n, nth?, times, with?: [[{ n, t|pr|tx|st|bg }, …], …] }] copies of a node after it (a filter field, a table row); with[i] = the ops for copy i }
 'use strict';
@@ -24,6 +25,7 @@ function applyOps(T, ops) {
     if (e.tx) { if (o.k !== 'i') errs.push(`"${e.n}" is not a kit instance — tx needs one`); else o.tx = { ...(o.tx || {}), ...e.tx }; }
     if (e.st != null) { if (o.k !== 't') errs.push(`"${e.n}": st (text style) needs a text leaf`); else o.st = e.st; }
     if (e.bg != null) o.bg = e.bg;
+    if (e.name != null) o.n = String(e.name);   // rename the layer (keeps layer names true to the content)
     counts.set++;
   }
   for (const e of ops.set || []) applySet(T, e, 'set');

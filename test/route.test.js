@@ -109,14 +109,7 @@ test('drift: every state value in the table is offered by at least one kit compo
   for (const [k, s] of Object.entries(T.gate4_state.keys)) for (const v of s.values) assert.ok(all.has(v), `${k}: value ${v} not in kit`);
 });
 
-test('drift: SKILL.md router section and the Figma block are generated from the table', () => {
-  execFileSync('node', [path.join(ROOT, 'build/gen-router.js'), '--check']);
-  const skill = fs.readFileSync(path.join(ROOT, '.claude/skills/sap-figma-agent/SKILL.md'), 'utf8');
-  for (const r of T.gate3_component.rules) assert.ok(skill.includes(r.key), `${r.component} key missing in SKILL.md`);
-  assert.ok(!skill.includes('sap-figma-act'), 'SKILL.md still points to sap-figma-act');
-  assert.ok(!fs.existsSync(path.join(ROOT, '.claude/skills/sap-figma-act')), 'sap-figma-act still exists');
-});
-
+// (removed 2026-10-02: tested the v8 Figma Agent skill blocks; the lean v9 skill has no INSTALL blocks or generated router — see test/v6pack.test.js)
 test('Gate 0: flight reference → List Report, XL Compact, every box typed, 0 unmapped', () => {
   const img = path.join(ROOT, 'knowledge/gold/snapshots/flight-search-v3-reference.webp');
   const m = JSON.parse(execFileSync('python3', [path.join(ROOT, 'build/measure-ref.py'), img, '--json'], { maxBuffer: 1 << 26 }));
@@ -184,23 +177,7 @@ const actOf = q => route(q).act;
 const SKILL_TXT = fs.readFileSync(path.join(ROOT, '.claude/skills/sap-figma-agent/SKILL.md'), 'utf8');
 const codeAfter = h => SKILL_TXT.split(h)[1].split('```js\n')[1].split('\n```')[0];
 
-test('tiny CALL: under 400 chars; INSTALL once, then CALL works through sharedPluginData', async () => {
-  const CALL = codeAfter('**CALL**'), INSTALL = codeAfter('**INSTALL**');
-  console.log(`    CALL: ${CALL.length} chars · INSTALL: ${INSTALL.length} chars (once per file)`);
-  assert.ok(CALL.length < 400);
-  const m = mockFigma(), data = {};
-  m.figma.root = { getSharedPluginData: (ns, k) => data[ns + k] || '', setSharedPluginData: (ns, k, v) => { data[ns + k] = v; } };
-  globalThis.figma = m.figma;                                            // the saved code reads the global, as in Figma
-  m.figma.byId = m.card;
-  const call = CALL.replace(/^const A = .*$/m, "const A = { node: '1:1', state: 'on', border: 'selected', exclusive: true };");
-  assert.strictEqual(await new AF('figma', call)(m.figma), 'INSTALL FIRST');
-  assert.match(await new AF('figma', INSTALL)(m.figma), /^installed act_/);
-  const r = await new AF('figma', call)(m.figma);
-  assert.strictEqual(m.card.strokeWeight, 2); assert.strictEqual(m.cb.props.Check, 'Checked'); assert.strictEqual(m.sib.strokeWeight, 1);
-  assert.ok(r.done.includes('border selected'));
-  delete globalThis.figma;
-});
-
+// (removed 2026-10-02: tested the v8 Figma Agent skill blocks; the lean v9 skill has no INSTALL blocks or generated router — see test/v6pack.test.js)
 test('ACT block (A from route.js) against a mock Figma: state, card selected, padding, gap', async () => {
   let m = mockFigma(); m.figma.currentPage.selection = [m.cb];
   await runBlock(m.figma, actOf('check box on'));
@@ -243,23 +220,7 @@ test('SKILL.md fits the Figma Agent limit (65,536 chars) with room to grow', () 
   assert.ok(n < 62000, `SKILL.md is ${n} chars — move history or examples out`);
 });
 
-test('BUILD KIT: INSTALL saves helpers + keys, the 3 load lines give I/T/fill/AL and the real KIT', async () => {
-  const INSTALL = codeAfter('**BUILD INSTALL**'), LOAD = codeAfter('3 lines, then build');
-  const data = {}, figma = { root: { getSharedPluginData: (ns, k) => data[ns + k] || '', setSharedPluginData: (ns, k, v) => { data[ns + k] = v; } } };
-  globalThis.figma = figma;
-  const load = LOAD + '\nreturn { I, T, fill, stroke, AL, put, KIT, WARN };';
-  assert.strictEqual(await new AF('figma', load)(figma), 'INSTALL BUILD FIRST');
-  assert.match(await new AF('figma', INSTALL)(figma), /^installed build_/);
-  const r = await new AF('figma', load)(figma);
-  for (const f of ['I', 'T', 'fill', 'stroke', 'AL', 'put']) assert.strictEqual(typeof r[f], 'function', f);
-  assert.strictEqual(r.KIT.c['Tag'], KIT['Tag'].key);
-  assert.strictEqual(Object.keys(r.KIT.t).length, 25);
-  assert.ok(r.KIT.v.sapList_SelectionBorderColor && r.KIT.v.sapTextColor);
-  assert.strictEqual(await r.I('Not A Component'), null);                  // unknown name → WARN, not a crash
-  assert.match(r.WARN[0], /KIT\.c has no "Not A Component"/);
-  delete globalThis.figma;
-});
-
+// (removed 2026-10-02: tested the v8 Figma Agent skill blocks; the lean v9 skill has no INSTALL blocks or generated router — see test/v6pack.test.js)
 test('skill tells the Figma Agent no terminal: no bare python3/node/kit.js steps outside "Claude Code" notes', () => {
   const paras = SKILL_TXT.split(/\n\s*\n/).filter(p => /python3 |node build\//.test(p));
   const bad = paras.filter(p => !/Claude Code|no terminal|JEV-ROUTER|router section is generated/.test(p)).map(p => p.slice(0, 80));

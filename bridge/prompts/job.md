@@ -41,7 +41,7 @@ Job folder (write every file of this job here, nowhere else): {{jobDir}}
    - A kit component that is not published in this file (the build says "Could not find a published component") → use a bordered
      frame with kit parts inside, as the nearest real thing.
    → `STAGE plan <screen · zones>` then `STAGE execute <node id · build n>`
-4. **Done.** `run.js` prints the node link and `MATCH · HYGIENE · STRUCTURE · EYE` and `STATUS`. Report only those numbers.
+4. **Done.** First rename the built frame from `DRAFT — <job>` to the screen's real title (for example `Open Invoices — List Report`): ONE tiny `use_figma` call that sets only `node.name` of the node id in the link. Then use the numbers `run.js` printed: it printed the node link and `MATCH · HYGIENE · STRUCTURE · EYE` and `STATUS`. Report only those numbers.
    → `STAGE done <MATCH n% · EYE n% or — · STATUS>` then
    `AGENT_RESULT {"nodeId":"<node id from the link>","mode":"V6","match":<n>,"eye":<n or null>,"WARN":[],"pass":<true|false>,"blocks":["<lines that failed, ≤ 5>"]}`
    builder = figma-agent → the same pipeline (a script builds, never the Figma Agent); make the `STAGE done` text end with `· edit in the Figma Agent chat`.
