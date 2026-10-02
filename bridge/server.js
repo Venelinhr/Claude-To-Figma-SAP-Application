@@ -602,6 +602,7 @@ function spawnJob(run, prompt, resume) {
 
 const STAGE_RE = /^[`*>\s]*STAGE[`*]*\s+(route|plan|analy[sz]e|execute|logos|check|fix|done)\b[\s:·—-]*(.*)$/i;
 function handleJobMessage(run, msg) {
+  try { if (run.jobDir) fs.appendFileSync(path.join(run.jobDir, 'transcript.jsonl'), JSON.stringify(msg) + '\n'); } catch (_) {}   // every tool call + output of the job, so a slow run can be read afterwards
   if (msg.type === 'assistant' && msg.message && Array.isArray(msg.message.content)) {
     for (const b of msg.message.content) {
       if (b.type === 'text' && b.text) { run.turnResultText += b.text + '\n'; jobText(run, b.text); }
