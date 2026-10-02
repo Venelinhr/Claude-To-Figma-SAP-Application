@@ -20,9 +20,12 @@ First line of every reply = the trace: `▸ NEW · <layout>` · `▸ EDIT` · `�
 
 ## Router (read the request once)
 1. A named change on a node (selected, or a node link) → **EDIT**.
-2. "new screen / create / build / list / dashboard / form …" → **NEW**.
-3. A reference image to match exactly, measuring, scoring, a screen type no layout covers → **ASK-CHAT**: reply
-   `ask Claude chat: /screen "<request>" <file link>` (only chat has see.py and the gates).
+2. Any text request for a screen ("new screen / create / build / list / overview / dashboard / form …") → **NEW**. Always run
+   `MODE = 'list'` first — NEVER answer ASK-CHAT for a text request before you have seen the list.
+   Map by structure, not by words: invoices / orders / cases / tickets / requests list with filters + table → the list-report layout;
+   KPI cards + table → the overview layout; steps / approvers → the timeline layout; offers / results with filters → the results layout.
+3. **ASK-CHAT only** when (a) the user gives a reference image to match 1:1, or (b) the list has no layout with the same structure
+   (e.g. a wizard, a form-only page, a chart dashboard). Reply `ask Claude chat: /screen "<request>" <file link>`.
 4. A question or a review request → answer in words, build nothing.
 
 ## NEW — three calls (about 60 s). Copy the wrapper exactly; change only NAME, MODE, OPS.
@@ -42,7 +45,8 @@ return G('v6tools') ? await new AF('G', 'NAME', 'OPS', 'MODE', G('v6tools'))(G, 
      remove: ['Filter Status'],
      clone:  [{ n: 'Row CS-10482', times: 3, with: [[{ n: 'Case CS-10482', pr: { '✏️ Text': 'CS-10500' } }], [], []] }] }
    ```
-   `set`: `t` text of a text layer · `pr` kit props · `tx` inner texts of a kit part · `st` text style · `bg` colour variable.
+   `set`: `t` text of a text layer · `pr` kit props · `tx` inner texts of a kit part · `st` text style · `bg` colour variable · `name` new layer name
+   (rename every layer that still carries the old screen's words — `Supplier`, `PO …` — so layer names stay true to the content).
    `remove`: names. `clone`: copies after the original, `with[i]` = the changes for copy i (use the ORIGINAL layer names).
    Geometry keys (w h xy p g d a s r abs) are refused. An answer `{errors:[…]}` → fix those ops in ONE pass and call again.
    Success → `{ result:{nodeId, WARN, made}, plan, layers }`.
