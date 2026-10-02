@@ -160,3 +160,12 @@ test('audit: LENGTH (text far longer than the skeleton holds) and COVERAGE (amou
   const ok = g(); applyOps(ok, { set: [{ n: 'Steps count', t: 'Expense 2,480.00 EUR · Laura Schmidt' }, { n: 'Current approver link', tx: { Text: 'Klaus Fischer' } }] });
   assert.ok(!audit(ok, g(), 'report of 2,480.00 EUR submitted by Laura Schmidt').some(x => /^(LENGTH|COVERAGE)/.test(x)));
 });
+
+test('cards op: sem colours the number of each card and a wrong value is refused', () => {
+  const g = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'knowledge', 'gold', 'v6', 'support-overview-1440.tree.json'), 'utf8')), T = g.tree || g;
+  const mk = sem => ({ title: 'A', value: '1', caption: 'x', sem });
+  assert.deepStrictEqual(applyOps(T, { cards: [mk('Error'), mk('Warning'), mk('None'), mk('Success')] }).errs, []);
+  const band = (function f(o) { return /^Summary Cards$/.test(o.n) ? o : (o.c || []).map(f).find(Boolean); })(T);
+  assert.deepStrictEqual(band.c.filter(k => /^Card /.test(k.n)).map(c => c.c.find(x => x.k === 'i').pr.Semantic), ['Error', 'Warning', 'None', 'Success']);
+  assert.ok(applyOps(JSON.parse(JSON.stringify(g.tree || g)), { cards: [mk('Red')] }).errs.length === 1);
+});

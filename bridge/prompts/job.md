@@ -42,7 +42,7 @@ Job folder (write every file of this job here, nowhere else): {{jobDir}}
      **A removed column** = remove its header AND its cell in EVERY row (`remove` with `nth` 1..6), else the rows have one cell more than the header. Rename layers too (`set … name`).
      The NEED output has `LAYOUT …` lines: the exact layer names for `set`, whether `filters`/`cards` exist, and every table column with its kind (LINK cells need `d`). Use exactly those; a wrong name costs a whole retry.
      **Use the COMPACT ops** (they make header and rows agree by construction and are 70 % shorter): `filters:[{from?,label,placeholder|value}]`,
-     `cards:[{title,value,caption}]`, `table:{keep:[skeleton column numbers 0-based],header:[…],rows:[[cell,…],…]}` with a cell = `"text"` or `{t,d,sem}`
+     `cards:[{title,value,caption,sem?}]` (sem colours the number: late = Error, pending = Warning, good = Success, none = None), `table:{keep:[skeleton column numbers 0-based],header:[…],rows:[[cell,…],…]}` with a cell = `"text"` or `{t,d,sem}`
      (`d` = the second line of a link cell, `sem` = Error|Warning|Success|Information|None for a status). Then `set` only for the shell bar title, page title, table title.
      A timeline layout has the op `steps:[{name,role,status,state:done|current|todo}]` — use it (the LAYOUT line says so); never clone steps by hand.
      Every number, amount and named person of the request must appear in some text on the screen (the audit blocks `COVERAGE`); keep texts about as long as the skeleton's (`LENGTH`).

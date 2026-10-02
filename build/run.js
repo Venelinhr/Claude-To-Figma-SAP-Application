@@ -40,7 +40,11 @@ function classifyAsk(a) {
 module.exports = { classifyAsk, SCREEN_CHANGING };
 if (require.main !== module) return;
 
-const say = l => console.log(l);                  // the whole chat output — kept short on purpose
+const T_START = Date.now(), TRACE = [];
+const say = l => { console.log(l); TRACE.push(`${((Date.now() - T_START) / 1000).toFixed(1).padStart(5)} s  ${String(l).replace(/\s+/g, ' ').slice(0, 260)}`); };   // the whole chat output — kept short on purpose
+process.on('exit', () => {                         // trace.md of a Claude Code run: every printed line with its second (the plugin's log icon makes the same file for plugin jobs)
+  try { const j = (process.argv.includes('--job') ? process.argv[process.argv.indexOf('--job') + 1] : ''); if (j && TRACE.length) { const f = path.join(PROJ, j, 'trace.md'), old = fs.existsSync(f) ? fs.readFileSync(f, 'utf8') : `# Claude Code run ${path.basename(j)}\n`; fs.writeFileSync(f, old + `\n## run.js at ${new Date().toISOString().slice(11, 19)} (seconds since this call started)\n\n` + TRACE.join('\n') + '\n'); } } catch (_) {}
+});
 const short = (s, n = 150) => String(s).replace(/\s+/g, ' ').slice(0, n);
 const runNode = args => new Promise(res => {
   let o = ''; const p = spawn(NODE, args, { cwd: PROJ });

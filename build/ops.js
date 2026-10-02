@@ -5,7 +5,7 @@
 // ops = { set:    [{ n, nth?, t?, pr?, tx?, st?, bg? }]                       text of a text leaf · props / inner texts of a kit instance · text style · colour variable
 //         (set also takes `name`: the new layer name — use it so layers never keep the old screen's words)
 //         filters:[{ from?, label, placeholder? | value? }]   the filter bar: one entry per filter you want, in order; from = the skeleton filter it is based on (default: next one)
-//         cards:  [{ title, value, caption }]                   the summary cards: one entry per card (extra skeleton cards are dropped, missing ones cloned)
+//         cards:  [{ title, value, caption, sem? }]  (sem = Error|Warning|Success|Information|None: the colour of the number)                   the summary cards: one entry per card (extra skeleton cards are dropped, missing ones cloned)
 //         table:  { keep:[0,1,3…], header:[…], rows:[[ cell, … ], …] }   keep = the skeleton columns that stay (0-based); header/rows follow that order;
 //                 cell = "text" | { t, d?, sem? }  (d = the 2nd line of a link cell · sem = Error|Warning|Success|Information|None for a status cell); rows = rows you want
 //         steps:  [{ name, role, status, state?: done|current|todo, initials?, sem? }]   a timeline: one entry per approver, in order; the script picks the right marker / selected bar per state
@@ -137,6 +137,7 @@ function applyOps(T, ops) {
       now.forEach((c, i) => { const v = ops.cards[i], ts = (c.c || []).filter(x => x.k === 't'), num = (c.c || []).find(x => x.k === 'i');
         if (ts[0]) ts[0].t = String(v.title); if (ts.length > 1) ts[ts.length - 1].t = String(v.caption != null ? v.caption : '');
         if (num) num.tx = { ...(num.tx || {}), [Object.keys(num.tx || {})[0] || 'Text']: String(v.value) };
+        if (num && v.sem != null) { if (!SEM.includes(v.sem)) errs.push(`cards[${i}]: sem "${v.sem}" is not one of ${SEM.join('/')}`); else num.pr = { ...(num.pr || {}), Semantic: v.sem }; }
         c.n = 'Card ' + v.title; counts.set++; });
     }
   }
