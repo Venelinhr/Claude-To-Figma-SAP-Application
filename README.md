@@ -74,7 +74,7 @@ All three use the same engine: stored SAP layouts, one content file written by t
 
 **Claude → Figma through MCP (the old way, kept only as a fallback).** Claude Code types the Figma Plugin API calls itself through the Figma MCP server (`use_figma`). That is slow and uses many tokens: one screen took about 18 min and 59k tokens in v2, and one hand-written build took 219 turns, 34 min and about $9.5. v6 replaced it: Claude writes the content, scripts do the building through the plugin.
 
-## Claude Code — `/screen`
+## Claude Code
 
 Open Terminal in the project folder and start a **fresh session for every screen** (it is faster):
 ```bash
@@ -178,7 +178,7 @@ You can iterate on any part — change the floorplan, add a column, switch to mo
 
 ## Results
 
-The same request on every route: a Procurement Overview with 4 cards, 5 filters and a 7-column table.
+The same request on every route
 
 | Route | Time to the screen | Result |
 |---|---|---|
@@ -187,15 +187,13 @@ The same request on every route: a Procurement Overview with 4 cards, 5 filters 
 | Figma Agent chat | about 1 min 30 s (with your Approve) | clean frame, all required labels |
 | Figma Make | more than 2 min | a working app, not an editable Figma frame |
 
-Quality checks: MATCH 100 · HYGIENE 0 · STRUCTURE 0. Before v6 the plugin needed 3 min 53 s for the same request.
-
 ## How it works
 
-1. **Route and match** — the request is matched to the closest stored layout (`knowledge/gold/`).
+1. **Route and match** — the request is matched to the closest stored layout.
 2. **Content** — the model writes one content-only file (filters, cards, table, steps, title). It never writes geometry.
 3. **Audits (no model tokens)** — leftover old words, column count, one colour per status, one date format, text length, required amounts and names, date filter on the date picker, no numbers in coloured status cells.
 4. **Door** — only real kit components, bound colour variables, text styles, responsive sizing.
-5. **Build, gates, rename** — the plugin builds the frame in about 5 s; scripts measure MATCH / HYGIENE / STRUCTURE and name the frame.
+5. **Build, gates, rename** — the plugin builds the frame.
 
 ## Token Optimization
 
@@ -213,7 +211,7 @@ You can also add your own rules at any time — just tell Claude "hard rule: alw
 
 | File | What |
 |---|---|
-| [`docs/v6/screen.md`](docs/v6/screen.md) | the `/screen` command |
+| [`plugin/sap-bridge`](plugin/sap-bridge) | the SAP Bridge Figma plugin |
 | [`docs/v6/figma-agent-skill.md`](docs/v6/figma-agent-skill.md) | the Figma Agent skill (source) |
 
 ## License
