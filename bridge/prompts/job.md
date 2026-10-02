@@ -45,6 +45,7 @@ Job folder (write every file of this job here, nowhere else): {{jobDir}}
      `cards:[{title,value,caption}]`, `table:{keep:[skeleton column numbers 0-based],header:[…],rows:[[cell,…],…]}` with a cell = `"text"` or `{t,d,sem}`
      (`d` = the second line of a link cell, `sem` = Error|Warning|Success|Information|None for a status). Then `set` only for the shell bar title, page title, table title.
      Do NOT write `name` fields — the build renames layers from the content. Use fresh names, numbers and dates — never the skeleton's.
+     Order: read the NEED lines → Write ops.json (every name from those lines, never guessed) → `--resume --spec-json` ONCE. Never `--resume` before the file exists; never start a second `run.js` for the same job; do not read memory or tree.json.
      **ONE pass:** write ONE `ops.json` that covers everything (set + remove + clone together) and resume ONCE — never build, look, then add more.
      **Replace EVERY skeleton text**: the shell bar title, every filter label and placeholder, every table header, every cell of every row, every status and
      caption — `run.js` prints them in its NEED lines. A leftover word of the old screen (Case Number, Customer, Subject, CS-…) means the job is not done.

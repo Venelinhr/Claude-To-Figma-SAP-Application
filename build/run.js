@@ -76,13 +76,17 @@ function groupIcons(raw) {
   return `${g.size} sizes — ` + [...g].map(([k, e]) => `${k} ×${e.n} at ${e.at} ${e.c}`).join(' · ') + ' (sizes 1 px apart, e.g. 17x18 / 17x19, are the same icon — name every size anyway)';
 }
 
-function names(T) {                                  // what the model may address in a text-lane ops file: sections and their text leaves
-  const lines = [];
-  for (const s of T.c || []) {
-    const leaves = []; (function w(o) { if (o.k === 't') leaves.push(`${o.n}="${short(o.t, 22)}"`); else if (o.k === 'i') for (const [k, v] of Object.entries(o.tx || {})) leaves.push(`${o.n}.${k}="${short(v, 18)}"`); (o.c || []).forEach(w); })(s);
-    lines.push(`  ${s.n}: ${leaves.slice(0, 7).join(' | ')}${leaves.length > 7 ? ` … +${leaves.length - 7}` : ''}`);
+function names(T) {                                  // what the model may address in a text-lane ops file: every section, every leaf WITH the op that changes it
+  const lines = [];                                  //   text leaf  → {n,t}      kit instance → {n,tx:{Key}} / {n,pr:{'✏️ Key'}}   (a wrong form is a whole retry)
+  const pend = [{ n: 'Shell / top', o: T }];
+  for (const s of T.c || []) pend.push({ n: s.n, o: s });
+  for (const { n, o: sec } of pend) {
+    const leaves = []; (function w(o, top) { if (o !== T) { if (o.k === 't') leaves.push(`${o.n}(t)="${short(o.t, 22)}"`); else if (o.k === 'i') for (const [k, v] of Object.entries(o.tx || {})) leaves.push(`${o.n}(tx.${k})="${short(v, 18)}"`); } if (top && o === T) return; (o.c || []).forEach(c => w(c, false)); })(sec, false);
+    if (n === 'Shell / top') continue;
+    lines.push(`  ${n}: ${leaves.slice(0, 24).join(' | ')}${leaves.length > 24 ? ` … +${leaves.length - 24}` : ''}`);
   }
-  return lines.slice(0, 14);
+  lines.push('  FORM  text leaf (t) → {n:"<name>",t:"…"} · kit part (tx.Key) → {n:"<name>",tx:{"Key":"…"}} · a status colour → {n,pr:{Semantic:"Error|Warning|Success|Information|None"}} · numbered layers ("… 2", "… 3") are the repeats: set each by its own name');
+  return lines.slice(0, 40);
 }
 
 (async () => {
