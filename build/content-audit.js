@@ -46,6 +46,29 @@ function audit(tree, baseline, request) {
   const hay = norm(allT.join(' | '));
   for (const m of String(request || '').matchAll(/\b(\d[\d.,]*\d)\s?(?:EUR|USD|GBP|BGN|CHF|€|\$)/g)) if (!hay.includes(m[1].toLowerCase())) problems.push(`COVERAGE the request says "${m[0]}" but no text on the screen shows it — put it in the title or summary line`);
   for (const m of String(request || '').matchAll(/\bby ([A-ZÀ-Ž][\p{L}'-]+ [A-ZÀ-Ž][\p{L}'-]+)/gu)) if (!hay.includes(m[1].toLowerCase())) problems.push(`COVERAGE the request names "${m[1]}" but no text on the screen shows it — put it in the title or summary line`);
+  // FILTER: a date filter needs the date picker and a date picker needs a date label (found 2026-10-02: a plugin run put "All" under Delivery Date and the calendar under Status)
+  const DATE_RE = /date|datum|period|from|until|дата|fecha|fecha|data\b/i;
+  (function fl(o) {
+    if (/^Filter Bar$/.test(o.n || '')) for (const f of (o.c || []).filter(k => /^Filter /.test(k.n) && !/^Filter (spacer|Actions)/.test(k.n))) {
+      const lab = (f.c || []).find(x => x.k === 't'), ctl = (f.c || []).find(x => x.k === 'i');
+      if (!lab || !ctl) continue;
+      const isDate = ctl.cp === 'Date (Range) Picker', wantsDate = DATE_RE.test(String(lab.t));
+      if (wantsDate && !isDate) problems.push(`FILTER "${lab.t}" is a date but its control is a ${ctl.cp} — base it on the date picker (from = the number of the Date (Range) Picker filter)`);
+      if (!wantsDate && isDate) problems.push(`FILTER "${lab.t}" has the date picker but is not a date — use a Select or Input (from = another filter)`);
+    }
+    (o.c || []).forEach(fl);
+  })(tree);
+  // NOISE: a status column colours values that are not statuses (quantities, names) — random red / orange icons next to numbers
+  (function nz(o) {
+    const kids = (o.c || []).filter(k => !k.abs), head = kids.find(k => /^Header Row/i.test(k.n || '')), rows = kids.filter(k => /^Row/i.test(k.n || ''));
+    if (head && rows.length >= 3) (head.c || []).forEach((h, i) => {
+      const cells = rows.map(r => { const c = (r.c || [])[i]; return c && (c.k === 'i' ? c : (function f(x) { let g = null; (function w(y) { if (!g && y !== c && y.k === 'i') g = y; (y.c || []).forEach(w); })(x); return g; })(c)); }).filter(c => c && c.cp === 'Object Status');
+      if (cells.length < 3) return;
+      const vals = cells.map(c => String((c.tx || {}).Text || '')), sems = new Set(cells.map(c => (c.pr || {}).Semantic || 'None'));
+      if (new Set(vals).size >= 4 && vals.filter(v => /\d/.test(v)).length >= Math.ceil(vals.length / 2) && [...sems].some(s => s !== 'None')) problems.push(`NOISE column "${(h.tx || {}).Text || i + 1}" shows numbers in coloured status cells — set sem "None" for plain values, or keep a text column for them`);
+    });
+    (o.c || []).forEach(nz);
+  })(tree);
   // STATUS: one label, one colour
   const sem = {};
   (function st(o) { if (o.k === 'i' && o.cp === 'Object Status' && o.tx && o.tx.Text) { const k = norm(o.tx.Text), v = (o.pr && o.pr.Semantic) || 'None'; if (sem[k] && sem[k] !== v) problems.push(`STATUS "${o.tx.Text}" is ${sem[k]} in one row and ${v} in another — one label, one colour`); else sem[k] = v; } (o.c || []).forEach(st); })(tree);
@@ -141,6 +164,7 @@ function capabilities(tree, request) {
   for (const m of String(request || '').matchAll(/\bby ([A-ZÀ-Ž][\p{L}'-]+ [A-ZÀ-Ž][\p{L}'-]+)/gu)) must.push(m[1]);
   if (must.length) { let best = null; (function sl(o, row) { if (/^Step \d+$/.test(o.n || '')) return; const r = row || /^(Row|Header Row)/i.test(o.n || ''); if (!r && o.k === 't' && String(o.t).length >= 6) { const al = Math.max(o.t.length * 1.6, o.t.length + 10); if (!best || al > best.al) best = { n: o.n, al: Math.round(al) }; } (o.c || []).forEach(c => sl(c, r)); })(tree, false);
     out.push(`LAYOUT must show → ${must.map(x => '"' + x + '"').join(', ')} on the screen (the audit blocks the build otherwise)${best ? `; put them in {n:"${best.n}",t:"…"} — it holds up to ${best.al} chars, e.g. "${must.join(' · ').slice(0, best.al)}"` : ''}`); }
+  if (find(/^Table Area$/)) out.push('LAYOUT columns → quantities, names and dates go into TEXT columns; a status-kind column draws a coloured icon, so for plain values there (a buyer) set sem "None". A filter named like a date must be based on the Date (Range) Picker filter, every other filter on a Select or Input.');
   out.push('LAYOUT hints → numbers and codes you write (1000, 2000) are fine; every word of the old screen must go. One ops.json, all compact ops together, resume ONCE.');
   return out;
 }

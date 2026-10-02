@@ -177,3 +177,16 @@ test('the Figma Agent skill asks before it builds (plan → Approve → build); 
   const job = fs.readFileSync(path.join(__dirname, '..', 'bridge', 'prompts', 'job.md'), 'utf8');
   assert.ok(!/--ask/.test(job), 'the plugin job builds at once');
 });
+
+test('audit: FILTER (date filter ↔ date picker) and NOISE (coloured status cells holding numbers)', () => {
+  const g = () => { const x = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'knowledge', 'gold', 'v6', 'support-overview-1440.tree.json'), 'utf8')); return x.tree || x; };
+  const T = g();   // the real plugin bug: Delivery Date on a Select, Status on the date picker
+  applyOps(T, { filters: [{ from: 0, label: 'Supplier' }, { from: 1, label: 'Plant' }, { from: 2, label: 'Buyer' }, { from: 3, label: 'Delivery Date', value: 'All' }, { from: 4, label: 'Status', placeholder: 'x' }] });
+  const p = audit(T, g(), 'filters supplier plant buyer delivery date status');
+  assert.ok(p.some(x => /^FILTER "Delivery Date" is a date/.test(x)) && p.some(x => /^FILTER "Status" has the date picker/.test(x)), p.join('\n'));
+  const ok = g(); applyOps(ok, { filters: [{ from: 0, label: 'Supplier' }, { from: 1, label: 'Plant' }, { from: 2, label: 'Buyer' }, { from: 4, label: 'Delivery Date' }, { from: 5, label: 'Status', value: 'All' }] });
+  assert.ok(!audit(ok, g(), 'x').some(x => /^FILTER/.test(x)));
+  const N = g(); const num = (t, sem) => ({ t, sem });
+  applyOps(N, { table: { keep: [0, 1, 2, 3, 4, 5, 7], header: ['PO', 'Supplier', 'Material', 'Qty', 'Date', 'Buyer', 'Status'], rows: ['120 pcs', '40 pcs', '500 pcs', '80 pcs'].map((q, i) => [{ t: 'P' + i, d: 'x' }, 'A', 'B', num(q, ['Error', 'Warning', 'None', 'Error'][i]), '01 Oct 2026', 'C', num('Late', 'Error')]) } });
+  assert.ok(audit(N, g(), 'x').some(x => /^NOISE column "Qty"/.test(x)), audit(N, g(), 'x').join('\n'));
+});
