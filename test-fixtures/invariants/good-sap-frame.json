@@ -1,8 +1,0 @@
-{ "id":"1:1","name":"Schedule Activated","type":"FRAME","visible":true,"layoutMode":"VERTICAL","childCount":2,
-  "children":[
-    { "id":"1:2","name":"Primary Actions","type":"FRAME","visible":true,"layoutMode":"HORIZONTAL","childCount":1,
-      "children":[ { "id":"1:3","name":"Button","type":"INSTANCE","visible":true,"mainComponentKey":"91805fa1" } ] },
-    { "id":"1:4","name":"Object Status","type":"INSTANCE","visible":true,"mainComponentKey":"748d609e" },
-    { "id":"1:5","name":"Divider [sapList_BorderColor]","type":"FRAME","visible":true,"fills":[{"type":"SOLID","hex":"#E5E5E5","boundVariable":"sapList_BorderColor"}] },
-    { "id":"1:6","name":"Title [typo:heading]","type":"TEXT","visible":true,"fontFamily":"72","fontSize":20,"fills":[{"type":"SOLID","hex":"#1D2D3E","boundVariable":"sapTitleColor"}] }
-  ] }

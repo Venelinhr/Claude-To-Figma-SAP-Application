@@ -1,8 +1,0 @@
-[
-  {"name":"◆SAP-UNBOUND/Test Screen [sapContent_Container_Background]","type":"FRAME","fillHex":"#ffffff"},
-  {"name":"Title [sapTitleColor] [typo:sectionHeading]","type":"TEXT","fillHex":"#1d2d3e"},
-  {"name":"Label [sapContent_LabelColor] [typo:formLabel]","type":"TEXT","fillHex":"#556b82"},
-  {"name":"Divider [sapList_BorderColor]","type":"FRAME","fillHex":"#e5e5e5"},
-  {"name":"◆ICON/search","type":"FRAME","fillHex":"#0064d9"},
-  {"name":"Save (SAP)","type":"INSTANCE","fillHex":"#0070f2"}
-]

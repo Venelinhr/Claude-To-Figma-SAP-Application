@@ -1,6 +1,0 @@
-{ "id":"2:1","name":"Schedule Activated","type":"FRAME","visible":true,"layoutMode":"VERTICAL","childCount":3,
-  "children":[
-    { "id":"2:2","name":"ShellBar","type":"FRAME","visible":true,"layoutMode":"HORIZONTAL","childCount":1,"children":[] },
-    { "id":"2:3","name":"Button","type":"FRAME","visible":true,"layoutMode":"NONE","fills":[{"type":"SOLID","hex":"#0070F2"}] },
-    { "id":"2:4","name":"Title","type":"TEXT","visible":true,"fontFamily":"Inter","fontSize":24 }
-  ] }

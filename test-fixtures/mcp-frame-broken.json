@@ -1,7 +1,0 @@
-[
-  {"name":"Test Screen","type":"FRAME","fillHex":"#ffffff"},
-  {"name":"Title [sapTitleColor] [typo:sectionHeading]","type":"TEXT","fillHex":"#131e26"},
-  {"name":"Bad [sapNotARealToken]","type":"TEXT","fillHex":"#123456"},
-  {"name":"Wrong typo [sapTextColor] [typo:notarole]","type":"TEXT","fillHex":"#131e29"},
-  {"name":"◆ICON/notarealicon","type":"FRAME","fillHex":"#0064d9"}
-]
