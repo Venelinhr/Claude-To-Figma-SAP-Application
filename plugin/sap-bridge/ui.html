@@ -235,12 +235,6 @@ textarea::placeholder{color:var(--figma-color-text-tertiary)}
     <button class="img-clear" id="imgClear">×</button>
   </div>
 
-  <!-- mode toggle -->
-  <div class="mode-row">
-    <button class="mode-btn active" id="modeClaude">Claude builds</button>
-    <button class="mode-btn" id="modeAgent">Figma Agent edits after</button>
-  </div>
-
   <!-- go button -->
   <button class="go-btn" id="goBtn" disabled>Go</button>
 
@@ -373,8 +367,6 @@ textarea::placeholder{color:var(--figma-color-text-tertiary)}
     imgPreview: document.getElementById('imgPreview'),
     imgName:    document.getElementById('imgName'),
     imgClear:   document.getElementById('imgClear'),
-    modeClaude: document.getElementById('modeClaude'),
-    modeAgent:  document.getElementById('modeAgent'),
     goBtn:      document.getElementById('goBtn'),
     stages:     document.getElementById('stages'),
     progress:   document.getElementById('progressText'),
@@ -445,18 +437,6 @@ textarea::placeholder{color:var(--figma-color-text-tertiary)}
       e.preventDefault();
       if (!el.goBtn.disabled && !running) fireGo();
     }
-  });
-
-  // ── mode ──────────────────────────────────────────────────────────────────
-  el.modeClaude.addEventListener('click', function() {
-    mode = 'claude';
-    el.modeClaude.className = 'mode-btn active';
-    el.modeAgent.className  = 'mode-btn';
-  });
-  el.modeAgent.addEventListener('click', function() {
-    mode = 'agent';
-    el.modeAgent.className  = 'mode-btn active';
-    el.modeClaude.className = 'mode-btn';
   });
 
   // ── chips ─────────────────────────────────────────────────────────────────

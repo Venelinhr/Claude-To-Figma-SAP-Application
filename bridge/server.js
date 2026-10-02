@@ -903,7 +903,7 @@ async function handleV4(req, res, url) {
     const b = await readBody(req, 22e6);
     if (b.__tooBig) return bad('request too big (image over 15 MB)');
     const text = clean(b.text, 4000).replace(/>>>|<<</g, '> > >');
-    const mode = b.mode === 'agent' ? 'agent' : 'claude';
+    const mode = 'claude';   // one mode: v6 builds by script (the old "Figma Agent builds" button was removed 2026-10-02)
     const fileKey = String(b.fileKey || '');
     if (!KEY_RE.test(fileKey)) return bad('no Figma file key — the file must be saved in Figma (drafts are fine)');
     const selection = (Array.isArray(b.selection) ? b.selection : []).slice(0, 20)

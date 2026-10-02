@@ -170,26 +170,7 @@ test('image: ref saved, logos event, logos-done starts the check', async () => {
   assert.ok(fs.readFileSync(path.join(dir, 'prompt-2.txt'), 'utf8').includes('1 placed'));
 });
 
-test('Figma Agent mode: plan → mailbox parts → mbx/done → fix round → pass', async () => {
-  const r = await req('POST', '/job', { body: jobBody({ text: 'list report', mode: 'agent' }) });
-  const id = r.json.jobId;
-  let seen = await until(id, (e) => e.type === 'mailbox');
-  const mb = seen[seen.length - 1].data;
-  assert.strictEqual(mb.kind, 'plan');
-  assert.deepStrictEqual(mb.job.parts, ['A', 'B']);
-  assert.strictEqual(mb.parts.flatMap((p) => p.rows).length, 3);
-  assert.strictEqual((await req('POST', '/mbx/done', { body: { jobId: id, nodeId: 'bad id', WARN: [] } })).status, 400);
-  assert.strictEqual((await req('POST', '/mbx/done', { body: { jobId: id, nodeId: '5:2', WARN: [] } })).status, 202);
-  seen = await until(id, (e) => e.type === 'mailbox' && e.data.kind === 'fix');
-  const fix = seen[seen.length - 1].data.fix;
-  assert.deepStrictEqual(fix.lines, ['5:5 · Title · H4/Bold', '5:6 · Card · 1px border']);
-  assert.strictEqual((await req('POST', '/mbx/done', { body: { jobId: id, nodeId: '5:2', WARN: [] } })).status, 202);
-  seen = await until(id, (e) => e.type === 'done' || e.type === 'error');
-  const last = seen[seen.length - 1];
-  assert.strictEqual(last.type, 'done', JSON.stringify(last.data));
-  assert.strictEqual(last.data.nodeId, '5:2');
-});
-
+// (the v4 "Figma Agent builds" mailbox mode was removed 2026-10-02: one v6 mode, the Figma Agent works from the stored tools in the file — see test/v6pack.test.js)
 test('CLI push: plan reaches the plugin inbox; plugin token cannot push', async () => {
   const plan = { frame: { w: 1000 }, sections: [{ id: 'A' }], rows: [{ section: 'A', element: 'Title', kind: 'text' }] };
   assert.strictEqual((await req('POST', '/mbx/push', { body: { plan } })).status, 403);
