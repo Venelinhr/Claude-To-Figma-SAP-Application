@@ -85,7 +85,7 @@ elif [ "$POS_HIT" = true ]; then
   # ── AUTO-SAVE positive canonical feedback immediately ─────────────────
   SAVESIG=$(echo "$PROMPT" | grep -cE 'save|learn|remember|use (it|this) as|add (it|this)|canonical|bravo|great result|perfect')
   if [ "$SAVESIG" -gt 0 ]; then
-    MEM_DIR="$HOME/.claude/projects/-Users-C5408360/memory"
+    MEM_DIR="$HOME/.claude/projects/$(echo "$HOME" | tr '/' '-')/memory"
     MEM_INDEX="$MEM_DIR/MEMORY.md"
     SLUG="feedback_auto_pos_$(date -u +%Y%m%d_%H%M%S)"
     MEM_FILE="$MEM_DIR/${SLUG}.md"
@@ -130,7 +130,7 @@ elif [ "$NEG_HIT" = true ]; then
   BUILDCTX=$(echo "$PROMPT" | grep -cE 'not (real )?sap|only sap|native (frame|component)|not good|too many token|too expensive|costs? (are|too)|wrong (component|token|width|color|font)|not the (component|token|style)|wireframe|floorplan|clone|canonical|not matching|doesn.?t match|not (a )?dialog|not production')
   if [ "$HARDRULE" -gt 0 -o "$BUILDCTX" -gt 0 ]; then
     SEV="high"; [ "$HARDRULE" -gt 0 ] && SEV="critical"
-    MEM_DIR="$HOME/.claude/projects/-Users-C5408360/memory"
+    MEM_DIR="$HOME/.claude/projects/$(echo "$HOME" | tr '/' '-')/memory"
     MEM_INDEX="$MEM_DIR/MEMORY.md"
     SLUG="feedback_auto_$(date -u +%Y%m%d_%H%M%S)"
     MEM_FILE="$MEM_DIR/${SLUG}.md"
