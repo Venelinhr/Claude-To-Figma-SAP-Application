@@ -50,29 +50,6 @@ Type a request in the plugin text box and press **Go**:
 
 The screen appears in about 40 seconds. Every finished job has a **log icon** in the history list — one click copies the full log.
 
-## Three ways to use it
-
-| Route | Where you type | Asks before it builds? | Time to the screen |
-|---|---|---|---|
-| **SAP Bridge plugin** | the plugin text box in Figma | No — builds at once | **33–39 s** |
-| **Claude Code `/screen`** | Claude Code in this folder | **Yes** — plan, then Approve | about 50 s |
-| **Figma Agent chat** | the Agent panel in Figma | **Yes** — plan, then Approve | about 1 min 30 s |
-
-All three use the same engine: stored SAP layouts, one content file written by the model, audits that refuse bad content before any Figma call, and scripts that build, check and name the frame.
-
-## How they differ
-
-| | **SAP Bridge plugin** | **Claude Code `/screen`** | **Figma Agent chat** |
-|---|---|---|---|
-| What it is | A Figma plugin plus a small bridge on your computer | Claude Code in this folder; it plans, then the same plugin builds | Figma's own Agent inside your file, with the skill |
-| Who builds the frame | Scripts (the plugin) | Scripts (the plugin) — Claude does **not** type the Figma build | Fixed tool calls stored in the file |
-| Model tokens | **Very few.** The model writes one short content file. Layout, build, checks and naming are scripts and cost no tokens. | More: a full chat (reads the rules, shows the 5-section plan and the report) | Runs on Figma's Agent, not on Claude Code |
-| Asks before it builds | No | Yes | Yes |
-| Time | 33–39 s | about 50 s | about 1 min 30 s |
-| Best for | The fastest new screen | A plan, your approval, and a full report | Plans and small edits inside the file |
-
-**Claude → Figma through MCP (the old way, kept only as a fallback).** Claude Code types the Figma Plugin API calls itself through the Figma MCP server (`use_figma`). That is slow and uses many tokens: one screen took about 18 min and 59k tokens in v2, and one hand-written build took 219 turns, 34 min and about $9.5. The current system replaced it: Claude writes the content, scripts do the building through the plugin.
-
 ## Claude Code
 
 Open Terminal in the project folder and start a **fresh session for every screen** (it is faster):
@@ -182,6 +159,29 @@ You can iterate on any part — change the floorplan, add a column, switch to mo
 3. **Audits (no model tokens)** — leftover old words, column count, one colour per status, one date format, text length, required amounts and names, date filter on the date picker, no numbers in coloured status cells.
 4. **Door** — only real kit components, bound colour variables, text styles, responsive sizing.
 5. **Build, gates, rename** — the plugin builds the frame.
+
+## Three ways to use it
+
+| Route | Where you type | Asks before it builds? | Time to the screen |
+|---|---|---|---|
+| **SAP Bridge plugin** | the plugin text box in Figma | No — builds at once | **33–39 s** |
+| **Claude Code `/screen`** | Claude Code in this folder | **Yes** — plan, then Approve | about 50 s |
+| **Figma Agent chat** | the Agent panel in Figma | **Yes** — plan, then Approve | about 1 min 30 s |
+
+All three use the same engine: stored SAP layouts, one content file written by the model, audits that refuse bad content before any Figma call, and scripts that build, check and name the frame.
+
+## How they differ
+
+| | **SAP Bridge plugin** | **Claude Code `/screen`** | **Figma Agent chat** |
+|---|---|---|---|
+| What it is | A Figma plugin plus a small bridge on your computer | Claude Code in this folder; it plans, then the same plugin builds | Figma's own Agent inside your file, with the skill |
+| Who builds the frame | Scripts (the plugin) | Scripts (the plugin) — Claude does **not** type the Figma build | Fixed tool calls stored in the file |
+| Model tokens | **Very few.** The model writes one short content file. Layout, build, checks and naming are scripts and cost no tokens. | More: a full chat (reads the rules, shows the 5-section plan and the report) | Runs on Figma's Agent, not on Claude Code |
+| Asks before it builds | No | Yes | Yes |
+| Time | 33–39 s | about 50 s | about 1 min 30 s |
+| Best for | The fastest new screen | A plan, your approval, and a full report | Plans and small edits inside the file |
+
+**Claude → Figma through MCP (the old way, kept only as a fallback).** Claude Code types the Figma Plugin API calls itself through the Figma MCP server (`use_figma`). That is slow and uses many tokens: one screen took about 18 min and 59k tokens in v2, and one hand-written build took 219 turns, 34 min and about $9.5. The current system replaced it: Claude writes the content, scripts do the building through the plugin.
 
 ## Token Optimization
 
