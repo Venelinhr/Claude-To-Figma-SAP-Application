@@ -1,6 +1,6 @@
 # Claude to Figma SAP Application
 
-> Describe a SAP Fiori screen in plain words (or attach a reference image). The system builds a **real SAP screen in Figma** — real SAP Web UI Kit components, live Horizon tokens, verified layer structure — in about **40 seconds** with the plugin. No manual drag-and-drop.
+> Describe a SAP Fiori screen in plain words (or attach a reference image). The system builds a **real SAP screen in Figma** — real SAP Web UI Kit components, live Horizon tokens, verified layer structure.
 
 ![Plugin](https://img.shields.io/badge/Plugin-33--39_s-purple?style=flat-square)
 ![Figma Agent](https://img.shields.io/badge/Figma-Agent_skill_v9-blue?style=flat-square)
