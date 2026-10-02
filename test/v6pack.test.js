@@ -114,3 +114,12 @@ test('compact ops: filters, cards and table are filled by position; header and r
   const bad = applyOps(JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'knowledge', 'gold', 'v6', 'support-overview-1440.tree.json'), 'utf8')), { table: { keep: [0, 1], header: ['A', 'B'], rows: [['x', 'y']] } });
   assert.ok(bad.errs.some(e => /link cell/.test(e)), bad.errs.join('|'));
 });
+
+test('capabilities: the NEED block names the real layers, says when a layout has no cards, and flags link columns', () => {
+  const T = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'knowledge', 'gold', 'v6', 'invoice-list-1440.tree.json'), 'utf8'));
+  const L = require('../build/content-audit.js').capabilities(T.tree || T).join('\n');
+  assert.match(L, /cards → none/); assert.match(L, /0: Invoice \| LINK/); assert.match(L, /table title: \{n:"Table title"/);
+  const base = tbl(['A'], [['x']]); base.c.push({ n: 'N', k: 't', t: '1000 abc' });
+  const now = tbl(['A'], [['x']]); now.c.push({ n: 'M', k: 't', t: '1000' });
+  assert.ok(!audit(now, { n: 'S', c: [{ n: 'N', k: 't', t: '1000' }] }, 'x').some(x => /^LEFTOVER "1000"/.test(x)), 'a plain number is content, not a leftover');
+});

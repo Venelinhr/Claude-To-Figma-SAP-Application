@@ -25,7 +25,7 @@ function texts(tree) {
 function audit(tree, baseline, request) {
   const problems = [], req = norm(request || '');
   const base = texts(baseline), now = texts(tree);
-  for (const [t, layer] of now) if (base.has(t) && !req.includes(t)) problems.push(`LEFTOVER "${t}" in "${layer}" — a word of the old screen; the request does not contain it`);
+  for (const [t, layer] of now) if (base.has(t) && !req.includes(t) && !/^[\d\s.,:\/-]+$/.test(t)) problems.push(`LEFTOVER "${t}" in "${layer}" — a word of the old screen; the request does not contain it`);
   // NAMES: words that live in the skeleton's CONTENT and are not in the request must not survive in layer names
   const words = t => String(t).toLowerCase().split(/[^\p{L}]+/u).filter(w => w.length >= 4 && !GENERIC.has(w));
   const contentWords = new Set([...base.keys()].flatMap(words));
@@ -96,4 +96,19 @@ function autoname(tree, baseline, request) {
   if (staleIn(tree)) { const pt = (function f(o) { return o.n === 'Page title' ? o.t : (o.c || []).map(f).find(Boolean); })(tree); const suf = String(tree.n).includes(' — ') ? ' — ' + tree.n.split(' — ').slice(1).join(' — ') : ''; if (pt) set(tree, clip(pt, 40) + suf); }
   return renamed;
 }
-module.exports = { audit, texts, autoname };
+
+// ── capabilities: what the compact ops can do on THIS skeleton (exact layer names, columns and their kind) — printed in the NEED block so the model writes valid ops the first time
+function capabilities(tree) {
+  const find = (re, o = tree) => { let f = null; (function w(x) { if (!f && re.test(x.n || '')) f = x; (x.c || []).forEach(w); })(o); return f; };
+  const out = [], shell = find(/^Shell Bar$/), pt = find(/^Page title$/), tt = find(/^Table title$/i) || find(/title/i, find(/^Table Area$/) || { c: [] });
+  out.push(`LAYOUT set → shell bar title: {n:"${shell ? shell.n : '?'}",tx:{Text:"…"}} · page title: {n:"${pt ? pt.n : '?'}",t:"…"}${tt ? ` · table title: {n:"${tt.n}",t:"…"}` : ''}`);
+  const bar = find(/^Filter Bar$/), fl = bar ? bar.c.filter(k => /^Filter /.test(k.n) && !/^Filter (spacer|Actions)/.test(k.n)) : [];
+  out.push(fl.length ? `LAYOUT filters → ${fl.length} skeleton filters (from 0..${fl.length - 1}; "from" is a NUMBER); ${fl.map((f, i) => `${i}=${(((f.c || []).find(x => x.k === 'i') || {}).cp || '?')}`).join(' ')}` : 'LAYOUT filters → none in this layout (do not use "filters")');
+  const band = find(/^Summary Cards$/), cards = band ? band.c.filter(k => /^Card /.test(k.n)) : [];
+  out.push(cards.length ? `LAYOUT cards → ${cards.length} skeleton cards` : 'LAYOUT cards → none in this layout (do NOT use "cards"; put KPIs in the title or add none)');
+  const area = find(/^Table Area$/) || tree, head = find(/^Header Row/, area), row = (area.c || []).find(k => /^Row/i.test(k.n || ''));
+  if (head && row) out.push('LAYOUT table → columns (keep index: header | cell kind): ' + head.c.map((h, i) => { const c = row.c[i], inst = c && (c.k === 'i' ? c : (function f(o) { let g = null; (function w(x) { if (!g && x !== c && x.k === 'i') g = x; (x.c || []).forEach(w); })(o); return g; })(c)), pr = (inst && inst.pr) || {}; const kind = !inst ? '?' : inst.cp === 'Object Status' ? 'status → {t,sem}' : '✏️ By Text Description' in pr ? 'LINK → {t,d} (d = 2nd line, required)' : 'text'; return `${i}: ${(h.tx && h.tx.Text) || '?'} | ${kind}`; }).join(' ; '));
+  out.push('LAYOUT hints → numbers and codes you write (1000, 2000) are fine; every word of the old screen must go. One ops.json, all compact ops together, resume ONCE.');
+  return out;
+}
+module.exports = { audit, texts, autoname, capabilities };
