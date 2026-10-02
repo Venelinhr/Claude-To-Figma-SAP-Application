@@ -27,6 +27,7 @@ git clone https://github.com/Venelinhr/Claude-To-Figma-SAP-Application.git
 cd Claude-To-Figma-SAP-Application
 ./install.sh
 ```
+The installer only checks that Node.js, Claude Code and Python 3 are installed. It changes no setting on your computer.
 
 ### 2. Connect the SAP Web UI Kit in Figma
 1. Open the [SAP Web UI Kit on Figma Community](https://www.figma.com/community/file/1494295794601744471) → **Duplicate to your drafts** (free). Publish its styles and components.

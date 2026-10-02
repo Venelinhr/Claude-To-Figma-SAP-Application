@@ -114,3 +114,6 @@ bridge-out/
 /docs/v6/figma-agent-handoff.md
 /docs/V6-PLAN.md
 /.claude/memory/session_state_current.md
+/.mcp.json
+/mcp-servers/
+/semantic-models/
