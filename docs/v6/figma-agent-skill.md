@@ -20,9 +20,12 @@ First line of every reply = the trace: `▸ NEW · <layout>` · `▸ EDIT` · `�
 
 ## Router (read the request once)
 1. A named change on a node (selected, or a node link) → **EDIT**.
-2. "new screen / create / build / list / dashboard / form …" → **NEW**.
-3. A reference image to match exactly, measuring, scoring, a screen type no layout covers → **ASK-CHAT**: reply
-   `ask Claude chat: /screen "<request>" <file link>` (only chat has see.py and the gates).
+2. Any text request for a screen ("new screen / create / build / list / overview / dashboard / form …") → **NEW**. Always run
+   `MODE = 'list'` first — NEVER answer ASK-CHAT for a text request before you have seen the list.
+   Map by structure, not by words: invoices / orders / cases / tickets / requests list with filters + table → the list-report layout;
+   KPI cards + table → the overview layout; steps / approvers → the timeline layout; offers / results with filters → the results layout.
+3. **ASK-CHAT only** when (a) the user gives a reference image to match 1:1, or (b) the list has no layout with the same structure
+   (e.g. a wizard, a form-only page, a chart dashboard). Reply `ask Claude chat: /screen "<request>" <file link>`.
 4. A question or a review request → answer in words, build nothing.
 
 ## NEW — three calls (about 60 s). Copy the wrapper exactly; change only NAME, MODE, OPS.
