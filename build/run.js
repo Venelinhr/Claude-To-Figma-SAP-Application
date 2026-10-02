@@ -134,7 +134,7 @@ function names(T) {                                  // what the model may addre
       if (unknown) { say('NEED  name these icons (real kit icons: node build/kit.js i <word>; a shape that is text the OCR missed → text:<string>:<style>, e.g. 53x8=text:Багаж:H5/Bold): ' + groupIcons(unknown)); say(`NEXT  node build/run.js --job ${job} --file ${fileKey || '<key>'} --resume --icons "WxH=name,…"   `); process.exit(2); }
     } else fs.copyFileSync(treeF, J('tree.baseline.json'));
     if (!isImg && !flag('--as-is')) {                  // text lane: the skeleton carries another screen's content — the model puts the real content on it
-      say(`NEED  real content for the skeleton "${front.gold.name}" (${front.gold.hit}/${front.want} request words match). Write ops.json: {set:[{n,t|pr|tx}],remove:[n],clone:[{n,times,with:[[{n,t}]]}]} — no geometry`);
+      say(`NEED  real content for the skeleton "${front.gold.name}" (${front.gold.hit}/${front.want} request words match). Write ONE ops.json, content only, no geometry. Compact: {filters:[{from?,label,placeholder|value}], cards:[{title,value,caption}], table:{keep:[skeleton column indexes],header:[…],rows:[[cell|{t,d,sem}…]]}} + set:[{n,t|pr|tx}] for the shell bar, page title, table title`);
       names(readJ(treeF)).forEach(say);
       say(`NEXT  node build/run.js --job ${job} --file ${fileKey || '<key>'} --resume --spec-json <ops.json>   (or --as-is when the skeleton already is the screen)`);
       process.exit(2);

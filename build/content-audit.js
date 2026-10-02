@@ -82,8 +82,8 @@ function autoname(tree, baseline, request) {
     if (head) {
       const H = (head.c || []).map(c => mainText(c) || firstText(c));
       for (const r of kids.filter(k => /^Row/i.test(k.n || ''))) {
-        (r.c || []).forEach((c, i) => { if (!H[i]) return; if (i === 0 && c.k === 'i' && staleIn(c)) set(c, clip(H[i], 14) + ' ' + clip(mainText(c), 16)); else if (staleIn(c)) set(c, / cell$/i.test(c.n) ? clip(H[i], 20) + ' cell' : clip(H[i], 24)); });
-        if (staleIn(r)) set(r, 'Row ' + clip(firstText(r), 20));
+        (r.c || []).forEach((c, i) => { if (!H[i]) return; if (i === 0 && c.k === 'i') set(c, clip(H[i], 14) + ' ' + clip(mainText(c), 16)); else set(c, c.k !== 'i' && !/^$/.test(c.n || '') && c.c ? clip(H[i], 20) + ' cell' : clip(H[i], 24)); });
+        set(r, 'Row ' + clip(firstText(r), 20));   // rows and cells are always named after the header and the first value
       }
     }
     if (!top && staleIn(o)) {

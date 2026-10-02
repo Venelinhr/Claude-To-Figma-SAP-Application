@@ -26,7 +26,7 @@ Job folder (write every file of this job here, nowhere else): {{jobDir}}
 - Never type the Figma build yourself. The build is made by `node build/run.js` (a script, through the plugin). Never open PNG files.
 
 ## Pipeline
-1. **Route.** `node build/route.js "<the request as one line>"`. → `STAGE route <MODE · floorplan · component>` (MODE first, in capitals).
+1. **Route — already done by the bridge:** `{{routed}}`. Print `STAGE route <that line>` and go on (run `node build/route.js "<request>"` yourself only if it says "not routed").
 2. **ACT / QUICK** (a selected node + a small change): one small `use_figma` change on the selected node with the real kit
    (props from `node build/kit.js c <name>`), read the changed properties back →
    `STAGE done <what changed>` then
@@ -40,6 +40,10 @@ Job folder (write every file of this job here, nowhere else): {{jobDir}}
      A text job needs real business content in every field (`ops.json`, content only, never kit placeholders).
      **NEVER `--as-is` for a text job** (it builds the unchanged skeleton as a junk frame and costs a whole build). The first `--resume` carries `--spec-json ops.json`.
      **A removed column** = remove its header AND its cell in EVERY row (`remove` with `nth` 1..6), else the rows have one cell more than the header. Rename layers too (`set … name`).
+     **Use the COMPACT ops** (they make header and rows agree by construction and are 70 % shorter): `filters:[{from?,label,placeholder|value}]`,
+     `cards:[{title,value,caption}]`, `table:{keep:[skeleton column numbers 0-based],header:[…],rows:[[cell,…],…]}` with a cell = `"text"` or `{t,d,sem}`
+     (`d` = the second line of a link cell, `sem` = Error|Warning|Success|Information|None for a status). Then `set` only for the shell bar title, page title, table title.
+     Do NOT write `name` fields — the build renames layers from the content. Use fresh names, numbers and dates — never the skeleton's.
      **ONE pass:** write ONE `ops.json` that covers everything (set + remove + clone together) and resume ONCE — never build, look, then add more.
      **Replace EVERY skeleton text**: the shell bar title, every filter label and placeholder, every table header, every cell of every row, every status and
      caption — `run.js` prints them in its NEED lines. A leftover word of the old screen (Case Number, Customer, Subject, CS-…) means the job is not done.

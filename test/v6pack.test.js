@@ -99,3 +99,18 @@ test('in-file build refuses old content (the same audit runs inside Figma)', asy
   const r = await tools('support-overview-1440', { set: [{ n: 'Page title', t: 'Orders' }] }, 'build');
   assert.ok(r.errors && r.errors.some(x => /^LEFTOVER/.test(x)), JSON.stringify(r).slice(0, 200));
 });
+
+test('compact ops: filters, cards and table are filled by position; header and rows always agree; link cells need their second line', () => {
+  const T = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'knowledge', 'gold', 'v6', 'support-overview-1440.tree.json'), 'utf8'));
+  const row = (n, d) => [{ t: n, d }, 'Acme', 'Steel', '5 PC', 'Lena', '01 Oct 2026', { t: 'Late', sem: 'Error' }];
+  const r = applyOps(T, { filters: [{ label: 'Supplier' }, { from: 4, label: 'Delivery Date' }], cards: [{ title: 'Open', value: '1', caption: 'x' }, { title: 'Late', value: '2', caption: 'y' }],
+    table: { keep: [0, 1, 2, 3, 4, 5, 7], header: ['PO', 'Supplier', 'Material', 'Qty', 'Buyer', 'Date', 'Status'], rows: [row('45001', 'Plant 1'), row('45002', 'Plant 2'), row('45003', 'Plant 3')] } });
+  assert.deepStrictEqual(r.errs, []);
+  const find = (o, re) => re.test(o.n || '') ? o : (o.c || []).map(c => find(c, re)).find(Boolean);
+  const area = find(T, /^Table Area$/), head = area.c.find(k => /^Header Row/.test(k.n)), rows = area.c.filter(k => /^Row/.test(k.n));
+  assert.strictEqual(rows.length, 3); for (const x of rows) assert.strictEqual(x.c.length, head.c.length);
+  assert.strictEqual(find(T, /^Summary Cards$/).c.filter(k => /^Card /.test(k.n)).length, 2);
+  assert.strictEqual(find(T, /^Filter Bar$/).c.filter(k => /^Filter /.test(k.n) && !/spacer|Actions/.test(k.n)).length, 2);
+  const bad = applyOps(JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'knowledge', 'gold', 'v6', 'support-overview-1440.tree.json'), 'utf8')), { table: { keep: [0, 1], header: ['A', 'B'], rows: [['x', 'y']] } });
+  assert.ok(bad.errs.some(e => /link cell/.test(e)), bad.errs.join('|'));
+});

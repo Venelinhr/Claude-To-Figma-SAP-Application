@@ -45,6 +45,9 @@ return G('v6tools') ? await new AF('G', 'NAME', 'OPS', 'MODE', G('v6tools'))(G, 
      remove: ['Filter Status'],
      clone:  [{ n: 'Row CS-10482', times: 3, with: [[{ n: 'Case CS-10482', pr: { '✏️ Text': 'CS-10500' } }], [], []] }] }
    ```
+   Compact ops (use these first — header and rows agree by construction): `filters:[{from?,label,placeholder|value}]` · `cards:[{title,value,caption}]` ·
+   `table:{keep:[skeleton column numbers, 0-based],header:[…],rows:[[cell,…],…]}` (cell = `"text"` or `{t,d,sem}`: `d` second line of a link cell, `sem` Error|Warning|Success|Information|None).
+   Then `set` only for the shell bar title, page title, table title. Fresh names, numbers, dates — never the layout's own.
    `set`: `t` text of a text layer · `pr` kit props · `tx` inner texts of a kit part · `st` text style · `bg` colour variable · `name` new layer name
    (rename every layer that still carries the old screen's words — `Supplier`, `PO …` — so layer names stay true to the content).
    `remove`: names. `clone`: copies after the original, `with[i]` = the changes for copy i (use the ORIGINAL layer names).

@@ -935,12 +935,15 @@ async function handleV4(req, res, url) {
     fs.writeFileSync(path.join(run.jobDir, 'request.json'), JSON.stringify({ text, mode, fileKey, fileName: run.fileName,
       selection, image: img ? { file: path.basename(run.refPath), nodeId: img.nodeId, bytes: img.buf.length } : null,
       at: new Date().toISOString() }, null, 2));
+    let routed = '';   // the bridge routes first (0 tokens): the job saves one model turn (~10 s)
+    try { const rj = JSON.parse(require('node:child_process').execFileSync(process.execPath, [path.join(PROJ, 'build', 'route.js'), String(text || '').replace(/\s+/g, ' ').slice(0, 600)], { cwd: PROJ, timeout: 15000, stdio: ['ignore', 'pipe', 'ignore'] }).toString());
+      routed = `${rj.mode || '?'} · ${rj.floorplan || '—'} · ${(rj.components || []).map(c => c.name).join(', ') || '—'}`; } catch (_) {}
     const prompt = fillTpl('job.md', {   // v6 prompt for both modes: a script builds; in agent mode the Figma Agent edits the frame afterwards
       jobId: run.id, builder: mode === 'agent' ? 'figma-agent' : 'claude',
       text: text || '(no text — build the screen shown in the reference image)',
       fileKey, fileName: run.fileName, selection: selection.length ? JSON.stringify(selection) : 'none',
       ref: img ? `${rel(run.refPath)} (Figma node ${img.nodeId || '— dropped file, not on the canvas'})` : 'none',
-      cache, jobDir: rel(run.jobDir),
+      cache, jobDir: rel(run.jobDir), routed: routed || 'not routed — run node build/route.js yourself',
     });
     emit(run, 'progress', { text: 'Starting Claude…' });
     spawnJob(run, prompt, false);

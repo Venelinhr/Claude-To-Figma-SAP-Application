@@ -4,6 +4,10 @@
 //   applyOps(tree, ops) → { errs, counts }   mutates `tree`; when errs is not empty the caller must NOT use the tree.
 // ops = { set:    [{ n, nth?, t?, pr?, tx?, st?, bg? }]                       text of a text leaf · props / inner texts of a kit instance · text style · colour variable
 //         (set also takes `name`: the new layer name — use it so layers never keep the old screen's words)
+//         filters:[{ from?, label, placeholder? | value? }]   the filter bar: one entry per filter you want, in order; from = the skeleton filter it is based on (default: next one)
+//         cards:  [{ title, value, caption }]                   the summary cards: one entry per card (extra skeleton cards are dropped, missing ones cloned)
+//         table:  { keep:[0,1,3…], header:[…], rows:[[ cell, … ], …] }   keep = the skeleton columns that stay (0-based); header/rows follow that order;
+//                 cell = "text" | { t, d?, sem? }  (d = the 2nd line of a link cell · sem = Error|Warning|Success|Information|None for a status cell); rows = rows you want
 //         remove: ["name" | { n, nth? }]                                       drop a node (a filter, a column)
 //         clone:  [{ n, nth?, times, with?: [[{ n, t|pr|tx|st|bg }, …], …] }] copies of a node after it (a filter field, a table row); with[i] = the ops for copy i }
 'use strict';
@@ -27,6 +31,80 @@ function applyOps(T, ops) {
     if (e.bg != null) o.bg = e.bg;
     if (e.name != null) o.n = String(e.name);   // rename the layer (keeps layer names true to the content)
     counts.set++;
+  }
+  // ── compact content ops: the model writes the CONTENT only; columns, cell counts and clones are made here, so header and rows can never disagree
+  const findName = (root, re) => { let f = null; (function w(o) { if (!f && re.test(o.n || '')) f = o; (o.c || []).forEach(w); })(root); return f; };
+  const clone = o => JSON.parse(JSON.stringify(o));
+  const fitCount = (parent, kids, n, what) => {                     // keep n children of `kids` in `parent` (drop from the end / clone the last)
+    if (!kids.length) { errs.push(`${what}: nothing to copy`); return []; }
+    let cur = kids.slice();
+    while (cur.length > n) { const d = cur.pop(); parent.c.splice(parent.c.indexOf(d), 1); }
+    while (cur.length < n) { const src = cur[cur.length - 1], c = clone(src); parent.c.splice(parent.c.indexOf(src) + 1, 0, c); cur.push(c); }
+    cur.forEach((c, i) => { (function rn(x) { x.n = String(x.n).replace(/ \d+$/, '') + (i ? ' ' + (i + 1) : ''); (x.c || []).forEach(rn); })(c); });
+    return cur;
+  };
+  const SEM = ['Error', 'Warning', 'Success', 'Information', 'None'];
+  const setCell = (cell, v, where) => {
+    const val = (v && typeof v === 'object') ? v : { t: v };
+    if (val.t == null) { errs.push(`${where}: a cell without text`); return; }
+    const inst = cell.k === 'i' ? cell : findName(cell, /^$/) || (function f(o) { let g = null; (function w(x) { if (!g && x !== cell && x.k === 'i') g = x; (x.c || []).forEach(w); })(o); return g; })(cell);
+    if (!inst) { errs.push(`${where}: cell "${cell.n}" has no kit part to put text in`); return; }
+    if (inst.cp === 'Object Status') {
+      inst.tx = { ...(inst.tx || {}), Text: String(val.t) };
+      if (val.sem != null) { if (!SEM.includes(val.sem)) { errs.push(`${where}: sem "${val.sem}" is not one of ${SEM.join('/')}`); return; } inst.pr = { ...(inst.pr || {}), Semantic: val.sem }; }
+    } else if (inst.cp === 'Table Cell') {
+      const pr = { ...(inst.pr || {}) };
+      if ('✏️ Currency' in pr) pr['✏️ Currency'] = String(val.t); else pr['✏️ Text'] = String(val.t);
+      if ('✏️ By Text Description' in pr) { if (val.d == null) { errs.push(`${where}: "${val.t}" is a link cell — it needs d (the second line)`); return; } pr['✏️ By Text Description'] = String(val.d); }
+      inst.pr = pr;
+    } else { errs.push(`${where}: cell part ${inst.cp} is not a table cell or status`); return; }
+    if (val.sem != null && inst.cp === 'Table Cell') errs.push(`${where}: sem is for status cells only`);
+    counts.set++;
+  };
+  if (ops.table) {
+    const t = ops.table, area = findName(T, /^Table Area$/) || T, head = findName(area, /^Header Row/), rows = (area.c || []).filter(k => /^Row/i.test(k.n || ''));
+    if (!head || !rows.length) errs.push('table: this layout has no Header Row / Row layers');
+    else if (!Array.isArray(t.keep) || !Array.isArray(t.header) || !Array.isArray(t.rows) || t.keep.length !== t.header.length) errs.push('table: needs keep[] and header[] of the same length, and rows[][]');
+    else {
+      const n = head.c.length;
+      if (t.keep.some(i => !Number.isInteger(i) || i < 0 || i >= n)) errs.push(`table: keep has an index outside 0..${n - 1}`);
+      else {
+        const pick = r => { r.c = t.keep.map(i => r.c[i]); };
+        pick(head); rows.forEach(pick);
+        head.c.forEach((c, i) => { if (c.k === 'i') c.tx = { ...(c.tx || {}), Text: String(t.header[i]) }; });
+        const now = fitCount(area, rows, t.rows.length, 'table rows');
+        now.forEach((r, ri) => { const vals = t.rows[ri]; if (!Array.isArray(vals) || vals.length !== t.keep.length) { errs.push(`table: row ${ri + 1} needs ${t.keep.length} cells`); return; } r.c.forEach((c, ci) => setCell(c, vals[ci], `table row ${ri + 1} col ${ci + 1}`)); });
+      }
+    }
+  }
+  if (ops.filters) {
+    const bar = findName(T, /^Filter Bar$/), fl = bar ? bar.c.filter(k => /^Filter /.test(k.n) && !/^Filter (spacer|Actions)/.test(k.n)) : [];
+    if (!fl.length) errs.push('filters: this layout has no filter fields');
+    else {
+      const src = fl.map(clone), at = bar.c.indexOf(fl[0]);
+      bar.c = bar.c.filter(k => !fl.includes(k));
+      ops.filters.forEach((f, i) => {
+        const from = f.from == null ? Math.min(i, src.length - 1) : f.from, base = src[from];
+        if (!base) { errs.push(`filters: from ${from} does not exist (0..${src.length - 1})`); return; }
+        const c = clone(base); bar.c.splice(at + i, 0, c);
+        const lab = (c.c || []).find(x => x.k === 't'), ctl = (c.c || []).find(x => x.k === 'i');
+        if (lab) lab.t = String(f.label); else errs.push(`filters: "${f.label}" has no label layer`);
+        if (ctl) { if (ctl.cp === 'Input') ctl.pr = { ...(ctl.pr || {}), '✏️ Placeholder': String(f.placeholder != null ? f.placeholder : 'Search ' + String(f.label).toLowerCase()) }; else if (ctl.cp === 'Select') ctl.tx = { ...(ctl.tx || {}), 'Input Text': String(f.value != null ? f.value : 'All') }; }
+        c.n = 'Filter ' + f.label;
+      });
+      counts.set += ops.filters.length;
+    }
+  }
+  if (ops.cards) {
+    const band = findName(T, /^Summary Cards$/), cards = band ? band.c.filter(k => /^Card /.test(k.n)) : [];
+    if (!cards.length) errs.push('cards: this layout has no summary cards');
+    else {
+      const now = fitCount(band, cards, ops.cards.length, 'cards');
+      now.forEach((c, i) => { const v = ops.cards[i], ts = (c.c || []).filter(x => x.k === 't'), num = (c.c || []).find(x => x.k === 'i');
+        if (ts[0]) ts[0].t = String(v.title); if (ts.length > 1) ts[ts.length - 1].t = String(v.caption != null ? v.caption : '');
+        if (num) num.tx = { ...(num.tx || {}), [Object.keys(num.tx || {})[0] || 'Text']: String(v.value) };
+        c.n = 'Card ' + v.title; counts.set++; });
+    }
   }
   for (const e of ops.set || []) applySet(T, e, 'set');
   for (const r of ops.remove || []) {
