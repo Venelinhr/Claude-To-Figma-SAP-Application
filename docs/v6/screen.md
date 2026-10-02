@@ -1,9 +1,14 @@
 ---
-description: v6 — image or text (+ Figma file link) → every offline gate → a DRAFT built in Figma in ~1-2 min → measured gates → the user reviews the REAL screen after. Verbs — tweak · flip · show · gold · fix.
+description: v6 — image or text (+ Figma file link) → every offline gate → the plan is shown and APPROVED first (Claude Code route) → a DRAFT built in Figma in ~1 min → measured gates. The plugin and the Figma Agent stay build-first. Verbs — tweak · flip · show · gold · fix.
 argument-hint: <image path | "text request"> <figma file link>   |   tweak | flip | show | gold | fix …
 ---
 
 # /screen — v6: build first, review after (branch `v6` only)
+
+> **RULE (user, 2026-10-02): `/screen` in Claude Code ASKS BEFORE IT BUILDS.** Every `run.js` call of this command carries `--ask`: the run stops with exit 5 before any Figma call,
+> you paste the generated plan (five sections) and wait for **Approve / Reject / Modify**. On approve run `node build/run.js --job <job> --file <KEY> --resume` (no `--ask`) — that builds.
+> Text jobs: first call (exit 2: NEED) → write `ops.json` → `--resume --spec-json ops.json --ask` (exit 5: plan) → approve → `--resume`.
+> This applies to Claude Code → Figma ONLY. The SAP Bridge plugin (`bridge/prompts/job.md`) and the Figma Agent skill stay build-first, review after.
 
 The bar is unchanged: **≥ 95 % or it is a failure** — reference match (EYE) AND SAP execution (real kit components + states, text
 styles, colour variables, layer names; MATCH ≥ 90 · HYGIENE 0 · STRUCTURE 0 · responsive). What changed: nothing waits for a human
@@ -19,7 +24,7 @@ Reply in short plain sentences (ASD-STE100). Input: $ARGUMENTS
    (`node build/kit.js c <name>` for props; inner text names `tx` — Header `Title`, Object Status `Text`, List Item `Title`; a kit switch that is ON by default and shows placeholder content must be set false — the door says which),
    run `node build/door.js <tree>`, then `node build/run.js --job bridge-out/<job> --resume --file <KEY>`. Horizon Light always (SAP rule), even when the reference is dark; say so in Analyze.
    A **phone screenshot at 3×** (width 1170 / 1179 / 1290) is read by see.py as 1×: first crop the status bar and scale the image to the 2× export (390 wide → 780 px) as `bridge-out/<job>/ref.png`; the frame is 390 × height. Keep the tree at `bridge-out/<job>/tree.json` — it is the recovery if a frame is deleted in Figma.
-2. **RUN — one command:** `node build/run.js <ref.png | "text request"> --file <KEY> [--ask]` — KEY is in the link
+2. **RUN — one command:** `node build/run.js <ref.png | "text request"> --file <KEY> --ask` (`--ask` ALWAYS in this command — see the RULE at the top) — KEY is in the link
    `figma.com/design/<KEY>/…`. At t=0, in parallel: bridge + plugin check ‖ `front.js` (see.py OCR, gold match, fit, door). Then, before any
    Figma call: door → layout-sim (position, overflow ×1 ×0.85 ×1.15) → STRUCT-SIM (advisory) → `send.js` builds a frame named
    `DRAFT — <job>` → `gates.js`. It prints ≤ 20 lines. **Read only those lines** — never `spec.json`, gold JSON, trees or PNGs.
