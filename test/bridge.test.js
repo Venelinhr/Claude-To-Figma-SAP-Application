@@ -216,9 +216,10 @@ test('/job/open-log returns the readable trace of a finished job (the plugin log
   const r = await req('POST', '/job', { body: jobBody({ text: 'LOGTEST list report' }), auth: cli });
   assert.strictEqual(r.status, 200);
   await until(r.json.jobId, (e) => e.type === 'done' || e.type === 'error', 30000, { auth: cli });
-  const o = await req('POST', '/job/open-log', { body: { jobId: r.json.jobId }, auth: cli });
+  const o = await req('POST', '/job/open-log', { body: { jobId: r.json.jobId }, auth: cli });   // route lives in the v4 section: both the CLI and the plugin (pair) token pass authOf
   assert.strictEqual(o.status, 200, JSON.stringify(o.json));
   assert.match(o.json.text, /^# Job /); assert.match(o.json.text, /LOGTEST/);
   assert.strictEqual((await req('POST', '/job/open-log', { body: { jobId: 'abcdefabcdef1234' }, auth: cli })).status, 404);
   assert.strictEqual((await req('POST', '/job/open-log', { body: { jobId: '../x' }, auth: cli })).status, 400);
+  assert.strictEqual((await req('POST', '/job/open-log', { body: { jobId: r.json.jobId }, auth: 'wrong-token-wrong-token-wrong-token-1234' })).status, 401);
 });

@@ -825,7 +825,7 @@ async function handleV4(req, res, url) {
     return true;
   }
   const routes = ['/poll', '/inbox', '/job', '/answer', '/job/logos-done', '/mbx/done', '/mbx/push',
-    '/job/status', '/job/last', '/job/cancel',
+    '/job/status', '/job/last', '/job/cancel', '/job/open-log',
     '/tree', '/tree/next', '/tree/result', '/tree/wait', '/v6/pack'];
   if (!routes.includes(p)) return false;
   const who = authOf(req, url);
@@ -1023,6 +1023,15 @@ async function handleV4(req, res, url) {
     return true;
   }
 
+  if (p === '/job/open-log' && req.method === 'POST') {          // the plugin's log icon: the readable trace of a job (trace.md), returned as text
+    const body = await readBody(req), id = String((body && body.jobId) || '');
+    if (!/^[A-Za-z0-9]{8,32}$/.test(id)) return bad('bad job id');
+    const dir = path.join(OUT, id);
+    if (!fs.existsSync(dir)) { send(res, 404, { error: 'no log folder for this job (it ran before logging, or was removed)' }); return true; }
+    try { const f = require('./trace.js').write(dir); send(res, 200, { ok: true, file: path.relative(PROJ, f), text: fs.readFileSync(f, 'utf8') }); }
+    catch (e) { send(res, 500, { error: String(e.message || e) }); }
+    return true;
+  }
   const b = await readBody(req);
   const run = getJob(b.jobId);
   if (!run) { send(res, 404, { error: 'unknown job' }); return true; }
@@ -1144,16 +1153,6 @@ const server = http.createServer(async (req, res) => {
     sendTurn(run, frameTurn1(desc, selection.id, selection.name || '(unnamed)', fileKey));
 
     return send(res, 200, { runId: run.id, streamUrl: `/stream?runId=${run.id}&token=${TOKEN}` });
-  }
-
-  // /job/open-log — build trace.md for a job and return its text (the plugin's log icon copies it to the clipboard)
-  if (url.pathname === '/job/open-log' && req.method === 'POST') {
-    const body = await readBody(req), id = String((body && body.jobId) || '');
-    if (!/^[A-Za-z0-9]{8,32}$/.test(id)) return send(res, 400, { error: 'bad job id' });
-    const dir = path.join(OUT, id);
-    if (!fs.existsSync(dir)) return send(res, 404, { error: 'no log folder for this job (it ran before logging, or was removed)' });
-    try { const f = require('./trace.js').write(dir); return send(res, 200, { ok: true, file: path.relative(PROJ, f), text: fs.readFileSync(f, 'utf8') }); }
-    catch (e) { return send(res, 500, { error: String(e.message || e) }); }
   }
 
   // /approve — send turn 2 (build). Requires the run to be at need-approval.

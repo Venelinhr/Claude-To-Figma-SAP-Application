@@ -642,6 +642,7 @@ textarea::placeholder{color:var(--figma-color-text-tertiary)}
         stopTimer();
         el.timer.style.display = 'none';
         var d = msg.data;
+        if (d && d.jobId) { delete logFull[d.jobId]; delete prefetched[d.jobId]; }   // the finished job's log is rebuilt fresh
         doneNodeId = d.nodeId || null;
         fillResultText(d);
         setStage('done', 'done');
@@ -664,13 +665,16 @@ textarea::placeholder{color:var(--figma-color-text-tertiary)}
       case 'log-opened': {
         var lb = document.querySelector('.log-btn[data-job="' + msg.jobId + '"]');
         if (msg.ok && msg.text) { logFull[msg.jobId] = msg.text; logCache[msg.jobId] = logSummary(msg.text); if (hoverJob === msg.jobId) showTip(logCache[msg.jobId]); }
-        if (!msg.copy) { if (!msg.ok && hoverJob === msg.jobId) showTip(msg.error || 'No log for this job'); break; }
-        if (msg.ok && msg.text) logPanelUpdate(msg.jobId, msg.text);
-        else { logPanelUpdate(msg.jobId, '', 'No log: ' + (msg.error || 'unknown error')); if (lb) { lb.title = msg.error || 'No log for this job'; lb.style.color = '#f24822'; setTimeout(function () { lb.style.color = ''; }, 2500); } }
+        if (!msg.ok && hoverJob === msg.jobId) showTip(msg.error || 'No log for this job');
+        if (pendingCopy[msg.jobId]) {
+          delete pendingCopy[msg.jobId];
+          if (msg.ok && msg.text) { var okc = copyNow(msg.text); if (lb) flashLog(lb, okc); toast(okc ? 'Log copied ✓' : 'Log is ready — press the icon once more', okc); }
+          else toast('No log: ' + (msg.error || 'unknown error'), false);
+        }
         break;
       }
       case 'history':
-        renderHistory(msg.items || []);
+        renderHistory(msg.items || []); prefetchLogs(msg.items);
         if (msg.showLatest && msg.items && msg.items.length && !running) showResult(msg.items[0]);
         break;
       case 'cancelled':
@@ -729,7 +733,13 @@ textarea::placeholder{color:var(--figma-color-text-tertiary)}
     el.blocksList.textContent = (h.blocks || []).join(' · ');
     el.resultCard.style.display = 'flex';
   }
-  var logFull = {};
+  var logFull = {}, pendingCopy = {}, prefetched = {};
+  function toast(msg, ok) {
+    var t = document.getElementById('logToast');
+    if (!t) { t = document.createElement('div'); t.id = 'logToast'; t.style.cssText = 'position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:200;padding:6px 12px;border-radius:6px;font-size:11px;color:#fff;box-shadow:0 4px 14px rgba(0,0,0,.35);pointer-events:none'; document.body.appendChild(t); }
+    t.textContent = msg; t.style.background = ok ? '#1b8a5a' : '#c0391b'; t.style.display = 'block'; clearTimeout(t._h); t._h = setTimeout(function () { t.style.display = 'none'; }, 2200);
+  }
+  function prefetchLogs(items) { (items || []).slice(0, 6).forEach(function (h, i) { if (h.jobId && !logFull[h.jobId] && !prefetched[h.jobId]) { prefetched[h.jobId] = 1; setTimeout(function () { postMsg({ type: 'open-log', jobId: h.jobId, copy: false }); }, 300 * i); } }); }
   function copyNow(text) {                           // must run inside the click (user gesture) — a copy after an async reply is blocked in the plugin iframe
     var ta = document.createElement('textarea'); ta.value = text; ta.style.cssText = 'position:fixed;left:0;top:0;width:1px;height:1px;opacity:0';
     document.body.appendChild(ta); ta.focus(); ta.select(); var ok = false; try { ok = document.execCommand('copy'); } catch (e) {} document.body.removeChild(ta); return ok;
@@ -770,9 +780,9 @@ textarea::placeholder{color:var(--figma-color-text-tertiary)}
     b.innerHTML = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 1.5h6l3 3v10h-9z"/><path d="M9.5 1.5v3h3M5.5 8h5M5.5 10.5h5M5.5 13h3"/></svg>';
     b.addEventListener('click', function (e) {
       e.stopPropagation();
-      if (!jobId) { logPanel('', 'This history item has no job id (it is from before logging).'); return; }
-      logPanel(logFull[jobId] || '', logFull[jobId] ? '' : 'Loading the log …', jobId);
-      if (!logFull[jobId]) postMsg({ type: 'open-log', jobId: jobId, copy: true });
+      if (!jobId) { toast('No log for this item (from before logging)', false); return; }
+      if (logFull[jobId]) { var ok = copyNow(logFull[jobId]); flashLog(b, ok); toast(ok ? 'Log copied ✓' : 'Copy blocked by Figma — try again', ok); return; }
+      pendingCopy[jobId] = true; toast('Loading the log … it copies when ready', true); postMsg({ type: 'open-log', jobId: jobId, copy: false });
     });
     b.addEventListener('mouseenter', function () {
       if (!jobId) return; hoverJob = jobId; positionTip(b);
