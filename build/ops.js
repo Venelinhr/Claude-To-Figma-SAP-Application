@@ -38,10 +38,18 @@ function applyOps(T, ops) {
   const fitCount = (parent, kids, n, what) => {                     // keep n children of `kids` in `parent` (drop from the end / clone the last)
     if (!kids.length) { errs.push(`${what}: nothing to copy`); return []; }
     let cur = kids.slice();
-    while (cur.length > n) { const d = cur.pop(); parent.c.splice(parent.c.indexOf(d), 1); }
-    while (cur.length < n) { const src = cur[cur.length - 1], c = clone(src); parent.c.splice(parent.c.indexOf(src) + 1, 0, c); cur.push(c); }
+    while (cur.length > n) { const d = cur.pop(); reflow(d, parent, -1); parent.c.splice(parent.c.indexOf(d), 1); }
+    while (cur.length < n) { const src = cur[cur.length - 1], c = clone(src); parent.c.splice(parent.c.indexOf(src) + 1, 0, c); cur.push(c); reflow(src, parent, 1); }
     cur.forEach((c, i) => { (function rn(x) { x.n = String(x.n).replace(/ \d+$/, '') + (i ? ' ' + (i + 1) : ''); (x.c || []).forEach(rn); })(c); });
     return cur;
+  };
+  // ── reflow: a copy added to (or a node removed from) a vertical stack changes the height of every ancestor — the SCRIPT grows them (the model never writes geometry).
+  //    `gh` records the growth so the door's geometry guard accepts exactly that change and nothing else.
+  const reflow = (node, parent, sign) => {
+    if (!parent || parent.d !== 'V' || !(node.h > 0)) return;
+    const delta = sign * (node.h + (typeof parent.g === 'number' ? parent.g : 0));
+    let cur = parent;
+    while (cur) { if (typeof cur.h === 'number') { cur.h = Math.max(0, cur.h + delta); cur.gh = (cur.gh || 0) + delta; } cur = parentOf(T, cur); }
   };
   const SEM = ['Error', 'Warning', 'Success', 'Information', 'None'];
   const setCell = (cell, v, where) => {
@@ -110,7 +118,7 @@ function applyOps(T, ops) {
   for (const r of ops.remove || []) {
     const n = typeof r === 'string' ? r : r.n, o = find(T, n, r.nth), p = o && o !== T && parentOf(T, o);
     if (!p) { errs.push(`remove: no removable layer named "${n}"`); continue; }
-    p.c.splice(p.c.indexOf(o), 1); counts.remove++;
+    reflow(o, p, -1); p.c.splice(p.c.indexOf(o), 1); counts.remove++;
   }
   for (const c of ops.clone || []) {
     const o = find(T, c.n, c.nth), p = o && o !== T && parentOf(T, o), times = Number(c.times || 1);
@@ -121,7 +129,7 @@ function applyOps(T, ops) {
       const copy = JSON.parse(JSON.stringify(o));
       for (const e of (c.with || [])[i - 1] || []) applySet(copy, e, `clone ${c.n} #${i}`);   // by the ORIGINAL names, before they are made unique
       (function rename(x) { x.n = `${x.n} ${i + 1}`; (x.c || []).forEach(rename); })(copy);
-      p.c.splice(++at, 0, copy); counts.clone++;
+      p.c.splice(++at, 0, copy); counts.clone++; reflow(o, p, 1);
     }
   }
   return { errs, counts };

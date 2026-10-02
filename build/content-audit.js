@@ -100,12 +100,24 @@ function autoname(tree, baseline, request) {
 // ── capabilities: what the compact ops can do on THIS skeleton (exact layer names, columns and their kind) — printed in the NEED block so the model writes valid ops the first time
 function capabilities(tree) {
   const find = (re, o = tree) => { let f = null; (function w(x) { if (!f && re.test(x.n || '')) f = x; (x.c || []).forEach(w); })(o); return f; };
-  const out = [], shell = find(/^Shell Bar$/), pt = find(/^Page title$/), tt = find(/^Table title$/i) || find(/title/i, find(/^Table Area$/) || { c: [] });
-  out.push(`LAYOUT set → shell bar title: {n:"${shell ? shell.n : '?'}",tx:{Text:"…"}} · page title: {n:"${pt ? pt.n : '?'}",t:"…"}${tt ? ` · table title: {n:"${tt.n}",t:"…"}` : ''}`);
+  const out = [], shell = find(/^Shell Bar$/), pt = find(/^Page title$/), tt = find(/^Table title$/i);
+  const sets = [shell && `shell bar title: {n:"${shell.n}",tx:{Text:"…"}}`, pt && `page title: {n:"${pt.n}",t:"…"}`, tt && `table title: {n:"${tt.n}",t:"…"}`].filter(Boolean);
+  if (sets.length) out.push('LAYOUT set → ' + sets.join(' · '));
+  // repeating groups (steps, cards, rows with a number suffix): the clone form, with the real inner names of the last group
+  const seen = new Set();
+  (function rep(o) {
+    const g = {}; (o.c || []).forEach(k => { const m = String(k.n || '').match(/^(.*?)\s*(\d+)?$/); if (k.c && m && m[1] && !/^(Row|Header Row)/.test(k.n)) (g[m[1]] = g[m[1]] || []).push(k); });
+    for (const [base, ks] of Object.entries(g)) if (ks.length >= 3 && !seen.has(o.n + base)) {
+      seen.add(o.n + base); const last = ks[ks.length - 1], leaves = [];
+      (function lv(x) { if (x.k === 't') leaves.push(`{n:"${x.n}",t:"…"}`); else if (x.k === 'i') for (const k2 of Object.keys(x.tx || {})) leaves.push(`{n:"${x.n}",tx:{"${k2}":"…"}}`); (x.c || []).forEach(lv); })(last);
+      out.push(`LAYOUT repeat → "${o.n}" has ${ks.length} "${base}" groups (${ks.map(k => k.n).join(', ')}). Need more? clone:[{n:"${last.n}",times:K,with:[[${leaves.slice(0, 6).join(',')}${leaves.length > 6 ? ',…' : ''}] per copy]}] — "with" uses the ORIGINAL names of "${last.n}". Need fewer? remove:["${last.n}"]. Frame and stack heights grow by themselves.`);
+    }
+    (o.c || []).forEach(rep);
+  })(tree);
   const bar = find(/^Filter Bar$/), fl = bar ? bar.c.filter(k => /^Filter /.test(k.n) && !/^Filter (spacer|Actions)/.test(k.n)) : [];
-  out.push(fl.length ? `LAYOUT filters → ${fl.length} skeleton filters (from 0..${fl.length - 1}; "from" is a NUMBER); ${fl.map((f, i) => `${i}=${(((f.c || []).find(x => x.k === 'i') || {}).cp || '?')}`).join(' ')}` : 'LAYOUT filters → none in this layout (do not use "filters")');
+  if (find(/^Table Area$/) || fl.length) out.push(fl.length ? `LAYOUT filters → ${fl.length} skeleton filters (from 0..${fl.length - 1}; "from" is a NUMBER); ${fl.map((f, i) => `${i}=${(((f.c || []).find(x => x.k === 'i') || {}).cp || '?')}`).join(' ')}` : 'LAYOUT filters → none in this layout (do not use "filters")');
   const band = find(/^Summary Cards$/), cards = band ? band.c.filter(k => /^Card /.test(k.n)) : [];
-  out.push(cards.length ? `LAYOUT cards → ${cards.length} skeleton cards` : 'LAYOUT cards → none in this layout (do NOT use "cards"; put KPIs in the title or add none)');
+  if (find(/^Table Area$/) || cards.length) out.push(cards.length ? `LAYOUT cards → ${cards.length} skeleton cards` : 'LAYOUT cards → none in this layout (do NOT use "cards"; put KPIs in the title or add none)');
   const area = find(/^Table Area$/) || tree, head = find(/^Header Row/, area), row = (area.c || []).find(k => /^Row/i.test(k.n || ''));
   if (head && row) out.push('LAYOUT table → columns (keep index: header | cell kind): ' + head.c.map((h, i) => { const c = row.c[i], inst = c && (c.k === 'i' ? c : (function f(o) { let g = null; (function w(x) { if (!g && x !== c && x.k === 'i') g = x; (x.c || []).forEach(w); })(o); return g; })(c)), pr = (inst && inst.pr) || {}; const kind = !inst ? '?' : inst.cp === 'Object Status' ? 'status → {t,sem}' : '✏️ By Text Description' in pr ? 'LINK → {t,d} (d = 2nd line, required)' : 'text'; return `${i}: ${(h.tx && h.tx.Text) || '?'} | ${kind}`; }).join(' ; '));
   out.push('LAYOUT hints → numbers and codes you write (1000, 2000) are fine; every word of the old screen must go. One ops.json, all compact ops together, resume ONCE.');

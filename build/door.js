@@ -125,7 +125,7 @@ function baselineDiff(T, B, allow = []) {
     const b = old.m.get(k); if (!b || allow.includes(o.n)) continue;
     const k0 = k.replace(/#\d+$/, '');                          // repeated siblings: only compare when the same number of them exist on both sides (an insert shifts the #n)
     if (cur.base[k0] !== old.base[k0]) continue;
-    for (const f of GEO) if (geo(o, f) !== geo(b, f))
+    for (const f of GEO) if (geo(o, f) !== geo(b, f) && !(f === 'h' && o.gh && Number(o.h) === Number(b.h) + Number(o.gh)))   // gh = the height the SCRIPT added when a copy was cloned into a stack
       out.push(['geometry', `"${o.n}" ${f} ${geo(b, f)}→${geo(o, f)} — the numbers of a measured node are script-owned: fix sizing (s) or content instead; if a gates BOX/POSITION line names this exact node, run again with --allow "${o.n}"`]);
   }
   return out;

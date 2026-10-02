@@ -123,3 +123,16 @@ test('capabilities: the NEED block names the real layers, says when a layout has
   const now = tbl(['A'], [['x']]); now.c.push({ n: 'M', k: 't', t: '1000' });
   assert.ok(!audit(now, { n: 'S', c: [{ n: 'N', k: 't', t: '1000' }] }, 'x').some(x => /^LEFTOVER "1000"/.test(x)), 'a plain number is content, not a leftover');
 });
+
+test('reflow: a step cloned into a phone stack grows the stack and the frame by itself; the door accepts exactly that; removing shrinks back', () => {
+  const { baselineDiff } = require('../build/door.js');
+  const load = () => { const g = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'knowledge', 'gold', 'v6', 'approval-timeline-362.tree.json'), 'utf8')); return g.tree || g; };
+  const T = load(), B = load(), h0 = T.h;
+  assert.deepStrictEqual(applyOps(T, { clone: [{ n: 'Step 5', times: 1 }] }).errs, []);
+  assert.ok(T.h > h0 && T.gh === T.h - h0, `root ${h0} → ${T.h}`);
+  assert.deepStrictEqual(baselineDiff(T, B, []), [], 'the script-made growth must not be a geometry violation');
+  T.h += 7; assert.ok(baselineDiff(T, B, []).length > 0, 'a model edit on top of it still is');
+  const R = load(); applyOps(R, { remove: ['Step 5'] }); assert.ok(R.h < h0);
+  const L = require('../build/content-audit.js').capabilities(load()).join('\n');
+  assert.match(L, /repeat → "Approval steps" has 5 "Step" groups/); assert.ok(!/shell bar title: \{n:"\?"/.test(L) && !/filters → none/.test(L));
+});

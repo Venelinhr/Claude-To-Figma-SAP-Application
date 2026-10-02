@@ -277,6 +277,7 @@ textarea::placeholder{color:var(--figma-color-text-tertiary)}
     </div>
     <div class="blocks" id="blocksList" style="display:none"></div>
     <button class="show-btn" id="showBtn">Show in canvas</button>
+    <span id="resLog"></span>
   </div>
 
   <!-- history card: every result of this file, kept in the file -->
@@ -657,6 +658,7 @@ textarea::placeholder{color:var(--figma-color-text-tertiary)}
           el.blocksList.style.display = 'none';
         }
         el.resultCard.style.display = 'flex';
+        var rl = document.getElementById('resLog'); if (rl) { rl.innerHTML = ''; var jb = logButton(msg.data && msg.data.jobId); jb.style.marginLeft = '8px'; rl.appendChild(jb); }
         scroll();
         break;
       case 'log-opened': {
