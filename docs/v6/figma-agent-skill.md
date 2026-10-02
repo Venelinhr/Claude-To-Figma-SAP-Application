@@ -1,6 +1,6 @@
 ---
 name: sap-figma-agent
-description: SAP Fiori Design Agent v9 (the v6 workflow inside Figma). Fast, repeatable, kit-true. NEW screen = pick an approved layout from this file, change only the content, build with ONE fixed call, check with ONE fixed call (about 1 minute). EDIT = one small call with real SAP kit helpers (about 20 seconds). Real SAP Web UI Kit instances only, bound tokens and text styles, Horizon Light always. Use for any request to build, improve, fix or extend a SAP screen in Figma. Measuring a reference image or the 95 % gates → ask Claude chat.
+description: SAP Fiori Design Agent v9 (the v6 workflow inside Figma). Fast, repeatable, kit-true. NEW screen = pick an approved layout from this file, change only the content, SHOW THE PLAN AND WAIT FOR APPROVE, then build with ONE fixed call and check with ONE fixed call (about 1 minute after the Approve). EDIT = one small call with real SAP kit helpers (about 20 seconds). Real SAP Web UI Kit instances only, bound tokens and text styles, Horizon Light always. Use for any request to build, improve, fix or extend a SAP screen in Figma. Measuring a reference image or the 95 % gates → ask Claude chat.
 ---
 
 # SAP Fiori Design Agent — v9 (v6 inside Figma)
@@ -28,7 +28,7 @@ First line of every reply = the trace: `▸ NEW · <layout>` · `▸ EDIT` · `�
    (e.g. a wizard, a form-only page, a chart dashboard). Reply `ask Claude chat: /screen "<request>" <file link>`.
 4. A question or a review request → answer in words, build nothing.
 
-## NEW — three calls (about 60 s). Copy the wrapper exactly; change only NAME, MODE, OPS.
+## NEW — plan first, build after Approve (user rule 2026-10-02). Copy the wrapper exactly; change only NAME, MODE, OPS.
 Wrapper (every NEW call):
 ```js
 const G = k => figma.root.getSharedPluginData('sapfiori', k), AF = Object.getPrototypeOf(async () => {}).constructor;
@@ -38,7 +38,7 @@ return G('v6tools') ? await new AF('G', 'NAME', 'OPS', 'MODE', G('v6tools'))(G, 
 1. `MODE = 'list'` → the layouts in this file: `name | size | title | texts`. Pick the closest by structure (list report, timeline, results list, overview with cards …).
    None close → ASK-CHAT. The answer `INSTALL FIRST` → tell the user: open the SAP Bridge plugin once, then repeat.
 2. `MODE = 'names'`, `NAME = '<layout>'` → every layer you may change: exact names, kit props, inner texts, repeats.
-3. `MODE = 'build'`, same NAME, `OPS` = the content: real business content in the request's language, realistic names, amounts, dates, statuses (never lorem, never the layout's old texts).
+3. **PLAN, then ASK — nothing is built yet.** `MODE = 'plan'`, same NAME, `OPS` = the content: real business content in the request's language, realistic names, amounts, dates, statuses (never lorem, never the layout's old texts).
    ```
    OPS = { title: 'Frame name',
      set:    [{ n: 'Page title', t: 'Orders' }, { n: 'Status', tx: { Text: 'Overdue' }, pr: { Semantic: 'Error' } }],
@@ -55,13 +55,14 @@ return G('v6tools') ? await new AF('G', 'NAME', 'OPS', 'MODE', G('v6tools'))(G, 
    Geometry keys (w h xy p g d a s r abs) are refused. An answer `{errors:[…]}` → fix those ops in ONE pass and call again. The build also refuses (`LEFTOVER`, `COLUMNS`, `STATUS`, `DATES`):
    a text of the old layout still on screen · header and rows with a different number of cells (a removed column goes from the header AND every row) · one status label with two colours · mixed date formats.
    Layer names are rewritten from the new content by the build itself — you do not rename.
-   Success → `{ result:{nodeId, WARN, made}, plan, layers }`.
-4. **Check (one call):** `MODE = 'check'`, `NAME = '<nodeId>'` → `{layers, kit, texts, problems, pass, lines}`. `problems > 0` → fix the named lines with an EDIT call (hygiene first), check again. Max 2 rounds.
-5. **Reply** — in this order, nothing else:
+   Answer `{plan, layers, warnings}` (or `{errors}`). Reply with the `plan` and `layers` text **verbatim** in ``` fences (generated from the real tree — never redraw, never shorten), list any `warnings`,
+   then ONE line: `Approve / Modify?` and **STOP. Do NOT build before the user says approve.** Modify → change the OPS, call `plan` again.
+4. **BUILD — only after Approve.** `MODE = 'build'`, the same NAME and the same OPS → `{ result:{nodeId, WARN, made}, plan, layers }`. An answer with `errors` → fix those ops in ONE pass and call again.
+5. **Check (one call):** `MODE = 'check'`, `NAME = '<nodeId>'` → `{layers, kit, texts, problems, pass, lines}`. `problems > 0` → fix the named lines with an EDIT call (hygiene first), check again. Max 2 rounds.
+6. **Reply** (after the build) — in this order, nothing else:
    - the frame name + node id + `WARN` (must be empty) + the check numbers (`layers · kit · texts · problems`);
-   - the `plan` text and the `layers` text **verbatim** in ``` fences (they are generated from the real tree — never redraw, never shorten);
+   - do NOT paste the plan again (it was shown and approved before the build);
    - one line: `Approve / Modify?`.
-   Build first, review after: do not stop for an approval before step 3.
 
 ## EDIT — one call (about 20 s)
 Start every EDIT call with these lines, then change the node, then return what you changed (read it back):

@@ -169,3 +169,11 @@ test('cards op: sem colours the number of each card and a wrong value is refused
   assert.deepStrictEqual(band.c.filter(k => /^Card /.test(k.n)).map(c => c.c.find(x => x.k === 'i').pr.Semantic), ['Error', 'Warning', 'None', 'Success']);
   assert.ok(applyOps(JSON.parse(JSON.stringify(g.tree || g)), { cards: [mk('Red')] }).errs.length === 1);
 });
+
+test('the Figma Agent skill asks before it builds (plan → Approve → build); the plugin job prompt does not ask', () => {
+  const skill = fs.readFileSync(path.join(__dirname, '..', 'docs', 'v6', 'figma-agent-skill.md'), 'utf8');
+  assert.match(skill, /PLAN, then ASK/); assert.match(skill, /Do NOT build before the user says approve/); assert.match(skill, /BUILD — only after Approve/);
+  assert.ok(skill.indexOf("MODE = 'plan'") < skill.indexOf("MODE = 'build'"));
+  const job = fs.readFileSync(path.join(__dirname, '..', 'bridge', 'prompts', 'job.md'), 'utf8');
+  assert.ok(!/--ask/.test(job), 'the plugin job builds at once');
+});
