@@ -458,7 +458,7 @@ async function installV6(fileKey) {
   figma.root.setSharedPluginData(NS, 'v6build', pk.build);
   for (let i = 0; i < names.length; i++) figma.root.setSharedPluginData(NS, 'gold_' + names[i], pk.golds[names[i]]);
   figma.root.setSharedPluginData(NS, 'v6_ver', pk.ver);
-  figma.notify('v6 installed for the Figma Agent (' + names.length + ' screens)', { timeout: 4000 });
+  figma.notify('Installed for the Figma Agent (' + names.length + ' screens)', { timeout: 4000 });
 }
 
 async function treePoll() {

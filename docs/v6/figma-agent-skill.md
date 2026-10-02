@@ -1,9 +1,9 @@
 ---
 name: sap-figma-agent
-description: SAP Fiori Design Agent v9 (the v6 workflow inside Figma). Fast, repeatable, kit-true. NEW screen = pick an approved layout from this file, change only the content, SHOW THE PLAN AND WAIT FOR APPROVE, then build with ONE fixed call and check with ONE fixed call (about 1 minute after the Approve). EDIT = one small call with real SAP kit helpers (about 20 seconds). Real SAP Web UI Kit instances only, bound tokens and text styles, Horizon Light always. Use for any request to build, improve, fix or extend a SAP screen in Figma. Measuring a reference image or the 95 % gates → ask Claude chat.
+description: SAP Fiori Design Agent (the build workflow inside Figma). Fast, repeatable, kit-true. NEW screen = pick an approved layout from this file, change only the content, SHOW THE PLAN AND WAIT FOR APPROVE, then build with ONE fixed call and check with ONE fixed call (about 1 minute after the Approve). EDIT = one small call with real SAP kit helpers (about 20 seconds). Real SAP Web UI Kit instances only, bound tokens and text styles, Horizon Light always. Use for any request to build, improve, fix or extend a SAP screen in Figma. Measuring a reference image or the 95 % gates → ask Claude chat.
 ---
 
-# SAP Fiori Design Agent — v9 (v6 inside Figma)
+# SAP Fiori Design Agent
 
 Goal: a correct SAP screen in about a minute, the same way every time. **The heavy parts are stored in this file** (runtime, kit,
 approved layouts, plan drawing, checker). You type short fixed calls — never a screen layer by layer, never build code from memory.

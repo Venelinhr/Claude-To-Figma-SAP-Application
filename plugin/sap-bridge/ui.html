@@ -404,7 +404,7 @@ textarea::placeholder{color:var(--figma-color-text-tertiary)}
         el.statusText.textContent = 'Looking for Claude…';
         connected = false; break;
       case 'connected':
-        el.statusText.textContent = 'Connected to Claude · ' + (info && info.branch || 'v4') + (info && info.busy ? ' · busy' : '');
+        el.statusText.textContent = 'Connected to Claude' + (info && info.busy ? ' · busy' : '');
         connected = true; break;
       case 'wrong-bridge':
         el.statusText.textContent = 'Port 41778 is used by another program';
@@ -700,7 +700,7 @@ textarea::placeholder{color:var(--figma-color-text-tertiary)}
     }
   };
 
-  var MODE = { claude: 'Claude built', agent: 'v6 built, Figma Agent edits' };
+  var MODE = { claude: 'Claude built', agent: 'Built, Figma Agent edits' };
   function when(t) {
     if (!t) return '';
     var d = new Date(t);

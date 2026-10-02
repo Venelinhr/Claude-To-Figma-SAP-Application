@@ -2,7 +2,6 @@
 
 > Describe a SAP Fiori screen in plain words (or attach a reference image). The system builds a **real SAP screen in Figma** — real SAP Web UI Kit components, live Horizon tokens, verified layer structure — in about **40 seconds** with the plugin. No manual drag-and-drop.
 
-![Version](https://img.shields.io/badge/version-v6-0070F2?style=flat-square)
 ![Plugin](https://img.shields.io/badge/Plugin-33--39_s-purple?style=flat-square)
 ![Figma Agent](https://img.shields.io/badge/Figma-Agent_skill_v9-blue?style=flat-square)
 ![Claude Code](https://img.shields.io/badge/Claude_Code-/screen-orange?style=flat-square)
@@ -42,7 +41,7 @@ cd Claude-To-Figma-SAP-Application
 ```bash
 node build/mailbox.js restart
 ```
-5. In your Figma file open **Plugins → Development → SAP Bridge**. It shows **Connected to Claude · v6**.
+5. In your Figma file open **Plugins → Development → SAP Bridge**. It shows **Connected to Claude**.
 
 ### 4. Build your first screen
 Type a request in the plugin text box and press **Go**:
@@ -72,7 +71,7 @@ All three use the same engine: stored SAP layouts, one content file written by t
 | Time | 33–39 s | about 50 s | about 1 min 30 s |
 | Best for | The fastest new screen | A plan, your approval, and a full report | Plans and small edits inside the file |
 
-**Claude → Figma through MCP (the old way, kept only as a fallback).** Claude Code types the Figma Plugin API calls itself through the Figma MCP server (`use_figma`). That is slow and uses many tokens: one screen took about 18 min and 59k tokens in v2, and one hand-written build took 219 turns, 34 min and about $9.5. v6 replaced it: Claude writes the content, scripts do the building through the plugin.
+**Claude → Figma through MCP (the old way, kept only as a fallback).** Claude Code types the Figma Plugin API calls itself through the Figma MCP server (`use_figma`). That is slow and uses many tokens: one screen took about 18 min and 59k tokens in v2, and one hand-written build took 219 turns, 34 min and about $9.5. The current system replaced it: Claude writes the content, scripts do the building through the plugin.
 
 ## Claude Code
 
@@ -90,7 +89,7 @@ Claude shows the plan and waits. Answer **Approve**, **Reject** or **Modify** �
 ## Figma Agent
 
 **Install (once):**
-1. Open the **SAP Bridge** plugin in your Figma file once. Wait for *v6 installed for the Figma Agent*, then close it.
+1. Open the **SAP Bridge** plugin in your Figma file once. Wait for *Installed for the Figma Agent*, then close it.
 2. Download **[SKILL.md](https://github.com/Venelinhr/Claude-To-Figma-SAP-Application/blob/main/.claude/skills/sap-figma-agent/SKILL.md)**.
 3. In Figma: **Agent → Skills → Add skill** → upload `SKILL.md`.
 
@@ -199,7 +198,7 @@ The same request on every route
 
 The build pipeline is token-optimised — each session uses a fraction of what a naive implementation would consume.
 
-In v6 a plugin job writes **one** content file and builds **once**. The audits and the layout hints run as scripts and cost no model tokens — a retry loop of 12 refused content files before one build went to zero.
+A plugin job writes **one** content file and builds **once**. The audits and the layout hints run as scripts and cost no model tokens — a retry loop of 12 refused content files before one build went to zero.
 
 ## Learning & Improving
 
@@ -212,7 +211,7 @@ You can also add your own rules at any time — just tell Claude "hard rule: alw
 | File | What |
 |---|---|
 | [`plugin/sap-bridge`](plugin/sap-bridge) | the SAP Bridge Figma plugin |
-| [`docs/v6/figma-agent-skill.md`](docs/v6/figma-agent-skill.md) | the Figma Agent skill (source) |
+| [`.claude/skills/sap-figma-agent/SKILL.md`](.claude/skills/sap-figma-agent/SKILL.md) | the Figma Agent skill (source) |
 
 ## License
 
