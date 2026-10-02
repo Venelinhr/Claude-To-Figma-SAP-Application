@@ -38,6 +38,8 @@ Job folder (write every file of this job here, nowhere else): {{jobDir}}
    - Give the Bash call a timeout of 240000 ms. Read only the lines it prints. Follow `docs/v6/screen.md` step 3 for the exit code
      (1 fix the tree → `--resume` · 2 icons / ops.json for a text job · 3 plugin closed → `AGENT_ASK` · 6 DRAFT → fix once or twice).
      A text job needs real business content in every field (`ops.json`, content only, never kit placeholders).
+     **NEVER `--as-is` for a text job** (it builds the unchanged skeleton as a junk frame and costs a whole build). The first `--resume` carries `--spec-json ops.json`.
+     **A removed column** = remove its header AND its cell in EVERY row (`remove` with `nth` 1..6), else the rows have one cell more than the header. Rename layers too (`set … name`).
      **ONE pass:** write ONE `ops.json` that covers everything (set + remove + clone together) and resume ONCE — never build, look, then add more.
      **Replace EVERY skeleton text**: the shell bar title, every filter label and placeholder, every table header, every cell of every row, every status and
      caption — `run.js` prints them in its NEED lines. A leftover word of the old screen (Case Number, Customer, Subject, CS-…) means the job is not done.
