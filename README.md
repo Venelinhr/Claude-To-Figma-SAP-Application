@@ -175,17 +175,6 @@ Purchase Orders
 
 You can iterate on any part — change the floorplan, add a column, switch to mobile — before Claude builds anything.
 
-## Results
-
-The same request on every route
-
-| Route | Time to the screen | Result |
-|---|---|---|
-| SAP Bridge plugin | **33–39 s** | all quality checks pass |
-| Claude Code `/screen` | about 50 s | same checks, plus the plan |
-| Figma Agent chat | about 1 min 30 s (with your Approve) | clean frame, all required labels |
-| Figma Make | more than 2 min | a working app, not an editable Figma frame |
-
 ## How it works
 
 1. **Route and match** — the request is matched to the closest stored layout.
