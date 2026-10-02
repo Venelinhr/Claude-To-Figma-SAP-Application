@@ -47,6 +47,7 @@ return G('v6tools') ? await new AF('G', 'NAME', 'OPS', 'MODE', G('v6tools'))(G, 
    ```
    Compact ops (use these first — header and rows agree by construction): `filters:[{from?,label,placeholder|value}]` · `cards:[{title,value,caption}]` ·
    `table:{keep:[skeleton column numbers, 0-based],header:[…],rows:[[cell,…],…]}` (cell = `"text"` or `{t,d,sem}`: `d` second line of a link cell, `sem` Error|Warning|Success|Information|None).
+   Timeline layout: `steps:[{name,role,status,state:"done|current|todo",initials?,sem?}]` — one entry per approver; the tool clones the right marker / selected bar per state and grows the frame. Never clone steps by hand.
    Then `set` only for the shell bar title, page title, table title. Fresh names, numbers, dates — never the layout's own.
    `set`: `t` text of a text layer · `pr` kit props · `tx` inner texts of a kit part · `st` text style · `bg` colour variable · `name` new layer name
    (rename every layer that still carries the old screen's words — `Supplier`, `PO …` — so layer names stay true to the content).

@@ -663,12 +663,10 @@ textarea::placeholder{color:var(--figma-color-text-tertiary)}
         break;
       case 'log-opened': {
         var lb = document.querySelector('.log-btn[data-job="' + msg.jobId + '"]');
-        if (msg.ok && msg.text) { logCache[msg.jobId] = logSummary(msg.text); if (hoverJob === msg.jobId) showTip(logCache[msg.jobId]); }
+        if (msg.ok && msg.text) { logFull[msg.jobId] = msg.text; logCache[msg.jobId] = logSummary(msg.text); if (hoverJob === msg.jobId) showTip(logCache[msg.jobId]); }
         if (!msg.copy) { if (!msg.ok && hoverJob === msg.jobId) showTip(msg.error || 'No log for this job'); break; }
         if (msg.ok && msg.text) {
-          var ta = document.createElement('textarea'); ta.value = msg.text; ta.style.cssText = 'position:fixed;left:-9999px'; document.body.appendChild(ta); ta.select();
-          var okc = false; try { okc = document.execCommand('copy'); } catch (e) {} document.body.removeChild(ta);
-          if (lb) { lb.title = okc ? 'Copied ✓' : 'Copy failed'; lb.style.color = okc ? '#1bc47d' : '#f24822'; setTimeout(function () { lb.style.color = ''; lb.title = 'Copy the log of this job'; }, 2000); }
+          var okc = copyNow(msg.text); if (lb) flashLog(lb, okc); if (!okc) logPanel(msg.text);
         } else if (lb) { lb.title = msg.error || 'No log for this job'; lb.style.color = '#f24822'; setTimeout(function () { lb.style.color = ''; }, 2500); }
         break;
       }
@@ -732,6 +730,21 @@ textarea::placeholder{color:var(--figma-color-text-tertiary)}
     el.blocksList.textContent = (h.blocks || []).join(' · ');
     el.resultCard.style.display = 'flex';
   }
+  var logFull = {};
+  function copyNow(text) {                           // must run inside the click (user gesture) — a copy after an async reply is blocked in the plugin iframe
+    var ta = document.createElement('textarea'); ta.value = text; ta.style.cssText = 'position:fixed;left:0;top:0;width:1px;height:1px;opacity:0';
+    document.body.appendChild(ta); ta.focus(); ta.select(); var ok = false; try { ok = document.execCommand('copy'); } catch (e) {} document.body.removeChild(ta); return ok;
+  }
+  function flashLog(b, ok) { b.title = ok ? 'Copied ✓' : 'Copy blocked — the log is open in a box'; b.style.color = ok ? '#1bc47d' : '#f24822'; setTimeout(function () { b.style.color = ''; b.title = 'Copy the log of this job'; }, 2000); }
+  function logPanel(text) {                          // fallback: the whole log in a box, selected — press Cmd+C
+    var old = document.getElementById('logPanel'); if (old) old.remove();
+    var p = document.createElement('div'); p.id = 'logPanel'; p.style.cssText = 'position:fixed;inset:8px;z-index:100;display:flex;flex-direction:column;gap:6px;padding:8px;border-radius:8px;background:var(--figma-color-bg);border:1px solid var(--figma-color-border);box-shadow:0 6px 24px rgba(0,0,0,.35)';
+    var t = document.createElement('textarea'); t.value = text; t.readOnly = true; t.style.cssText = 'flex:1;font:10px/1.4 ui-monospace,Menlo,monospace;resize:none';
+    var r = document.createElement('div'); r.style.cssText = 'display:flex;gap:6px;align-items:center;font-size:11px';
+    var m = document.createElement('span'); m.style.flex = '1'; m.textContent = 'Log selected — press Cmd+C (Ctrl+C), then close.';
+    var c = document.createElement('button'); c.textContent = 'Close'; c.addEventListener('click', function () { p.remove(); });
+    r.appendChild(m); r.appendChild(c); p.appendChild(t); p.appendChild(r); document.body.appendChild(p); t.focus(); t.select();
+  }
   var hoverJob = null, logCache = {}, tipEl = null, tipPos = { x: 0, y: 0 };
   function tip() { if (!tipEl) { tipEl = document.createElement('div'); tipEl.className = 'log-tip'; document.body.appendChild(tipEl); } return tipEl; }
   function positionTip(b) { var r = b.getBoundingClientRect(); tipPos = { x: Math.max(6, Math.min(r.right - 330, window.innerWidth - 336)), y: r.bottom + 6 }; }
@@ -749,7 +762,11 @@ textarea::placeholder{color:var(--figma-color-text-tertiary)}
   function logButton(jobId) {
     var b = document.createElement('button'); b.className = 'log-btn'; b.title = 'Copy the log of this job (every step, timing and gate line)'; b.dataset.job = jobId || '';
     b.innerHTML = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 1.5h6l3 3v10h-9z"/><path d="M9.5 1.5v3h3M5.5 8h5M5.5 10.5h5M5.5 13h3"/></svg>';
-    b.addEventListener('click', function (e) { e.stopPropagation(); if (jobId) postMsg({ type: 'open-log', jobId: jobId, copy: true }); });
+    b.addEventListener('click', function (e) {
+      e.stopPropagation(); if (!jobId) return;
+      if (logFull[jobId]) { var ok = copyNow(logFull[jobId]); flashLog(b, ok); if (!ok) logPanel(logFull[jobId]); }
+      else { b.title = 'Loading …'; postMsg({ type: 'open-log', jobId: jobId, copy: true }); }
+    });
     b.addEventListener('mouseenter', function () {
       if (!jobId) return; hoverJob = jobId; positionTip(b);
       if (logCache[jobId]) showTip(logCache[jobId]); else { showTip('Loading the log …'); postMsg({ type: 'open-log', jobId: jobId, copy: false }); }

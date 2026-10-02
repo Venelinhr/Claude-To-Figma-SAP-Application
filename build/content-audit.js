@@ -32,6 +32,20 @@ function audit(tree, baseline, request) {
   const seenName = new Set();
   const holds = (o, w) => { let f = false; (function g(x) { if (f) return; const t = x.k === 't' ? x.t : x.k === 'i' ? [...Object.values(x.tx || {}), ...Object.entries(x.pr || {}).filter(([k]) => k.startsWith('✏️')).map(([, v]) => v)].join(' ') : ''; if (String(t).toLowerCase().includes(w)) f = true; (x.c || []).forEach(g); })(o); return f; };
   (function nm(o) { for (const w of words(o.n || '')) if (contentWords.has(w) && !req.includes(w) && !holds(o, w) && !seenName.has(o.n)) { seenName.add(o.n); problems.push(`NAMES layer "${o.n}" still carries "${w}" from the old screen — rename it (set … name)`); } (o.c || []).forEach(nm); })(tree);
+  // LENGTH: a text far longer than the skeleton's text in the same layer overflows its slot (a 32-char link where 16 fitted → clipped by the frame)
+  const lens = new Map(); const key = (n, k) => String(n).replace(/\s*\d+$/, '') + '|' + (k || '');
+  (function bl(o) { if (o.k === 't') lens.set(key(o.n), Math.max(lens.get(key(o.n)) || 0, String(o.t).length)); if (o.k === 'i') for (const [k, v] of Object.entries(o.tx || {})) lens.set(key(o.n, k), Math.max(lens.get(key(o.n, k)) || 0, String(v).length)); (o.c || []).forEach(bl); })(baseline);
+  (function ln(o, inRow) {
+    const row = inRow || /^(Row|Header Row)/i.test(o.n || '');
+    const chk = (txt, k) => { const b = lens.get(key(o.n, k)); if (!row && b >= 6 && String(txt).length > Math.max(b * 1.6, b + 10)) problems.push(`LENGTH "${txt}" in "${o.n}" has ${String(txt).length} chars; the layout holds about ${Math.round(Math.max(b * 1.6, b + 10))} — shorten it`); };
+    if (o.k === 't') chk(o.t); if (o.k === 'i') for (const [k, v] of Object.entries(o.tx || {})) chk(v, k);
+    (o.c || []).forEach(c => ln(c, row));
+  })(tree, false);
+  // COVERAGE: an amount or a "by <Name>" in the request must be visible somewhere on the screen
+  const allT = []; (function g(o) { if (o.k === 't') allT.push(o.t); if (o.k === 'i') { Object.values(o.tx || {}).forEach(v => allT.push(v)); Object.entries(o.pr || {}).forEach(([k, v]) => { if (k.startsWith('✏️') && typeof v === 'string') allT.push(v); }); } (o.c || []).forEach(g); })(tree);
+  const hay = norm(allT.join(' | '));
+  for (const m of String(request || '').matchAll(/\b(\d[\d.,]*\d)\s?(?:EUR|USD|GBP|BGN|CHF|€|\$)/g)) if (!hay.includes(m[1].toLowerCase())) problems.push(`COVERAGE the request says "${m[0]}" but no text on the screen shows it — put it in the title or summary line`);
+  for (const m of String(request || '').matchAll(/\bby ([A-ZÀ-Ž][\p{L}'-]+ [A-ZÀ-Ž][\p{L}'-]+)/gu)) if (!hay.includes(m[1].toLowerCase())) problems.push(`COVERAGE the request names "${m[1]}" but no text on the screen shows it — put it in the title or summary line`);
   // STATUS: one label, one colour
   const sem = {};
   (function st(o) { if (o.k === 'i' && o.cp === 'Object Status' && o.tx && o.tx.Text) { const k = norm(o.tx.Text), v = (o.pr && o.pr.Semantic) || 'None'; if (sem[k] && sem[k] !== v) problems.push(`STATUS "${o.tx.Text}" is ${sem[k]} in one row and ${v} in another — one label, one colour`); else sem[k] = v; } (o.c || []).forEach(st); })(tree);
@@ -103,11 +117,13 @@ function capabilities(tree) {
   const out = [], shell = find(/^Shell Bar$/), pt = find(/^Page title$/), tt = find(/^Table title$/i);
   const sets = [shell && `shell bar title: {n:"${shell.n}",tx:{Text:"…"}}`, pt && `page title: {n:"${pt.n}",t:"…"}`, tt && `table title: {n:"${tt.n}",t:"…"}`].filter(Boolean);
   if (sets.length) out.push('LAYOUT set → ' + sets.join(' · '));
+  const stepStack = (function f(o) { const k = (o.c || []).filter(x => /^Step \d+$/.test(x.n || '')); if (k.length >= 2 && k.some(x => find(/^Selected bar$/, x))) return o; for (const c of o.c || []) { const r = f(c); if (r) return r; } return null; })(tree);
+  if (stepStack) out.push('LAYOUT steps → ONE op for the whole timeline: steps:[{name,role,status,state:"done|current|todo",initials?,sem?}] in order — the script clones the right look (done = check marker, current = pending marker + selected bar, todo = empty circle), sets the texts and grows the frame. Exactly ONE step is "current" (the one under review). Never use clone/with for steps. Keep status short ("Approved: Nov 3").');
   // repeating groups (steps, cards, rows with a number suffix): the clone form, with the real inner names of the last group
   const seen = new Set();
   (function rep(o) {
     const g = {}; (o.c || []).forEach(k => { const m = String(k.n || '').match(/^(.*?)\s*(\d+)?$/); if (k.c && m && m[1] && !/^(Row|Header Row)/.test(k.n)) (g[m[1]] = g[m[1]] || []).push(k); });
-    for (const [base, ks] of Object.entries(g)) if (ks.length >= 3 && !seen.has(o.n + base)) {
+    for (const [base, ks] of Object.entries(g)) if (ks.length >= 3 && !seen.has(o.n + base) && !(stepStack && stepStack === o)) {
       seen.add(o.n + base); const last = ks[ks.length - 1], leaves = [];
       (function lv(x) { if (x.k === 't') leaves.push(`{n:"${x.n}",t:"…"}`); else if (x.k === 'i') for (const k2 of Object.keys(x.tx || {})) leaves.push(`{n:"${x.n}",tx:{"${k2}":"…"}}`); (x.c || []).forEach(lv); })(last);
       out.push(`LAYOUT repeat → "${o.n}" has ${ks.length} "${base}" groups (${ks.map(k => k.n).join(', ')}). Need more? clone:[{n:"${last.n}",times:K,with:[[${leaves.slice(0, 6).join(',')}${leaves.length > 6 ? ',…' : ''}] per copy]}] — "with" uses the ORIGINAL names of "${last.n}". Need fewer? remove:["${last.n}"]. Frame and stack heights grow by themselves.`);

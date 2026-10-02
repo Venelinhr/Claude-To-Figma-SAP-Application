@@ -121,8 +121,9 @@ function keyed(T) {                                             // name-path key
 }
 function baselineDiff(T, B, allow = []) {
   const cur = keyed(T), old = keyed(B), out = [];
+  const gen = new Set(); (function g(o, on) { if (o.gen) on = true; if (on) gen.add(o); (o.c || []).forEach(c => g(c, on)); })(T, false);   // nodes the SCRIPT made (a step group cloned from a state template)
   for (const [k, o] of cur.m) {
-    const b = old.m.get(k); if (!b || allow.includes(o.n)) continue;
+    const b = old.m.get(k); if (!b || allow.includes(o.n) || gen.has(o)) continue;
     const k0 = k.replace(/#\d+$/, '');                          // repeated siblings: only compare when the same number of them exist on both sides (an insert shifts the #n)
     if (cur.base[k0] !== old.base[k0]) continue;
     for (const f of GEO) if (geo(o, f) !== geo(b, f) && !(f === 'h' && o.gh && Number(o.h) === Number(b.h) + Number(o.gh)))   // gh = the height the SCRIPT added when a copy was cloned into a stack

@@ -8,6 +8,7 @@
 //         cards:  [{ title, value, caption }]                   the summary cards: one entry per card (extra skeleton cards are dropped, missing ones cloned)
 //         table:  { keep:[0,1,3…], header:[…], rows:[[ cell, … ], …] }   keep = the skeleton columns that stay (0-based); header/rows follow that order;
 //                 cell = "text" | { t, d?, sem? }  (d = the 2nd line of a link cell · sem = Error|Warning|Success|Information|None for a status cell); rows = rows you want
+//         steps:  [{ name, role, status, state?: done|current|todo, initials?, sem? }]   a timeline: one entry per approver, in order; the script picks the right marker / selected bar per state
 //         remove: ["name" | { n, nth? }]                                       drop a node (a filter, a column)
 //         clone:  [{ n, nth?, times, with?: [[{ n, t|pr|tx|st|bg }, …], …] }] copies of a node after it (a filter field, a table row); with[i] = the ops for copy i }
 'use strict';
@@ -69,6 +70,30 @@ function applyOps(T, ops) {
     if (val.sem != null && inst.cp === 'Table Cell') errs.push(`${where}: sem is for status cells only`);
     counts.set++;
   };
+  if (ops.steps) {                                   // timeline: the SCRIPT clones the right look per state (done = check marker, current = pending marker + selected bar, todo = empty circle)
+    const isStep = x => /^Step \d+$/.test(x.n || '');
+    const stack = (function f(o) { const k = (o.c || []).filter(isStep); if (k.length >= 2 && k.some(x => findName(x, /^Selected bar$/))) return o; for (const c of o.c || []) { const r = f(c); if (r) return r; } return null; })(T);
+    if (!stack) errs.push('steps: this layout has no Step groups with a current-step look');
+    else {
+      const kids = stack.c.filter(isStep), kind = x => findName(x, /^Selected bar$/) ? 'current' : (((findName(x, /^Marker \d+$/) || {}).c || []).length ? 'done' : 'todo');
+      const tpl = {}; kids.forEach(x => { const k = kind(x); if (!tpl[k]) tpl[k] = clone(x); });
+      const at = stack.c.indexOf(kids[0]), DEF = { done: 'Success', current: 'Information', todo: 'None' };
+      kids.forEach(x => reflow(x, stack, -1)); stack.c = stack.c.filter(x => !kids.includes(x));
+      ops.steps.forEach((st, i) => {
+        const state = st.state || 'done', where = `steps[${i}]`;
+        if (!tpl[state]) { errs.push(`${where}: state "${state}" is not one of ${Object.keys(tpl).join('/')}`); return; }
+        if (st.name == null || st.role == null || st.status == null) { errs.push(`${where}: needs name, role and status`); return; }
+        if (st.sem != null && !SEM.includes(st.sem)) { errs.push(`${where}: sem "${st.sem}" is not one of ${SEM.join('/')}`); return; }
+        const c = clone(tpl[state]); c.gen = 1;   // script-made: the door's geometry guard does not compare it with the skeleton
+        (function rn(x) { if (/\d+$/.test(x.n || '')) x.n = String(x.n).replace(/\d+$/, String(i + 1)); (x.c || []).forEach(rn); })(c);
+        const av = findName(c, /^Avatar \d+$/), nm = findName(c, /^Approver name/), ro = findName(c, /^Approver role/), sp = findName(c, /^Step status/);
+        const ini = st.initials || String(st.name).split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase();
+        if (av) av.tx = { ...(av.tx || {}), Initials: ini }; if (nm) nm.tx = { ...(nm.tx || {}), Text: String(st.name) }; if (ro) ro.t = String(st.role);
+        if (sp) { sp.tx = { ...(sp.tx || {}), Text: String(st.status) }; sp.pr = { ...(sp.pr || {}), Semantic: st.sem || DEF[state] }; }
+        stack.c.splice(at + i, 0, c); reflow(c, stack, 1); counts.set++;
+      });
+    }
+  }
   if (ops.table) {
     const t = ops.table, area = findName(T, /^Table Area$/) || T, head = findName(area, /^Header Row/), rows = (area.c || []).filter(k => /^Row/i.test(k.n || ''));
     if (!head || !rows.length) errs.push('table: this layout has no Header Row / Row layers');

@@ -134,5 +134,29 @@ test('reflow: a step cloned into a phone stack grows the stack and the frame by 
   T.h += 7; assert.ok(baselineDiff(T, B, []).length > 0, 'a model edit on top of it still is');
   const R = load(); applyOps(R, { remove: ['Step 5'] }); assert.ok(R.h < h0);
   const L = require('../build/content-audit.js').capabilities(load()).join('\n');
-  assert.match(L, /repeat → "Approval steps" has 5 "Step" groups/); assert.ok(!/shell bar title: \{n:"\?"/.test(L) && !/filters → none/.test(L));
+  assert.match(L, /LAYOUT steps → ONE op/); assert.ok(!/shell bar title: \{n:"\?"/.test(L) && !/filters → none/.test(L));
+});
+
+test('steps op: one entry per approver, the script picks marker / selected bar per state, the frame grows, the door accepts it', () => {
+  const { baselineDiff } = require('../build/door.js');
+  const load = () => { const g = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'knowledge', 'gold', 'v6', 'approval-timeline-362.tree.json'), 'utf8')); return g.tree || g; };
+  const T = load(), B = load(), mk = (name, state, status) => ({ name, role: 'Role', status, state });
+  const r = applyOps(T, { steps: [mk('Thomas Weber', 'done', 'Approved: Nov 3'), mk('Maria Hoffmann', 'done', 'Approved: Nov 4'), mk('Klaus Fischer', 'current', 'Viewed: Nov 5'), mk('Sarah Chen', 'todo', 'Not Started'), mk('Anna Müller', 'todo', 'Not Started'), mk('Carl Fontaine', 'todo', 'Not Started')] });
+  assert.deepStrictEqual(r.errs, []);
+  const st = []; (function w(o) { if (/^Step \d+$/.test(o.n)) st.push(o); (o.c || []).forEach(w); })(T);
+  assert.strictEqual(st.length, 6);
+  const cur = st.filter(s => JSON.stringify(s).includes('Selected bar')); assert.strictEqual(cur.length, 1); assert.strictEqual(cur[0].n, 'Step 3');
+  assert.ok(JSON.stringify(st[2]).includes('Viewed: Nov 5') && JSON.stringify(st[0]).includes('"Initials":"TW"'));
+  assert.deepStrictEqual(baselineDiff(T, B, []), []);
+  assert.ok(applyOps(load(), { steps: [{ name: 'x', role: 'y', status: 'z', state: 'late' }] }).errs.length === 1);
+});
+
+test('audit: LENGTH (text far longer than the skeleton holds) and COVERAGE (amount / "by Name" of the request on the screen)', () => {
+  const g = () => { const x = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'knowledge', 'gold', 'v6', 'approval-timeline-362.tree.json'), 'utf8')); return x.tree || x; };
+  const T = g(); applyOps(T, { set: [{ n: 'Current approver link', tx: { Text: 'Klaus Fischer (Finance Reviewer)' } }] });
+  const p = audit(T, g(), 'report of 2,480.00 EUR submitted by Laura Schmidt');
+  assert.ok(p.some(x => /^LENGTH "Klaus Fischer \(Finance/.test(x)), p.join('\n'));
+  assert.ok(p.some(x => /^COVERAGE .*2,480\.00 EUR/.test(x)) && p.some(x => /^COVERAGE .*Laura Schmidt/.test(x)), p.join('\n'));
+  const ok = g(); applyOps(ok, { set: [{ n: 'Steps count', t: 'Expense 2,480.00 EUR · Laura Schmidt' }, { n: 'Current approver link', tx: { Text: 'Klaus Fischer' } }] });
+  assert.ok(!audit(ok, g(), 'report of 2,480.00 EUR submitted by Laura Schmidt').some(x => /^(LENGTH|COVERAGE)/.test(x)));
 });
