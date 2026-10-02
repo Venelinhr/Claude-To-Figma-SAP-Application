@@ -926,7 +926,7 @@ async function handleV4(req, res, url) {
     fs.writeFileSync(path.join(run.jobDir, 'request.json'), JSON.stringify({ text, mode, fileKey, fileName: run.fileName,
       selection, image: img ? { file: path.basename(run.refPath), nodeId: img.nodeId, bytes: img.buf.length } : null,
       at: new Date().toISOString() }, null, 2));
-    const prompt = fillTpl(mode === 'agent' ? 'job.v4.md' : 'job.md', {   // v6 prompt for "Claude builds"; "Figma Agent builds" keeps the v4 plan flow
+    const prompt = fillTpl('job.md', {   // v6 prompt for both modes: a script builds; in agent mode the Figma Agent edits the frame afterwards
       jobId: run.id, builder: mode === 'agent' ? 'figma-agent' : 'claude',
       text: text || '(no text — build the screen shown in the reference image)',
       fileKey, fileName: run.fileName, selection: selection.length ? JSON.stringify(selection) : 'none',

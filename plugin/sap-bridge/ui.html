@@ -238,7 +238,7 @@ textarea::placeholder{color:var(--figma-color-text-tertiary)}
   <!-- mode toggle -->
   <div class="mode-row">
     <button class="mode-btn active" id="modeClaude">Claude builds</button>
-    <button class="mode-btn" id="modeAgent">Figma Agent builds</button>
+    <button class="mode-btn" id="modeAgent">Figma Agent edits after</button>
   </div>
 
   <!-- go button -->
@@ -704,7 +704,7 @@ textarea::placeholder{color:var(--figma-color-text-tertiary)}
     }
   };
 
-  var MODE = { claude: 'Claude built', agent: 'Figma Agent built' };
+  var MODE = { claude: 'Claude built', agent: 'v6 built, Figma Agent edits' };
   function when(t) {
     if (!t) return '';
     var d = new Date(t);

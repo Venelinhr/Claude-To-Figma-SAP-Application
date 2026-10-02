@@ -44,4 +44,5 @@ Job folder (write every file of this job here, nowhere else): {{jobDir}}
 4. **Done.** `run.js` prints the node link and `MATCH · HYGIENE · STRUCTURE · EYE` and `STATUS`. Report only those numbers.
    → `STAGE done <MATCH n% · EYE n% or — · STATUS>` then
    `AGENT_RESULT {"nodeId":"<node id from the link>","mode":"V6","match":<n>,"eye":<n or null>,"WARN":[],"pass":<true|false>,"blocks":["<lines that failed, ≤ 5>"]}`
+   builder = figma-agent → the same pipeline (a script builds, never the Figma Agent); make the `STAGE done` text end with `· edit in the Figma Agent chat`.
    (`pass` is true only when `STATUS PASS`; a DRAFT after the fix rounds is `false` with the failed lines in `blocks`.)
