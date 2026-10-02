@@ -178,8 +178,6 @@ You can iterate on any part — change the floorplan, add a column, switch to mo
 | Figma Agent chat | about 1 min 30 s with your Approve | clean frame, all required labels |
 | Figma Make (for comparison) | more than 2 min | a working SAPUI5 app, not an editable Figma frame |
 
-Full overview and the frame-by-frame comparison: [`docs/v6/SUMMARY-v6.md`](docs/v6/SUMMARY-v6.md).
-
 ## How it works (v6 in short)
 
 1. **Route and match** — the request is matched to the closest stored layout (`knowledge/gold/`).
@@ -204,11 +202,8 @@ You can also add your own rules at any time — just tell Claude "hard rule: alw
 
 | File | What |
 |---|---|
-| [`docs/v6/SUMMARY-v6.md`](docs/v6/SUMMARY-v6.md) | one-page overview, comparisons, results |
-| [`docs/v6/SNAPSHOT-2026-10-02.md`](docs/v6/SNAPSHOT-2026-10-02.md) | state, restart steps, lessons, open items |
 | [`docs/v6/screen.md`](docs/v6/screen.md) | the `/screen` command |
 | [`docs/v6/figma-agent-skill.md`](docs/v6/figma-agent-skill.md) | the Figma Agent skill (source) |
-| [`docs/legacy/README-v7.md`](docs/legacy/README-v7.md) | the complete previous README (pipeline, architecture, project structure, skills, health check) |
 
 **The previous system (v2–v5, the old `main`) is kept whole on branch [`v7`](../../tree/v7).**
 
