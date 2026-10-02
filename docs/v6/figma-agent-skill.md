@@ -48,6 +48,9 @@ return G('v6tools') ? await new AF('G', 'NAME', 'OPS', 'MODE', G('v6tools'))(G, 
    Compact ops (use these first — header and rows agree by construction): `filters:[{from?,label,placeholder|value}]` · `cards:[{title,value,caption}]` ·
    `table:{keep:[skeleton column numbers, 0-based],header:[…],rows:[[cell,…],…]}` (cell = `"text"` or `{t,d,sem}`: `d` second line of a link cell, `sem` Error|Warning|Success|Information|None).
    Timeline layout: `steps:[{name,role,status,state:"done|current|todo",initials?,sem?}]` — one entry per approver; the tool clones the right marker / selected bar per state and grows the frame. Never clone steps by hand.
+   **Coverage (the request is the checklist):** before you write the plan, list every filter, card, column and STATUS the request names. Each one must exist: every named status needs at least one row with that exact label (a request that names "late, partial and awaiting confirmation" shows three rows with those words), every named filter in the named order.
+   Cards: give every card `sem` (late = Error, pending = Warning, good = Success, neutral = None) — the layout's old colours belong to the old screen.
+   Quantities, names and dates go into text columns; a status-kind column draws a coloured icon, so plain values there (a buyer) get `sem: "None"`. A filter named like a date uses the date-picker filter; every other filter a Select or Input.
    Then `set` only for the shell bar title, page title, table title. Fresh names, numbers, dates — never the layout's own.
    `set`: `t` text of a text layer · `pr` kit props · `tx` inner texts of a kit part · `st` text style · `bg` colour variable · `name` new layer name
    (rename every layer that still carries the old screen's words — `Supplier`, `PO …` — so layer names stay true to the content).
