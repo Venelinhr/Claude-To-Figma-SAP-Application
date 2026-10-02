@@ -94,3 +94,8 @@ see-out/
 # SAP Bridge v4: job folders, run log, plugin pairing secret
 bridge-out/
 .claude/.bridge-pair.json
+
+# local only (not published)
+/test/
+/tests/
+/.archive-v2/

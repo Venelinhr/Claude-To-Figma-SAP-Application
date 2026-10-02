@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "SAP Figma Build System v4 — Claude Code plans (validated JSON element plan), the Figma Agent builds, Claude Code checks (MATCH %).",
   "scripts": {
-    "test": "node --test test/route.test.js",
     "plan": "node build/route.js --plan",
     "audit": "node build/audit-plan.js",
     "router": "node build/gen-router.js --check"
