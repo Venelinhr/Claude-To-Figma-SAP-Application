@@ -40,7 +40,7 @@ Reply in short plain sentences (ASD-STE100). Input: $ARGUMENTS
    - `5` `--ask` mode → paste the printed plan VERBATIM in ``` fences (WIREFRAME, L1-L5, SAP COMPONENTS), end with **"Approve / Reject / Modify?"**, STOP.
    - `6` built, NOT PASSED (a DRAFT) → read only the printed FIX / STRUCTURE lines, fix the tree, `--resume`. **≤ 2 fix rounds** — the driver
      refuses the 4th build. After that report the DRAFT with the lines quoted. `/screen fix <job>` lifts the cap only when the user asks.
-4. **REPORT — once, at the end.** The user does not see tool output, so write it in the reply:
+4. **REPORT.** **FIRST, right after the PASS, before any other tool call: ONE short line with the node link and the printed numbers (`MATCH · HYGIENE · STRUCTURE · EYE · STATUS`, `Done in Xs`)** — the user opens the real frame while you write the rest (time to the frame is what counts; the long report below must not delay it). THEN the full report, once, at the end. The user does not see tool output, so write it in the reply:
    - the node link · `MATCH · HYGIENE · STRUCTURE · EYE` and `STATUS PASS|DRAFT` exactly as printed · `Done in Xs` · provenance (gold name / from zero / text lane) · frame size;
    - the **ASSUMED ledger**, each line with its flip command: `/screen flip density <job>`, `/screen flip text <job> "<old>" "<new>"`; ledger lines with `flip: null` → `/screen tweak`;
    - **MANDATORY (user rule 2026-09-30, said with "!!!!!"; supersedes 2026-09-29) — ALL FIVE sections, in full, every time, in this exact style, in the reply (the terminal folds tool output):**
