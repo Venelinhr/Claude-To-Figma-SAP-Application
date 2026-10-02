@@ -22,6 +22,8 @@ const NODE = process.execPath;
 const argv = process.argv.slice(2);
 const flag = f => argv.includes(f);
 const opt = (f, d) => { const i = argv.indexOf(f); return i >= 0 ? argv[i + 1] : d; };
+// A plugin job (the bridge sets SAP_BRIDGE_JOB) must never build the unchanged skeleton: it makes a junk frame and costs a whole build (seen 2026-10-02, 35 s + a stray Customer Support frame).
+if (flag('--as-is') && process.env.SAP_BRIDGE_JOB) { console.log('STOP  --as-is is not allowed in a plugin job. Write ops.json (set / remove / clone, content only) and run: --resume --spec-json <ops.json>'); process.exit(2); }
 const VALUE = ['--file', '--job', '--icons', '--colors', '--spec-json', '--allow', '--timeout', '--gold-min'];
 const input = argv.find((a, i) => !a.startsWith('--') && !VALUE.includes(argv[i - 1]));
 
