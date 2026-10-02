@@ -1,19 +1,18 @@
-# SAP Figma Build System v6 — read this file only
+# SAP Figma Build System — read this file only
 
-**Branch must be `v6`.** If `git branch --show-current` is not `v6`, stop and tell the user `git switch v6` — `v5` is the proven previous
-system (fallback), `v4` before it, `main` is the old v2 system (18 min / 59k tokens per screen). Work and commit on `v6` only. Plan: `docs/V6-PLAN.md`.
+**Check the branch before every write** (`git branch --show-current`; another session may move HEAD). `v7` is the previous system (fallback) — do not build on it.
 
-## v6 — the default: BUILD FIRST, REVIEW AFTER (`/screen`)
+## The default (`/screen`): plan first, then build
 `/screen <image | "text"> <figma link>` → `node build/run.js <ref|"text"> --file <KEY>`: at t=0 in parallel bridge check ‖ `front.js` (OCR, gold
 match, door); then door → layout-sim (position, overflow ×1 ×0.85 ×1.15) → STRUCT-SIM → `send.js` builds a `DRAFT — <job>` frame → `gates.js`.
-No human wait in the middle; the user reviews the real screen + the ASSUMED ledger after (`--ask` restores the old stop). Bar unchanged:
+`/screen` always runs with `--ask`: the plan is shown and approved first, then the frame is built. The SAP Bridge plugin builds at once and the user reviews the real screen + the ASSUMED ledger after. Bar unchanged:
 MATCH ≥ 90 · HYGIENE 0 · STRUCTURE 0 · EYE ≥ 95 · responsive; only numbers a script prints count; ≤ 2 fix rounds (the driver refuses the 4th build).
 **Geometry (w h xy p g) of measured nodes is script-owned** — `door.js --baseline` rejects a model edit of it (the headless EYE-9 % channel).
 Text jobs: `reskin.js` ops (content only). Verbs: `tweak · flip · show · gold · fix` (`route.js`). Gold flywheel: `gold.js` (measured admission).
 Exit codes of `run.js`: 0 PASS · 1 door/sim OUT · 2 the model must decide · 3 bridge down · 4 screen-changing ask · 5 `--ask` stop · 6 DRAFT / cap.
 **Every plan and every report shows ALL FIVE sections, in full, in this exact style (user rule 2026-09-30): 1 Analyze · 2 Zones (table) · 3 Wireframe (boxed, zone letters) · 4 Layers (`├─` tree) · 5 Confidence (● / ○ table), then the SAP components table and "Approve / Reject / Modify?".**
 Wireframe, layers and components are GENERATED — `node build/tree.js plan <tree.json>` (`build/sketch.js`) — pasted verbatim in ``` fences; never hand-drawn, never summarised. A NEW screen type (no gold match: a phone, dark, a wizard…) gets its plan shown and approved BEFORE the build; Horizon Light always.
-Lessons and kit facts from the live tests: memory `project-v6-lessons`; details `docs/V6-PLAN.md`; the `/screen` command text lives in `docs/v6/screen.md` (re-run `cp docs/v6/screen.md .claude/commands/screen.md` after edits).
+The `/screen` command text lives in `docs/v6/screen.md` (re-run `cp docs/v6/screen.md .claude/commands/screen.md` after edits).
 The v5 text below is the fallback description (it still works: `git switch v5`).
 
 ## v5 — the previous default: ask Claude in chat → Claude builds in Figma → Claude checks (`/screen`)

@@ -106,3 +106,11 @@ bridge-out/
 /audit-output.md
 /layer-naming.json
 /spec-schema.json
+/CONTRIBUTING.md
+/docs/v6/memory/
+/docs/v6/START.md
+/docs/v6/INSTALL.md
+/docs/v6/SKILL.v8.md
+/docs/v6/figma-agent-handoff.md
+/docs/V6-PLAN.md
+/.claude/memory/session_state_current.md

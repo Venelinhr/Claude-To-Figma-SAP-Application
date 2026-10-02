@@ -441,7 +441,7 @@ async function inboxPoll() {
 // ─── v5 tree jobs: poll /tree/next, build here, POST /tree/result ────────────
 function treeStatus(text) { send({ type: 'tree-status', text: text }); }
 
-// v6 for the Figma Agent: write the runtime, the tools and the gold trees into THIS file once (build/v6pack.js, served at /v6/pack),
+// For the Figma Agent: write the runtime, the tools and the gold trees into THIS file once (build/v6pack.js, served at /v6/pack),
 // so the Agent types ~400 chars per call. Skipped when the stored version is current. Data only — no code is built here.
 let v6CheckedFor = '';
 async function installV6(fileKey) {

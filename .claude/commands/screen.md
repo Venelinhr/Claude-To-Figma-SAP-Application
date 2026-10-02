@@ -1,9 +1,9 @@
 ---
-description: v6 — image or text (+ Figma file link) → every offline gate → the plan is shown and APPROVED first (Claude Code route) → a DRAFT built in Figma in ~1 min → measured gates. The plugin and the Figma Agent stay build-first. Verbs — tweak · flip · show · gold · fix.
+description: image or text (+ Figma file link) → every offline gate → the plan is shown and APPROVED first (Claude Code route) → a DRAFT built in Figma in ~1 min → measured gates. The plugin and the Figma Agent stay build-first. Verbs — tweak · flip · show · gold · fix.
 argument-hint: <image path | "text request"> <figma file link>   |   tweak | flip | show | gold | fix …
 ---
 
-# /screen — v6: build first, review after (branch `v6` only)
+# /screen — plan first, then build
 
 > **RULE (user, 2026-10-02): `/screen` in Claude Code ASKS BEFORE IT BUILDS.** Every `run.js` call of this command carries `--ask`: the run stops with exit 5 before any Figma call,
 > you paste the generated plan (five sections) and wait for **Approve / Reject / Modify**. On approve run `node build/run.js --job <job> --file <KEY> --resume` (no `--ask`) — that builds.
@@ -15,7 +15,7 @@ styles, colour variables, layer names; MATCH ≥ 90 · HYGIENE 0 · STRUCTURE 0 
 between the request and the built DRAFT. The user judges the real screen at its node link, with the ASSUMED ledger next to it.
 Reply in short plain sentences (ASD-STE100). Input: $ARGUMENTS
 
-0. **Branch** — `git branch --show-current` must be `v6`, else `git switch v6` (another session may move HEAD: check before every write).
+0. **Branch** — check `git branch --show-current` before every write (another session may move HEAD); never build on `v7`.
    Use a **fresh session per screen**. Give every `run.js` call a Bash timeout of 240000 ms.
 1. **Verb?** `/screen tweak "<change>" <node link>` (ACT: one small edit, seconds) · `flip <id> <job>` · `show <job>` · `gold <job>` ·
    `fix <job>` → `node build/route.js <verb> …` and stop. Otherwise `node build/route.js "<text>"`: ACT = one `use_figma` with the router's `act`.
@@ -71,4 +71,3 @@ Reply in short plain sentences (ASD-STE100). Input: $ARGUMENTS
 `build/templates/*` run `node build/plugin-bundle.js`, then the user closes and reopens the plugin (the runtime is compiled in).
 
 **Target timeline** (bridge open): image gold hit ≈ 1 min · image from zero + 1 fix ≈ 2.4 min · text ≈ 1 min. Always report the measured elapsed, never the target.
-Design + evidence: `docs/V6-PLAN.md`. v5 (`docs/V5-PLAN.md`) stays the proven fallback: `git switch v5`.
