@@ -35,10 +35,19 @@ test('text job: the skeleton is found, the model is asked for CONTENT only (exit
 test('text lane: ops put content on the skeleton, geometry untouched, door ALL IN, dry run ready (exit 0)', () => {
   const job = tmp(); run([PO, '--job', job, '--dry']);
   fs.writeFileSync(path.join(job, 'ops.json'), JSON.stringify({ set: [{ n: 'Page title', t: 'Open Purchase Orders' }, { n: 'Table title', t: 'Open Purchase Orders (12)' }] }));
-  const r = run(['--job', job, '--resume', '--spec-json', path.join(job, 'ops.json'), '--dry']);
+  const r = run(['--job', job, '--resume', '--spec-json', path.join(job, 'ops.json'), '--as-is', '--dry']);   // --as-is: the content audit is tested below
   assert.strictEqual(r.code, 0, r.out);
   assert.match(r.out, /RESKIN ✓ 2 set/); assert.match(r.out, /DOOR ✓ ALL IN/); assert.match(r.out, /READY \(dry run\)/);
   assert.ok(JSON.stringify(treeOf(job)).includes('Open Purchase Orders (12)'));
+});
+
+test('content audit in the driver: partial content (old skeleton texts left) stops before any build; --as-is is refused inside a plugin job', () => {
+  const job = tmp(); run([PO, '--job', job, '--dry']);
+  fs.writeFileSync(path.join(job, 'ops.json'), JSON.stringify({ set: [{ n: 'Page title', t: 'Open Purchase Orders' }] }));
+  const r = run(['--job', job, '--resume', '--spec-json', path.join(job, 'ops.json'), '--dry']);
+  assert.strictEqual(r.code, 1, r.out); assert.match(r.out, /CONTENT ✗/); assert.match(r.out, /LEFTOVER/); assert.doesNotMatch(r.out, /READY/);
+  const p = node(['build/run.js', '--job', job, '--resume', '--as-is', '--dry'], { SAP_BRIDGE_JOB: 'x' });
+  assert.match(p.out, /not allowed in a plugin job/);
 });
 
 test('reskin.js: geometry / structure keys are refused, nothing is written', () => {
@@ -71,7 +80,7 @@ test('door --baseline: a text edit passes, a model edit of measured geometry is 
   const bad = node(['build/door.js', f, '--baseline', base]);
   assert.strictEqual(bad.code, 1); assert.match(bad.out, /OUT\s+geometry/); assert.match(bad.out, /script-owned/);
   assert.strictEqual(node(['build/door.js', f, '--baseline', base, '--allow', T2.c[0].n]).code, 0);
-  const r = run(['--job', job, '--resume', '--dry']);            // the driver applies the same guard on every resume
+  const r = run(['--job', job, '--resume', '--as-is', '--dry']);   // the driver applies the same guard on every resume
   assert.strictEqual(r.code, 1); assert.match(r.out, /DOOR ✗/);
 });
 

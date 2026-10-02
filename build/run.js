@@ -164,6 +164,21 @@ function names(T) {                                  // what the model may addre
     if (r.status !== 0) { say(short(String(r.stdout || r.stderr).trim().split('\n').slice(0, 6).join(' | '), 400)); process.exit(1); }
   }
 
+  // ── content audit (text lane): the REQUEST's content must be on the screen, not the skeleton's — leftovers, column counts, one colour per status, one date format;
+  //    then the layer names are rewritten from the new content (build/content-audit.js, 0 tokens). Skipped with --as-is (the user says the skeleton already is the screen).
+  if (!isImg && !flag('--as-is') && fs.existsSync(J('tree.baseline.json'))) {
+    const CA = require('./content-audit.js'), r0 = readJ(treeF), T0 = r0.tree || r0, B0 = readJ(J('tree.baseline.json')), req = String((readJ(stF) || {}).input || '');
+    const probs = CA.audit(T0, B0.tree || B0, req).filter(x => !/^NAMES/.test(x));
+    if (probs.length) {
+      say(`CONTENT ✗ ${probs.length} problem(s) — the screen still carries the old content or is inconsistent (nothing was built)`);
+      probs.slice(0, 14).forEach(x => say('  ' + short(x, 190)));
+      say(`NEXT  write ops2.json for exactly these lines (set … / remove { n, nth } for the SAME column in the header and in every row), then: node build/run.js --job ${job} --file ${fileKey || '<key>'} --resume --spec-json <ops2.json>`);
+      process.exit(1);
+    }
+    const nn = CA.autoname(T0, B0.tree || B0, req);
+    if (nn) { fs.writeFileSync(treeF, JSON.stringify(r0)); say(`NAMES ${nn} layers renamed from their new content`); }
+  }
+
   // ── 1. the front door again on every path (a cached or edited tree is never ungated) + the geometry guard
   const raw = readJ(treeF), T = raw.tree || raw;
   const dr = door(T, treeF, spec);

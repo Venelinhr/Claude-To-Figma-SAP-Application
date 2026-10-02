@@ -5,7 +5,7 @@
 //   MODE 'list'   → the gold screens in this file (name · size · title · what it shows)
 //         'names' → the layers of gold NAME that the ops may change (exact layer names, kit props, inner texts, clone-able repeats)
 //         'plan'  → apply OPS, return the v6 plan drawing (wireframe + layers) — nothing is built
-//         'build' → apply OPS, build the frame with the stored runtime, return { result:{nodeId,WARN,made}, plan, layers }; remembers the tree (key last_<nodeId>)
+//         'build' → apply OPS (refused with {errors} while old content / mismatched columns remain; layer names are rewritten from the new content), build the frame with the stored runtime, return { result:{nodeId,WARN,made}, plan, layers }; remembers the tree (key last_<nodeId>)
 //         'check' → NAME = a node id built by 'build': in-Figma gate — missing layers · wrong kit parts · wrong texts · raw colours · text without a style · size. Numbers only
 // OPS = { title?, set:[…], remove:[…], clone:[…] } — content only, the same language as build/reskin.js. No geometry.
 const AF = Object.getPrototypeOf(async () => {}).constructor;
@@ -58,10 +58,14 @@ if (MODE === 'names') {
   return out.join('\n');
 }
 if (OPS && OPS.title) T.n = String(OPS.title);
-const r = OPSM.applyOps(T, OPS || {});
+const base = JSON.parse(JSON.stringify(g.tree)), r = OPSM.applyOps(T, OPS || {});
 if (r.errs.length) return { errors: r.errs };
+// content audit (build/content-audit.js): the OPS are the request — leftovers of the old screen, column counts, one colour per status, one date format
+const req = JSON.stringify(OPS || {}), bad = AUD.audit(T, base, req).filter(x => x.indexOf('NAMES') !== 0);
+if (MODE === 'build' && bad.length) return { errors: bad };   // a plan preview may show them; a build never ships old content
+AUD.autoname(T, base, req);
 const plan = T.w > 600 ? SK.scene(T).text : SK.sketch(T), layers = SK.layerTree(T);
-if (MODE === 'plan') return { plan, layers };
+if (MODE === 'plan') return { plan, layers, warnings: bad };
 const rt = G('v6rt');
 if (!rt) return 'INSTALL FIRST — open SAP Bridge once in this file';
 const result = await new AF('KIT', 'TREE', rt + '\nreturn await BUILD_TREE(TREE);')(g.kit, T);

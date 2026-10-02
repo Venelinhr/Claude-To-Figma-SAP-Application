@@ -20,7 +20,7 @@ function wrapModule(src) { return `(() => { const module = { exports: {} };\n${s
 let cache = null;
 function stamp() {
   return [...GOLD_DIRS.flatMap(d => fs.existsSync(d) ? fs.readdirSync(d).map(f => path.join(d, f)) : []),
-    path.join(__dirname, 'ops.js'), path.join(__dirname, 'sketch.js'), path.join(__dirname, 'templates', 'v6-tools.js'),
+    path.join(__dirname, 'ops.js'), path.join(__dirname, 'content-audit.js'), path.join(__dirname, 'sketch.js'), path.join(__dirname, 'templates', 'v6-tools.js'),
     path.join(__dirname, 'templates', 'sap-kit.prelude.js'), path.join(__dirname, 'templates', 'render-tree.js'), path.join(ROOT, 'knowledge', 'live', 'kit.json')]
     .map(f => { try { return f + ':' + fs.statSync(f).mtimeMs; } catch (_) { return f; } }).join('|');
 }
@@ -32,7 +32,7 @@ function buildPack() {
   const rt = [T('sap-kit.prelude.js'), T('render-tree.js')].join('\n');
   const fullKit = execFileSync(process.execPath, [path.join(__dirname, 'kit.js'), 'pack', '--all'], { stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: 1 << 26 }).toString().trim();
   const build = fullKit + '\n' + T('sap-kit.prelude.js') + '\nreturn { I, T, fill, stroke, space, AL, put, sub, setP, WARN, KIT };';
-  const tools = `const OPSM = ${wrapModule(read(path.join(__dirname, 'ops.js')))};\nconst SK = ${wrapModule(read(path.join(__dirname, 'sketch.js')))};\n${T('v6-tools.js')}`;
+  const tools = `const OPSM = ${wrapModule(read(path.join(__dirname, 'ops.js')))};\nconst AUD = ${wrapModule(read(path.join(__dirname, 'content-audit.js')))};\nconst SK = ${wrapModule(read(path.join(__dirname, 'sketch.js')))};\n${T('v6-tools.js')}`;
   const golds = {}, skipped = [];
   for (const dir of GOLD_DIRS) {
     if (!fs.existsSync(dir)) continue;

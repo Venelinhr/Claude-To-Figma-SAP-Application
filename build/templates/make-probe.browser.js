@@ -12,6 +12,17 @@
   const R0 = dom(rootEl).getBoundingClientRect();
   const r1 = v => Math.round(v * 10) / 10;
   const rgb = s => { const m = /rgba?\(([^)]+)\)/.exec(s || ''); if (!m) return ''; const p = m[1].split(',').map(x => parseFloat(x)); if (p.length > 3 && p[3] === 0) return ''; return '#' + p.slice(0, 3).map(v => Math.round(v).toString(16).padStart(2, '0')).join(''); };
+  // a control the user cannot see: CSS-hidden (display / visibility / opacity, own or inherited) or pushed out of an overflow-clipping ancestor sideways
+  // (OverflowToolbar clones, off-screen measuring copies) — the converter drops it, so it can never stretch a frame
+  const hiddenIn = d => {
+    try { if (d.checkVisibility && !d.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true })) return true; } catch (e) {}
+    const b = d.getBoundingClientRect();
+    for (let a = d.parentElement; a && a !== document.documentElement; a = a.parentElement) {
+      if (getComputedStyle(a).overflowX === 'visible') continue;
+      const r = a.getBoundingClientRect(); if (b.left >= r.right - 0.5 || b.right <= r.left + 0.5) return true;
+    }
+    return false;
+  };
   const items = [];
   const idx = new Map();
   for (const c of controls) {
@@ -41,6 +52,7 @@
     // text metrics come from the innermost text element (the control's wrapper reports the container's font)
     const te = d.querySelector('bdi,h1,h2,h3,h4,h5,h6,span,label') || d, tcs = getComputedStyle(te);
     it.tx = { fs: parseFloat(tcs.fontSize), fw: parseInt(tcs.fontWeight, 10), fg: rgb(tcs.color), ff: tcs.fontFamily.split(',')[0].replace(/["']/g, ''), lh: parseFloat(tcs.lineHeight) || 0 };
+    if (hiddenIn(d)) it.hid = 1;
     it.aria = { sel: d.getAttribute('aria-selected'), chk: d.getAttribute('aria-checked'), cls: (d.className && d.className.baseVal === undefined ? String(d.className) : '').slice(0, 160) };
     if (c.getSelectedItem) { try { const si = c.getSelectedItem(); if (si && si.getText) it.selText = si.getText(); } catch (e) {} }
     if (c.getSelectedItem && !it.selText) { try { const si = sap.ui.getCore().byId(c.getAssociation('selectedItem')); if (si && si.getText) it.selText = si.getText(); } catch (e) {} }

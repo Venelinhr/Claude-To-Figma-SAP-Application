@@ -48,7 +48,9 @@ return G('v6tools') ? await new AF('G', 'NAME', 'OPS', 'MODE', G('v6tools'))(G, 
    `set`: `t` text of a text layer · `pr` kit props · `tx` inner texts of a kit part · `st` text style · `bg` colour variable · `name` new layer name
    (rename every layer that still carries the old screen's words — `Supplier`, `PO …` — so layer names stay true to the content).
    `remove`: names. `clone`: copies after the original, `with[i]` = the changes for copy i (use the ORIGINAL layer names).
-   Geometry keys (w h xy p g d a s r abs) are refused. An answer `{errors:[…]}` → fix those ops in ONE pass and call again.
+   Geometry keys (w h xy p g d a s r abs) are refused. An answer `{errors:[…]}` → fix those ops in ONE pass and call again. The build also refuses (`LEFTOVER`, `COLUMNS`, `STATUS`, `DATES`):
+   a text of the old layout still on screen · header and rows with a different number of cells (a removed column goes from the header AND every row) · one status label with two colours · mixed date formats.
+   Layer names are rewritten from the new content by the build itself — you do not rename.
    Success → `{ result:{nodeId, WARN, made}, plan, layers }`.
 4. **Check (one call):** `MODE = 'check'`, `NAME = '<nodeId>'` → `{layers, kit, texts, problems, pass, lines}`. `problems > 0` → fix the named lines with an EDIT call (hygiene first), check again. Max 2 rounds.
 5. **Reply** — in this order, nothing else:

@@ -36,7 +36,7 @@ Job folder (write every file of this job here, nowhere else): {{jobDir}}
      `node build/run.js {{ref}} --file {{fileKey}}`.
    - Text only: `node build/run.js "<the request, one line, in its language>" --file {{fileKey}}`.
    - Give the Bash call a timeout of 240000 ms. Read only the lines it prints. Follow `docs/v6/screen.md` step 3 for the exit code
-     (1 fix the tree → `--resume` · 2 icons / ops.json for a text job · 3 plugin closed → `AGENT_ASK` · 6 DRAFT → fix once or twice).
+     (1 fix the tree → `--resume` · `CONTENT ✗` = the audit found old content or a column mismatch: write ops2.json for exactly those lines and `--resume --spec-json` again · 2 icons / ops.json for a text job · 3 plugin closed → `AGENT_ASK` · 6 DRAFT → fix once or twice).
      A text job needs real business content in every field (`ops.json`, content only, never kit placeholders).
      **NEVER `--as-is` for a text job** (it builds the unchanged skeleton as a junk frame and costs a whole build). The first `--resume` carries `--spec-json ops.json`.
      **A removed column** = remove its header AND its cell in EVERY row (`remove` with `nth` 1..6), else the rows have one cell more than the header. Rename layers too (`set … name`).

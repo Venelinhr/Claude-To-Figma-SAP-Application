@@ -28,12 +28,14 @@ test('in-file tools: list, names, plan — the plan equals the Node sketch of th
   assert.match(names, /repeats x6/);
   const ops = { set: [{ n: 'Page title', t: 'Orders' }], clone: [{ n: 'Row CS-10482', times: 1 }] };
   const r = await tools('support-overview-1440', ops, 'plan');
-  const T = JSON.parse(pack.golds['support-overview-1440']).tree;
+  const T = JSON.parse(pack.golds['support-overview-1440']).tree, base0 = JSON.parse(pack.golds['support-overview-1440']).tree;
   assert.deepStrictEqual(applyOps(T, ops).errs, []);
+  require('../build/content-audit.js').autoname(T, base0, JSON.stringify(ops));   // the in-file tool renames stale layers before it draws the plan
   assert.strictEqual(r.plan, scene(T).text);
   assert.strictEqual(r.layers, layerTree(T));
   const phone = await tools('approval-timeline-362', {}, 'plan');
-  assert.strictEqual(phone.plan, sketch(JSON.parse(pack.golds['approval-timeline-362']).tree));
+  const P = JSON.parse(pack.golds['approval-timeline-362']).tree; require('../build/content-audit.js').autoname(P, JSON.parse(pack.golds['approval-timeline-362']).tree, '{}');
+  assert.strictEqual(phone.plan, sketch(P));
 });
 
 test('in-file tools: geometry and unknown layers are refused, a missing gold is named', async () => {
@@ -60,4 +62,40 @@ test('driver: a request that names summary cards picks a layout with a card band
   const run = text => { const d = fs.mkdtempSync(path.join(os.tmpdir(), 'front-')); try { return execFileSync(process.execPath, [path.join(__dirname, '..', 'build', 'front.js'), text, '--job', d], { stdio: 'pipe' }).toString(); } catch (e) { return String(e.stdout || ''); } };
   assert.match(run('Procurement Overview with four summary cards and a table of purchase orders, filters supplier plant buyer status'), /gold support-overview-1440/);
   assert.match(run('Open supplier invoices list with filters and status'), /gold invoice-list-1440/);
+});
+
+// ── content audit (2026-10-02): the plugin once shipped 7 headers over 8-cell rows with old support statuses under "Status"
+const { audit, autoname } = require('../build/content-audit.js');
+const cellT = (n, t) => ({ n, k: 'i', cp: 'Table Cell', pr: { '✏️ Text': t }, s: 'FF', w: 100, h: 40 });
+const tbl = (head, rows) => ({ n: 'Screen', w: 1440, h: 800, d: 'V', c: [{ n: 'Table Area', d: 'V', c: [
+  { n: 'Header Row', d: 'H', c: head.map((h, i) => ({ n: 'Header ' + h, k: 'i', cp: 'Table Cell', tx: { Text: h } })) },
+  ...rows.map((r, j) => ({ n: 'Row ' + r[0], d: 'H', c: r.map((v, i) => cellT(i ? 'Cell' + i : 'Case ' + r[0], v)) }))] }] });
+const OLD = tbl(['Case Number', 'Customer', 'Status'], [['CS-10482', 'Brightline Logistics', 'Escalated'], ['CS-10479', 'Nordwind Energy', 'Resolved']]);
+const REQ = 'purchase orders with PO number, supplier and status';
+
+test('content audit: leftovers and a column count mismatch are caught (the real faulty job)', () => {
+  const bad = tbl(['PO Number', 'Supplier'], [['PO-1', 'Acme', 'Escalated'], ['PO-2', 'Orbis', 'Resolved']]);   // header lost a column, rows kept it
+  const p = audit(bad, OLD, REQ);
+  assert.ok(p.some(x => /^COLUMNS/.test(x)), p.join('\n'));
+  assert.ok(p.some(x => /^LEFTOVER "escalated"/.test(x)), p.join('\n'));
+});
+
+test('content audit: clean content passes, and layer names are rewritten from the new content', () => {
+  const ok = tbl(['PO Number', 'Supplier', 'Status'], [['PO-1', 'Acme Parts', 'Late Delivery'], ['PO-2', 'Orbis Safety', 'Delivered']]);
+  assert.deepStrictEqual(audit(ok, OLD, REQ).filter(x => !/^NAMES/.test(x)), []);
+  const n = autoname(ok, OLD, REQ), names = []; (function w(o) { names.push(o.n); (o.c || []).forEach(w); })(ok);
+  assert.ok(n >= 0);
+  assert.ok(!names.some(x => /Case Number|Customer|Escalated/i.test(x)), names.join(' | '));
+});
+
+test('content audit: one status label = one colour; one column = one date format', () => {
+  const st = { n: 'S', c: [{ n: 'a', k: 'i', cp: 'Object Status', tx: { Text: 'Open' }, pr: { Semantic: 'Information' } }, { n: 'b', k: 'i', cp: 'Object Status', tx: { Text: 'Open' }, pr: { Semantic: 'None' } }] };
+  assert.ok(audit(st, { n: 'S' }, 'x').some(x => /^STATUS "Open"/.test(x)));
+  const dt = tbl(['Due'], [['05 Oct 2026'], ['2024-09-15']]);
+  assert.ok(audit(dt, { n: 'S' }, 'x').some(x => /^DATES/.test(x)));
+});
+
+test('in-file build refuses old content (the same audit runs inside Figma)', async () => {
+  const r = await tools('support-overview-1440', { set: [{ n: 'Page title', t: 'Orders' }] }, 'build');
+  assert.ok(r.errors && r.errors.some(x => /^LEFTOVER/.test(x)), JSON.stringify(r).slice(0, 200));
 });

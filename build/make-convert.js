@@ -13,7 +13,9 @@ function convert(D, KIT, MAP, EXTRA, nameArg) {
   D.controls.forEach(c => { if (c.cls === 'sap.m.FlexItemData' && by[c.parent]) lay[c.parent] = c.st; });
   const skip = new Set(MAP.skip_cls);
   const vparent = c => { let p = c.parent; while (p && by[p] && skip.has(by[p].cls)) p = by[p].parent; return p; };
-  D.controls.forEach(c => { if (!skip.has(c.cls)) (kids[vparent(c)] = kids[vparent(c)] || []).push(c); });
+  // a control the user cannot see in Make: hidden by CSS (probe: hid), far outside the page (OverflowToolbar clones, off-screen measuring copies), or an invisible-text helper
+  const off = c => c.hid === 1 || c.box[0] > D.viewport[0] - 1 || c.box[0] + c.box[2] < 1 || /HiddenElement|InvisibleText/.test((c.css || []).join(' '));
+  D.controls.forEach(c => { if (!skip.has(c.cls) && !off(c)) (kids[vparent(c)] = kids[vparent(c)] || []).push(c); });
   const ch = c => (kids[c.id] || []).filter(k => !(c.cls === 'sap.f.DynamicPageHeader' && MAP.skip_in_dynamic_header.includes(k.cls)));
   const grow = c => parseFloat((lay[c.id] || {}).grow) || 0;
   const px = v => { const m = /^(\d+(\.\d+)?)(px|rem)$/.exec(v || ''); return m ? parseFloat(m[1]) * (m[3] === 'rem' ? 16 : 1) : null; };
@@ -59,18 +61,20 @@ function convert(D, KIT, MAP, EXTRA, nameArg) {
   }
 
   // ── node makers ──────────────────────────────────────────────────────────────────────────
-  const CONTAINERS = new Set(['sap.f.DynamicPage', 'sap.f.DynamicPageTitle', 'sap.f.DynamicPageHeader', 'sap.tnt.ToolPage', 'sap.tnt.NavigationList', 'sap.m.IconTabHeader', 'sap.m.ScrollContainer', 'sap.m.Page', 'sap.m.Panel', 'sap.m.List', 'sap.m.OverflowToolbar', 'sap.m.Toolbar', 'sap.ui.layout.VerticalLayout', 'sap.ui.layout.HorizontalLayout']);
+  const CONTAINERS = new Set(['sap.f.DynamicPage', 'sap.f.DynamicPageTitle', 'sap.f.DynamicPageHeader', 'sap.tnt.ToolPage', 'sap.tnt.NavigationList', 'sap.m.IconTabHeader', 'sap.m.ScrollContainer', 'sap.m.Page', 'sap.m.Panel', 'sap.m.List', 'sap.m.OverflowToolbar', 'sap.m.Toolbar', 'sap.ui.layout.VerticalLayout', 'sap.ui.layout.HorizontalLayout', 'sap.ui.layout.Grid', 'sap.m.ObjectIdentifier']);   // layout containers: their children are placed by the measured boxes (frame())
+  const WIDGET = /(ComboBox|MultiInput|Input|TextArea|Picker|Selection|StepInput|Slider|RangeSlider|RatingIndicator|ProgressIndicator|Tokenizer|Token)$/;   // input-like widgets whose children are internals, not content
   const box = c => c.box.slice();
-  const inst = (c, cp, pr, label, tx) => ({ _b: cp === 'Switch' && KIT.components[cp] ? [c.box[0], c.box[1] + (c.box[3] - KIT.components[cp].h) / 2, KIT.components[cp].w, KIT.components[cp].h] : box(c), _k: 'inst', _grow: grow(c), _w: px(c.props.width), n: label || cp, k: 'i', cp, pr, w: (cp === 'Switch' || cp === 'Icon Button') && KIT.components[cp] ? KIT.components[cp].w : R(c.box[2]), h: (KIT.components[cp] && KIT.components[cp].h && cp !== 'Shell Bar' && cp !== 'Tab' && cp !== 'Navigation Item') ? KIT.components[cp].h : R(c.box[3]), _intr: (KIT.components[cp] || {}).h, ...(tx ? { tx } : {}) });
+  const inst = (c, cp, pr, label, tx) => ({ _src: c.id, _b: cp === 'Switch' && KIT.components[cp] ? [c.box[0], c.box[1] + (c.box[3] - KIT.components[cp].h) / 2, KIT.components[cp].w, KIT.components[cp].h] : box(c), _k: 'inst', _grow: grow(c), _w: px(c.props.width), n: label || cp, k: 'i', cp, pr, w: (cp === 'Switch' || cp === 'Icon Button') && KIT.components[cp] ? KIT.components[cp].w : R(c.box[2]), h: (KIT.components[cp] && KIT.components[cp].h && cp !== 'Shell Bar' && cp !== 'Tab' && cp !== 'Navigation Item') ? KIT.components[cp].h : R(c.box[3]), _intr: (KIT.components[cp] || {}).h, ...(tx ? { tx } : {}) });
   function text(c, t) {
     const tx = c.tx || {}, fs = tx.fs || 14, wrap = c.box[3] > fs * 1.9;
-    return { _b: box(c), _k: 'text', _grow: grow(c), _wrap: wrap, _lineFix: !wrap, n: String(t).slice(0, 28), k: 't', t: String(t), w: R(c.box[2]), h: R(c.box[3]), st: style(c), bg: tok(hexOf(tx.fg), 'ink'), ...(wrap ? { wrap: 1 } : {}), ...(c.props.textAlign === 'Center' ? { ta: 'C' } : {}) };
+    return { _src: c.id, _b: box(c), _k: 'text', _grow: grow(c), _wrap: wrap, _lineFix: !wrap, n: String(t).slice(0, 28), k: 't', t: String(t), w: R(c.box[2]), h: R(c.box[3]), st: style(c), bg: tok(hexOf(tx.fg), 'ink'), ...(wrap ? { wrap: 1 } : {}), ...(c.props.textAlign === 'Center' ? { ta: 'C' } : {}) };
   }
-  function iconNode(name, c, w) { return name ? { _b: box(c), _k: 'icon', _grow: 0, n: 'Icon ' + name, k: 'ic', ic: name, bg: tok(hexOf((c.tx || {}).fg || c.st.fg), 'ink'), w } : null; }
+  function iconNode(name, c, w) { return name ? { _src: c.id, _b: box(c), _k: 'icon', _grow: 0, n: 'Icon ' + name, k: 'ic', ic: name, bg: tok(hexOf((c.tx || {}).fg || c.st.fg), 'ink'), w } : null; }
   const nameOf = c => c.css.includes('flyDateTile') ? 'Fare Tile' : c.css.includes('flyFlightRow') ? 'Flight Row' : c.css.includes('flyCardContent') ? 'Card Content'
     : { 'sap.m.VBox': 'Column', 'sap.m.HBox': 'Row', 'sap.m.FlexBox': 'Row', 'sap.f.DynamicPage': 'Dynamic Page', 'sap.f.DynamicPageTitle': 'Page Title', 'sap.f.DynamicPageHeader': 'Page Header', 'sap.f.Card': 'Card' }[c.cls] || c.cls.split('.').pop();
 
-  function conv(c) {
+  function conv(c) { const n = conv0(c); if (n && typeof n === 'object' && !n._src) n._src = c.id; return n; }   // _src = the Make control a node came from (make-verify.js traces it)
+  function conv0(c) {
     const p = c.props;
     switch (c.cls) {
       case 'sap.tnt.ToolHeader': return shell(c);
@@ -82,6 +86,9 @@ function convert(D, KIT, MAP, EXTRA, nameArg) {
           : inst(c, 'Icon Button', { Type: type === 'Primary' ? 'Primary' : type === 'Tertiary' ? 'Tertiary' : 'Secondary', 'Form Factor': 'Compact', ...(ic ? { Icon: ic } : {}) }, 'Icon Button ' + (ic || ''));
       }
       case 'sap.m.Input': return inst(c, 'Input', { 'Form Factor': 'Compact', Content: 'Typed Text', '✏️ Typed Text': p.value || '' }, 'Input ' + (p.value || '').slice(0, 24));
+      case 'sap.m.MultiComboBox': return inst(c, 'Multi Combobox', { 'Form Factor': 'Compact', 'Drop-Down': 'False' }, 'Multi Combobox ' + (p.placeholder || ''), { 'Input Text': p.placeholder || '' });
+      case 'sap.m.DateRangeSelection': case 'sap.m.DatePicker': return inst(c, 'Date (Range) Picker', { 'Form Factor': 'Compact', Calendar: false }, 'Date Picker ' + (p.placeholder || ''), { 'Input Text': p.placeholder || p.value || '' });
+      case 'sap.m.SearchField': return inst(c, 'Input', { 'Form Factor': 'Compact', Content: 'Typed Text', '✏️ Typed Text': p.value || p.placeholder || '' }, 'Search ' + (p.placeholder || ''));
       case 'sap.m.CheckBox': return inst(c, 'Check Box', { 'Form Factor': 'Compact', Label: true, '✏️ Text': p.text || '', Check: p.selected ? 'Checked' : 'Unchecked' }, 'Check Box ' + (p.text || ''));
       case 'sap.m.Switch': return inst(c, 'Switch', { 'Form Factor': 'Compact', Checked: p.state ? 'True' : 'False' }, 'Switch');
       case 'sap.m.Select': return inst(c, 'Select', { 'Form Factor': 'Compact' }, 'Select ' + (c.selText || ''), { 'Input Text': c.selText || '' });
@@ -108,14 +115,18 @@ function convert(D, KIT, MAP, EXTRA, nameArg) {
       case 'sap.m.Panel': {                                    // UI5 paints a Panel's white on its inner content area, not on the panel element the probe reads
         const n = frame(c, 'Panel'); if (!n.bg) n.bg = tok('#ffffff', 'fill'); return n;
       }
+      case 'sap.m.ToolbarSpacer': return { _b: box(c), _k: 'spacer', _grow: 1 };                // a toolbar's flexible gap
+      case 'sap.m.Table': return table(c);
       case 'sap.f.DynamicPageTitle': {
         const all = ch(c), tb = all.find(k => k.cls === 'sap.m.OverflowToolbar');
-        if (!tb) return frame(c, nameOf(c));
+        if (!tb) return frame(c, nameOf(c), { geo: true });                          // the actions toolbar is not on screen: heading and buttons are placed by their boxes (the CSS says 'column')
         const inTb = k => k !== tb && k.box[0] >= tb.box[0] - 1 && k.box[0] + k.box[2] <= tb.box[0] + tb.box[2] + 1 && k.box[1] >= tb.box[1] - 1 && k.box[1] + k.box[3] <= tb.box[1] + tb.box[3] + 1;
-        const inside = all.filter(inTb), rest = all.filter(k => k !== tb && !inTb(k));
+        const real = k => k.cls !== 'sap.m.ToolbarSpacer', inside = all.filter(inTb).filter(real), rest = all.filter(k => k !== tb && !inTb(k)).filter(real);
         const tbNode = layout({ _b: box(tb), _k: 'frame', _grow: 1, n: 'Actions', d: 'H' }, inside.map(conv).filter(Boolean), { V: false, st: { ai: 'center', jc: 'flex-end' }, flex: true });
         const node = { _b: box(c), _k: 'frame', _grow: grow(c), n: 'Page Title', d: 'H' }; if (c.st.bg) node.bg = tok(hexOf(c.st.bg), 'fill');
-        return layout(node, [...rest.map(conv).filter(Boolean), tbNode], { V: false, st: { ai: 'center', jc: 'flex-start', pad: c.st.pad }, flex: true });
+        const left = rest.map(conv).filter(Boolean), lead = left.length > 1 ? layout({ _b: union(left), _k: 'frame', n: 'Title Content', d: 'H' }, left, { V: false, st: { ai: 'center' }, flex: true }) : left[0];
+        // heading on the left, actions on the right: the title row spreads them (space-between), the actions part takes the free width — no fixed gap that would break when the page resizes
+        return layout(node, [lead, tbNode].filter(Boolean), { V: false, st: { ai: 'center', jc: 'space-between', pad: c.st.pad }, flex: true });
       }
       case 'sap.m.GenericTile': return tile(c);
       case 'sap.m.NumericContent': return numeric(c);
@@ -135,6 +146,14 @@ function convert(D, KIT, MAP, EXTRA, nameArg) {
         return layout(n, kids, { V: false, st: { ai: 'center', jc: 'flex-start' }, flex: true });
       }
       default:
+        if (!CONTAINERS.has(c.cls) && WIDGET.test(c.cls)) {      // an unmapped input-like widget: its inner parts (arrow icon, tokenizer, clear button) are not layout — keep only its box, never its innards
+          WARN.push(`control ${c.cls} is not mapped to a SAP kit component — empty frame of its size (its inner parts are not converted)`);
+          const n = { _src: c.id, _b: box(c), _k: 'frame', _sized: true, _grow: grow(c), n: nameOf(c), d: 'H', w: R(c.box[2]), h: R(c.box[3]), s: c.props.width === '100%' ? 'FX' : 'XX', c: [] };
+          if (c.st.bg) n.bg = tok(hexOf(c.st.bg), 'fill');
+          if (c.st.bw > 0) { n.bc = tok(hexOf(c.st.bc), 'border') || 'sapField_BorderColor'; n.bw = c.st.bw; }
+          if (c.st.br) n.r = Math.round(c.st.br);
+          return n;
+        }
         if (!CONTAINERS.has(c.cls)) WARN.push(`control ${c.cls} is not mapped to a SAP kit component — plain frame`);
         return frame(c, nameOf(c));
     }
@@ -234,19 +253,78 @@ function convert(D, KIT, MAP, EXTRA, nameArg) {
     if (!content.length) return hdrNode;                          // a tab bar that also holds the tab content (cards, lists…): headers on top, content below
     return layout({ _b: box(c), _k: 'frame', _grow: grow(c), n: 'Icon Tab Bar', d: 'V' }, [hdrNode, ...content.map(conv).filter(Boolean)], { V: true, st: {}, flex: false });
   }
+  // ── sap.m.Table: a real <table> (display table / table-row / table-cell), so the controls' boxes say nothing about rows and columns by themselves.
+  // The Column controls (the header cells) give the x-range of every column; each ColumnListItem is one row; a cell control belongs to the column its centre sits in.
+  // Every row becomes an auto-layout row whose cells have the column widths (the column without a width flexes), so header and rows line up and the table resizes.
+  function table(c) {
+    const all = ch(c), cols = all.filter(k => k.cls === 'sap.m.Column').sort((a, b) => a.box[0] - b.box[0]);
+    const items = all.filter(k => k.cls === 'sap.m.ColumnListItem').sort((a, b) => a.box[1] - b.box[1]);
+    if (!cols.length) return frame(c, 'Table');
+    const rest = all.filter(k => !cols.includes(k) && !items.includes(k)), TX = c.box[0], TW = c.box[2], right = TX + TW, lastC = cols[cols.length - 1];
+    const segs = cols.map(k => ({ k, x: k.box[0], w: k.box[2], hA: k.props.hAlign }));
+    if (segs[0].x - TX > 1.5) segs.unshift({ x: TX, w: segs[0].x - TX });                                   // leading cell (selection box)
+    if (right - (lastC.box[0] + lastC.box[2]) > 1.5) segs.push({ x: lastC.box[0] + lastC.box[2], w: right - (lastC.box[0] + lastC.box[2]) });   // trailing cell (navigation arrow)
+    let flex = segs.filter(s => s.k && !px(s.k.props.width));
+    if (!flex.length) flex = [segs.filter(s => s.k).sort((a, b) => b.w - a.w)[0]];
+    flex.forEach(s => { s.flex = true; });
+    const segOf = k => { const m = k.box[0] + k.box[2] / 2; let j = segs.findIndex(s => m >= s.x - 0.5 && m <= s.x + s.w + 0.5); if (j < 0) j = m < segs[0].x ? 0 : segs.length - 1; return j; };
+    const cell = (s, list, y, h) => {                                                                        // one cell: the control(s) of that column in that row, placed by their real offsets
+      const nodes = list.map(conv).filter(Boolean), n = { _b: [s.x, y, s.w, h], _k: 'frame', _sized: true, n: 'Cell', d: 'H', a: 'MC', w: R(s.w), h: R(h), s: (s.flex ? 'F' : 'X') + 'F', c: [] };
+      if (!nodes.length) return n;
+      const b = union(nodes), l = Math.max(0, R5(b[0] - s.x)), r = Math.max(0, R5(s.x + s.w - (b[0] + b[2]))), top = b[1] - y, bot = y + h - (b[1] + b[3]);
+      const endAl = s.hA === 'End' || s.hA === 'Right' || (!s.k && r + 1.5 < l);                           // the column's hAlign decides; a leading / trailing cell has none, there the offsets decide
+      const pt = Math.abs(top - bot) <= 2 ? 0 : Math.max(0, R5(top)), pb = Math.abs(top - bot) <= 2 ? 0 : Math.max(0, R5(bot));
+      const k = nodes.length === 1 ? nodes[0] : layout({ _b: b, _k: 'frame', n: 'Column', d: 'V' }, nodes, { V: true, st: {}, flex: false });
+      k.s = letters(k, false, [s.w - (endAl ? r : l), h - pt - pb], 'C');
+      if (s.flex && k._k === 'frame' && !/^F/.test(k.s) && k._b[2] >= s.w - l - r - 1.5 && !k._w) k.s = 'F' + k.s[1];   // a control that spans a flexible column flexes with it
+      const pr = endAl ? r : (/^F/.test(k.s) ? r : 0);                                                      // free space right of a hugging control is not padding; a control that fills the cell keeps the cell's own right padding
+      Object.assign(n, { a: (endAl ? 'X' : 'M') + (pt || pb ? 'M' : 'C'), c: [k], ...(pt || pb || l || pr ? { p: [pt, pr, pb, endAl ? 0 : l] } : {}) });
+      return n;
+    };
+    const rowOf = (src, name, y, h, cells) => {
+      const n = { _src: src.id, _b: [TX, y, TW, h], _k: 'frame', _sized: true, _fixH: true, n: name, d: 'H', a: 'MC', w: R(TW), h: R(h), s: 'FX', c: cells, bc: 'sapList_BorderColor', bw: [0, 0, 1, 0] };
+      if (src.st.bg) n.bg = tok(hexOf(src.st.bg), 'fill');
+      return n;
+    };
+    const parts = rest.map(k => ({ y: k.box[1], n: conv(k) }));
+    const hy = Math.min(...cols.map(k => k.box[1])), hh = Math.max(...cols.map(k => k.box[3]));
+    parts.push({ y: hy, n: rowOf(cols[0], 'Header Row', hy, hh, segs.map(s => cell(s, s.k ? ch(s.k) : [], hy, hh))) });
+    items.forEach(it => { const per = segs.map(() => []); ch(it).forEach(k => per[segOf(k)].push(k)); parts.push({ y: it.box[1], n: rowOf(it, 'Row', it.box[1], it.box[3], segs.map((s, i) => cell(s, per[i], it.box[1], it.box[3]))) }); });
+    const n = { _b: box(c), _k: 'frame', _grow: grow(c), n: 'Table', d: 'V' }; if (c.st.bg) n.bg = tok(hexOf(c.st.bg), 'fill');
+    return layout(n, parts.filter(p => p.n).sort((a, b) => a.y - b.y).map(p => p.n), { V: true, st: {}, flex: false });
+  }
   function cardHeader(c) {
     const av = ch(c).find(k => k.cls === 'sap.m.Avatar'), tx = ch(c).find(k => k.cls === 'sap.m.Text'), out = [];
     if (av) out.push(conv(av)); if (tx) out.push(text(tx, tx.props.text || ''));
     return layout({ _b: box(c), _k: 'frame', n: 'Card Header', d: 'H' }, out.filter(Boolean), { V: false, st: { ai: 'center' }, flex: true });
   }
   function frame(c, name, o = {}) {
-    const st = c.st, flex = /flex/.test(st.display), V = flex ? /column/.test(st.dir) : true;
+    const st = c.st, flex = !o.geo && /flex/.test(st.display), V = flex ? /column/.test(st.dir) : true;      // o.geo: ignore the CSS, read the layout from the boxes
     const n = { _b: box(c), _k: 'frame', _grow: grow(c), _w: /px$/.test(c.props.width || '') ? px(c.props.width) : null, _wfill: c.props.width === '100%', n: name, d: V ? 'V' : 'H' };
     if (st.bg) n.bg = tok(hexOf(st.bg), 'fill');
     if (o.border || st.bw > 0) { n.bc = tok(hexOf(st.bc), 'border') || 'sapTile_BorderColor'; n.bw = st.bw > 0 ? st.bw : 1; }
     if (st.br) n.r = Math.round(st.br);
     if (c.cls === 'sap.f.Card' && st.sh) { n.fxk = KIT.effects['Shadow/sapContent_Shadow1']; delete n.bc; delete n.bw; }   // Make draws a card with a shadow, not a border
     const kids = ch(c).map(conv).filter(Boolean);
+    const lineGroups = list => { const lines = []; let bottom = -1e9; for (const k of list) { if (!lines.length || k._b[1] >= bottom - 1) { lines.push([k]); bottom = k._b[1] + k._b[3]; } else { lines[lines.length - 1].push(k); bottom = Math.max(bottom, k._b[1] + k._b[3]); } } return lines; };
+    // NOT flexbox (Grid, floats, inline flow, table parts, plain divs): the CSS says nothing about the direction, so read it from where the children really are.
+    // One line of children → a row (a row that spans the container shares its width, like grid columns); several lines → a column of line rows.
+    const rowOfLine = (ln, name, whole) => {
+      const u = whole || union(ln), spans = u[2] > 0.6 * c.box[2] && ln.reduce((a, k) => a + k._b[2], 0) > 0.6 * c.box[2];
+      if (spans) ln.forEach(k => { if (k._k === 'frame' && !k._w && !k._grow) k._grow = 1; });
+      else ln.forEach(k => { if (k._wfill) { k._wfill = false; k._w = k._b[2]; } });                     // a narrow line keeps the width it has in Make
+      const gaps = ln.slice(1).map((k, i) => k._b[0] - (ln[i]._b[0] + ln[i]._b[2])), big = gaps.length ? gaps.indexOf(Math.max(...gaps)) : -1;
+      if (big >= 0 && gaps[big] > 48 && gaps[big] > 0.25 * c.box[2] && gaps[big] > 4 * Math.max(8, ...gaps.filter((g, i) => i !== big)))      // one huge gap between two groups = a flexible space (heading left, actions right)
+        ln = [...ln.slice(0, big + 1), { _k: 'spacer', _grow: 1, _b: [ln[big]._b[0] + ln[big]._b[2], u[1], gaps[big], u[3]] }, ...ln.slice(big + 1)];
+      const row = layout(whole ? Object.assign(n, { d: 'H' }) : { _b: u, _k: 'frame', n: name, d: 'H' }, ln, { V: false, st: { ai: 'flex-start', jc: 'flex-start' }, flex: true });
+      if (row.a[0] !== 'S' && !row.c.some(k => /^F/.test(k.s || ''))) row.c.push({ _k: 'frame', n: 'Spacer', d: 'H', w: 1, h: 1, s: 'FH', _sized: true });   // one part of a row must flex
+      return row;
+    };
+    if (!flex && kids.length > 1) {
+      const lines = lineGroups(kids);
+      if (lines.length === 1) return rowOfLine(kids, 'Row', box(c));
+      if (lines.some(l => l.length > 1)) { n.d = 'V'; return layout(n, lines.map(ln => ln.length === 1 ? ln[0] : rowOfLine(ln, 'Row')), { V: true, st: {}, flex: false }); }
+    }
     if (flex && !V && /wrap/.test(st.wrap) && kids.length > 1) {          // a wrapped row that broke into several lines → a column of line rows
       const lines = []; let bottom = -1e9;
       for (const k of kids) { if (!lines.length || k._b[1] >= bottom - 1) { lines.push([k]); bottom = k._b[1] + k._b[3]; } else { lines[lines.length - 1].push(k); bottom = Math.max(bottom, k._b[1] + k._b[3]); } }
@@ -275,12 +353,20 @@ function convert(D, KIT, MAP, EXTRA, nameArg) {
     const counter = /center/.test(ai) ? 'C' : /end/.test(ai) ? 'X' : 'M';
     let primary = /space-between/.test(jc) ? 'S' : /center/.test(jc) ? 'C' : /end/.test(jc) ? 'X' : 'M';
     let ks = list.slice();
-    if (ks.some(k => k._k === 'spacer')) {                    // flexible spacers → space-between over the groups between them
-      const segs = [[]]; for (const k of ks) { if (k._k === 'spacer') segs.push([]); else segs[segs.length - 1].push(k); }
-      ks = segs.filter(s => s.length).map((s, i) => s.length === 1 ? s[0] : layout({ _b: union(s), _k: 'frame', n: i === 0 ? 'Leading Content' : 'Trailing Content', d: V ? 'V' : 'H' }, s, { V, st: { ai: 'center' }, flex: true }));
-      (ks.length >= 3 ? ks.slice(1, -1) : ks.slice(0, 1)).forEach(k => { k._flexSeg = true; });   // the part between the spacers takes the free space
+    if (ks.some(k => k._k === 'spacer')) {                    // flexible spacers (a toolbar's ToolbarSpacer, flex-grow filler, a big gap between two groups) → real FILL spacer frames between the groups
+      const segs = [[]], gapBox = [null]; for (const k of ks) { if (k._k === 'spacer') { segs.push([]); gapBox.push(k._b); } else segs[segs.length - 1].push(k); }
+      const parts = segs.map((sg, i) => ({ sg, gb: gapBox[i] })).filter(x => x.sg.length);
+      ks = []; parts.forEach((x, i) => {
+        if (i > 0) ks.push({ _b: x.gb, _k: 'frame', _sized: true, n: 'Spacer', d: V ? 'V' : 'H', w: 1, h: 1, s: V ? 'HF' : 'FH' });   // one spacer = start | end, two = the middle part centred — equal shares of the free space, exactly like flex-grow
+        ks.push(x.sg.length === 1 ? x.sg[0] : layout({ _b: union(x.sg), _k: 'frame', n: i === 0 ? 'Leading Content' : 'Trailing Content', d: V ? 'V' : 'H' }, x.sg, { V, st: { ai: 'center' }, flex: true }));
+      });
+      ks = ks.filter((k, i) => !(k.n === 'Spacer' && (i === 0 || i === ks.length - 1)));   // a spacer at the very start or end only pushes: keep it out unless it is the only flexible part
+      if (!ks.some(k => k.n === 'Spacer')) { const lsp = list[0]._k === 'spacer', tsp = list[list.length - 1]._k === 'spacer'; primary = lsp && tsp ? 'C' : lsp ? 'X' : primary; }   // only outer spacers: centred / pushed to the end
     }
     const mi = V ? 1 : 0, me = V ? 3 : 2, ci = V ? 0 : 1, ce = V ? 2 : 3;
+    // safety net: auto layout puts the children one after another along the main axis. If they overlap along that axis in Make (side by side while the frame stacks them,
+    // absolute positioning), the frame will NOT match Make — say so, so it is caught before pasting (build/make-verify.js measures how far off)
+    for (let i = 1; i < ks.length; i++) if (ks[i]._b[mi] < ks[i - 1]._b[mi] + ks[i - 1]._b[me] - 2 ) { WARN.push(`layout: children of "${node.n}" overlap along the ${V ? 'vertical' : 'horizontal'} axis in Make (${ks[i - 1].n} | ${ks[i].n}) but the frame places them one after another — will not match`); break; }
     const gs = []; for (let i = 1; i < ks.length; i++) gs.push(ks[i]._b[mi] - (ks[i - 1]._b[mi] + ks[i - 1]._b[me]));
     const gap = primary === 'S' || !gs.length ? 0 : Math.max(0, R(Math.min(...gs)));
     if (primary !== 'S') ks = ks.map((k, i) => { const e = i > 0 ? gs[i - 1] - gap : 0; return e > 0.6 ? lead(k, e, V) : k; });
@@ -351,7 +437,10 @@ function convert(D, KIT, MAP, EXTRA, nameArg) {
   if (rootNode.c[0] && rootNode.c[0].cp === 'Shell Bar') rootNode.c[0].s = 'FX';
   const sn = body.c.find(k => k.n === 'Side Navigation'); if (sn) { sn.s = 'XF'; sn.w = 256; }
   if (page) body.c[body.c.length - 1].s = 'FF';
+  // trace: for every node that came from a Make control, its index path in the tree and the Make box it must land on (build/make-verify.js)
+  const TRACE = [];
+  (function walk(n, at) { if (n._src) TRACE.push({ p: at, id: n._src, b: n._b, k: n._k, ta: n.ta }); (n.c || []).forEach((k, i) => walk(k, at.concat(i))); })(rootNode, []);
   const tree = JSON.parse(JSON.stringify(rootNode, (k, v) => (k[0] === '_' || v === undefined) ? undefined : v));
-  return { tree, images: IMAGES, post: { nav: NAV, shell: SHELL }, warn: [...new Set(WARN)], controls: D.controls.length };
+  return { tree, images: IMAGES, post: { nav: NAV, shell: SHELL }, warn: [...new Set(WARN)], controls: D.controls.length, trace: TRACE };
 }
 if (typeof module !== 'undefined' && module.exports) module.exports = { convert };

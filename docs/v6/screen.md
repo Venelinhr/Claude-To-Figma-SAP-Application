@@ -1,6 +1,5 @@
 ---
 description: v6 — image or text (+ Figma file link) → every offline gate → a DRAFT built in Figma in ~1-2 min → measured gates → the user reviews the REAL screen after. Verbs — tweak · flip · show · gold · fix.
-model: sonnet
 argument-hint: <image path | "text request"> <figma file link>   |   tweak | flip | show | gold | fix …
 ---
 
