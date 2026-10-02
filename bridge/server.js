@@ -1146,13 +1146,13 @@ const server = http.createServer(async (req, res) => {
     return send(res, 200, { runId: run.id, streamUrl: `/stream?runId=${run.id}&token=${TOKEN}` });
   }
 
-  // /job/open-log — build trace.md for a job and open it in the user's default app (the plugin's log icon)
+  // /job/open-log — build trace.md for a job and return its text (the plugin's log icon copies it to the clipboard)
   if (url.pathname === '/job/open-log' && req.method === 'POST') {
     const body = await readBody(req), id = String((body && body.jobId) || '');
     if (!/^[A-Za-z0-9]{8,32}$/.test(id)) return send(res, 400, { error: 'bad job id' });
     const dir = path.join(OUT, id);
     if (!fs.existsSync(dir)) return send(res, 404, { error: 'no log folder for this job (it ran before logging, or was removed)' });
-    try { const f = require('./trace.js').write(dir); try { execFileSync('open', [f], { timeout: 5000 }); } catch (_) {} return send(res, 200, { ok: true, file: path.relative(PROJ, f) }); }
+    try { const f = require('./trace.js').write(dir); return send(res, 200, { ok: true, file: path.relative(PROJ, f), text: fs.readFileSync(f, 'utf8') }); }
     catch (e) { return send(res, 500, { error: String(e.message || e) }); }
   }
 
