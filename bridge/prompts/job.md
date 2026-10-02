@@ -46,6 +46,7 @@ Job folder (write every file of this job here, nowhere else): {{jobDir}}
      (`d` = the second line of a link cell, `sem` = Error|Warning|Success|Information|None for a status). Then `set` only for the shell bar title, page title, table title.
      A timeline layout has the op `steps:[{name,role,status,state:done|current|todo}]` — use it (the LAYOUT line says so); never clone steps by hand.
      Every number, amount and named person of the request must appear in some text on the screen (the audit blocks `COVERAGE`); keep texts about as long as the skeleton's (`LENGTH`).
+     Add `"title":"<Subject> — <Screen type>"` to ops.json (for example `Travel Expense Approval — Timeline`): it becomes the frame name.
      Do NOT write `name` fields — the build renames layers from the content. Use fresh names, numbers and dates — never the skeleton's.
      Order: read the NEED lines → Write ops.json (every name from those lines, never guessed) → `--resume --spec-json` ONCE. Never `--resume` before the file exists; never start a second `run.js` for the same job; do not read memory or tree.json.
      **ONE pass:** write ONE `ops.json` that covers everything (set + remove + clone together) and resume ONCE — never build, look, then add more.

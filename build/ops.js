@@ -9,6 +9,7 @@
 //         table:  { keep:[0,1,3…], header:[…], rows:[[ cell, … ], …] }   keep = the skeleton columns that stay (0-based); header/rows follow that order;
 //                 cell = "text" | { t, d?, sem? }  (d = the 2nd line of a link cell · sem = Error|Warning|Success|Information|None for a status cell); rows = rows you want
 //         steps:  [{ name, role, status, state?: done|current|todo, initials?, sem? }]   a timeline: one entry per approver, in order; the script picks the right marker / selected bar per state
+//         title:  "Frame name"   (read by run.js, not by applyOps: the frame is named after a PASS)
 //         remove: ["name" | { n, nth? }]                                       drop a node (a filter, a column)
 //         clone:  [{ n, nth?, times, with?: [[{ n, t|pr|tx|st|bg }, …], …] }] copies of a node after it (a filter field, a table row); with[i] = the ops for copy i }
 'use strict';

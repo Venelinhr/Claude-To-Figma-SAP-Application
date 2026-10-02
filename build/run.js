@@ -161,6 +161,7 @@ function names(T) {                                  // what the model may addre
 
   // ── text lane ops: content only, geometry stays with the scripts
   if (opt('--spec-json')) {
+    try { const o0 = readJ(path.resolve(PROJ, opt('--spec-json'))); if (o0 && typeof o0.title === 'string' && o0.title.trim()) { st.title = o0.title.trim().slice(0, 100); save(); } } catch (_) {}   // the frame name the model chose (ops.title) — applied by rename.js after a PASS
     const r = nodeSync(['build/reskin.js', treeF, path.resolve(PROJ, opt('--spec-json')), '--out', treeF]);
     say(short(String(r.stdout).trim().split('\n').slice(-1)[0] || r.stderr, 140));
     if (r.status !== 0) { say(short(String(r.stdout || r.stderr).trim().split('\n').slice(0, 6).join(' | '), 400)); process.exit(1); }
@@ -247,7 +248,7 @@ function names(T) {                                  // what the model may addre
   if (pass && !flag('--no-rename')) {                 // name the frame after its real title (script, ~1 s) — the model does not spend a turn on it
     try {
       const nid = (String(b.stdout || '').match(/node-id=(\d+-\d+)/) || [])[1], raw = readJ(treeF), root = raw.tree || raw;
-      const nm = String(root.n || '').replace(/^DRAFT — /, '').trim();
+      const nm = String(st.title || root.n || '').replace(/^DRAFT — /, '').trim();
       if (nid && nm && fileKey) { const rn = nodeSync(['build/rename.js', nid, nm, '--file', fileKey], { timeout: 30000 }); say(short(String(rn.stdout || rn.stderr).trim().split('\n').slice(-1)[0], 140)); }
     } catch (e) { say('RENAME ✗ ' + short(e.message, 100)); }
   }
