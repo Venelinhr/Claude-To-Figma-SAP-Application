@@ -117,3 +117,5 @@ bridge-out/
 /.mcp.json
 /mcp-servers/
 /semantic-models/
+/bin/
+/skill/
