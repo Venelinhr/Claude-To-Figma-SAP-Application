@@ -8,7 +8,7 @@
 // Claude then edits only what OUT/ASK names.
 const fs = require('fs'), path = require('path'), { execFileSync } = require('child_process');
 const { door, report } = require('./door.js');
-const ROOT = path.resolve(__dirname, '..'), GOLD = path.join(ROOT, 'knowledge/gold/trees');
+const ROOT = path.resolve(__dirname, '..'), GOLD = path.join(ROOT, 'knowledge/gold/trees'), GOLD_V6 = path.join(ROOT, 'knowledge/gold/v6');   // v6: approved screens built and accepted in Figma (invoice list, support overview, approval timeline …)
 const args = process.argv.slice(2), ji = args.indexOf('--job'), input = args[0];
 if (!input) { console.log(fs.readFileSync(__filename, 'utf8').split('\n').slice(1, 7).join('\n')); process.exit(2); }
 const t0 = Date.now(), isImg = /\.(png|jpe?g|webp)$/i.test(input) && fs.existsSync(input);
@@ -18,7 +18,7 @@ const norm = s => String(s).toLowerCase().replace(/[\s.•·,:;|()\-–]+/g, '')
 const texts = o => { const out = []; (function w(x) { if (x.t) out.push(x.t); for (const v of Object.values(x.tx || {})) out.push(v);
   for (const [k, v] of Object.entries(x.pr || {})) if (k.startsWith('✏️')) out.push(v); (x.c || []).forEach(w); })(o); return out.map(norm).filter(Boolean); };
 const has = (pool, t) => pool.some(h => h.includes(t) || (h.length >= 4 && t.includes(h)));
-const golds = fs.readdirSync(GOLD).filter(f => f.endsWith('.tree.json')).map(f => ({ f, T: JSON.parse(fs.readFileSync(path.join(GOLD, f), 'utf8')) })).filter(g => g.T && Array.isArray(g.T.c));   // a broken dump (no children) is not a gold tree
+const golds = [GOLD, GOLD_V6].filter(d => fs.existsSync(d)).flatMap(d => fs.readdirSync(d).filter(f => f.endsWith('.tree.json')).map(f => ({ f, dir: d, T: JSON.parse(fs.readFileSync(path.join(d, f), 'utf8')) }))).filter(g => g.T && Array.isArray(g.T.c));   // a broken dump (no children) is not a gold tree
 let spec = null, want;
 if (isImg) {
   const img = path.resolve(input), sd = path.resolve(job, 'see-ref');         // see.py reads best from the image's own folder
@@ -31,8 +31,10 @@ if (isImg) {
 for (const g of golds) {
   const pool = isImg ? texts(g.T) : [norm(JSON.stringify(g.T).replace(/"(svg|img)":"[^"]*"/g, '')) + norm(g.f)];
   g.hit = want.filter(t => has(pool, norm(t))).length;
+  // a request that names summary / KPI cards needs a layout that HAS a card band (the PO list has none → 4 missing cards, seen 2026-10-02)
+  if (!isImg && want.some(w => /^(cards?|kpis?|tiles?|summary)$/.test(w)) && /"n":"Summary Cards"/.test(JSON.stringify(g.T))) g.hit += 8;
 }
-for (const g of golds) g.out = door(g.T, path.join(GOLD, g.f), null).out.length;   // tie → the one the door lets in
+for (const g of golds) g.out = door(g.T, path.join(g.dir, g.f), null).out.length;   // tie → the one the door lets in
 golds.sort((a, b) => b.hit - a.hit || a.out - b.out || Math.abs((a.T.w || 0) - (spec ? spec.frame.w : 1440)) - Math.abs((b.T.w || 0) - (spec ? spec.frame.w : 1440)));
 const G = golds[0], T = JSON.parse(JSON.stringify(G.T)), fit = [];
 if (spec && T.w && Math.abs(spec.frame.w / T.w - 1) > 0.01) {   // same screen, other width: widths scale, heights follow content

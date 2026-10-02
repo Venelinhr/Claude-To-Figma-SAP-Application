@@ -54,3 +54,10 @@ test('the lean Figma Agent skill stays small (fast to read every turn)', () => {
   assert.ok(s.length < 15000, `skill is ${s.length} chars`);
   assert.match(s, /^---\nname: sap-figma-agent\n/);
 });
+
+test('driver: a request that names summary cards picks a layout with a card band; an invoice list picks the invoice layout', () => {
+  const { execFileSync } = require('node:child_process'), os = require('node:os');
+  const run = text => { const d = fs.mkdtempSync(path.join(os.tmpdir(), 'front-')); try { return execFileSync(process.execPath, [path.join(__dirname, '..', 'build', 'front.js'), text, '--job', d], { stdio: 'pipe' }).toString(); } catch (e) { return String(e.stdout || ''); } };
+  assert.match(run('Procurement Overview with four summary cards and a table of purchase orders, filters supplier plant buyer status'), /gold support-overview-1440/);
+  assert.match(run('Open supplier invoices list with filters and status'), /gold invoice-list-1440/);
+});

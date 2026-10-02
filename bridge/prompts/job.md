@@ -40,6 +40,9 @@ Job folder (write every file of this job here, nowhere else): {{jobDir}}
      A text job needs real business content in every field (`ops.json`, content only, never kit placeholders).
    - A kit component that is not published in this file (the build says "Could not find a published component") → use a bordered
      frame with kit parts inside, as the nearest real thing.
+   - **Coverage (the request is the checklist).** Before the build, list every filter, summary card, column, status and action the request names.
+     Every one must exist in the frame: add with `clone`, drop what the request does not name with `remove`, rename layers with `set … name`. Texts in the
+     request's domain (a purchasing screen says Supplier, Plant, Buyer — never the skeleton's old words). Do not report done while one is missing.
    → `STAGE plan <screen · zones>` then `STAGE execute <node id · build n>`
 4. **Done.** First rename the built frame from `DRAFT — <job>` to the screen's real title (for example `Open Invoices — List Report`): ONE tiny `use_figma` call that sets only `node.name` of the node id in the link. Then use the numbers `run.js` printed: it printed the node link and `MATCH · HYGIENE · STRUCTURE · EYE` and `STATUS`. Report only those numbers.
    → `STAGE done <MATCH n% · EYE n% or — · STATUS>` then
