@@ -1,19 +1,24 @@
-# Claude to Figma SAP Application
+# Claude to Figma SAP Application — v6
 
-> Describe your business use case in plain language, or attach a screenshot or Figma reference. Claude reads official SAP guidelines, measures the reference, selects components, previews the layout as an ASCII wireframe for your approval, then builds a real SAP Fiori screen directly in Figma — real library components, live tokens, zero manual drag-and-drop. **ANALYZE → PLAN → EXECUTE → VALIDATE → LEARN.** Use the **Figma Agent** to refine, apply changes, or suggest ideas — directly on the canvas.
+> Describe a SAP Fiori screen in plain words (or attach a reference image). The system builds a **real SAP screen in Figma** — real SAP Web UI Kit components, live Horizon tokens, verified layer structure — in about **40 seconds** with the plugin. No manual drag-and-drop.
 
-A complete build system: 31 rules, 6 skills, a Figma plugin with SAP token binding and WCAG AA checks, and 5 MCP servers — everything needed to produce consistent, production-ready SAP Fiori screens.
-
-![Claude to Figma](https://img.shields.io/badge/Claude_to_Figma-SAP_Application-0070F2?style=flat-square)
-![Rules](https://img.shields.io/badge/Rules-31-orange?style=flat-square)
-![Skills](https://img.shields.io/badge/Skills-6-brightgreen?style=flat-square)
-![Figma Agent](https://img.shields.io/badge/Figma-Agent-blue?style=flat-square)
-![Figma Plugin](https://img.shields.io/badge/Figma-Plugin-purple?style=flat-square)
-![MCP Servers](https://img.shields.io/badge/MCP_Servers-5-green?style=flat-square)
+![Version](https://img.shields.io/badge/version-v6-0070F2?style=flat-square)
+![Plugin](https://img.shields.io/badge/Plugin-33--39_s-purple?style=flat-square)
+![Figma Agent](https://img.shields.io/badge/Figma-Agent_skill_v9-blue?style=flat-square)
+![Claude Code](https://img.shields.io/badge/Claude_Code-/screen-orange?style=flat-square)
 ![Token Optimization](https://img.shields.io/badge/Token-Optimization-blueviolet?style=flat-square)
 ![Learning](https://img.shields.io/badge/Learning_%26-Improving-yellow?style=flat-square)
 ![License](https://img.shields.io/badge/License-MIT-lightgrey?style=flat-square)
 
+## Three ways to use it
+
+| Route | Where you type | Asks before it builds? | Time to the screen |
+|---|---|---|---|
+| **SAP Bridge plugin** | the plugin text box in Figma | No — builds at once | **33–39 s** |
+| **Claude Code `/screen`** | Claude Code in this folder | **Yes** — plan, then Approve | about 50 s |
+| **Figma Agent chat** | the Agent panel in Figma | **Yes** — plan, then Approve | about 1 min 30 s |
+
+All three use the same engine: stored SAP layouts, one content file written by the model, audits that refuse bad content before any Figma call, and scripts that build, check and name the frame.
 
 ## Examples — screens built by the system
 
@@ -24,170 +29,80 @@ A complete build system: 31 rules, 6 skills, a Figma plugin with SAP token bindi
 
 All screens built from a plain-language description or reference image — real SAP components, live Horizon tokens, verified layer structure.
 
+## Quick start
 
-## Installation
+**You need:** Node.js ≥ 20 · [Claude Code CLI](https://claude.ai/code) · Figma desktop app · Python 3 (for image references).
 
-
-### Step 1 — Clone and run the installer
-
+### 1. Get the code
 ```bash
 git clone https://github.com/Venelinhr/Claude-To-Figma-SAP-Application.git
 cd Claude-To-Figma-SAP-Application
 ./install.sh
 ```
 
-The installer handles everything automatically: installs dependencies, registers all 5 MCP servers in Claude Code, and copies the skill files.
+### 2. Connect the SAP Web UI Kit in Figma
+1. Open the [SAP Web UI Kit on Figma Community](https://www.figma.com/community/file/1494295794601744471) → **Duplicate to your drafts** (free). Publish its styles and components.
+2. In your working Figma file: **Assets → Libraries →** switch **SAP Web UI Kit** on. (SAP-internal users: the kit is usually already shared in your organisation.)
 
-**You need:** Node.js ≥ 20 · [Claude Code CLI](https://claude.ai/code) · Figma desktop app
-
-
-### Step 2 — Add your Figma API token
-
-**Why you need it:** Claude communicates with Figma through the Figma API — it reads your existing screens, inspects component structure, and writes new screens directly to your canvas. The API token is how Figma knows the request is coming from you and has permission to access your files. Without it, Claude cannot read from or build into Figma at all.
-
-The installer adds a placeholder automatically. Replace it with your real token:
-
-1. Go to **figma.com → Settings → Personal access tokens** → generate a new token
-2. Open `~/.claude/settings.json` and find this line:
-   ```
-   "FIGMA_API_TOKEN": "YOUR_FIGMA_TOKEN_HERE"
-   ```
-3. Replace `YOUR_FIGMA_TOKEN_HERE` with your token
-
-> **Internal SAP users:** if your organisation uses SSO or a managed Figma account, generate the token the same way — personal access tokens work regardless of how your account is administered. Keep the token private; treat it like a password.
-
-
-### Step 3 — Load the Figma plugin
-
-> ⚠️ **This plugin does not build SAP components.** It only binds design tokens onto a
-> screen Claude already built with `use_figma`. If you run it first — before Claude builds
-> anything — you will get plain shapes, not real SAP components, even with the SAP Web UI
-> Kit linked as a library. Do Step 6 (build with Claude) before you click **Bind SAP Tokens**.
-
-The plugin connects Claude's output to real SAP design tokens. After Claude builds the screen, you run the plugin once to bind live SAP variables, swap icons, and apply text styles.
-
-**Download and run the plugin locally:**
-
-1. Clone this repo to your machine (if you haven't already)
-2. Open **Figma desktop**
-3. Go to **Plugins → Development → Import plugin from manifest...**
-4. Select `plugin/figma-builder/manifest.json` from the cloned repo folder
-5. The plugin now appears under **Plugins → Development → SAP Figma Builder** and runs inside any Figma file
-
-> The plugin runs locally from your machine — no publishing or Figma Community install needed. Keep the repo folder on disk so Figma can load it.
-
-
-### Step 4 — Connect the SAP Web UI Kit in Figma
-
-This is the official SAP component library. Claude pulls components from it for every build — buttons, tables, headers, status indicators, icons, and the full SAP token system.
-
-1. Open [SAP Web UI Kit on Figma Community](https://www.figma.com/community/file/1494295794601744471) and click **Duplicate to your drafts** (free)
-2. Open your duplicated copy in Figma desktop
-3. In the file: click the file name at the top → **Publish styles and components** → Publish
-4. In your working Figma file: open the **Assets panel** (left sidebar) → click the **Libraries** icon → find **SAP Web UI Kit** → toggle **ON**
-
-> **Internal SAP users:** the SAP Web UI Kit is likely already available as a shared library in your organisation — you do not need to duplicate it. Open the **Assets panel** → **Libraries** → find SAP Web UI Kit under your organisation's shared libraries → toggle **ON**. Do not duplicate the community copy on top of the organisation version — this creates two competing libraries.
-
-> **If component imports fail** — the SAP Web UI Kit library is not enabled in the current file, or the wrong version is active. Check the Libraries panel and make sure only one version is toggled on.
-
-
-### Step 5 — Restart Claude Code and verify
-
+### 3. Load the plugin
+1. Figma desktop → **Plugins → Development → Import plugin from manifest…**
+2. Choose `plugin/sap-bridge/manifest.json` from this folder.
+3. Start the local bridge (from this folder, in a normal Terminal):
 ```bash
-claude mcp list   # should show 5+ servers including "figma"
+node build/mailbox.js restart
 ```
+4. Open **SAP Bridge** in your file. It shows **Connected to Claude · v6**.
 
-### You're ready
+### 4. Build your first screen
+Type a request in the plugin text box and press **Go**:
 
-Open Claude Code in this project folder and describe what you want to build:
+> *Build a SAP Fiori Procurement Overview for a purchasing manager who must stop late deliveries. Show four summary cards: Open Purchase Orders, Late Deliveries, Pending Approvals and Spend This Month. Below, a table of purchase orders with PO number, supplier, material, ordered quantity, delivery date, buyer and status. Filters: supplier, plant, buyer, delivery date and status.*
 
-> *"Build a Purchase Orders approval screen"*
-> *"Create a mobile list view for field service tasks"*
-> *"Design an Object Page for a supplier profile"*
+The screen appears in about 40 seconds. Every finished job has a **log icon** in the history list — one click copies the full log.
 
-Attach a screenshot or wireframe as reference if you have one. Claude analyses it, shows you an ASCII wireframe for approval, then builds the screen directly in Figma. Select the frame, run **Bind SAP Tokens** in the plugin — done.
-
-
-### Already installed? How to update
-
-`./install.sh` only runs once, on demand — nothing here auto-updates. To pick up new fixes:
+## Claude Code — `/screen` (plan first)
 
 ```bash
 cd Claude-To-Figma-SAP-Application
-git pull
+claude
 ```
-
-That's enough for most changes (skill files, docs, hooks, registry data). Only re-run `./install.sh` if the update notes mention a **new or changed MCP server** — otherwise re-running it is unnecessary (it's safe either way, just redundant).
-
-If you loaded `plugin/figma-builder` into Figma (Step 3 above), Figma reads it live from your local repo folder — after `git pull`, just reopen the plugin in Figma and it picks up the change automatically, no re-import needed.
-
-
-## How It Works — the full pipeline
-
+Start a **fresh session for every screen** (it is faster). Then:
 ```
-You: "Build a Purchase Orders screen"
-                       │
-                       ▼
-  ┌─────────────────────────────────────────────────┐
-  │  ANALYZE                                        │
-  │  • Measure reference width (default 1440px)     │
-  │  • Sector-by-sector visual reading (A→B→C)      │
-  │  • Floorplan scored + confirmed with you        │
-  │  • VDI: 7 artifacts, confidence tiers ●○?       │
-  └────────────────────┬────────────────────────────┘
-                       │
-                       ▼
-  ┌─────────────────────────────────────────────────┐
-  │  PLAN                                           │
-  │  • ASCII wireframe — every region, every        │
-  │    component. You approve before any build.     │
-  │  • L1–L5 layer structure proposed               │
-  │  • Clone source selected from canonical .fig    │
-  └────────────────────┬────────────────────────────┘
-                       │ "approved" ◄─── iterate here (free, instant)
-                       ▼
-  ┌─────────────────────────────────────────────────┐
-  │  EXECUTE  (one use_figma call)                  │
-  │  • Parallel import all SAP components           │
-  │  • Clone canonical → clear slot → repopulate    │
-  │  • Real SAP instances only — never createFrame()│
-  └────────────────────┬────────────────────────────┘
-                       │
-                       ▼
-  ┌─────────────────────────────────────────────────┐
-  │  VALIDATE  (one screenshot)                     │
-  │  • Compare vs reference                         │
-  │  • You click "Bind SAP Tokens" in the plugin    │
-  │    → live SAP Horizon variables bound           │
-  │    → 4 accessibility validators run             │
-  └────────────────────┬────────────────────────────┘
-                       │
-                       ▼
-  ┌─────────────────────────────────────────────────┐
-  │  LEARN                                          │
-  │  • "bravo / perfect" → canonical saved          │
-  │  • "not right / fix this" → lesson captured     │
-  │  • Next similar build recalls the right lesson  │
-  └────────────────────┬────────────────────────────┘
-                       │
-                       ▼   
-                   loops back
-              ANALYZE (next build)
-            lesson already recalled,
-             canonical clone ready
-                                                       
+/screen "<your request>" https://www.figma.com/design/<FILE_KEY>/…
 ```
+Claude analyses the request, shows the plan (wireframe, layer tree, SAP components, confidence) and waits. Answer **Approve**, **Reject** or **Modify** — only then it builds. A reference image works too: `/screen <image path> <Figma link>`.
 
-### What happens at each stage
+## Figma Agent — set up once, then just type
 
-| Stage | What Claude does | Key rule |
+The Figma Agent works inside your file. The heavy parts (runtime, SAP kit helpers, stored layouts, content tools, checker) are stored **in the Figma file**, so the Agent only types short fixed calls.
+
+1. **Link the SAP Web UI Kit** (step 2 above).
+2. **Install the tools into the file:** open the **SAP Bridge plugin once** in the file (the bridge must be running). Wait for the message *v6 installed for the Figma Agent*, then close it. Repeat once per file, and again after an update.
+3. **Add the skill:** open the skill folder, then in Figma click the Agent button → **Skills → Add skill** and upload `SKILL.md` of **sap-figma-agent** (replace an old version).
+```bash
+open .claude/skills/sap-figma-agent
+```
+4. **Start a new Agent chat** and write your request in plain words — no `/screen`, no command.
+
+**How the Agent works:**
+- **New screen:** it picks the closest stored layout, writes the content, then **shows you the plan and the layer tree and asks "Approve / Modify?"**. Only after your Approve it builds and checks. Its first line shows the route: `▸ NEW · <layout>`.
+- **Small change:** select the frame (or paste its link) and say what to change — it runs at once (`▸ EDIT`).
+- **Not for the Agent:** matching a reference image 1:1 — the Agent tells you to use Claude Code `/screen`.
+
+**What you can ask:**
+
+| Refine & change | Suggest the next step | Variant & extend |
 |---|---|---|
-| **ANALYZE** | Reads the closest canonical node · sector-by-sector visual reading · measures reference width · scores floorplan | Never skip |
-| **PLAN** | Maps content to slot structure · lists property keys · proposes L1–L5 layer tree · selects clone source | Before any code |
-| **EXECUTE** | Single `use_figma` call · Clone-Clear-Repopulate · parallel component imports · real SAP instances only | One shot |
-| **VALIDATE** | One screenshot · compare vs reference · plugin binds tokens · 4 accessibility validators | One shot |
-| **LEARN** | Approval → canonical saved · correction → lesson captured · next build recalls the right lesson automatically | Every build |
+| "Improve this layout" | "Suggest the next screen after this list" | "Build a variant of this screen" |
+| "Fix the status column" | "What's the next step in this wizard?" | "Add a filter bar and mass actions" |
+| "Make the actions SAP-compliant" | "Add the detail page for this row" | "Extend this into a full Object Page" |
 
+> **Which route when:** plugin = fastest new screen · Claude Code `/screen` = plan, approval and a full report · Figma Agent = plans and small edits inside the file.
+
+**Live SAP knowledge in the Figma Agent — how to load it and its real limit:** the `sap-figma-agent` skill's methodology and hard rules are static text uploaded to Figma. They don't call anything live by themselves. Two ways to actually ground the Figma Agent in current SAP data:
+
+1. **Native MCP connector (best, if your org allows it)** — Figma's Agent panel supports connecting directly to a live MCP server: `Add context → Connectors → Manage → Create` → name it, paste `https://sap-design-mcp.cfapps.us10-001.hana.ondemand.com/mcp`, no auth needed. Once connected, `@`-mention it in chat so the Agent pulls live SAP guidance itself. **This needs custom connectors enabled for your Figma org** (an admin-only toggle by default — `Admin → Settings → Connections → MCP connectors in Figma`). If `Connectors → Created by you` says your org doesn't allow it, this needs a request to your Figma admin, not a workaround.
+2. **Claude-Code-refreshed grounding (works today, no admin needed)** — ask Claude Code to pull current guidance from `sap-design-cf-live` and bake it into the skill file or a Figma tool's source (this is how the SAP Screen Builder generative tool's component choices are kept current). Not live-at-runtime, but genuinely verified as of the date stamped in the file — re-run it periodically to keep it fresh.
 
 ## Example — what Claude shows you at the PLAN stage
 
@@ -261,68 +176,30 @@ Purchase Orders
 
 You can iterate on any part — change the floorplan, add a column, switch to mobile — before Claude builds anything.
 
-## Three-Layer Architecture
+## Results (same prompt: Procurement Overview, 4 cards, 5 filters, 7-column table)
 
-Each layer does only what it uniquely can:
-
-```
-┌────────────────────────────────────────────────────────────────┐
-│  Layer 1 — Claude (Reasoning)                                  │
-│  Reads references · runs 31 rules · visual analysis            │
-│  Selects floorplan + components · builds via Figma MCP         │
-│  QA + self-repair · captures lessons                           │
-└───────────────────────────┬────────────────────────────────────┘
-                            │ builds screen (one call)
-                            ▼
-┌────────────────────────────────────────────────────────────────┐
-│  Layer 2 — Figma MCP (Execution)                               │
-│  Inserts real SAP kit instances                                │
-│  Sets variant properties · marks fills and text for binding    │
-└───────────────────────────┬────────────────────────────────────┘
-                            │ you click "Bind SAP Tokens"
-                            ▼
-┌────────────────────────────────────────────────────────────────┐
-│  Layer 3 — Plugin (Token Bridge)                               │
-│  The only piece with access to SAP library variables           │
-│  Binds real SAP Horizon tokens (theme-switchable)              │
-│  Swaps icon placeholders · binds text styles                   │
-│  Runs 4 accessibility validators automatically                 │
-└────────────────────────────────────────────────────────────────┘
-```
-
-> **Why three layers?** The Figma MCP runs in a sandbox — it can read and write structure, but it cannot access your SAP library's private token variables. Only a real Figma plugin can do that. So Claude builds the structure, the plugin binds the tokens. Each does the one thing only it can do.
-
-
-## Figma Agent
-
-Design directly inside Figma with the built-in AI Agent. Select an existing screen and ask the Figma Agent to refine it, apply changes, suggest the next step in the user flow, generate a variant, or extend the design. 
-
-**What you can ask:**
-
-| Refine & change | Suggest the next step | Variant & extend |
+| Route | Time to the screen | Quality gates |
 |---|---|---|
-| "Improve this layout" | "Suggest the next screen after this list" | "Build a variant of this screen" |
-| "Fix the status column" | "What's the next step in this wizard?" | "Add a filter bar and mass actions" |
-| "Make the actions SAP-compliant" | "Add the detail page for this row" | "Extend this into a full Object Page" |
+| SAP Bridge plugin | **33–39 s** (was 3 min 53 s) | MATCH 100 · HYGIENE 0 · STRUCTURE 0 |
+| Claude Code `/screen` (fresh session) | about 50 s | same gates, full 5-section report |
+| Figma Agent chat | about 1 min 30 s with your Approve | clean frame, all required labels |
+| Figma Make (for comparison) | more than 2 min | a working SAPUI5 app, not an editable Figma frame |
 
-**How to use — setup & run:**
+Full overview and the frame-by-frame comparison: [`docs/v6/SUMMARY-v6.md`](docs/v6/SUMMARY-v6.md).
 
-1. **Link the SAP Web UI Kit** — in Figma, `Assets → Libraries` → enable **SAP Web UI Kit**. 
-2. **Add the SAP Agent skill** — download the skill file from this repo: [`.claude/skills/sap-figma-agent/SKILL.md`](.claude/skills/sap-figma-agent/SKILL.md). Then click the Figma Agent button → `Skills → Add Skill` → paste or upload the **sap-figma-agent** skill.
-3. **Select a screen & describe the change** — select any built SAP screen, open the Agent, and type what you want.
+## How it works (v6 in short)
 
-> **Figma Agent vs Claude Code:** Use **Claude Code** for new builds from a reference — it runs the full gated pipeline (wireframe approval, token bind, invariant checks). Use the **Figma Agent** for fast on-canvas iterations — refine, extend, suggest next steps — following the same SAP rules and design system, without leaving Figma.
-
-**Live SAP knowledge in the Figma Agent — how to load it and its real limit:** the `sap-figma-agent` skill's methodology and hard rules are static text uploaded to Figma. They don't call anything live by themselves. Two ways to actually ground the Figma Agent in current SAP data:
-
-1. **Native MCP connector (best, if your org allows it)** — Figma's Agent panel supports connecting directly to a live MCP server: `Add context → Connectors → Manage → Create` → name it, paste `https://sap-design-mcp.cfapps.us10-001.hana.ondemand.com/mcp`, no auth needed. Once connected, `@`-mention it in chat so the Agent pulls live SAP guidance itself. **This needs custom connectors enabled for your Figma org** (an admin-only toggle by default — `Admin → Settings → Connections → MCP connectors in Figma`). If `Connectors → Created by you` says your org doesn't allow it, this needs a request to your Figma admin, not a workaround.
-2. **Claude-Code-refreshed grounding (works today, no admin needed)** — ask Claude Code to pull current guidance from `sap-design-cf-live` and bake it into the skill file or a Figma tool's source (this is how the SAP Screen Builder generative tool's component choices are kept current). Not live-at-runtime, but genuinely verified as of the date stamped in the file — re-run it periodically to keep it fresh.
-
+1. **Route and match** — the request is matched to the closest stored layout (`knowledge/gold/`).
+2. **Content** — the model writes one content-only file (filters, cards, table, steps, title). It never writes geometry.
+3. **Audits (no model tokens)** — leftover old words, column count, one colour per status, one date format, text length, required amounts and names, date filter on the date picker, no numbers in coloured status cells.
+4. **Door** — only real kit components, bound colour variables, text styles, responsive sizing.
+5. **Build, gates, rename** — the plugin builds the frame in about 5 s; scripts measure MATCH / HYGIENE / STRUCTURE and name the frame.
 
 ## Token Optimization
 
 The build pipeline is token-optimised — each session uses a fraction of what a naive implementation would consume.
 
+In v6 a plugin job writes **one** content file and builds **once**. The audits and the layout hints run as scripts and cost no model tokens — a retry loop of 12 refused content files before one build went to zero.
 
 ## The Loop — Learning & Improving
 
@@ -330,62 +207,17 @@ The system gets smarter with every session. When you confirm something is right,
 
 You can also add your own rules at any time — just tell Claude "hard rule: always do X" and it will save it to memory and follow it in every future build.
 
+## More documentation
 
-## Canonical Reference Screens
-
-**Included in this repo:** `docs/canonical-screens/Claude to Figma SAP Application.fig`
-
-The quality baseline for every build — 14 real, approved SAP Fiori screens with live components, correct tokens, and verified layer structure (not mockups). Covers the core patterns: List Report, Object Page, Dialog form, Side Navigation, FCL governance console, and log panel.
-
-Claude uses this file automatically — before building, it finds the closest match, reads its structure, and clones from it, so you never start from scratch. It ships with the repo and works offline (no private Figma access needed). You can also download the `.fig`, open it in Figma, and point any node to the workflow as a reference — useful if a canonical is lost, needs re-linking, or you want to inspect exactly how a screen was built.
-
-
-## Project Structure
-
-```
-/
-├── install.sh                      ← one-command setup
-├── SAP_BUILD_MANIFEST.md           ← the ONLY file a build reads (~2k tokens)
-├── skill/
-│   ├── SKILL.md + SYSTEM_PROMPT.md ← 31 RULEs + 80-token whitelist
-│   ├── agents/                     ← 9 specialized agents
-│   ├── sap-visual-reading/         ← VDI skill: 8 stages + sector-analysis
-│   └── references/                 ← figma-build-patterns, canonical-similarity-rubric
-├── plugin/figma-builder/
-│   ├── manifest.json               ← load this in Figma
-│   └── code.bundled.js             ← pre-built, ready to use
-├── mcp-servers/                    ← 3 custom MCP servers
-├── knowledge/
-│   ├── components/registry/        ← 152 component JSONs (source of truth)
-│   └── guidelines/                 ← 154 Fiori guideline caches
-├── docs/
-│   ├── canonical-screens/          ← .fig + .md files + 6 public reference PNGs
-│   ├── REPAIR-PATTERNS.md          ← 28 patterns from real failures
-│   ├── KNOWLEDGE-INDEX.md          ← what lives where
-│   └── OPERATING-MANIFEST.md       ← single authoritative rule map
-└── semantic-models/                ← VDI SHA-1 cache (−96% on repeat images)
-```
-
-
-## Skills
-
-| Skill | What |
+| File | What |
 |---|---|
-| `/sap-figma-agent` | Figma Agent SAP skill — add once to the Figma AI Agent; it then builds, extends, and improves SAP screens on-canvas following all project rules |
-| `/sap-fix` | Auto-repair any screen: adds `[typo:role]` tags, converts Divider frames to strokes in NEW builds (cloned canonicals keep theirs — flag only), injects real nav labels, fixes button types, renames generic layers |
-| `/sap-vdi` | 8-stage Visual Design Intelligence: sector reading, confidence tiers, floorplan scoring, 12-part output |
-| `/sap-bind` | End-to-end MCP-first pipeline: VDI cache → wireframe gate → one-shot `use_figma` → bind reminder |
-| `/sap-spec-validate` | Registry gate + token whitelist + no raw hex — pre-flight before any build |
-| `/sap-registry-update` | Edit registry JSON → rebuild bundle → run regression tests (the only correct way) |
+| [`docs/v6/SUMMARY-v6.md`](docs/v6/SUMMARY-v6.md) | one-page overview, comparisons, results |
+| [`docs/v6/SNAPSHOT-2026-10-02.md`](docs/v6/SNAPSHOT-2026-10-02.md) | state, restart steps, lessons, open items |
+| [`docs/v6/screen.md`](docs/v6/screen.md) | the `/screen` command |
+| [`docs/v6/figma-agent-skill.md`](docs/v6/figma-agent-skill.md) | the Figma Agent skill (source) |
+| [`docs/legacy/README-v7.md`](docs/legacy/README-v7.md) | the complete previous README (pipeline, architecture, project structure, skills, health check) |
 
-## Health Check
-
-```bash
-claude mcp list                              # expect 5+ servers
-node build/validate-spec.js output/any.json  # validate a spec
-bash build/test-build.sh                     # regression suite (must exit 0)
-node build/check-manifest-sync.js            # manifest drift check
-```
+**The previous system (v2–v5, the old `main`) is kept whole on branch [`v7`](../../tree/v7).**
 
 ## License
 
