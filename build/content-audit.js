@@ -112,7 +112,7 @@ function autoname(tree, baseline, request) {
 }
 
 // ── capabilities: what the compact ops can do on THIS skeleton (exact layer names, columns and their kind) — printed in the NEED block so the model writes valid ops the first time
-function capabilities(tree) {
+function capabilities(tree, request) {
   const find = (re, o = tree) => { let f = null; (function w(x) { if (!f && re.test(x.n || '')) f = x; (x.c || []).forEach(w); })(o); return f; };
   const out = [], shell = find(/^Shell Bar$/), pt = find(/^Page title$/), tt = find(/^Table title$/i);
   const sets = [shell && `shell bar title: {n:"${shell.n}",tx:{Text:"…"}}`, pt && `page title: {n:"${pt.n}",t:"…"}`, tt && `table title: {n:"${tt.n}",t:"…"}`].filter(Boolean);
@@ -136,6 +136,11 @@ function capabilities(tree) {
   if (find(/^Table Area$/) || cards.length) out.push(cards.length ? `LAYOUT cards → ${cards.length} skeleton cards` : 'LAYOUT cards → none in this layout (do NOT use "cards"; put KPIs in the title or add none)');
   const area = find(/^Table Area$/) || tree, head = find(/^Header Row/, area), row = (area.c || []).find(k => /^Row/i.test(k.n || ''));
   if (head && row) out.push('LAYOUT table → columns (keep index: header | cell kind): ' + head.c.map((h, i) => { const c = row.c[i], inst = c && (c.k === 'i' ? c : (function f(o) { let g = null; (function w(x) { if (!g && x !== c && x.k === 'i') g = x; (x.c || []).forEach(w); })(o); return g; })(c)), pr = (inst && inst.pr) || {}; const kind = !inst ? '?' : inst.cp === 'Object Status' ? 'status → {t,sem}' : '✏️ By Text Description' in pr ? 'LINK → {t,d} (d = 2nd line, required)' : 'text'; return `${i}: ${(h.tx && h.tx.Text) || '?'} | ${kind}`; }).join(' ; '));
+  // what the request makes mandatory (the audit blocks the build otherwise) + the slot that can hold it
+  const must = []; for (const m of String(request || '').matchAll(/\b(\d[\d.,]*\d)\s?(?:EUR|USD|GBP|BGN|CHF|€|\$)/g)) must.push(m[0]);
+  for (const m of String(request || '').matchAll(/\bby ([A-ZÀ-Ž][\p{L}'-]+ [A-ZÀ-Ž][\p{L}'-]+)/gu)) must.push(m[1]);
+  if (must.length) { let best = null; (function sl(o, row) { if (/^Step \d+$/.test(o.n || '')) return; const r = row || /^(Row|Header Row)/i.test(o.n || ''); if (!r && o.k === 't' && String(o.t).length >= 6) { const al = Math.max(o.t.length * 1.6, o.t.length + 10); if (!best || al > best.al) best = { n: o.n, al: Math.round(al) }; } (o.c || []).forEach(c => sl(c, r)); })(tree, false);
+    out.push(`LAYOUT must show → ${must.map(x => '"' + x + '"').join(', ')} on the screen (the audit blocks the build otherwise)${best ? `; put them in {n:"${best.n}",t:"…"} — it holds up to ${best.al} chars, e.g. "${must.join(' · ').slice(0, best.al)}"` : ''}`); }
   out.push('LAYOUT hints → numbers and codes you write (1000, 2000) are fine; every word of the old screen must go. One ops.json, all compact ops together, resume ONCE.');
   return out;
 }

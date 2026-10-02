@@ -77,15 +77,12 @@ function groupIcons(raw) {
 }
 
 function names(T) {                                  // what the model may address in a text-lane ops file: every section, every leaf WITH the op that changes it
-  const lines = [];                                  //   text leaf  → {n,t}      kit instance → {n,tx:{Key}} / {n,pr:{'✏️ Key'}}   (a wrong form is a whole retry)
-  const pend = [{ n: 'Shell / top', o: T }];
-  for (const s of T.c || []) pend.push({ n: s.n, o: s });
-  for (const { n, o: sec } of pend) {
-    const leaves = []; (function w(o, top) { if (o !== T) { if (o.k === 't') leaves.push(`${o.n}(t)="${short(o.t, 22)}"`); else if (o.k === 'i') for (const [k, v] of Object.entries(o.tx || {})) leaves.push(`${o.n}(tx.${k})="${short(v, 18)}"`); } if (top && o === T) return; (o.c || []).forEach(c => w(c, false)); })(sec, false);
-    if (n === 'Shell / top') continue;
-    lines.push(`  ${n}: ${leaves.slice(0, 24).join(' | ')}${leaves.length > 24 ? ` … +${leaves.length - 24}` : ''}`);
+  const lines = [];                                  //   text leaf [t] → {n:"<name>",t:"…"}     kit instance [tx.Key] → {n:"<name>",tx:{"Key":"…"}}   — "n" is ONLY the quoted name
+  for (const sec of T.c || []) {
+    const leaves = []; (function w(o) { if (o.k === 't') leaves.push(`"${o.n}" [t]="${short(o.t, 22)}"`); else if (o.k === 'i') for (const [k, v] of Object.entries(o.tx || {})) leaves.push(`"${o.n}" [tx.${k}]="${short(v, 18)}"`); (o.c || []).forEach(w); })(sec);
+    lines.push(`  section ${sec.n} → ${leaves.slice(0, 24).join(' | ')}${leaves.length > 24 ? ` … +${leaves.length - 24}` : ''}`);
   }
-  lines.push('  FORM  text leaf (t) → {n:"<name>",t:"…"} · kit part (tx.Key) → {n:"<name>",tx:{"Key":"…"}} · a status colour → {n,pr:{Semantic:"Error|Warning|Success|Information|None"}} · numbered layers ("… 2", "… 3") are the repeats: set each by its own name');
+  lines.push('  FORM  text leaf [t] → {n:"<quoted name>",t:"…"} · kit part [tx.Key] → {n:"<quoted name>",tx:{"Key":"…"}} · a status colour → {n,pr:{Semantic:"Error|Warning|Success|Information|None"}} · "n" is the quoted layer name only — never the section name, never the [..] tag');
   return lines.slice(0, 40);
 }
 
@@ -139,7 +136,7 @@ function names(T) {                                  // what the model may addre
     } else fs.copyFileSync(treeF, J('tree.baseline.json'));
     if (!isImg && !flag('--as-is')) {                  // text lane: the skeleton carries another screen's content — the model puts the real content on it
       say(`NEED  real content for the skeleton "${front.gold.name}" (${front.gold.hit}/${front.want} request words match). Write ONE ops.json, content only, no geometry. Compact: {filters:[{from?,label,placeholder|value}], cards:[{title,value,caption}], table:{keep:[skeleton column indexes],header:[…],rows:[[cell|{t,d,sem}…]]}} + set:[{n,t|pr|tx}] for the shell bar, page title, table title`);
-      require('./content-audit.js').capabilities(readJ(treeF)).forEach(say);
+      require('./content-audit.js').capabilities(readJ(treeF), String(input || '')).forEach(say);
       names(readJ(treeF)).forEach(say);
       say(`NEXT  node build/run.js --job ${job} --file ${fileKey || '<key>'} --resume --spec-json <ops.json>   (or --as-is when the skeleton already is the screen)`);
       process.exit(2);
