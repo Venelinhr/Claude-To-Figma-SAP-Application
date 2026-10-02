@@ -1,4 +1,4 @@
-# Claude to Figma SAP Application — v6
+# Claude to Figma SAP Application
 
 > Describe a SAP Fiori screen in plain words (or attach a reference image). The system builds a **real SAP screen in Figma** — real SAP Web UI Kit components, live Horizon tokens, verified layer structure — in about **40 seconds** with the plugin. No manual drag-and-drop.
 
@@ -10,7 +10,7 @@
 ![Learning](https://img.shields.io/badge/Learning_%26-Improving-yellow?style=flat-square)
 ![License](https://img.shields.io/badge/License-MIT-lightgrey?style=flat-square)
 
-## Examples — screens built by the system
+## Examples
 
 | Schedule Operation Dialog | Flight Result Card | Design System Governance |
 |:---:|:---:|:---:|
@@ -74,32 +74,39 @@ All three use the same engine: stored SAP layouts, one content file written by t
 
 **Claude → Figma through MCP (the old way, kept only as a fallback).** Claude Code types the Figma Plugin API calls itself through the Figma MCP server (`use_figma`). That is slow and uses many tokens: one screen took about 18 min and 59k tokens in v2, and one hand-written build took 219 turns, 34 min and about $9.5. v6 replaced it: Claude writes the content, scripts do the building through the plugin.
 
-## Claude Code — `/screen` (plan first)
+## Claude Code — `/screen`
 
+Open Terminal in the project folder and start a **fresh session for every screen** (it is faster):
 ```bash
 cd Claude-To-Figma-SAP-Application
 claude
 ```
-Start a **fresh session for every screen** (it is faster). Then:
+Then type `/screen`, your request and the Figma link:
 ```
-/screen "<your request>" https://www.figma.com/design/<FILE_KEY>/…
+/screen <your request> https://www.figma.com/design/<FILE_KEY>/…
 ```
-Claude analyses the request, shows the plan (wireframe, layer tree, SAP components, confidence) and waits. Answer **Approve**, **Reject** or **Modify** — only then it builds. A reference image works too: `/screen <image path> <Figma link>`.
+Claude shows the plan and waits. Answer **Approve**, **Reject** or **Modify** — only then it builds.
 
 ## Figma Agent
 
-**Install the skill (once):**
-1. Open the **SAP Bridge** plugin once in your Figma file (the bridge must be running). Wait for *v6 installed for the Figma Agent*, then close it. This stores the tools in the file.
-2. Download the skill: **[SKILL.md](https://github.com/Venelinhr/Claude-To-Figma-SAP-Application/blob/main/.claude/skills/sap-figma-agent/SKILL.md)** (use the download button on that page).
-3. In Figma click the **Agent** button → **Skills → Add skill** → upload `SKILL.md`. Replace an older version.
+**Install (once):**
+1. Open the **SAP Bridge** plugin in your Figma file once. Wait for *v6 installed for the Figma Agent*, then close it.
+2. Download **[SKILL.md](https://github.com/Venelinhr/Claude-To-Figma-SAP-Application/blob/main/.claude/skills/sap-figma-agent/SKILL.md)**.
+3. In Figma: **Agent → Skills → Add skill** → upload `SKILL.md`.
 
-**Use it:** open a **new Agent chat** and type what you want in plain words. No command needed.
-- **New screen** — the Agent shows you the plan and the layer tree and asks **Approve / Modify?**. After your Approve it builds the screen and checks it.
-- **Small change** — select the frame and say the change. It runs at once.
+**Use:** open a new Agent chat and type your request.
+- **New screen:** the Agent shows the plan and asks **Approve / Modify?** before it builds.
+- **Change a screen:** select the frame and say what to change. It runs at once.
 
 ## Example — what Claude shows you at the PLAN stage
 
-After analysis, Claude presents an ASCII wireframe + component breakdown for your approval **before writing a single line of Figma code.**
+After you send your request, you do **not** get a finished screen right away. First you see a **plan**, and nothing is built until you approve it. This is what you see in Claude Code `/screen` (the Figma Agent shows the same plan and the layer tree):
+
+1. **A wireframe** — the screen drawn in text, region by region.
+2. **The SAP components** — which real component is used for each region, and why.
+3. **The layer structure (L1–L5)** — the exact layer names the Figma frame will get.
+
+Read it, then answer **Approve**, **Reject** or **Modify**. Only after **Approve** the screen is built in Figma. (The plugin text box builds at once and shows no plan.)
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -169,16 +176,20 @@ Purchase Orders
 
 You can iterate on any part — change the floorplan, add a column, switch to mobile — before Claude builds anything.
 
-## Results (same prompt: Procurement Overview, 4 cards, 5 filters, 7-column table)
+## Results
 
-| Route | Time to the screen | Quality gates |
+The same request on every route: a Procurement Overview with 4 cards, 5 filters and a 7-column table.
+
+| Route | Time to the screen | Result |
 |---|---|---|
-| SAP Bridge plugin | **33–39 s** (was 3 min 53 s) | MATCH 100 · HYGIENE 0 · STRUCTURE 0 |
-| Claude Code `/screen` (fresh session) | about 50 s | same gates, full 5-section report |
-| Figma Agent chat | about 1 min 30 s with your Approve | clean frame, all required labels |
-| Figma Make (for comparison) | more than 2 min | a working SAPUI5 app, not an editable Figma frame |
+| SAP Bridge plugin | **33–39 s** | all quality checks pass |
+| Claude Code `/screen` | about 50 s | same checks, plus the plan |
+| Figma Agent chat | about 1 min 30 s (with your Approve) | clean frame, all required labels |
+| Figma Make | more than 2 min | a working app, not an editable Figma frame |
 
-## How it works (v6 in short)
+Quality checks: MATCH 100 · HYGIENE 0 · STRUCTURE 0. Before v6 the plugin needed 3 min 53 s for the same request.
+
+## How it works
 
 1. **Route and match** — the request is matched to the closest stored layout (`knowledge/gold/`).
 2. **Content** — the model writes one content-only file (filters, cards, table, steps, title). It never writes geometry.
@@ -204,8 +215,6 @@ You can also add your own rules at any time — just tell Claude "hard rule: alw
 |---|---|
 | [`docs/v6/screen.md`](docs/v6/screen.md) | the `/screen` command |
 | [`docs/v6/figma-agent-skill.md`](docs/v6/figma-agent-skill.md) | the Figma Agent skill (source) |
-
-**The previous system (v2–v5, the old `main`) is kept whole on branch [`v7`](../../tree/v7).**
 
 ## License
 
