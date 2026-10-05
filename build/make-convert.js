@@ -238,7 +238,7 @@ function convert(D, KIT, MAP, EXTRA, nameArg) {
   const CONTAINERS = new Set(['sap.f.DynamicPage', 'sap.f.DynamicPageTitle', 'sap.f.DynamicPageHeader', 'sap.tnt.ToolPage', 'sap.tnt.NavigationList', 'sap.m.IconTabHeader', 'sap.m.ScrollContainer', 'sap.m.Page', 'sap.m.Panel', 'sap.m.List', 'sap.m.OverflowToolbar', 'sap.m.Toolbar', 'sap.ui.layout.VerticalLayout', 'sap.ui.layout.HorizontalLayout', 'sap.ui.layout.Grid', 'sap.m.ObjectIdentifier']);   // layout containers: their children are placed by the measured boxes (frame())
   const WIDGET = /(ComboBox|MultiInput|Input|TextArea|Picker|Selection|StepInput|Slider|RangeSlider|RatingIndicator|ProgressIndicator|Tokenizer|Token)$/;   // input-like widgets whose children are internals, not content
   const box = c => c.box.slice();
-  const inst = (c, cp, pr, label, tx) => ({ _src: c.id, _b: cp === 'Switch' && KIT.components[cp] ? [c.box[0], c.box[1] + (c.box[3] - KIT.components[cp].h) / 2, KIT.components[cp].w, KIT.components[cp].h] : box(c), _k: 'inst', _grow: grow(c), _w: px(c.props.width), n: label || cp, k: 'i', cp, pr, w: (cp === 'Switch' || cp === 'Icon Button') && KIT.components[cp] ? KIT.components[cp].w : R(c.box[2]), h: (KIT.components[cp] && KIT.components[cp].h && cp !== 'Shell Bar' && cp !== 'Tab' && cp !== 'Navigation Item' && cp !== 'Object Status' && cp !== 'Text Area') ? KIT.components[cp].h : R(c.box[3]), _intr: (KIT.components[cp] || {}).h, ...(tx ? { tx } : {}) });
+  const inst = (c, cp, pr, label, tx) => ({ _src: c.id, _b: cp === 'Switch' && KIT.components[cp] ? [c.box[0], c.box[1] + (c.box[3] - KIT.components[cp].h) / 2, KIT.components[cp].w, KIT.components[cp].h] : box(c), _k: 'inst', _grow: grow(c), _w: px(c.props.width), n: label || cp, k: 'i', cp, pr, w: (cp === 'Switch' || cp === 'Icon Button') && KIT.components[cp] ? KIT.components[cp].w : R(c.box[2]), h: (KIT.components[cp] && KIT.components[cp].h && cp !== 'Shell Bar' && cp !== 'Tab' && cp !== 'Navigation Item' && cp !== 'Object Status' && cp !== 'Text Area' && cp !== 'Message Strip') ? KIT.components[cp].h : R(c.box[3]), _intr: (KIT.components[cp] || {}).h, ...(tx ? { tx } : {}) });
   // the app's own icon on a status: the kit status keeps its icon as a nested instance, so the plugin swaps it (the user can swap it again)
   const withIco = (n, src) => { const ic = src ? icon(src) : null; if (ic) n.ico = { Icon: ic }; return n; };
   // a DatePicker keeps an ISO value and shows it with its displayFormat (dd MMM yyyy …)
@@ -274,9 +274,12 @@ function convert(D, KIT, MAP, EXTRA, nameArg) {
       case 'sap.tnt.SideNavigation': return sidenav(c);
       case 'sap.m.IconTabBar': return tabs(c);
       case 'sap.m.Button': case 'sap.m.ToggleButton': {
-        const plain = (!p.type || p.type === 'Default') && c.st.bw === 0 && !c.st.bg, type = plain ? 'Tertiary' : (MAP.button_type[p.type || 'Default'] || 'Secondary'), ic = p.icon ? icon(p.icon) : null;
-        return p.text ? inst(c, 'Button', { Type: type, 'Form Factor': 'Compact', '✏️ Text': p.text, ...(ic ? { 'Icon Left': true, Icon: ic } : {}) }, 'Button ' + p.text)
-          : inst(c, 'Icon Button', { Type: type === 'Primary' ? 'Primary' : type === 'Tertiary' ? 'Tertiary' : 'Secondary', 'Form Factor': 'Compact', ...(p.enabled === false ? { 'Interaction State': 'Disabled' } : {}), ...(ic ? { Icon: ic } : {}) }, 'Icon Button ' + (ic || ''));
+        const inBar = /sapMBarChild/.test((c.aria && c.aria.cls) || ''), plain = (!p.type || p.type === 'Default') && inBar && c.st.bw === 0 && !c.st.bg;     // a toolbar / header button (sapMBarChild) is flat; a free-standing Default button IS bordered (the probe reads the outer element, UI5 paints the border on the inner one)
+        const type = plain ? 'Tertiary' : (MAP.button_type[p.type || 'Default'] || 'Secondary');
+        const blank = !!p.icon && (kids[c.id] || []).some(k => k.cls === 'sap.ui.core.Icon' && !/SAP-icons/i.test((k.tx || {}).ff || 'SAP-icons'));   // Make shows no glyph (the name is not in the SAP icon font) but keeps its room
+        const ic = p.icon ? (blank ? (['info', 'accept', 'hint'].find(n => ICONS.has(n)) || [...ICONS][0]) : icon(p.icon)) : null, btn = (n) => { if (blank) n.fade = ['Icon']; return n; };
+        return btn(p.text ? inst(c, 'Button', { Type: type, 'Form Factor': 'Compact', '✏️ Text': p.text, ...(ic ? { 'Icon Left': true, Icon: ic } : {}) }, 'Button ' + p.text)
+          : inst(c, 'Icon Button', { Type: type === 'Primary' ? 'Primary' : type === 'Tertiary' ? 'Tertiary' : 'Secondary', 'Form Factor': 'Compact', ...(p.enabled === false ? { 'Interaction State': 'Disabled' } : {}), ...(ic ? { Icon: ic } : {}) }, 'Icon Button ' + (ic || '')));
       }
       case 'sap.m.Input': return !p.value && p.placeholder ? inst(c, 'Input', { 'Form Factor': 'Compact', Content: 'Placeholder', '✏️ Placeholder': p.placeholder }, 'Input ' + p.placeholder.slice(0, 24)) : inst(c, 'Input', { 'Form Factor': 'Compact', Content: 'Typed Text', '✏️ Typed Text': p.value || '' }, 'Input ' + (p.value || '').slice(0, 24));
       case 'sap.m.MultiComboBox': {                            // nothing selected: hide the kit's sample tokens, show the placeholder in the nested Input
@@ -400,7 +403,9 @@ function convert(D, KIT, MAP, EXTRA, nameArg) {
             const sn = inst(Object.assign({}, c, { box: [c.box[0] + 20, c.box[1], c.box[2] - 20, c.box[3]] }), 'Object Status', { Semantic: 'None', Inverted: 'No' }, 'Object Status ' + (p.text || ''), { Text: p.text || '' });
             const rw = layout({ _b: box(c), _k: 'frame', n: 'Object Status ' + (p.text || ''), d: 'H' }, [icn, sn], { V: false, st: { ai: 'center', jc: 'flex-start' }, flex: true }); rw.g = 4; rw.a = 'MC'; return rw;
           } }
-        return withIco(inst(c, 'Object Status', { Semantic: sem, Inverted: p.inverted === true ? 'Yes' : 'No' }, 'Object Status ' + (p.text || ''), { Text: p.text || '' }), p.icon);
+        const os = withIco(inst(c, 'Object Status', { Semantic: sem, Inverted: p.inverted === true ? 'Yes' : 'No' }, 'Object Status ' + (p.text || ''), { Text: p.text || '' }), p.icon);
+        if (!p.icon && sem !== 'None') { os.hide = ['Icon Container']; os.fit = ['Text']; }
+        return os;
       }
       case 'sap.ui.layout.DynamicSideContent': {              // side column (fixed) beside the main content (takes the free width)
         const kids = ch(c).map(conv).filter(Boolean);
@@ -418,9 +423,11 @@ function convert(D, KIT, MAP, EXTRA, nameArg) {
         const items = ch(c).filter(k => /^sap\.m\.(Button|ToggleButton|SegmentedButtonItem)$/.test(k.cls)).sort((a, b) => a.box[0] - b.box[0] || (a.cls === 'sap.m.SegmentedButtonItem' ? -1 : 1))
           .filter((k, i, arr) => !arr.slice(0, i).some(o => Math.abs(o.box[0] - k.box[0]) < 2 && Math.abs(o.box[2] - k.box[2]) < 2));
         if (!items.length) return frame(c, 'Segmented Button');
-        const nodes = items.map(k => { const sel = /SegBBtnSel|ToggleBtnPressed|Pressed/.test((k.aria && k.aria.cls) || ''), ic = k.props.icon ? icon(k.props.icon) : null;
-          return inst(k, 'Segmented Button Singular', Object.assign({ 'Form Factor': 'Compact', Type: k.props.text ? 'Text' : 'Icon', Toggled: sel ? 'True' : 'False' }, k.props.text ? { '✏️ Text': k.props.text } : {}, ic ? (k.props.text ? { 'Icon Left': true, Icon: ic } : { Icon: ic }) : {}), 'Segment ' + (k.props.text || ic || '')); });
-        return layout({ _b: box(c), _k: 'frame', n: 'Segmented Button', d: 'H' }, nodes, { V: false, st: {}, flex: false });
+        const segs = items.map(k => ({ t: k.props.text || '', ic: k.props.icon ? icon(k.props.icon) : null, on: /SegBBtnSel|ToggleBtnPressed|Pressed/.test((k.aria && k.aria.cls) || '') }));
+        if (segs.length > 5) { const nodes = items.map((k, i) => inst(k, 'Segmented Button Singular', Object.assign({ 'Form Factor': 'Compact', Type: segs[i].t ? 'Text' : 'Icon', Toggled: segs[i].on ? 'True' : 'False' }, segs[i].t ? { '✏️ Text': segs[i].t } : {}, segs[i].ic ? (segs[i].t ? { 'Icon Left': true, Icon: segs[i].ic } : { Icon: segs[i].ic }) : {}), 'Segment ' + (segs[i].t || segs[i].ic || ''))); return layout({ _b: box(c), _k: 'frame', n: 'Segmented Button', d: 'H' }, nodes, { V: false, st: {}, flex: false }); }   // the kit part holds at most 5
+        const sb = inst(Object.assign({}, c, { box: [c.box[0], c.box[1], c.box[2], c.box[3]] }), 'Segmented Button', { 'Form Factor': 'Compact', Type: segs.some(s => s.t) ? 'Text' : 'Icon', '3rd Button': segs.length >= 3, '4th Button': segs.length >= 4, '5th Button': segs.length >= 5 }, 'Segmented Button');
+        sb.seg = segs; sb._w = null;
+        return layout({ _b: box(c), _k: 'frame', n: 'Segmented Button Row', d: 'H' }, [sb], { V: false, st: {}, flex: false });
       }
       case 'sap.uxap.AnchorBar': {                             // Object Page: the section buttons are Inline tabs of the kit tab bar
         const bts = ch(c).filter(k => /^sap\.m\.(Button|ToggleButton|MenuButton)$/.test(k.cls) && k.props.text).sort((a, b) => a.box[0] - b.box[0]);
@@ -492,7 +499,7 @@ function convert(D, KIT, MAP, EXTRA, nameArg) {
     while ((m = re.exec(src))) {
       if (m[4] !== undefined) { const t = m[4].replace(/\s+/g, ' ').trim(); if (t) stack[stack.length - 1].kids.push({ text: t }); }
       else if (m[1]) { if (stack.length > 1) stack.pop(); }
-      else { const el = { tag: m[2].toLowerCase(), css: cssOf((/style="([^"]*)"/.exec(m[3]) || [])[1]), kids: [] }; stack[stack.length - 1].kids.push(el); stack.push(el); }
+      else { const el = { tag: m[2].toLowerCase(), css: cssOf((/style="([^"]*)"/.exec(m[3]) || [])[1]), cls: (/class="([^"]*)"/.exec(m[3]) || [])[1] || '', kids: [] }; stack[stack.length - 1].kids.push(el); stack.push(el); }
     }
     return root;
   }
@@ -510,7 +517,11 @@ function convert(D, KIT, MAP, EXTRA, nameArg) {
       return { _k: 'text', n: t.slice(0, 28), k: 't', t, st: style({ cls: 'sap.m.Text', tx: { fs, fw: bold ? 700 : 400, ff: bold ? '72-Bold' : '72' } }), bg: inkFor(css, '#131e29'), w: Math.max(8, Math.round(t.length * fs * 0.56)), h: Math.round(fs * 1.4), s: 'HH' };
     };
     const build = (el, inh, top) => {
-      const css = { ...inh, ...el.css }, sub = el.kids.filter(k => k.tag), own = el.css;
+      const css = { ...inh, ...el.css }, sub = el.kids.filter(k => k.tag), own = top && c.st.display === 'flex' ? { display: 'flex', 'flex-direction': c.st.dir === 'column' ? 'column' : 'row', gap: String(c.st.gap || '').split('/')[0], ...el.css } : el.css;
+      if (!top && /line|track/i.test(el.cls || '')) {                                // "fsLine": a rule left and right of its label
+        const lf = leaf(el, inh), rule = () => ({ _k: 'frame', n: 'Line', d: 'V', s: 'FX', w: 10, h: 1, bg: tok('#d9d9d9', 'border') });
+        if (lf) return { _k: 'frame', n: 'Line', d: 'H', a: 'MC', g: 8, c: [rule(), lf, rule()], s: 'FH', w: lf.w + 28, h: lf.h };
+      }
       if (!sub.length) return leaf(el, inh);
       const row = /flex/.test(own.display || '') && !/column/.test(own['flex-direction'] || '');
       const parts = el.kids.map(k => k.text !== undefined ? leaf({ css: {}, kids: [k] }, css) : (/50%/.test(k.css['border-radius'] || '') ? null : build(k, { 'font-size': css['font-size'], 'font-weight': css['font-weight'], color: css.color }, false))).filter(Boolean);
@@ -592,6 +603,7 @@ function convert(D, KIT, MAP, EXTRA, nameArg) {
     if (right - (lastC.box[0] + lastC.box[2]) > 1.5) segs.push({ x: lastC.box[0] + lastC.box[2], w: right - (lastC.box[0] + lastC.box[2]) });   // trailing cell (navigation arrow)
     let flex = segs.filter(s => s.k && !px(s.k.props.width));
     if (!flex.length) flex = [segs.filter(s => s.k).sort((a, b) => b.w - a.w)[0]];
+    else if (flex.length > 1 && flex.length === segs.filter(s => s.k).length) flex = [flex.slice().sort((a, b) => b.w - a.w)[0]];   // all auto: fill-sharing would ignore Make's widths (cells with content cannot shrink) → fixed widths, one flexible
     flex.forEach(s => { s.flex = true; });
     segs.forEach(s => { s.ox = s.x; s.ow = s.w; });                                                          // Make's own column geometry: cell contents keep their offsets from it
     {                                                                                                          // Make lets a wide table scroll sideways; a Figma table must fit its width → the flexible column gives way first, then the others shrink in proportion

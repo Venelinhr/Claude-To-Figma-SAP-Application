@@ -118,6 +118,14 @@
   "microphone": {
    "key": "51e04da7cb207eef304ad796b0094135b266eae6",
    "desc": "SAP Web UI Kit"
+  },
+  "weather-proofing": {
+   "key": "41e042279edb356ba15a499a2284f613cec0e438",
+   "desc": "SAP Web UI Kit"
+  },
+  "ai": {
+   "key": "90f321fb2e05adcd1322d1b98872293ae2f06882",
+   "desc": "SAP Web UI Kit"
   }
  }
 }
