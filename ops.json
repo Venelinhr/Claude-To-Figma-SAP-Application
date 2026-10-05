@@ -1,0 +1,46 @@
+{
+  "set": [
+    {"n":"Steps count","t":"6 Steps  •  Current Approver:"},
+    {"n":"Current approver link","tx":{"Text":"Tanja Fischer"}},
+    {"n":"Avatar 1","tx":{"Initials":"TL"}},
+    {"n":"Approver name 1","tx":{"Text":"Thomas Lang"}},
+    {"n":"Approver role 1","t":"Team Lead"},
+    {"n":"Step status 1","tx":{"Text":"Approved: Nov 3"}},
+    {"n":"Step status 1","pr":{"Semantic":"Success"}},
+    {"n":"Avatar 2","tx":{"Initials":"CK"}},
+    {"n":"Approver name 2","tx":{"Text":"Clara König"}},
+    {"n":"Approver role 2","t":"Cost Center Owner"},
+    {"n":"Step status 2","tx":{"Text":"Approved: Nov 4"}},
+    {"n":"Step status 2","pr":{"Semantic":"Success"}},
+    {"n":"Avatar 3","tx":{"Initials":"TF"}},
+    {"n":"Approver name 3","tx":{"Text":"Tanja Fischer"}},
+    {"n":"Approver role 3","t":"Finance Reviewer"},
+    {"n":"Step status 3","tx":{"Text":"Viewed: Nov 5"}},
+    {"n":"Step status 3","pr":{"Semantic":"Information"}},
+    {"n":"Avatar 4","tx":{"Initials":"SM"}},
+    {"n":"Approver name 4","tx":{"Text":"Stefan Müller"}},
+    {"n":"Approver role 4","t":"Compliance"},
+    {"n":"Step status 4","tx":{"Text":"Not Started"}},
+    {"n":"Step status 4","pr":{"Semantic":"None"}},
+    {"n":"Avatar 5","tx":{"Initials":"AB"}},
+    {"n":"Approver name 5","tx":{"Text":"Andrea Braun"}},
+    {"n":"Approver role 5","t":"HR"},
+    {"n":"Step status 5","tx":{"Text":"Not Started"}},
+    {"n":"Step status 5","pr":{"Semantic":"None"}}
+  ],
+  "clone": [
+    {
+      "n": "Step 5",
+      "times": 1,
+      "with": [
+        [
+          {"n":"Avatar 5","tx":{"Initials":"RW"}},
+          {"n":"Approver name 5","tx":{"Text":"Robert Weber"}},
+          {"n":"Approver role 5","t":"CFO"},
+          {"n":"Step status 5","tx":{"Text":"Not Started"}},
+          {"n":"Step status 5","pr":{"Semantic":"None"}}
+        ]
+      ]
+    }
+  ]
+}

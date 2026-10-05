@@ -48,7 +48,8 @@ async function measure({ plan, jobDir, ref, spec, auditName = 'audit.txt', seeNa
     try { g.structureLines = require('./structure.js').check(JSON.parse(fs.readFileSync(geom, 'utf8')), ref && sp ? JSON.parse(fs.readFileSync(sp, 'utf8')) : null); g.structure = g.structureLines.length; }
     catch (e) { g.missing.push('geometry.json unreadable'); }
   } else if (ref) g.missing.push('geometry.json');
-  g.pass = !g.missing.length && g.match >= 90 && g.hygiene === 0 && !g.structure && (!ref || g.eye >= 95);
+  try { const o = require('child_process').spawnSync(process.execPath, [path.join(__dirname, 'overlap.js'), geom, '--advisory'], { encoding: 'utf8' }); g.smashLines = String(o.stdout).trim().split('\n').filter(l => /^(TEXT|FAKE)/.test(l)); g.smash = g.smashLines.filter(l => /^(TEXT\/TEXT|TEXT\/IMAGE|TEXT\/ICON|FAKE)/.test(l)).length; } catch (_) { g.smash = 0; g.smashLines = []; }
+  g.pass = !g.missing.length && g.match >= 90 && g.hygiene === 0 && !g.structure && !g.smash && (!ref || g.eye >= 95);
   return g;
 }
 
@@ -98,7 +99,8 @@ if (require.main === module) {
     const g = await measure({ plan, jobDir, ref });
     if (!g) { console.log(`plan not found: ${plan}`); process.exit(2); }
     const pc = (v) => (v == null ? '—' : v + '%');
-    console.log(`MATCH ${pc(g.match)} · HYGIENE ${g.hygiene == null ? '?' : g.hygiene} · STRUCTURE ${g.structure == null ? '?' : g.structure} · EYE ${ref ? pc(g.eye) : '— (no reference)'}`);
+    (g.smashLines || []).slice(0, 6).forEach(l => console.log(' ' + l.slice(0, 170)));
+    console.log(`MATCH ${pc(g.match)} · HYGIENE ${g.hygiene == null ? '?' : g.hygiene} · STRUCTURE ${g.structure == null ? '?' : g.structure} · SMASH ${g.smash == null ? '?' : g.smash} · EYE ${ref ? pc(g.eye) : '— (no reference)'}`);
     for (const l of g.structureLines.slice(0, 8)) console.log('  ' + l);
     console.log(`lines: ${path.join(jobDir, 'audit.txt')}${ref ? ` · ${path.join(jobDir, 'see-out', 'fix.md')} · ${path.join(jobDir, 'see-out', 'diff-sheet.png')}` : ''}`);
     if (ref && g.eye != null && g.eye < 95) {                      // never dismissed: the fix list is read, line by line

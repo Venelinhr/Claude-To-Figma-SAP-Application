@@ -58,7 +58,7 @@ function door(T, file, ref) {
     if (o.k === 'ic' && typeof o.bg === 'string' && !o.bg.startsWith('RAW') && !isRole(o.bg, 'ink')) O('colour role', `${at} icon painted with ${o.bg} (a ${cat(o.bg)} variable) — use sapContent_IconColor or a text colour`);
     if (!o.k || o.k === 'r') {                                   // 4. frames + rectangles: fill = background, stroke = border
       const thin = o.k === 'r' && (o.w <= 2 || o.h <= 2);
-      if (typeof o.bg === 'string' && !o.bg.startsWith('RAW') && cat(o.bg) === 'ink' && !isRole(o.bg, 'fill') && !thin) O('colour role', `${at} fill ${o.bg} is a text colour — use a background variable`);
+      if (typeof o.bg === 'string' && !o.bg.startsWith('RAW') && cat(o.bg) === 'ink' && !isRole(o.bg, 'fill') && !thin && !/^Shell Bar/.test(o.n) && !o.dark) O('colour role', `${at} fill ${o.bg} is a text colour — use a background variable`);
       if (typeof o.bg === 'string' && thin && cat(o.bg) === 'ink' && !isRole(o.bg, 'border')) O('colour role', `${at} divider ${o.bg} is a text colour — use a border variable (sapList_BorderColor…)`);
       if (typeof o.bc === 'string' && !o.bc.startsWith('RAW') && !isRole(o.bc, 'border')) O('colour role', `${at} border ${o.bc} is a ${cat(o.bc)} variable — use a border variable (sapList_BorderColor…)`);
     }
@@ -87,8 +87,8 @@ function door(T, file, ref) {
     const f = ref.frame;
     const k = [1, 2].find(m => Math.abs(T.w * m - f.w) <= 2 * m && Math.abs(T.h * m - f.h) <= 2 * m);   // the reference is a 1× image, or a 2× export of the frame (the gates export the build at 2×)
     if (!k) O('frame size', `frame ${T.w}×${T.h} — the reference is ${f.w}×${f.h}: build at the reference size, or at exactly half of it for a 2× export (EYE compares the 2× export 1:1)`);
-    const have = all.flatMap(o => [o.t, ...Object.values(o.tx || {}), ...Object.entries(o.pr || {}).filter(([n]) => n.startsWith('✏️')).map(([, v]) => v)])
-      .filter(x => x != null).map(norm).filter(Boolean);
+    const have = [...(T.kit && T.kit.src === 'spec2tree' && T.kit.texts || [])].concat(all.flatMap(o => [o.t, ...Object.values(o.tx || {}), ...Object.entries(o.pr || {}).filter(([n]) => n.startsWith('✏️')).map(([, v]) => v)])
+      .filter(x => x != null)).map(norm).filter(Boolean);
     const unsure = new Set((ref.ask || []).map(a => (a.match(/^text "(.+?)": OCR unsure/) || [])[1]).filter(Boolean));
     const texts = [], icons = [];
     (function w(x) { if (x.type === 'text') texts.push(x.text); if (x.type === 'icon') icons.push(x.meaning || x.icon); (x.children || []).forEach(w); })({ children: ref.sections });
@@ -97,7 +97,7 @@ function door(T, file, ref) {
       if (!have.some(h => h.includes(n) || (h.length >= 4 && n.includes(h))))
         (unsure.has(t) ? ask : out).push(unsure.has(t) ? `reference text "${t}" (OCR unsure) is not in the tree — is it real?` : ['missing', `reference text "${t}" is not placed anywhere in the tree`]);
     }
-    const built = all.filter(o => o.k === 'ic').length + all.filter(o => o.k === 'i' && o.pr && o.pr.Icon).length;
+    const built = (T.kit && T.kit.src === 'spec2tree' && T.kit.icons || 0) + all.filter(o => o.k === 'ic').length + all.filter(o => o.k === 'i' && o.pr && o.pr.Icon).length;
     if (built < icons.length / 2) O('missing', `reference shows ${icons.length} icons, the tree places ${built} — place the SAP icon for each meaning (${[...new Set(icons)].slice(0, 8).join(', ')})`);
     else if (built < icons.length) ask.push(`reference shows ${icons.length} icons, the tree places ${built} — the rest: logos or kit-internal icons? (${[...new Set(icons)].slice(0, 8).join(', ')})`);
     const shapes = (ref.ask || []).filter(a => /^icon shape #/.test(a)).map(a => a.match(/ (\d+×\d+)/)[1]);

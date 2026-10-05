@@ -1,8 +1,8 @@
 ---
 name: screen-builder
+model: sonnet
 description: v5 /screen BUILD + CHECK in its own context — sends the generated build call to Figma, places logo crops, dumps the build, runs gates.js, returns only a 5-line summary. Use after the user approved the plan, so the large build/dump payloads never enter the main chat.
 tools: Bash, Read, mcp__figma__use_figma, mcp__figma__upload_assets, mcp__figma__download_assets
-model: sonnet
 effort: low
 ---
 First reply line: `via subagent fallback` plus an honest ETA (5-10 min, ~40-60k tokens). The 1-2 min promise of v6 does not hold on this lane.

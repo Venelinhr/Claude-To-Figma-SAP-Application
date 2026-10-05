@@ -56,6 +56,12 @@ function place(o, x, y) {
 measure(T);
 place(T, 0, 0);
 const all = []; (function walk(o, d) { o._d = d; all.push(o); (o.c || []).forEach(k => walk(k, d + 1)); })(T, 0);
+// the layout simulation (run.js writes it next to the tree) knows the REAL boxes; the small pass above only guesses — use the real ones by layer name
+try {
+  const gf = require('path').join(require('path').dirname(file), 'sim.geometry.json'), byName = {};
+  for (const r of JSON.parse(fs.readFileSync(gf, 'utf8'))) byName[r[2]] = r;
+  if (all.filter(o => byName[o.n]).length >= all.length * 0.8) for (const o of all) { const r = byName[o.n]; if (r) { o._x = r[3]; o._y = r[4]; o._w = r[5]; o._h = r[6]; } }
+} catch (_) {}
 
 function ascii(maxDepth) {
   const W = 118, sx = W / T.w, sy = sx / 2, H = Math.max(6, Math.round(T.h * sy));
@@ -167,7 +173,7 @@ if (cmd === 'plan') {
   // 2026-10-01: wide screens use the same style (columns side by side). `plan --grid` forces the old to-scale grid + the detailed L1-L5 list.
   const NARROW = !process.argv.includes('--grid'), SK = NARROW ? require('./sketch.js') : null;
   const BLOCKS = NARROW && T.w > 600 && !process.argv.includes('--dense'), BK = BLOCKS ? SK.scene(T) : null;   // 2026-10-01: wide screens = zone map (boxes where the zones sit); `--dense` = the text columns
-  console.log(`FRAME  ${T.w}×${T.h} · ${T.n} · ${all.length} layers\n\nWIREFRAME${NARROW ? ' (drawn from the tree, not to scale)' : ''}\n${BLOCKS ? BK.text + '\n\nZONE KEY (the letters in the drawing)\n' + BK.zones.map(z => z.letter + '  ' + z.name + (z.summary ? ' — ' + z.summary : '')).join('\n') : NARROW ? SK.sketch(T) : ascii(3)}\n\nL1-L5 LAYER TREE (names = what the Figma layers will be called)\n${NARROW ? SK.layerTree(T) : lTree(Number(/^\d+$/.test(depthArg || '') ? depthArg : 5))}\n\nSAP COMPONENTS (real kit keys)\n${compTable()}\n\nLISTS\n${lists()}\n\nDOOR  ${problems.length ? '✗ ' + problems.length + ' OUT — fix the tree, run again, never show a plan with OUT\n' + problems.map(p => '  ✗ ' + p).join('\n') : '✓ ALL IN — show the plan'}${ASKS.length ? '\nASK THE USER\n' + ASKS.map(a => '  ? ' + a).join('\n') : ''}`);
+  console.log(`FRAME  ${T.w}×${T.h} · ${T.n} · ${all.length} layers\n\nWIREFRAME${NARROW ? ' (drawn from the tree, not to scale)' : ''}\n${BLOCKS ? 'READ IT TOP TO BOTTOM, LEFT TO RIGHT  (⟨name⟩ = icon · [Name "text"] = kit component · plain text = text · y = pixel row)\n' + require('./bands.js').bands(T, all) : NARROW ? SK.sketch(T) : ascii(3)}\n\nL1-L5 LAYER TREE (names = what the Figma layers will be called)\n${NARROW ? SK.layerTree(T) : lTree(Number(/^\d+$/.test(depthArg || '') ? depthArg : 5))}\n\nSAP COMPONENTS (real kit keys)\n${compTable()}\n\nLISTS\n${lists()}\n\nDOOR  ${problems.length ? '✗ ' + problems.length + ' OUT — fix the tree, run again, never show a plan with OUT\n' + problems.map(p => '  ✗ ' + p).join('\n') : '✓ ALL IN — show the plan'}${ASKS.length ? '\nASK THE USER\n' + ASKS.map(a => '  ? ' + a).join('\n') : ''}`);
   process.exit(problems.length ? 1 : 0);
 }
 if (cmd === 'lint') { console.log(problems.length ? problems.map(p => '✗ ' + p).join('\n') : '✓ lint clean'); process.exit(problems.length ? 1 : 0); }

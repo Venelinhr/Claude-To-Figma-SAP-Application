@@ -1,14 +1,544 @@
 {
-  "_doc": "UI5 control -> SAP Web UI Kit mapping data for build/make2tree.js. Logic lives in make2tree.js; names here are checked against knowledge/live/kit.json by build/door.js.",
-  "skip_cls": ["sap.m.FlexItemData", "sap.m.IconTabFilterExpandButtonBadge", "sap.m.IconTabHeader"],
-  "skip_in_dynamic_header": ["sap.m.Button", "sap.m.ToggleButton"],
-  "icon_alias": {
-    "menu2": "menu", "flight": "flight", "customer": "group", "map": "globe", "appointment": "calendar",
-    "employee": "group", "person-placeholder": "group", "pushpin-off": "flag"
+ "_doc": "UI5 control -> SAP Web UI Kit mapping data for build/make2tree.js. Logic lives in make2tree.js; names here are checked against knowledge/live/kit.json by build/door.js.",
+ "skip_cls": [
+  "sap.m.FlexItemData",
+  "sap.m.IconTabFilterExpandButtonBadge",
+  "sap.m.IconTabHeader"
+ ],
+ "skip_in_dynamic_header": [
+  "sap.m.Button",
+  "sap.m.ToggleButton"
+ ],
+ "icon_alias": {
+  "menu2": "menu",
+  "flight": "flight",
+  "customer": "group",
+  "map": "globe",
+  "appointment": "calendar",
+  "employee": "group",
+  "arrow-top": "navigation-up-arrow",
+  "arrow-bottom": "navigation-down-arrow",
+  "person-placeholder": "group",
+  "pushpin-off": "flag"
+ },
+ "button_type": {
+  "Emphasized": "Primary",
+  "Default": "Secondary",
+  "Transparent": "Tertiary",
+  "Accept": "Accept",
+  "Reject": "Reject",
+  "Attention": "Attention",
+  "Ghost": "Secondary",
+  "Neutral": "Secondary",
+  "Up": "Secondary",
+  "Back": "Tertiary"
+ },
+ "avatar_color": {
+  "Accent1": "1",
+  "Accent2": "2",
+  "Accent3": "3",
+  "Accent4": "4",
+  "Accent5": "5",
+  "Accent6": "6",
+  "Accent7": "7",
+  "Accent8": "8",
+  "Accent9": "9",
+  "Accent10": "10",
+  "Transparent": "Transparent",
+  "Placeholder": "Placeholder"
+ },
+ "fill_pref": [
+  "sapBackgroundColor",
+  "sapBaseColor",
+  "sapShell_Background",
+  "sapList_Background",
+  "sapTile_Background",
+  "sapPageHeader_Background",
+  "sapGroup_ContentBackground",
+  "sapObjectHeader_Background",
+  "sapList_SelectionBackgroundColor"
+ ],
+ "border_pref": [
+  "sapList_BorderColor",
+  "sapTile_BorderColor",
+  "sapGroup_ContentBorderColor",
+  "sapPageHeader_BorderColor",
+  "sapContent_Selected_ForegroundColor",
+  "sapSelectedColor"
+ ],
+ "ink_pref": [
+  "sapTextColor",
+  "sapContent_LabelColor",
+  "sapLinkColor",
+  "sapPositiveTextColor",
+  "sapNegativeTextColor",
+  "sapCriticalTextColor",
+  "sapTitleColor",
+  "sapContent_IconColor",
+  "sapContent_NonInteractiveIconColor"
+ ],
+ "controls": {
+  "_doc": "Data-driven UI5 control → SAP kit part. props: kit property → spec. spec = \"=literal\" | {from: ui5 property, map: {value: kitValue}, def: kitValue, bool: true (boolean property), boolStr: true (True/False string), not: true, icon: true (kit icon of the ui5 icon), pct:[min,max] (value as 0/25/50/75/100 %)}. tx: inner text layer → ui5 property ('@first' = first visible text, '@last' = last). Every comp / property / value is checked against kit.json by test/make2tree.test.js.",
+  "sap.m.MessageStrip": {
+   "comp": "Message Strip",
+   "props": {
+    "Value State": {
+     "from": "type",
+     "map": {
+      "Information": "Information",
+      "Success": "Positive",
+      "Warning": "Critical",
+      "Error": "Negative",
+      "None": "Information"
+     },
+     "def": "Information"
+    },
+    "Icon": {
+     "from": "showIcon",
+     "boolStr": true,
+     "def": "True"
+    },
+    "Close Button": {
+     "from": "showCloseButton",
+     "bool": true,
+     "def": false
+    }
+   },
+   "tx": {
+    "@first": "text"
+   }
   },
-  "button_type": { "Emphasized": "Primary", "Default": "Secondary", "Transparent": "Tertiary", "Accept": "Accept", "Reject": "Reject", "Attention": "Attention", "Ghost": "Secondary", "Neutral": "Secondary", "Up": "Secondary", "Back": "Tertiary" },
-  "avatar_color": { "Accent1": "1", "Accent2": "2", "Accent3": "3", "Accent4": "4", "Accent5": "5", "Accent6": "6", "Accent7": "7", "Accent8": "8", "Accent9": "9", "Accent10": "10", "Transparent": "Transparent", "Placeholder": "Placeholder" },
-  "fill_pref": ["sapBackgroundColor", "sapBaseColor", "sapShell_Background", "sapList_Background", "sapTile_Background", "sapPageHeader_Background", "sapGroup_ContentBackground", "sapObjectHeader_Background", "sapList_SelectionBackgroundColor"],
-  "border_pref": ["sapList_BorderColor", "sapTile_BorderColor", "sapGroup_ContentBorderColor", "sapPageHeader_BorderColor", "sapContent_Selected_ForegroundColor", "sapSelectedColor"],
-  "ink_pref": ["sapTextColor", "sapContent_LabelColor", "sapLinkColor", "sapPositiveTextColor", "sapNegativeTextColor", "sapCriticalTextColor", "sapTitleColor", "sapContent_IconColor", "sapContent_NonInteractiveIconColor"]
+  "sap.m.ProgressIndicator": {
+   "comp": "Progress Indicator",
+   "props": {
+    "Value State": {
+     "from": "state",
+     "map": {
+      "None": "None",
+      "Error": "Negative",
+      "Warning": "Critical",
+      "Success": "Positive",
+      "Information": "Information"
+     },
+     "def": "None"
+    },
+    "Text": {
+     "from": "showValue",
+     "bool": true,
+     "def": true
+    },
+    "Text Value": {
+     "from": "displayValue"
+    }
+   }
+  },
+  "sap.m.BusyIndicator": {
+   "comp": "Busy Indicator",
+   "props": {
+    "Text": {
+     "from": "text",
+     "bool": true,
+     "def": false
+    },
+    "Text Value": {
+     "from": "text"
+    }
+   }
+  },
+  "sap.m.RatingIndicator": {
+   "comp": "Rating Indicator",
+   "props": {
+    "Interaction State": {
+     "from": "editable",
+     "map": {
+      "false": "Read Only",
+      "true": "Regular"
+     },
+     "def": "Regular"
+    }
+   }
+  },
+  "sap.m.Slider": {
+   "comp": "Slider",
+   "props": {
+    "Value": {
+     "from": "value",
+     "pct": [
+      "min",
+      "max"
+     ]
+    }
+   }
+  },
+  "sap.m.StepInput": {
+   "comp": "Step Input",
+   "props": {
+    "Value": {
+     "from": "value"
+    }
+   }
+  },
+  "sap.m.RadioButton": {
+   "comp": "Radio Button",
+   "props": {
+    "Label": {
+     "from": "text",
+     "bool": true,
+     "def": false
+    },
+    "✏️ Text": {
+     "from": "text"
+    },
+    "Selected": {
+     "from": "selected",
+     "boolStr": true,
+     "def": "False"
+    }
+   }
+  },
+  "sap.m.SplitButton": {
+   "comp": "Split Button",
+   "props": {
+    "Type": {
+     "from": "type",
+     "map": {
+      "Emphasized": "Primary",
+      "Default": "Secondary",
+      "Transparent": "Tertiary",
+      "Accept": "Accept",
+      "Reject": "Reject",
+      "Attention": "Attention",
+      "Ghost": "Secondary",
+      "Neutral": "Secondary"
+     },
+     "def": "Secondary"
+    }
+   },
+   "tx": {
+    "@first": "text"
+   }
+  },
+  "sap.m.MenuButton": {
+   "comp": "Menu Button",
+   "props": {
+    "Type": {
+     "from": "type",
+     "map": {
+      "Emphasized": "Primary",
+      "Default": "Secondary",
+      "Transparent": "Tertiary",
+      "Accept": "Accept",
+      "Reject": "Reject",
+      "Attention": "Attention",
+      "Ghost": "Secondary",
+      "Neutral": "Secondary"
+     },
+     "def": "Secondary"
+    },
+    "Text": {
+     "from": "text"
+    },
+    "Icon Left": {
+     "from": "icon",
+     "bool": true,
+     "def": false
+    },
+    "Icon": {
+     "from": "icon",
+     "icon": true
+    }
+   }
+  },
+  "sap.m.Token": {
+   "comp": "Token",
+   "props": {
+    "Text": {
+     "from": "text"
+    }
+   }
+  },
+  "sap.m.MultiInput": {
+   "comp": "Multi Input",
+   "props": {}
+  },
+  "sap.m.ComboBox": {
+   "comp": "Select",
+   "props": {
+    "Drop-Down": "=False"
+   },
+   "tx": {
+    "Input Text": "value"
+   }
+  },
+  "sap.m.TimePicker": {
+   "comp": "Time Picker",
+   "props": {
+    "Dropdown": "=False"
+   },
+   "tx": {
+    "@first": "value"
+   }
+  },
+  "sap.m.DateTimePicker": {
+   "comp": "Date Time Picker",
+   "props": {
+    "Dropdown": "=False"
+   },
+   "tx": {
+    "@first": "value"
+   }
+  },
+  "sap.m.Breadcrumbs": {
+   "comp": "Breadcrumb",
+   "props": {
+    "Current Item": {
+     "from": "currentLocationText"
+    }
+   }
+  },
+  "sap.m.IllustratedMessage": {
+   "comp": "Illustrated Message",
+   "props": {
+    "Title": {
+     "from": "title"
+    },
+    "Description": {
+     "from": "description"
+    }
+   }
+  },
+  "sap.m.NotificationListItem": {
+   "comp": "Notification List Item",
+   "props": {
+    "Type": "=Notification List Item",
+    "Title": {
+     "from": "title"
+    },
+    "Description": {
+     "from": "description"
+    },
+    "Read": {
+     "from": "unread",
+     "map": {
+      "true": "False",
+      "false": "True"
+     },
+     "def": "False"
+    }
+   }
+  },
+  "sap.tnt.InfoLabel": {
+   "comp": "Tag",
+   "props": {
+    "Text": {
+     "from": "text"
+    }
+   }
+  },
+  "sap.m.ColorPalette": {
+   "comp": "Color Palette",
+   "props": {}
+  },
+  "sap.ui.unified.ColorPicker": {
+   "comp": "Color Picker",
+   "props": {}
+  },
+  "sap.ui.unified.FileUploader": {
+   "comp": "File Uploader",
+   "props": {}
+  },
+  "sap.m.Carousel": {
+   "comp": "Carousel",
+   "props": {}
+  },
+  "sap.f.AvatarGroup": {
+   "comp": "Avatar Group",
+   "props": {}
+  },
+  "sap.m.StandardTreeItem": {
+   "comp": "Tree Item",
+   "props": {
+    "Levels": {
+     "from": "level",
+     "map": {
+      "0": "1",
+      "1": "2",
+      "2": "3",
+      "3": "4-6",
+      "4": "4-6",
+      "5": "4-6",
+      "6": "7+",
+      "7": "7+",
+      "8": "7+",
+      "9": "7+"
+     },
+     "def": "1"
+    }
+   },
+   "tx": {
+    "@first": "title"
+   }
+  },
+  "sap.ui.unified.MenuItem": {
+   "comp": "Menu List Item",
+   "props": {
+    "Text": {
+     "from": "text"
+    },
+    "Leading Icon": {
+     "from": "icon",
+     "bool": true,
+     "def": false
+    },
+    "Icon": {
+     "from": "icon",
+     "icon": true
+    },
+    "Interaction State": {
+     "from": "enabled",
+     "map": {
+      "false": "Disabled",
+      "true": "Regular"
+     },
+     "def": "Regular"
+    }
+   }
+  },
+  "sap.m.MenuItem": {
+   "comp": "Menu List Item",
+   "props": {
+    "Text": {
+     "from": "text"
+    },
+    "Leading Icon": {
+     "from": "icon",
+     "bool": true,
+     "def": false
+    },
+    "Icon": {
+     "from": "icon",
+     "icon": true
+    },
+    "Interaction State": {
+     "from": "enabled",
+     "map": {
+      "false": "Disabled",
+      "true": "Regular"
+     },
+     "def": "Regular"
+    }
+   }
+  },
+  "sap.m.NotificationListGroup": {
+   "comp": "Notification List Item",
+   "props": {
+    "Type": "=Group Header",
+    "Group Name": {
+     "from": "title"
+    }
+   }
+  },
+  "sap.m.ActionListItem": {
+   "comp": "List Item",
+   "props": {
+    "Type": "=Single Line",
+    "Text": {
+     "from": "text"
+    }
+   }
+  },
+  "sap.m.Tokenizer": {
+   "comp": "Tokenizer",
+   "props": {}
+  },
+  "sap.m.RangeSlider": {
+   "comp": "Range Slider",
+   "props": {
+    "Left Value": {
+     "from": "value",
+     "pct": [
+      "min",
+      "max"
+     ],
+     "clamp": [
+      0,
+      75
+     ]
+    },
+    "Right Value": {
+     "from": "value2",
+     "pct": [
+      "min",
+      "max"
+     ],
+     "clamp": [
+      25,
+      100
+     ]
+    }
+   }
+  }
+ },
+ "containers_ok": [
+  "sap.f.FlexibleColumnLayout",
+  "sap.f.cards.NumericHeader",
+  "sap.f.cards.NumericIndicators",
+  "sap.m.AssociativeOverflowToolbar",
+  "sap.m.Bar",
+  "sap.m.CustomTreeItem",
+  "sap.m.Dialog",
+  "sap.m.DisplayListItem",
+  "sap.m.FlexItemData",
+  "sap.m.InputListItem",
+  "sap.m.List",
+  "sap.m.ListItemBase",
+  "sap.m.Menu",
+  "sap.m.NavContainer",
+  "sap.m.ObjectListItem",
+  "sap.m.OverflowToolbar",
+  "sap.m.Page",
+  "sap.m.Popover",
+  "sap.m.RadioButtonGroup",
+  "sap.m.ResponsivePopover",
+  "sap.m.ScrollContainer",
+  "sap.m.SegmentedButton",
+  "sap.m.SegmentedButtonItem",
+  "sap.m.SplitApp",
+  "sap.m.Toolbar",
+  "sap.m.ToolbarSeparator",
+  "sap.m.Tree",
+  "sap.m.Wizard",
+  "sap.m.WizardProgressNavigator",
+  "sap.m.WizardStep",
+  "sap.ui.core.HTML",
+  "sap.ui.layout.Grid",
+  "sap.ui.layout.form.Form",
+  "sap.ui.layout.form.ResponsiveGridLayout",
+  "sap.ui.layout.form.SimpleForm",
+  "sap.ui.unified.CalendarLegend",
+  "sap.ui.unified.CalendarLegendItem",
+  "sap.ui.unified.Menu",
+  "sap.uxap.BlockBase",
+  "sap.uxap.ObjectPageGridLayout",
+  "sap.uxap.ObjectPageHeader",
+  "sap.uxap.ObjectPageHeaderActionButton",
+  "sap.uxap.ObjectPageHeaderContent",
+  "sap.uxap.ObjectPageLayout",
+  "sap.uxap.ObjectPageSection",
+  "sap.uxap.ObjectPageSubSection"
+ ],
+ "class_alias": {
+  "sap.m.OverflowToolbarButton": "sap.m.Button",
+  "sap.m.OverflowToolbarToggleButton": "sap.m.ToggleButton",
+  "sap.m.OverflowToolbarMenuButton": "sap.m.MenuButton",
+  "sap.f.ShellBar": "sap.tnt.ToolHeader",
+  "sap.uxap.ObjectPageLayout": "sap.f.DynamicPage",
+  "sap.uxap.ObjectPageDynamicHeaderTitle": "sap.f.DynamicPageTitle",
+  "sap.uxap.ObjectPageDynamicHeaderContent": "sap.f.DynamicPageHeader",
+  "sap.ui.table.Table": "sap.m.Table",
+  "sap.ui.table.TreeTable": "sap.m.Table",
+  "sap.ui.table.AnalyticalTable": "sap.m.Table",
+  "sap.ui.table.Column": "sap.m.Column",
+  "sap.ui.table.Row": "sap.m.ColumnListItem"
+ }
 }

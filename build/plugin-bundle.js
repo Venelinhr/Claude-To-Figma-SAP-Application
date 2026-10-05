@@ -43,9 +43,21 @@ let code = fileCode;
 const a = code.indexOf(A), z = code.indexOf(Z);
 if (a < 0 || z < a) { console.error(`markers not found in ${F}`); process.exit(2); }
 const next = code.slice(0, a) + block + code.slice(z + Z.length);
+// SAP Bridge v2 (the plugin Figma runs) carries the SAME runtime as its FIRST generated block; the second block (inside MAKESA)
+// is the Make engine's own runtime and is never touched. Why: 2026-10-04 v2 kept 09f49ede6d, every build was refused "PLUGIN OUT OF DATE".
+const V2 = process.env.SAP_V2_CODE || path.join(ROOT, '..', 'Claude-To-Figma-SAP-v6', 'plugin-v2', 'code.js');
+let v2File = null, v2Next = null;
+if (fs.existsSync(V2)) {
+  v2File = fs.readFileSync(V2, 'utf8');
+  const mk = v2File.indexOf('// <<MAKESA>>'), a2 = v2File.indexOf(A), z2 = v2File.indexOf(Z);
+  if (a2 < 0 || z2 < a2 || (mk >= 0 && z2 > mk)) { console.error(`runtime markers not found before MAKESA in ${V2}`); process.exit(2); }
+  v2Next = v2File.slice(0, a2) + block + v2File.slice(z2 + Z.length);
+}
 if (process.argv.includes('--check')) {
   if (next !== fileCode) { console.error(`plugin runtime out of date — run: node build/plugin-bundle.js (runtime ${VER})`); process.exit(1); }
-  console.log(`plugin runtime up to date (${VER})`); process.exit(0);
+  if (v2Next !== null && v2Next !== v2File) { console.error(`SAP Bridge v2 runtime out of date — run: node build/plugin-bundle.js (runtime ${VER})`); process.exit(1); }
+  console.log(`plugin runtime up to date (${VER})` + (v2Next !== null ? ' — v1 + v2' : '')); process.exit(0);
 }
+if (v2Next !== null && v2Next !== v2File) { fs.writeFileSync(V2, v2Next); console.log(`${V2}: runtime ${VER}`); }
 fs.writeFileSync(F, next);
 console.log(`plugin/sap-bridge/code.js: runtime ${VER} (${block.length} chars) — close and reopen SAP Bridge in Figma`);

@@ -1,63 +1,123 @@
 {
-  "_doc": "SAP icons that the SAP Web UI Kit's Iconography page (61 icons, knowledge/live/kit.json) does not have. Source: the full SAP icon set in the 'v1 Archived Horizon Web UI Kit' library (visible to file L9bomZ4CKDmBGQfGM9C61z via search_design_system, 2026-09-26). Keys import with figma.importComponentByKeyAsync. Add more with: search_design_system(query:'<name>', includeLibraryKeys:[library]).",
-  "library": "v1 Archived Horizon Web UI Kit",
-  "libraryKey": "lk-bcf5c884fb86f0cc723897bafd66bf28106bec58e2cb192516aa84d570ac04e12816371be8cf9e253d53f9d0e0af5a1b15d7f17a4a48083253aa06d8bc35f496",
-  "icons": {
-    "suitcase": {
-      "key": "aab233a77becbdfc986a734c5451f5b976638855",
-      "desc": "travel, suitcase, business trip, possessions"
-    },
-    "meal": {
-      "key": "52c9186b136b0ff70196b57dd6cf5f0e17e848bf",
-      "desc": "meal, knife and fork, dinner, lunch"
-    },
-    "share-arrow": {
-      "key": "f186ab5dabe94fbbf9b8427f9fd41edddf104e2c",
-      "desc": "share, reshare, distribute, arrow (SAP 'share')"
-    },
-    "share-2": {
-      "key": "3e32bfc37d0c6c148ea9919015d02a7acf91d58c",
-      "desc": "share, distribute, share with connections"
-    },
-    "tag": {
-      "key": "af4ff91cd6e44b9c54a1560aa2bef561c8d8b0c9",
-      "desc": "tag, label, marker, indicator"
-    },
-    "flight": {
-      "key": "65ca2deb9dd0c4f7734d2269e7958fbe62b4a462",
-      "desc": "plane, trip, travel, flight"
-    },
-    "paper-plane": {
-      "key": "1af59a706bee8811d9439901ec3d4f54f118185a",
-      "desc": "send, paper plane"
-    },
-    "receipt": {
-      "key": "28664297b6ba462b297b4487f2fa5884d53a3a08",
-      "desc": "bill, receipt, proof of sale"
-    },
-    "travel-expense": {
-      "key": "00af06f46dafee9ba85ce133c4ce34d449eaee25",
-      "desc": "plane + money: trip expense, fee"
-    },
-    "travel-itinerary": {
-      "key": "303136e86aedf4da03db63f869e9a9262c9a89d7",
-      "desc": "itinerary, schedule, flight, drive"
-    },
-    "pushpin-on": {
-      "key": "a103a0ee9c45c6b54d5f799e82b1842236f2c79e",
-      "desc": "pin, pinned, keep on top (read live from gold 270:6722)"
-    },
-    "direction-arrows": {
-      "key": "d8df6bd3e7657212a65f733f39878d4e0a37cc2e",
-      "desc": "two-way arrows, range handle (read live from gold 270:6722)"
-    },
-    "media-forward": {
-      "key": "b200c671f28c62c7e4ead976aa02b5875f77d5fa",
-      "desc": "forward, media, fast — SAP has no lightning bolt: use for \"fastest\""
-    },
-    "thumb-up": {
-      "key": "5302ae09353d82f5221906eb454886085d60b9c3",
-      "desc": "thumbs, up, like, recommended, best"
-    }
+ "_doc": "SAP icons that the SAP Web UI Kit's Iconography page (61 icons, knowledge/live/kit.json) does not have. Source: the full SAP icon set in the 'v1 Archived Horizon Web UI Kit' library (visible to file L9bomZ4CKDmBGQfGM9C61z via search_design_system, 2026-09-26). Keys import with figma.importComponentByKeyAsync. Add more with: search_design_system(query:'<name>', includeLibraryKeys:[library]).",
+ "library": "v1 Archived Horizon Web UI Kit",
+ "libraryKey": "lk-bcf5c884fb86f0cc723897bafd66bf28106bec58e2cb192516aa84d570ac04e12816371be8cf9e253d53f9d0e0af5a1b15d7f17a4a48083253aa06d8bc35f496",
+ "icons": {
+  "suitcase": {
+   "key": "aab233a77becbdfc986a734c5451f5b976638855",
+   "desc": "travel, suitcase, business trip, possessions"
+  },
+  "meal": {
+   "key": "52c9186b136b0ff70196b57dd6cf5f0e17e848bf",
+   "desc": "meal, knife and fork, dinner, lunch"
+  },
+  "share-arrow": {
+   "key": "f186ab5dabe94fbbf9b8427f9fd41edddf104e2c",
+   "desc": "share, reshare, distribute, arrow (SAP 'share')"
+  },
+  "share-2": {
+   "key": "3e32bfc37d0c6c148ea9919015d02a7acf91d58c",
+   "desc": "share, distribute, share with connections"
+  },
+  "tag": {
+   "key": "af4ff91cd6e44b9c54a1560aa2bef561c8d8b0c9",
+   "desc": "tag, label, marker, indicator"
+  },
+  "flight": {
+   "key": "65ca2deb9dd0c4f7734d2269e7958fbe62b4a462",
+   "desc": "plane, trip, travel, flight"
+  },
+  "paper-plane": {
+   "key": "1af59a706bee8811d9439901ec3d4f54f118185a",
+   "desc": "send, paper plane"
+  },
+  "receipt": {
+   "key": "28664297b6ba462b297b4487f2fa5884d53a3a08",
+   "desc": "bill, receipt, proof of sale"
+  },
+  "travel-expense": {
+   "key": "00af06f46dafee9ba85ce133c4ce34d449eaee25",
+   "desc": "plane + money: trip expense, fee"
+  },
+  "travel-itinerary": {
+   "key": "303136e86aedf4da03db63f869e9a9262c9a89d7",
+   "desc": "itinerary, schedule, flight, drive"
+  },
+  "pushpin-on": {
+   "key": "a103a0ee9c45c6b54d5f799e82b1842236f2c79e",
+   "desc": "pin, pinned, keep on top (read live from gold 270:6722)"
+  },
+  "direction-arrows": {
+   "key": "d8df6bd3e7657212a65f733f39878d4e0a37cc2e",
+   "desc": "two-way arrows, range handle (read live from gold 270:6722)"
+  },
+  "media-forward": {
+   "key": "b200c671f28c62c7e4ead976aa02b5875f77d5fa",
+   "desc": "forward, media, fast — SAP has no lightning bolt: use for \"fastest\""
+  },
+  "thumb-up": {
+   "key": "5302ae09353d82f5221906eb454886085d60b9c3",
+   "desc": "thumbs, up, like, recommended, best"
+  },
+  "inbox": {
+   "key": "9ddc5a9cd14cd52a3cfc7a86b041303ff9aca96e",
+   "desc": "SAP Web UI Kit"
+  },
+  "bar-chart": {
+   "key": "2c24c77886a783a4f95986436419ba2b331611a8",
+   "desc": "SAP Web UI Kit"
+  },
+  "user-settings": {
+   "key": "dd2dfca44f388923176e6ac85731ee96fcd8c570",
+   "desc": "SAP Web UI Kit"
+  },
+  "history": {
+   "key": "02fb2cf833be737a93b92e670159c09f6562bd4b",
+   "desc": "SAP Web UI Kit"
+  },
+  "map": {
+   "key": "142bea39000b39f3f14b9f9ea34cac9bcb8f4da5",
+   "desc": "SAP Web UI Kit"
+  },
+  "picture": {
+   "key": "ba4d9c2dc6ac8ae7068f73fd0275c27c7e1da16b",
+   "desc": "SAP Web UI Kit"
+  },
+  "discussion": {
+   "key": "b3b8fc4eccad2d1605aa51935e8e0f813f539bc0",
+   "desc": "SAP Web UI Kit"
+  },
+  "appointment-2": {
+   "key": "59c77280f7ba5dd27c9be54197f4a3c1a6089084",
+   "desc": "SAP Web UI Kit"
+  },
+  "table-column": {
+   "key": "2a5fe3d3226a52e6487e5ae9ddc9243c7b98000a",
+   "desc": "SAP Web UI Kit"
+  },
+  "da-2": {
+   "key": "21a4718c212b7e95d6eb148e713b166bf293f429",
+   "desc": "SAP Web UI Kit"
+  },
+  "da": {
+   "key": "ec91cd8cffe34196832a9c98f6b1b67daafa53df",
+   "desc": "SAP Web UI Kit"
+  },
+  "down": {
+   "key": "492d6984967c9fc11f324539a4c104a45aaae643",
+   "desc": "SAP Web UI Kit"
+  },
+  "light-mode": {
+   "key": "386a631748671bd2d67980283c192324893e1edb",
+   "desc": "SAP Web UI Kit"
+  },
+  "dark-mode": {
+   "key": "2860e4ba75f7e4c01c9736fc4217587bc6d932a1",
+   "desc": "SAP Web UI Kit"
+  },
+  "microphone": {
+   "key": "51e04da7cb207eef304ad796b0094135b266eae6",
+   "desc": "SAP Web UI Kit"
   }
+ }
 }

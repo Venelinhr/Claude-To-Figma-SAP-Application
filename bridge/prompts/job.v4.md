@@ -43,10 +43,17 @@ Job folder (write every file of this job here, nowhere else): {{jobDir}}
      reference itself at its own size (a 1000-wide crop stays 1000): a gold plan only seeds rows — never
      copy a gold frame size or gold numbers (that scored EYE 19 %); every number comes from see.py spec.
      Answer the see.py ASK list yourself from the tiles; only a real doubt goes to AGENT_ASK.
-   - Text only: floorplan from the router (or the CLAUDE.md table) →
-     `node build/route.js --closest-gold - "<key words of the request>"` → adapt that gold plan
-     (`knowledge/gold/plans/`) to the request: same schema, sections in Z order, one row per element, texts
-     from the request (its language), colour by role, one SAP icon per meaning → `{{jobDir}}/plan.json`.
+   - **The user chooses in the prompt** (rule 2026-10-03): a request that says *clone / copy / reuse / same as / like the … screen / based on the … layout*
+     → CLONE lane: `node build/route.js --closest-gold - "<key words>"` and adapt that gold plan (`knowledge/gold/plans/`) — same schema, texts from the
+     request, colour by role → `{{jobDir}}/plan.json`. Any other request → NEW lane (default, below). Say the lane in the STAGE route line.
+   - Text only, NEW lane: **BRAND NEW screen — never adapt, copy or clone a saved screen.** Do NOT run `--closest-gold` and do not open
+     `knowledge/gold/`. The layout comes from the request alone: first list every part the request names (filters, cards,
+     columns, statuses, steps, actions, sections) and the floorplan from the router (or the CLAUDE.md table); then design a
+     NEW structure that fits exactly those parts. Read only the plan SCHEMA (the field names) from one file in
+     `knowledge/gold/plans/` — take its format, never its content, sizes or order. Real kit components only
+     (`node build/kit.js list|c <name>` — read each component's real props and states from the kit, never guess).
+     Sections in Z order, one row per element, texts from the request (its language) with realistic business content,
+     colour by role, one SAP icon per meaning → `{{jobDir}}/plan.json`.
      A full screen: desktop 1440 wide, Compact, Shell Bar + Side Navigation.
    - QUICK (a selected node + several changes): a short delta plan (the rows to add or change, node ids).
    → `STAGE plan <sections · rows>`
@@ -54,6 +61,9 @@ Job folder (write every file of this job here, nowhere else): {{jobDir}}
    exit 0. With an image: `python3 build/crop-logos.py {{jobDir}}/plan.json {{jobDir}}/ref.png {{jobDir}}/logos/`.
    → `STAGE analyse <ok · rows · floorplan>`
    - builder = figma-agent → print `AGENT_PLAN_READY {"plan":"{{jobDir}}/plan.json"}` and stop here.
+     **HARD RULE: with builder = figma-agent you NEVER call `use_figma` or any other Figma tool, and you never build, test or "fix" anything in
+     the Figma file.** The Figma Agent builds from the plan; the bridge opens its chat for you. If `--map` shows ✗, fix `plan.json` only
+     (at most 2 rounds); if a ✗ is still left after that, print `AGENT_PLAN_READY` anyway and name the ✗ in the STAGE line. Step 4 is NOT for you.
 4. **Execute** (builder = claude). One `use_figma` build: the prelude + `const KIT = …` from
    `node build/kit.js pack <names>`, every plan row in order, layers named after each row's `element`, logo
    rows = empty frames of the crop size named exactly the row's `element` (the plugin fills them later). Return

@@ -1,0 +1,6 @@
+- [Plugin-first builder](plugin-first-builder.md) — build via run.js + SAP Bridge v2; Claude/MCP only for emergencies; rebundle syncs v2
+- [Shape naming quality](shape-naming-quality.md) — name every shape (icon/image/text:/comp:); skip only noise; 38→52 % EYE
+- [Make reading + A/B proof](make-reading-ab.md) — side panel/cards reading kept only if it scores better; prove changes on 6 screens offline
+- [Plan first time only](plan-first-time-only.md) — plan+approve only for the first build; later edits go straight through
+- [Always log + history](always-log-and-history.md) — after every direct Figma change run build/changelog.js so the plugin keeps history and log
+- [Make engine sync](make-engine-sync.md) — Make→Figma has 3 copies (repo, Bridge v2, standalone); keep identical, prove with make-verify

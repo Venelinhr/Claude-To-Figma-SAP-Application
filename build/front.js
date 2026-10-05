@@ -24,6 +24,9 @@ if (isImg) {
   const img = path.resolve(input), sd = path.resolve(job, 'see-ref');         // see.py reads best from the image's own folder
   try { execFileSync('python3', [path.join(__dirname, 'see.py'), 'spec', path.basename(img), '--out', sd], { cwd: path.dirname(img), stdio: ['ignore', 'pipe', 'pipe'] }); }
   catch (e) { if (!fs.existsSync(path.join(sd, 'spec.json'))) { console.log('FRONT  see.py spec failed: ' + (String(e.stdout || '') + String(e.stderr || '') || e.message).trim().split('\n').slice(-3).join(' | ')); process.exit(2); } }   // exit 1 = spec written, with open questions
+  // Make's reading (side panel / main / repeated cards) is an EXTRA reading: the old bottom-up one is kept beside it, run.js keeps the better tree
+  try { const sj = fs.readFileSync(path.join(sd, 'spec.json'), 'utf8'); fs.rmSync(path.resolve(job, 'see-ref-noreg'), { recursive: true, force: true });
+    if (/"(region|synthetic)":/.test(sj)) execFileSync('python3', [path.join(__dirname, 'see.py'), 'spec', path.basename(img), '--no-regions', '--out', path.resolve(job, 'see-ref-noreg')], { cwd: path.dirname(img), stdio: ['ignore', 'pipe', 'pipe'] }); } catch (_) {}
   spec = JSON.parse(fs.readFileSync(path.join(job, 'see-ref', 'spec.json'), 'utf8'));
   want = []; (function w(x) { if (x.type === 'text') want.push(norm(x.text)); (x.children || []).forEach(w); })({ children: spec.sections });
   want = [...new Set(want.filter(t => t.length >= 2))];

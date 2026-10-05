@@ -23,9 +23,21 @@ Job folder (write every file of this job here, nowhere else): {{jobDir}}
 - A hook asks you to present facts before a tool call → present them in 4 short lines and retry the same call.
 - Shell: one plain command per call — no `>`, `|`, `&&`, `$(…)` (they are blocked here). Write files with the Write tool.
 - Every `AGENT_` marker is one line: the marker, a space, the JSON — nothing after it, not in a code block.
-- Never type the Figma build yourself. The build is made by `node build/run.js` (a script, through the plugin). Never open PNG files.
+- **PLAN FIRST (user rule, 2026-10-04): no FIRST build before the user approves. After a screen is built, changes and rebuilds show NO plan (2026-10-05) unless the user asks.** Every `node build/run.js` call that could build carries `--ask`
+  (never `--approved`). Exit 5 = the plan (wireframe, layers, SAP parts) is in the plugin with Approve / Reject / Modify → print
+  `STAGE plan plan ready — waiting for Approve` and, as the last line, `AGENT_REPLY {"text":"The plan is ready above. Approve, Reject or Modify."}` and stop.
+  The plugin's Approve button builds it (no model). Exit 2 / 1 before the plan: do what it asks, run again with `--ask`.
+- A change you make directly in Figma after the build is logged in the plugin: `node build/changelog.js --job {{jobDir}} --url <node link> "<what changed>"`.
+- Never type the Figma build yourself. The build is made by `node build/run.js` (a script, through the plugin). Open a picture ONLY when a `NEED` line of `run.js` names it (`ref-marked.png`, `icons-sheet.png`): look once, write what it asks, never open any other PNG.
 
 ## Pipeline
+**MAKE lane — check this FIRST (rule 2026-10-03).** If the request contains a Figma Make link (`figma.site` or `figma.com/make/…`): no route, no plan, no analyse, no new tree, no
+`--new`, no questions. Print only `STAGE start Converting the Make app to SAP screens` and run, one command per call:
+1. `node build/make-fetch.js "<the Make link>" {{jobDir}}/make-dump.json`  (needs a login or fails → `AGENT_ASK` with its message, nothing else)
+2. `node build/make-to-figma.js run {{jobDir}}/make-dump.json --file {{fileKey}}`  (about 1 minute; use a timeout of 300000 ms)
+Then take the `node-id=` from its last lines → `STAGE done Make app converted` and
+`AGENT_RESULT {"nodeId":"<id with : instead of ->","mode":"MAKE","match":null,"eye":null,"WARN":[],"pass":true,"blocks":[]}` and stop. Nothing else.
+
 1. **Route — already done by the bridge:** `{{routed}}`. Print `STAGE route <that line>` and go on (run `node build/route.js "<request>"` yourself only if it says "not routed").
 2. **ACT / QUICK** (a selected node + a small change): one small `use_figma` change on the selected node with the real kit
    (props from `node build/kit.js c <name>`), read the changed properties back →
@@ -33,8 +45,20 @@ Job folder (write every file of this job here, nowhere else): {{jobDir}}
    `AGENT_RESULT {"nodeId":"<id>","mode":"ACT","match":null,"eye":null,"WARN":[],"pass":true,"blocks":[]}` and stop.
 3. **THINK / SPLIT — a new screen (build first, review after).**
    - Image: first save a copy as `{{jobDir}}/ref.png` if the reference is not already a PNG (PIL). Then
-     `node build/run.js {{ref}} --file {{fileKey}}`.
-   - Text only: `node build/run.js "<the request, one line, in its language>" --file {{fileKey}}`.
+     `node build/run.js {{ref}} --file {{fileKey}}` — the DEFAULT is the free scripted lane (OCR → `spec2tree` → door → build by the plugin): you design nothing and open no picture.
+     Exit 2 asking for icons → name them (`node build/kit.js i <word>`) and run the `NEXT` line. Only when the user asks for a hand design add `--design`
+     (then `NEED  DESIGN 1/3…3/3`: Read `ref-marked.png`, `icons-sheet.png`, `measure.txt`, write `design-spec.json`, run the `NEXT` line); `--look` = names lane (`names.json`).
+     Fix rounds: correct the tree from the printed lines, `--resume` again.
+     The plan is printed ONCE by `run.js` (`PLAN` block at the end): paste that, never run `tree.js plan` yourself, never repeat it.
+   - **The user chooses in the prompt**: a request that says *new / from zero / from scratch / do not clone* → NEW lane (below).
+     Any other text request → CLONE lane (default, cheap): `node build/run.js "<request>" --file {{fileKey}}` WITHOUT `--new` (adapts the closest saved layout, ~1 min; the ops.json rules below apply).
+     Say the lane in the STAGE route line: `… · lane CLONE` or `… · lane NEW`.
+   - Text only, NEW lane — **BRAND NEW screen, never a clone of a saved layout**:
+     `node build/run.js "<the request, one line, in its language>" --file {{fileKey}} --new`. It exits 2 with `NEW` lines: write
+     `{{jobDir}}/new-tree.json` from the request alone (every filter, card, column, status, step the request names; kit components,
+     props, states, variables and icons read with `node build/kit.js`, never guessed; real business content, no placeholders), then
+     `--resume --tree-new {{jobDir}}/new-tree.json`. Ignore the skeleton / `ops.json` / `--spec-json` rules below — they belong to the
+     old clone lane. The door, layout simulation and build checks still run on your tree.
    - Give the Bash call a timeout of 240000 ms. Read only the lines it prints. Follow `docs/v6/screen.md` step 3 for the exit code
      (1 fix the tree → `--resume` · `CONTENT ✗` = the audit found old content or a column mismatch: write ops2.json for exactly those lines and `--resume --spec-json` again · 2 icons / ops.json for a text job · 3 plugin closed → `AGENT_ASK` · 6 DRAFT → fix once or twice).
      A text job needs real business content in every field (`ops.json`, content only, never kit placeholders).

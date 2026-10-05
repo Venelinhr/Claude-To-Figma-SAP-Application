@@ -58,6 +58,11 @@
     if (c.getSelectedItem && !it.selText) { try { const si = sap.ui.getCore().byId(c.getAssociation('selectedItem')); if (si && si.getText) it.selText = si.getText(); } catch (e) {} }
     items.push(it); idx.set(it.id, d);
   }
+  // a control whose parent was not dumped (FormElement, FormContainer, …: no DOM of their own) is attached to the nearest dumped ancestor
+  { const have = new Set(items.map(x => x.id)), byId = new Map(controls.map(x => [x.getId(), x]));
+    items.forEach(it => { if (!it.parent || have.has(it.parent)) return; let p = it.parent, n = 0;
+      while (p && !have.has(p) && n++ < 40) { const pc = byId.get(p) || sap.ui.getCore().byId(p); p = pc && pc.getParent && pc.getParent() ? pc.getParent().getId() : null; }
+      if (p && have.has(p)) it.parent = p; }); }
   // DOM order = reading order; children of one parent keep it
   items.sort((a, b) => (idx.get(a.id).compareDocumentPosition(idx.get(b.id)) & 4 ? -1 : 1));
   items.forEach((it, i) => { it.i = i; });

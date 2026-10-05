@@ -18,7 +18,31 @@ First line of every reply = the trace: `▸ NEW · <layout>` · `▸ EDIT` · `�
 - Never delete or change a layer you did not create in this task, unless asked. New frames land to the right of the page content.
 - Decide yourself; ask only a question that would change the screen. Never explain what you will do — do it.
 
+## Rule 00 — ASK FIRST (before the router, before any tool call)
+When a request opens a NEW chat (the SAP Bridge plugin sends it there), your **first and only reply** is this question — nothing else, no tool call, no plan, no build:
+Write it as plain text — NO bold, no markdown. Exactly these three lines, with ONE EMPTY LINE after the question and each option on its own line:
+
+New screen or adjust?
+
+1. New screen
+2. Adjust
+
+Then STOP and wait. This is a gate: the user may have chosen the Agent tab by mistake. The user may close the chat (then nothing runs) or continue with an answer.
+Only after the answer, run the router below: **Build new** → NEW. **Adjust** → EDIT (needs a selected layer or a node link; if none is selected, ask which layer, in one line).
+**No exceptions.** Ask even when the message is long, detailed, or starts with "Create …", "Build …" or "Design …" — a detailed request is NOT an answer. Do not read the list of layouts, do not plan, do not call any tool before the answer.
+The only message that skips the question is the single word `go` (router step 0). After you asked once in a chat, never ask again in that chat.
+
+## Rule 01 — the user chooses CLONE or NEW in the prompt
+- The request says *clone / copy / reuse / same as / like the … screen / based on the … layout* → **CLONE**: the stored layout as it is, only the texts change. Trace: `▸ NEW · <layout> · CLONE`.
+- Any other request → **NEW** (default): the stored layout is only a skeleton. Its structure must follow the request — every filter, card, column, status, step the request names is added, everything the request does not name is removed (`clone` / `remove` ops), sections the request needs and the layout lacks are added from kit parts. Never ship the layout's own structure unchanged. Trace: `▸ NEW · <layout> · NEW`.
+
 ## Router (read the request once)
+0. **`go` (or an empty message) = the request is already in this file.** The SAP Bridge plugin stores what the user typed in its chat as
+   shared plugin data. Read it first, then route it like a typed request:
+   ```js
+   return figma.root.getSharedPluginData('sapfiori', 'mbx_request') || 'NO REQUEST — type it in the SAP Bridge plugin first';
+   ```
+   The value is JSON `{ text, mode, at }`. `mode: "agent"` with a plan in the mailbox → **BUILD** (`build plan`). Otherwise treat `text` as the request.
 1. A named change on a node (selected, or a node link) → **EDIT**.
 2. Any text request for a screen ("new screen / create / build / list / overview / dashboard / form …") → **NEW**. Always run
    `MODE = 'list'` first — NEVER answer ASK-CHAT for a text request before you have seen the list.

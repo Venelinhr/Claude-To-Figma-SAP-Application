@@ -15,6 +15,12 @@ const CHROMES = ['/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const LOGIN_MSG = 'This link needs a Figma login, and headless Chrome has no login. In Make press Publish (or Share → Publish), then paste the *.figma.site link.';
 
+function domProbeSource() {
+  const kit = require('../knowledge/live/kit.json');
+  const names = [...new Set(Object.keys(kit.vars).map(n => n.split('/').pop()))];
+  const src = fs.readFileSync(path.join(__dirname, 'templates', 'make-probe-dom.browser.js'), 'utf8').replace(/^\s*\/\/.*$/gm, '').trim().replace(/;\s*$/, '');
+  return `(async()=>{window.__MAKE_CFG=${JSON.stringify({ ret: 1, vars: names })};return await ${src}})()`;
+}
 function probeSource() {
   const kit = require('../knowledge/live/kit.json');
   const names = [...new Set(Object.keys(kit.vars).map(n => n.split('/').pop()))];
@@ -25,7 +31,7 @@ function probeSource() {
 // what the page looks like right now (runs inside the page)
 const PAGE_STATE = `(function(){var s=window.sap,E=s&&s.ui&&s.ui.require&&s.ui.require('sap/ui/core/Element'),ok=!!(E&&E.registry&&E.registry.size>15);
 var f=[].slice.call(document.querySelectorAll('iframe')).map(function(x){return x.src}).filter(function(u){return /^https:\\/\\/[^/]*figma\\.site\\//.test(u)});
-return{ok:ok,host:location.hostname,path:location.pathname,title:document.title,frame:f[0]||''}})()`;
+return{ok:ok,host:location.hostname,path:location.pathname,title:document.title,frame:f[0]||'',nodes:document.body?document.body.querySelectorAll('*').length:0}})()`;
 
 // Pure: what to do next, given the page state. Unit-tested without Chrome.
 function decide(s, elapsedMs, followed) {
@@ -35,6 +41,7 @@ function decide(s, elapsedMs, followed) {
   if (onFigma && /^\/(login|signup|sso|saml)/i.test(s.path || '')) return { act: 'login' };
   if (onFigma && s.frame && !followed) return { act: 'follow', url: s.frame };
   if (onFigma && !s.frame && elapsedMs > 15000) return { act: 'login' };
+  if (!onFigma && elapsedMs > 12000 && s.nodes > 60) return { act: 'dom' };             // no SAPUI5 runtime but a rendered page (React / UI5 Web Components): read the DOM
   return { act: 'wait' };
 }
 
@@ -78,13 +85,14 @@ async function fetchMakeDump(url, opt = {}) {
     say('Opening the link…');
     await go(url);
     // wait until the SAPUI5 runtime has rendered controls (the runtime + theme load from the CDN); follow the app's iframe on a Make page
-    let last = null, followed = false, ready = false;
+    let last = null, followed = false, ready = false, domMode = false;
     while (!ready && Date.now() < deadline) {
       await sleep(250);
       let s = null; try { s = await evalJs(PAGE_STATE); } catch (_) {}
       if (s) last = s;
       const d = decide(s, Date.now() - T0, followed);
       if (d.act === 'ready') ready = true;
+      else if (d.act === 'dom') { domMode = true; ready = true; }
       else if (d.act === 'login') throw new Error(LOGIN_MSG);
       else if (d.act === 'follow') { followed = true; say('Opening the app inside the Make page…'); await go(d.url); }
     }
@@ -92,8 +100,8 @@ async function fetchMakeDump(url, opt = {}) {
     say('Loading fonts and layout…');
     try { await evalJs('document.fonts.ready.then(function(){return 1})', true); } catch (_) {}
     await sleep(1200);                                                      // let layout settle
-    say('Reading the controls…');
-    const out = await evalJs(probeSource(), true);
+    say(domMode ? 'Reading the page (web components)…' : 'Reading the controls…');
+    const out = await evalJs(domMode ? domProbeSource() : probeSource(), true);
     if (!out || !out.dump) throw new Error('The probe returned nothing.');
     return out.dump;
   } finally {
@@ -113,6 +121,6 @@ if (require.main === module) {
   fetchMakeDump(pos[0], { width: opt('--width'), height: opt('--height'), onStatus: m => console.log('  ' + m) }).then(d => {
     const j = JSON.parse(d);
     if (pos[1]) fs.writeFileSync(pos[1], d);
-    console.log(`${j.controls.length} controls · ${Math.round(d.length / 1024)} KB · ${Object.keys(j.imageData || {}).length} image(s) · viewport ${j.viewport.join('×')}${pos[1] ? ' → ' + pos[1] : ''}`);
+    console.log(`${j.kind === 'dom' ? j.nodes.length + ' DOM nodes' : j.controls.length + ' controls'} · ${Math.round(d.length / 1024)} KB · ${Object.keys(j.imageData || {}).length} image(s) · viewport ${j.viewport.join('×')}${pos[1] ? ' → ' + pos[1] : ''}`);
   }).catch(e => { console.error('FAILED: ' + e.message); process.exit(1); });
 }

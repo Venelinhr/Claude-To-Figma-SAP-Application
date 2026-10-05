@@ -35,7 +35,9 @@ const path = require('node:path');
 
 // ── Config ───────────────────────────────────────────────────────────────────
 const PROJ = path.resolve(__dirname, '..');               // the project dir (cwd for claude)
-const PORT = Number(process.env.SAP_BRIDGE_PORT || 41778); // v4 SAP Bridge (plugin/sap-bridge/manifest.json); the old SAP Agent v2 bridge keeps 41777
+let PORT = Number(process.env.SAP_BRIDGE_PORT || 41778);   // busy by a foreign process → the next free one up to +9 (the plugin scans 41778–41787); written to .claude/.bridge-port
+const PORT_FIXED = !!process.env.SAP_BRIDGE_PORT;
+const PORT_FILE = path.join(__dirname, '..', '.claude', '.bridge-port'); // v4 SAP Bridge (plugin/sap-bridge/manifest.json); the old SAP Agent v2 bridge keeps 41777
 const HOST = '127.0.0.1';                                  // loopback ONLY — never 0.0.0.0
 const TURN1_SENTINEL = path.join(PROJ, '.claude', '.agent-turn1');
 const TOKEN_FILE = process.env.SAP_BRIDGE_TOKEN_FILE || path.join(PROJ, '.claude', '.bridge-token');
@@ -581,7 +583,7 @@ function childEnv(run) {
 
 function spawnJob(run, prompt, resume) {
   const args = ['-p', '--output-format', 'stream-json', '--input-format', 'stream-json', '--verbose',
-    '--model', CFG.model, '--add-dir', PROJ, '--allowedTools', ALLOWED_TOOLS];
+    '--model', CFG.model, '--max-turns', String(CFG.maxTurns || 30), '--add-dir', PROJ, '--allowedTools', ALLOWED_TOOLS];
   if (fs.existsSync(MEMORY_DIR)) args.push('--add-dir', MEMORY_DIR);
   if (resume && run.sessionId) args.push('--resume', run.sessionId);
   else { run.sessionId = crypto.randomUUID(); args.push('--session-id', run.sessionId); }
@@ -661,6 +663,13 @@ function jobTurnEnd(run, text, msg) {
   if (built && NODE_RE.test(String(built.nodeId || ''))) return afterBuilt(run, String(built.nodeId));
   const fix = markerJson(text, 'AGENT_FIX');
   if (fix) return fixReady(run, fix.fixFile);
+  // plugin chat (2026-10-04): Claude answers or reports what it did → the plugin shows the text as Claude's reply
+  const rep = markerJson(text, 'AGENT_REPLY');
+  if (rep && rep.text) return finishJob(run, { mode: 'CHAT', reply: rep.text, nodeId: NODE_RE.test(String(rep.nodeId || '')) ? rep.nodeId : '', pass: true });
+  if (run.chat && !(msg && msg.is_error)) {   // a chat turn that forgot the marker: its last words are still the answer
+    const said = text.split('\n').filter(l => l.trim() && !/^\s*(STAGE|AGENT_)/.test(l)).join('\n').trim();
+    if (said) return finishJob(run, { mode: 'CHAT', reply: said.slice(-3000), pass: true });
+  }
   run.markerSeen = false;
   fail(run, msg && msg.is_error
     ? `Claude error: ${String(msg.result || msg.subtype || '').slice(0, 300)}`
@@ -685,6 +694,17 @@ function sendPlanMailbox(run, plan) {
   emit(run, 'mailbox', data);
   if (run.source === 'cli') emitInbox('mailbox', data);
   armAgentWait(run);
+  tryDriveAgent(run);
+}
+// Full bridge: open a new Figma Agent chat in the debug Chrome and type "build plan" (node build/agent-drive.js --launch <fileKey>).
+// Without that Chrome the manual card stays: type "build plan" in the Figma Agent yourself.
+function tryDriveAgent(run) {
+  let drv; try { drv = require('../build/agent-drive.js'); } catch (_) { return; }
+  drv.status(run.fileKey).then((st) => {
+    if (!st.chrome || !st.tab) return emit(run, 'progress', { text: 'Agent chat not linked (no debug Chrome) — type "build plan" in the Figma Agent' });
+    return drv.sendToAgent({ fileKey: run.fileKey, text: 'build plan' })
+      .then(() => emit(run, 'progress', { text: 'Opened a new Figma Agent chat and sent "build plan"' }));
+  }).catch((e) => emit(run, 'progress', { text: 'Agent chat link failed: ' + String(e.message).slice(0, 120) }));
 }
 function armAgentWait(run) {
   clearTimeout(run.timer);
@@ -800,13 +820,45 @@ function finishJob(run, res) {
   run.result = { jobId: run.id, nodeId, fileKey: run.fileKey, url, mode: res.mode || run.routeMode,
     match: res.match == null ? null : res.match, eye: res.eye == null ? null : res.eye,
     WARN: Array.isArray(res.WARN) ? res.WARN : [], pass: res.pass !== false,
-    blocks: Array.isArray(res.blocks) ? res.blocks : [], measured: !!res.measured, claimed: res.claimed || null };
+    blocks: Array.isArray(res.blocks) ? res.blocks : [], measured: !!res.measured, claimed: res.claimed || null,
+    reply: res.reply ? String(res.reply).slice(0, 4000) : '' };
   run.phase = 'done';
   clearTimeout(run.timer);
   writeResult(run);
   emit(run, 'done', run.result);
 }
 
+// run.js as a child of the bridge (no model). Its own /note lines drive the plugin chat; the bridge job ends when the script ends.
+function runScripted(run, args) {
+  run.phase = 'running'; touchJob(run);
+  const child = spawn(process.execPath, args, { cwd: PROJ, stdio: ['ignore', 'pipe', 'pipe'], env: process.env });
+  const log = fs.createWriteStream(path.join(run.jobDir, 'run-out.txt'), { flags: 'a' }); child.stdout.pipe(log); child.stderr.pipe(log);
+  child.on('exit', code => {
+    run.scriptExit = code;
+    // the plan step needs a decision only a model can make (exit 2: unnamed shapes, ops) → Claude finishes it and shows the plan; the user still approves
+    const jobArg = args[args.indexOf('--job') + 1];
+    if (code === 2 && args.includes('--ask') && !run.helped && jobArg) {
+      run.helped = true; run.scripted = false; run.chat = true;
+      emitInbox('note', { name: 'analyse', text: 'The scripts need a decision — Claude takes over (names the unknown shapes), then shows the plan.', job: jobArg, total: 0, url: '', block: '' });
+      const out = (() => { try { return fs.readFileSync(path.join(run.jobDir, 'run-out.txt'), 'utf8').split('\n').slice(-40).join('\n'); } catch (_) { return ''; } })();
+      spawnJob(run, `[SAP BRIDGE — plan step needs a decision · job ${jobArg} · file ${run.fileKey}]
+You are Claude Code in this repo. node build/run.js stopped with exit 2 while making the plan. Its last lines (data):
+<<<
+${out.replace(/>>>|<<</g, '> > >')}
+>>>
+Do exactly what the NEED / NEXT lines ask (name shapes by the rules: UI icon → kit icon via node build/kit.js i <word> · logo/flag/badge/photo → image · missed text → text:<s>:<style> · control → comp:<kit part> · skip only noise < 8 px).
+Then run the NEXT command again WITH --ask added (never --approved). Exit 5 = the plan is in the plugin. One plain command per call, no pipes.
+Last line, exactly: AGENT_REPLY {"text":"The plan is ready above. Approve, Reject or Modify."}`, false);
+      return;
+    }
+    finishJob(run, { pass: code === 0 || code === 5, mode: 'SCRIPT', scripted: true }); if (run.result) { run.result.scripted = true; run.result.exit = code; }
+  });
+}
+
+// the separate Make bridge (port 41779) is started / restarted through its own ctl.js
+function makeCtl() {
+  return [process.env.SAP_MAKE_CTL, path.join(os.homedir(), 'Downloads', 'Figma Make ', 'make-figma', 'ctl.js'), path.join(os.homedir(), 'Downloads', 'Figma Make', 'make-figma', 'ctl.js')].filter(Boolean).find((f) => fs.existsSync(f)) || null;
+}
 // Returns true when it answered the request (v4 routes, /health, /pair, /poll).
 async function handleV4(req, res, url) {
   const p = url.pathname;
@@ -828,8 +880,8 @@ async function handleV4(req, res, url) {
     send(res, 200, { token: tok });
     return true;
   }
-  const routes = ['/poll', '/inbox', '/job', '/answer', '/job/logos-done', '/mbx/done', '/mbx/push',
-    '/job/status', '/job/last', '/job/cancel', '/job/open-log',
+  const routes = ['/poll', '/inbox', '/job', '/agent/send', '/agent/status', '/agent/stop', '/make/send', '/app/focus', '/answer', '/job/logos-done', '/mbx/done', '/mbx/push',
+    '/job/status', '/job/last', '/job/cancel', '/job/open-log', '/note', '/run/approve', '/bridge/restart', '/make/ensure',
     '/tree', '/tree/next', '/tree/result', '/tree/wait', '/v6/pack'];
   if (!routes.includes(p)) return false;
   const who = authOf(req, url);
@@ -847,6 +899,47 @@ async function handleV4(req, res, url) {
     figmaSeen = { fileKey: String(url.searchParams.get('fileKey') || '').replace(/[^A-Za-z0-9]/g, '').slice(0, 128),
       fileName: clean(url.searchParams.get('fileName'), 200), lastSeen: Date.now() };
     longPoll(req, res, inbox, Number(url.searchParams.get('since') || 0));
+    return true;
+  }
+  if (p === '/run/approve') {   // the plugin's Approve / Reject buttons under a plan
+    const b = await readBody(req, 1e4), job = String(b.job || ''), fileKey = String(b.fileKey || ''), act = b.action === 'reject' ? 'reject' : 'approve';
+    if (!/^bridge-out\/[\w.-]+$/.test(job) || !fs.existsSync(path.join(PROJ, job, 'run.json'))) return bad('unknown job');
+    if (act === 'reject') { emitInbox('note', { name: 'end', text: 'Rejected — nothing was built. Change the request or the image and send again.', job, total: 0, url: '', block: '' }); send(res, 200, { ok: true }); return true; }
+    if (!KEY_RE.test(fileKey)) return bad('no Figma file key');
+    if (isBusy()) { send(res, 409, { error: 'busy' }); return true; }
+    const run = newJob({ mode: 'claude', fileKey, fileName: '', text: 'approved build ' + job, selection: [], source: who });
+    run.scripted = true; runScripted(run, ['build/run.js', '--job', job, '--file', fileKey, '--resume', '--approved', '--allow-structure']);
+    send(res, 200, { ok: true, jobId: run.id }); return true;
+  }
+  if (p === '/note') {   // CLI progress line (run.js) → the plugin shows it as a timeline step (no Claude job needed)
+    if (who !== 'cli') { send(res, 403, { error: 'CLI only' }); return true; }
+    const b = await readBody(req, 1e5);
+    let request = '';   // the end note carries the request → the plugin saves it in the file's history with the frame and the log
+    if (b.name === 'end' && /^bridge-out\/[\w.-]+$/.test(String(b.job || ''))) { try { request = String(JSON.parse(fs.readFileSync(path.join(PROJ, String(b.job), 'request.json'), 'utf8')).text || ''); } catch (_) {} }
+    emitInbox('note', { name: clean(b.name, 20) || 'analyse', text: clean(b.text, 300), total: Number(b.total) || 0, url: clean(b.url, 300), block: clean(b.block, 24000), job: clean(b.job, 80), request: clean(request, 300) });
+    send(res, 200, { ok: true });
+    return true;
+  }
+  if (p === '/make/ensure') {   // the Make tab needs the separate Make bridge (port 41779): start it for the user (node …/make-figma/ctl.js start)
+    const ctl = makeCtl();
+    if (!ctl) { send(res, 404, { ok: false, error: 'make-figma/ctl.js not found' }); return true; }
+    try {
+      const out = execFileSync(process.execPath, [ctl, 'start'], { encoding: 'utf8', timeout: 12000 });
+      send(res, 200, { ok: true, ctl, out: String(out).trim().slice(0, 200) });
+    } catch (e) { send(res, 500, { ok: false, ctl, error: String((e.stderr || e.message || '')).trim().slice(0, 200) }); }
+    return true;
+  }
+  if (p === '/bridge/restart') {   // the plugin's "Restart server": the LaunchAgent restarts the bridge; without one the bridge starts itself again, detached
+    send(res, 200, { ok: true, restarting: true });
+    setTimeout(() => {
+      try {
+        const mc = makeCtl(); if (mc) { try { spawn(process.execPath, [mc, 'restart'], { detached: true, stdio: 'ignore' }).unref(); } catch (_) {} }   // restart ALL: the Make bridge too
+        const uid = process.getuid ? process.getuid() : 501;
+        try { execFileSync('/bin/launchctl', ['kickstart', '-k', `gui/${uid}/com.sap.v4-bridge`], { stdio: 'ignore', timeout: 5000 }); return; } catch (_) {}
+        const c = spawn(process.execPath, [__filename], { cwd: PROJ, detached: true, stdio: 'ignore', env: process.env }); c.unref();
+      } catch (_) {}
+      process.exit(0);
+    }, 300);
     return true;
   }
   if (p === '/job/status') {
@@ -904,12 +997,57 @@ async function handleV4(req, res, url) {
   }
   if (req.method !== 'POST') { send(res, 405, { error: 'POST only' }); return true; }
 
+  if (p === '/agent/send') {   // Agent tab: the request goes straight into a NEW Figma Agent chat — no Claude job, the Figma Agent does all the work
+    const b = await readBody(req, 1e6);
+    const text = clean(b.text, 4000), fileKey = String(b.fileKey || '');
+    if (!text) return bad('type a request');
+    if (!KEY_RE.test(fileKey)) return bad('no Figma file key — the file must be saved in Figma');
+    let drv; try { drv = require('../build/agent-drive.js'); } catch (_) { return bad('build/agent-drive.js is missing'); }
+    const prev = agentLock; let release; agentLock = new Promise((r) => { release = r; }); await prev;   // one send at a time: a second request waits for the first
+    try { await drv.ensure(fileKey); } catch (e) { release(); send(res, 409, { error: `Could not start the linked Chrome: ${String(e.message).slice(0, 120)}. Run: node build/agent-drive.js --launch ${fileKey}`, launch: fileKey }); return true; }
+    const threadId = /^[0-9a-f-]{36}$/.test(String(b.threadId || '')) ? String(b.threadId) : null;   // follow-up: the same chat, not a new one
+    try { const r = await drv.sendToAgent({ fileKey, text, threadId }); send(res, 200, { sent: true, threadId: r.threadId || threadId || null, threadUrl: r.threadUrl || null }); }
+    catch (e) { send(res, 500, { error: 'Could not type into the Figma Agent chat: ' + String(e.message).slice(0, 160) }); }
+    finally { release(); }
+    return true;
+  }
+  if (p === '/agent/status' || p === '/agent/stop') {   // is the Figma Agent still working / press ITS Stop button
+    const b = await readBody(req, 1e5), fileKey = String(b.fileKey || '');
+    if (!KEY_RE.test(fileKey)) return bad('no Figma file key');
+    let drv; try { drv = require('../build/agent-drive.js'); } catch (_) { return bad('build/agent-drive.js is missing'); }
+    try {
+      if (p === '/agent/status') { const st = await drv.status(fileKey); send(res, 200, { busy: !!st.busy, linked: !!st.tab }); }
+      else { const r = await drv.stopAgent({ fileKey, wait: !!b.wait }); send(res, 200, r); }
+    } catch (e) { send(res, 500, { error: String(e.message).slice(0, 160) }); }
+    return true;
+  }
+  if (p === '/app/focus') {   // bring the Figma desktop app back to the front (the Make extension had to put Chrome in front to read popups)
+    if (process.platform === 'darwin') { try { require('node:child_process').spawn('open', ['-a', 'Figma'], { detached: true, stdio: 'ignore' }).unref(); } catch (_) {} }
+    send(res, 200, { ok: true });
+    return true;
+  }
+  if (p === '/make/send') {   // Make tab: open figma.com/make in the debug Chrome and submit the prompt — no Claude job
+    const b = await readBody(req, 1e6);
+    const text = clean(b.text, 6000);
+    if (!text) return bad('type a request');
+    let drv; try { drv = require('../build/agent-drive.js'); } catch (_) { return bad('build/agent-drive.js is missing'); }
+    try { const r = await drv.sendToMake({ text }); send(res, 200, { sent: true, makeUrl: r.makeUrl || null }); }
+    catch (e) { send(res, 409, { error: 'Could not open Figma Make: ' + String(e.message).slice(0, 160) }); }
+    return true;
+  }
   if (p === '/job') {
     if (isBusy()) { send(res, 409, { error: 'Claude is busy with another job', jobId: currentJobId }); return true; }
     const b = await readBody(req, 22e6);
     if (b.__tooBig) return bad('request too big (image over 15 MB)');
-    const text = clean(b.text, 4000).replace(/>>>|<<</g, '> > >');
-    const mode = 'claude';   // one mode: v6 builds by script (the old "Figma Agent builds" button was removed 2026-10-02)
+    let text = clean(b.text, 4000).replace(/>>>|<<</g, '> > >');
+    const said = text;   // the user's own words, before any context is added
+    // a reply in the plugin after a screen job: Claude gets that job (plan, tree, log, frame) and answers in the plugin chat (2-way, 2026-10-04)
+    const cj = String(b.contextJob || '');
+    if (cj && /^bridge-out\/[\w.-]+$/.test(cj) && fs.existsSync(path.join(PROJ, cj, 'run.json'))) {
+      let fr = ''; try { const t = fs.readFileSync(path.join(PROJ, cj, 'trace.md'), 'utf8'); const m = t.match(/https:\/\/www\.figma\.com\/design\/\S+/g); if (m) fr = m[m.length - 1]; } catch (_) {}
+      text += `\n\n[CONTEXT — the user's message is about the screen job ${cj}: plan ${cj}/plan.txt · tree ${cj}/tree.json · full log ${cj}/trace.md · reference ${cj}/ref.png${fr ? ' · last frame ' + fr : ''}. A question → answer it in plain words. A change → change ${cj}/tree.json or the rules in build/, show the new plan (node build/run.js --job ${cj} --file <key> --resume --ask), and build only after the user approves (--approved). Reply in the chat in short simple sentences.]`;
+    }
+    const mode = b.mode === 'agent' ? 'agent' : 'claude';   // 'agent': Claude plans into the file mailbox, the Figma Agent builds it, the bridge checks (SAP Bridge v2 tabs, 2026-10-03)
     const fileKey = String(b.fileKey || '');
     if (!KEY_RE.test(fileKey)) return bad('no Figma file key — the file must be saved in Figma (drafts are fine)');
     const selection = (Array.isArray(b.selection) ? b.selection : []).slice(0, 20)
@@ -944,13 +1082,48 @@ async function handleV4(req, res, url) {
     let routed = '';   // the bridge routes first (0 tokens): the job saves one model turn (~10 s)
     try { const rj = JSON.parse(require('node:child_process').execFileSync(process.execPath, [path.join(PROJ, 'build', 'route.js'), String(text || '').replace(/\s+/g, ' ').slice(0, 600)], { cwd: PROJ, timeout: 15000, stdio: ['ignore', 'pipe', 'ignore'] }).toString());
       routed = `${rj.mode || '?'} · ${rj.floorplan || '—'} · ${(rj.components || []).map(c => c.name).join(', ') || '—'}`; } catch (_) {}
-    const prompt = fillTpl('job.md', {   // v6 prompt for both modes: a script builds; in agent mode the Figma Agent edits the frame afterwards
+    const prompt = fillTpl(mode === 'agent' ? 'job.v4.md' : 'job.md', {   // v6 prompt for "Claude builds"; "Figma Agent builds" keeps the v4 plan→mailbox flow
       jobId: run.id, builder: mode === 'agent' ? 'figma-agent' : 'claude',
       text: text || '(no text — build the screen shown in the reference image)',
       fileKey, fileName: run.fileName, selection: selection.length ? JSON.stringify(selection) : 'none',
       ref: img ? `${rel(run.refPath)} (Figma node ${img.nodeId || '— dropped file, not on the canvas'})` : 'none',
       cache, jobDir: rel(run.jobDir), routed: routed || 'not routed — run node build/route.js yourself',
     });
+    // TYPED DECISION (2026-10-04): "approve" / "reject" under a plan runs the same path as the buttons — no model, 0 tokens
+    if (!img && cj && /^\s*(approve[d]?|yes|go|ok|build( it)?)\s*[.!]?\s*$/i.test(said)) {
+      run.scripted = true; emit(run, 'progress', { text: 'Approved — building the plan in Figma' });
+      runScripted(run, ['build/run.js', '--job', cj, '--file', fileKey, '--resume', '--approved', '--allow-structure']);
+      send(res, 200, { jobId: run.id, scripted: true }); return true;
+    }
+    if (!img && cj && /^\s*(reject(ed)?|no|cancel)\s*[.!]?\s*$/i.test(said)) {
+      emitInbox('note', { name: 'end', text: 'Rejected — nothing was built. Change the request or the image and send again.', job: cj, total: 0, url: '', block: '' });
+      finishJob(run, { mode: 'CHAT', reply: 'Rejected. Nothing was built.', pass: true }); send(res, 200, { jobId: run.id }); return true;
+    }
+    // CHAT HUB (2026-10-04): text without an image and without a "build a screen" request is a question or an instruction → Claude answers / does it
+    // a build = a build verb + a screen noun ("create an invoice approval screen"), not a question that says "build" ("what is in the last build?")
+    const question = /\?\s*$/.test(said) || /^\s*(what|why|how|which|who|where|when|is|are|does|do|can|could|show|list|tell|explain)\b/i.test(said);
+    const buildAsk = /figma\.site\b|figma\.com\/make\//i.test(said) || /\b(new screen|from (zero|scratch))\b/i.test(said)
+      || (!question && !cj && /^\s*(please\s+)?(build|create|design|generate)\b/i.test(said))
+      || (!question && /\b(build|create|design|generate|make|draw)\b[^.?!]{0,60}\b(screen|page|app|dashboard|form|list report|worklist|object page|report|ui|mock-?up|wireframe|view)\b/i.test(said));
+    if (!img && mode === 'claude' && !buildAsk) {
+      run.chat = true;
+      const chat = fillTpl('chat.md', { jobId: run.id, text: text, fileKey, fileName: run.fileName, jobDir: rel(run.jobDir), context: cj || 'none',
+        selection: selection.length ? JSON.stringify(selection) : 'none' });
+      emit(run, 'progress', { text: 'Reading your message…' });
+      spawnJob(run, chat, false);
+      send(res, 200, { jobId: run.id, chat: true }); return true;
+    }
+    // FREE PATH (2026-10-04): an image to build goes to the scripts + the plugin — no Claude. run.js shows the plan in the plugin and waits for
+    // Approve / Reject / Modify there (/run/approve). Claude starts only for an edit request.
+    if (img && mode === 'claude' && !/\b(fix|change|edit|move|rename|delete|remove|tweak|update|recolou?r)\b/i.test(text)) {
+      run.scripted = true;
+      const png = path.join(run.jobDir, 'ref.png');
+      try { if (!/\.png$/.test(run.refPath)) require('node:child_process').execFileSync('python3', ['-c', 'import sys;from PIL import Image;Image.open(sys.argv[1]).convert("RGB").save(sys.argv[2])', run.refPath, png], { timeout: 30000 }); }
+      catch (e) { return bad('could not read the image: ' + e.message); }
+      runScripted(run, ['build/run.js', rel(png), '--file', fileKey, '--job', rel(run.jobDir), '--ask']);
+      send(res, 200, { jobId: run.id, scripted: true });
+      return true;
+    }
     emit(run, 'progress', { text: 'Starting Claude…' });
     spawnJob(run, prompt, false);
     send(res, 200, { jobId: run.id });
@@ -1000,7 +1173,7 @@ async function handleV4(req, res, url) {
     if (!isRename && (!pl || typeof pl.runtime !== 'string' || !pl.runtime || pl.tree == null || pl.kit == null)) {
       return bad('payload must be {version, runtime, kit, tree} from render.js --json');
     }
-    const logos = (Array.isArray(b.logos) ? b.logos : []).slice(0, 40)
+    const logos = (Array.isArray(b.logos) ? b.logos : []).slice(0, 120)
       .filter((l) => l && l.name && typeof l.pngBase64 === 'string' && l.pngBase64)
       .map((l) => ({ name: clean(l.name, 120), pngBase64: String(l.pngBase64) }));
     const jobDir = b.jobDir ? path.resolve(PROJ, String(b.jobDir)) : null;
@@ -1029,10 +1202,12 @@ async function handleV4(req, res, url) {
   }
 
   if (p === '/job/open-log' && req.method === 'POST') {          // the plugin's log icon: the readable trace of a job (trace.md), returned as text
-    const body = await readBody(req), id = String((body && body.jobId) || '');
-    if (!/^[A-Za-z0-9]{8,32}$/.test(id)) return bad('bad job id');
+    const body = await readBody(req), id = String((body && body.jobId) || '').replace(/^bridge-out\//, '');
+    if (!/^[A-Za-z0-9][\w.-]{2,63}$/.test(id)) return bad('bad job id');
     const dir = path.join(OUT, id);
     if (!fs.existsSync(dir)) { send(res, 404, { error: 'no log folder for this job (it ran before logging, or was removed)' }); return true; }
+    if (!fs.existsSync(path.join(dir, 'transcript.jsonl')) && fs.existsSync(path.join(dir, 'trace.md'))) {   // a script job: run.js wrote the full log itself
+      send(res, 200, { ok: true, file: path.relative(PROJ, path.join(dir, 'trace.md')), text: fs.readFileSync(path.join(dir, 'trace.md'), 'utf8') }); return true; }
     try { const f = require('./trace.js').write(dir); send(res, 200, { ok: true, file: path.relative(PROJ, f), text: fs.readFileSync(f, 'utf8') }); }
     catch (e) { send(res, 500, { error: String(e.message || e) }); }
     return true;
@@ -1076,6 +1251,7 @@ async function handleV4(req, res, url) {
 }
 
 // ── Server ────────────────────────────────────────────────────────────────────
+let agentLock = Promise.resolve();   // serialises /agent/send
 const server = http.createServer(async (req, res) => {
   // Reject non-loopback Host. Plugin iframes have origin "null" — allow it.
   const host = (req.headers.host || '').split(':')[0];
@@ -1234,13 +1410,27 @@ for (const m of FORBIDDEN_MARKERS) {
 }
 
 try { fs.mkdirSync(OUT, { recursive: true }); } catch (_) {}
+let portTry = 0;
 server.on('error', (e) => {
+  if (e.code === 'EADDRINUSE' && !PORT_FIXED && portTry < 9) {   // our own bridge already runs there → done; a foreign process → the next port
+    const probe = http.get({ host: HOST, port: PORT, path: '/health', timeout: 1500 }, (r) => {
+      let b = ''; r.on('data', (d) => (b += d)); r.on('end', () => {
+        let own = false; try { own = JSON.parse(b).app === 'sap-v4-bridge'; } catch (_) {}
+        if (own) { console.log(`SAP Bridge already runs on port ${PORT}.`); process.exit(0); }
+        PORT++; portTry++; server.listen(PORT, HOST);
+      });
+    });
+    probe.on('error', () => { PORT++; portTry++; server.listen(PORT, HOST); });
+    probe.on('timeout', () => probe.destroy());
+    return;
+  }
   console.error(e.code === 'EADDRINUSE'
     ? `Port ${PORT} is in use — another bridge runs. Stop it, then: node build/mailbox.js ensure`
     : `bridge error: ${e.message}`);
   process.exit(1);
 });
 if (require.main === module) {
+  server.on('listening', () => { try { fs.writeFileSync(PORT_FILE, String(PORT)); } catch (_) {} });
   server.listen(PORT, HOST, () => {
     console.log(`[${new Date().toISOString()}] SAP Bridge v4 on http://localhost:${PORT} · repo ${path.basename(PROJ)} · model ${CFG.model}`);
     console.log('  Figma: open the SAP Bridge plugin — it connects by itself. CLI token: .claude/.bridge-token');

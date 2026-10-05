@@ -464,6 +464,101 @@ def center(b):
     return np.array([b[0] + b[2] / 2, b[1] + b[3] / 2], float)
 
 
+def regions(els, W, H):
+    """Make's top-down reading (2026-10-04, traced from Figma Make): a person sees a SIDE PANEL + a MAIN list of the SAME cards before
+    any pixel. The measure alone cut the hotel page into horizontal bands that each mixed filters with results, and missed a white card
+    on white (card 1) — three cards came out with three different trees. Two synthetic boxes fix the reading before nesting:
+      1. a repeated card that has no box gets one: same size as its siblings, placed by the texts that repeat at the same offset;
+      2. a side panel + main area split along a clear vertical gutter that runs down at least 45 % of the screen."""
+    page = next((e for e in els if e['kind'] == 'box' and e.get('page')), None)
+    nid = [max([e['id'] for e in els] + [0])]
+    def synth(box, like, **kw):
+        nid[0] += 1
+        b = {k: v for k, v in like.items() if not k.startswith('_') and k not in ('box', 'id', 'inner', 'padding', 'page', 'parent', 'group', 'dividers')}
+        b.update({'kind': 'box', 'box': [int(v) for v in box], 'inner': [int(v) for v in box], 'id': nid[0], 'page': False}); b.update(kw); els.append(b); return b
+    added = []
+    # 1 repeated cards
+    boxes = [e for e in els if e['kind'] == 'box' and not e.get('page')]
+    cards = [b for b in boxes if b['box'][2] >= 0.3 * W and b['box'][3] >= 100]
+    best = []
+    for c in cards:
+        g = [d for d in cards if abs(d['box'][2] - c['box'][2]) <= 0.03 * c['box'][2] and abs(d['box'][3] - c['box'][3]) <= 0.15 * c['box'][3] and abs(d['box'][0] - c['box'][0]) <= 8]
+        if len(g) > len(best): best = g
+    if len(best) >= 2:
+        texts = [e for e in els if e['kind'] == 'text']
+        rel = {}
+        for c in best:
+            for t in texts:
+                if inside(t['box'], c['box']): rel.setdefault(t['text'], []).append((t['box'][0] - c['box'][0], t['box'][1] - c['box'][1]))
+        anchors = {k: (int(np.median([v[0] for v in vs])), int(np.median([v[1] for v in vs]))) for k, vs in rel.items()
+                   if len(vs) >= 2 and max(v[1] for v in vs) - min(v[1] for v in vs) <= 12 and len(k) >= 3}
+        cw, ch = int(np.median([c['box'][2] for c in best])), int(np.median([c['box'][3] for c in best])); cx = int(np.median([c['box'][0] for c in best]))
+        votes = {}
+        for t in texts:
+            if t['text'] not in anchors or any(inside(t['box'], c['box']) for c in best): continue
+            ax, ay = anchors[t['text']]
+            if abs(t['box'][0] - (cx + ax)) > 12: continue
+            y = t['box'][1] - ay
+            key = next((k for k in votes if abs(k - y) <= 10), y); votes.setdefault(key, set()).add(t['text'])
+        for y, names in votes.items():
+            if len(names) < 2 or y < 0 or y + ch > H + 6: continue
+            nb = [cx, y, cw, min(ch, H - y)]
+            if any(inside(nb, b['box'], 0.15) or inside(b['box'], nb, 0.5) for b in cards): continue
+            added.append(synth(nb, best[0], synthetic='repeat'))
+    # 2 side panel | main | right rail: a vertical gutter that stays clear over the longest stretch of the screen (the search bar or a
+    #   bottom banner may cross it above or below — that stretch is simply shorter), with content on both sides
+    lines_all = [e for e in els if e['kind'] == 'line' and e['box'][2] < 0.85 * W]
+    items = [e for e in els if not e.get('page') and e['box'][2] < 0.85 * W and e['kind'] != 'line' and not (e['kind'] == 'box' and e['box'][3] >= 0.85 * H)]
+    walls = [e for e in els if not e.get('page') and not (e['kind'] == 'box' and e['box'][3] >= 0.85 * H)]   # a full-width header / banner / line ends a stretch
+    def gutter(pool, xlo, xhi):
+        best_ = None
+        for x in range(int(xlo), int(xhi), 2):
+            cross = sorted((e['box'][1], e['box'][1] + e['box'][3]) for e in walls if e['box'][0] < x < e['box'][0] + e['box'][2])
+            free, y = [], 0
+            for a_, b_ in cross:
+                if a_ > y: free.append((y, a_))
+                y = max(y, b_)
+            free.append((y, H))
+            a_, b_ = max(free, key=lambda t: t[1] - t[0])
+            if b_ - a_ < 0.45 * H: continue
+            inb = lambda e: e['box'][1] >= a_ - 2 and e['box'][1] + e['box'][3] <= b_ + 2
+            L = [e for e in pool if inb(e) and e['box'][0] + e['box'][2] <= x]; Rr = [e for e in pool if inb(e) and e['box'][0] >= x]
+            if len(L) < 6 or len(Rr) < 6: continue
+            if not best_ or b_ - a_ > best_[2] - best_[1]: best_ = (x, a_, b_, L, Rr)
+        return best_
+    like = page or {'fill': '#ffffff', 'token': 'sapBaseColor', 'dE': 0}
+    pad = lambda b: [b[0] - 2, b[1] - 2, b[2] + 4, b[3] + 4]
+    def region(members, a_, b_, nm, xlo, xhi, gx):
+        # a region takes in EVERY part on its side that it touches (a tab separator that starts 20 px above the stretch, a divider):
+        # a part left half outside overlaps the region and gets pinned. It never grows across a part that crosses the gutter.
+        u = union([m['box'] for m in members]); grown = True
+        crossing = [e for e in walls if e['box'][0] < gx < e['box'][0] + e['box'][2]]
+        while grown:
+            grown = False
+            for e in els:
+                if e.get('page') or e.get('region') or e in members: continue
+                x0_, y0_, w_, h_ = e['box']
+                if x0_ < xlo - 1 or x0_ + w_ > xhi + 1: continue
+                if not (y0_ < u[1] + u[3] and y0_ + h_ > u[1]) or inside(e['box'], u, 0.999): continue
+                nu = union([u, e['box']])
+                if any(c['box'][1] < nu[1] + nu[3] and c['box'][1] + c['box'][3] > nu[1] and not (c['box'][1] < u[1] + u[3] and c['box'][1] + c['box'][3] > u[1]) for c in crossing): continue
+                u = nu; members = members + [e]; grown = True
+        return synth(u, like, region=nm, radius=0, border=False, shadow=False)   # exact: a 2-px margin was added twice and moved the whole panel 2 px
+    g1 = gutter(items, 0.12 * W, 0.45 * W)
+    if g1:
+        x, a_, b_, L, Rr = g1
+        added.append(region(L, a_, b_, 'side', 0, x, x)); added.append(region(Rr, a_, b_, 'main', x, W, x))
+        g2 = gutter(Rr, 0.6 * W, 0.92 * W)                       # a right rail (ads, a detail column) inside the main area
+        if g2:
+            x2, a2, b2, M_, Rail = g2
+            added.append(region(M_, a2, b2, 'list', x, x2, x2)); added.append(region(Rail, a2, b2, 'rail', x2, W, x2))
+    else:
+        g2 = gutter(items, 0.6 * W, 0.92 * W)
+        if g2:
+            x2, a2, b2, M_, Rail = g2
+            added.append(region(M_, a2, b2, 'main', 0, x2, x2)); added.append(region(Rail, a2, b2, 'rail', x2, W, x2))
+    return added
+
 def structure(els):
     """who sits inside which box, every box's padding, and which children sit side by side as a group"""
     page = next((e for e in els if e['kind'] == 'box' and e.get('page')), None)
@@ -506,8 +601,31 @@ def structure(els):
     return out
 
 
-def read(path, lang='bg', w=None, tmp_dir=None):
+def ui_width(path, lang, tmp_dir):
+    """the TRUE frame width of a screenshot, from its text: SAP body / table text is 14 px in every density, so the screenshot's scale is
+    (measured body font in image px) / 14. Root cause of the 2026-10-03 disaster: "image >= 2000 px → frame = half" read a 2000-px capture of a
+    ~1600-px screen as 1000 px wide — every text came out 12 px, every kit part (Shell Bar 52, Button 26) was too big for it, and the screen broke."""
+    img = cv2.imread(path); iw = img.shape[1]
+    R, _, _ = read(path, lang, iw, tmp_dir)                    # k = 1: boxes in image pixels
+    sizes = []
+    for e in R['elements']:
+        if e.get('kind') != 'text' or len(str(e.get('text', ''))) < 3: continue
+        t, h = str(e['text']), e['box'][3]
+        desc = any(c in t for c in 'gjpqy()[]{}|,;')            # letters below the line (and brackets) make the glyph box taller
+        sizes.append(h / (0.93 if desc else 0.72))              # glyph box → font size: cap height ≈ 0.72 em, cap + descender ≈ 0.93 em
+    if len(sizes) < 4: return None
+    sizes.sort(); body = sizes[len(sizes) // 4]               # the lower quartile = body / table text (headings are fewer and bigger)
+    W = iw / (body / 14.0)
+    for std in (1024, 1280, 1366, 1440, 1536, 1600, 1680, 1728, 1920, 2560):   # a common screen width within 4 % wins
+        if abs(W - std) / std <= 0.04: return std
+    return int(round(W))
+
+
+def read(path, lang='bg', w=None, tmp_dir=None, regions_=False):
     img = cv2.cvtColor(cv2.imread(path), cv2.COLOR_BGR2RGB)
+    if w is None:
+        try: w = ui_width(path, lang, tmp_dir)
+        except Exception: w = None
     W = w or (img.shape[1] // 2 if img.shape[1] >= 2000 else img.shape[1])
     if img.shape[1] < 1.5 * W:                 # a 1x screenshot: read it from a 2x upscale, like zooming in
         img = cv2.resize(img, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
@@ -519,6 +637,7 @@ def read(path, lang='bg', w=None, tmp_dir=None):
     ts = [t for t in ts if not any(inside(t['box'], b, 0.6) for b in pics)]   # lettering inside a logo is the logo
     els = ts + marks + lines + boxes
     for i, e in enumerate(els): e['id'] = i + 1
+    if regions_: regions(els, W, f.shape[0])        # only for the spec (the plan): the EYE check reads the reference as it is
     groups = structure(els)
     return {'image': path, 'frame': [W, f.shape[0]], 'k': k, 'lang': lang, 'elements': els, 'groups': groups}, img, f
 
@@ -895,7 +1014,7 @@ def main():
     d = sp.add_parser('diff'); d.add_argument('ref'); d.add_argument('build'); d.add_argument('--w-ref', type=int)
     d.add_argument('--tree', help='geometry.json of the build (build/templates/dump-geometry.use_figma.js) → fix list with node ids')
     d.add_argument('--pass-at', type=int, default=95, help='EYE MATCH %% needed to pass (default 95)')
-    sp_ = sp.add_parser('spec'); sp_.add_argument('image'); sp_.add_argument('--text-scale', type=float, help='text size step to SAP (default: 0.85 when body text is 16px, else 1)')
+    sp_ = sp.add_parser('spec'); sp_.add_argument('image'); sp_.add_argument('--no-regions', action='store_true', help='no side panel / repeated card boxes (the old bottom-up reading)'); sp_.add_argument('--text-scale', type=float, help='text size step to SAP (default: 0.85 when body text is 16px, else 1)')
     for p in (r, d, sp_):
         p.add_argument('--w', type=int); p.add_argument('--lang', default='bg', choices=list(LANGS)); p.add_argument('--out', default='see-out')
     a = ap.parse_args()
@@ -1062,14 +1181,19 @@ def components(R, accent):
     for g in by_group.values():                      # radio: a round mark 14–26 px, its label right next to it
         g = sorted(g, key=lambda e: e['box'][0])
         for a, b in zip(g, g[1:]):
-            if a['kind'] == 'icon' and b['kind'] == 'text' and 14 <= a['box'][3] <= 26 and 0.7 <= a['box'][2] / a['box'][3] <= 1.3 and ring(a['_thumb']) > 0.3:
+            if a['kind'] == 'icon' and b['kind'] == 'text' and 14 <= a['box'][3] <= 26 and 0.7 <= a['box'][2] / a['box'][3] <= 1.3 and ring(a['_thumb']) > 0.3 \
+                    and not any(t['kind'] == 'text' and abs(t['box'][0] - b['box'][0]) <= 12 and b['box'][1] + b['box'][3] <= t['box'][1] <= b['box'][1] + b['box'][3] + 30 for t in R['elements']):   # a field label with a value under it (pin + "From Where") is not a radio
                 sel = a['token'].startswith('sapContent_Selected') or (accent is not None and de(rgb(a['color']), rgb(accent)) < 25)
+                g_ = np.asarray(a.get('_rgb'), float); g_ = g_.mean(axis=2) if g_.ndim == 3 else g_
+                square = g_.ndim == 2 and g_.shape[0] >= 8 and np.mean([g_[:2, :2].mean(), g_[:2, -2:].mean(), g_[-2:, :2].mean(), g_[-2:, -2:].mean()]) < g_[6:10, 6:10].mean() - 40   # dark corners, light centre = a square box
+                if square:   # inked corners = a square box = a Check Box (2026-10-04: filter check boxes came out as radios)
+                    found.append({'component': 'Check Box', 'props': {'Check': 'Unchecked'}, 'text': b['text'], 'box': union([a['box'], b['box']]), 'ids': [a['id'], b['id']]}); used |= {a['id'], b['id']}; continue
                 found.append({'component': 'Radio Button', 'props': {'Selected': 'True' if sel else 'False'}, 'text': b['text'], 'box': union([a['box'], b['box']]), 'ids': [a['id'], b['id']]})
                 used |= {a['id'], b['id']}
     for b in (e for e in R['elements'] if e['kind'] == 'box' and not e.get('page')):   # button: a filled pill with one word on it
         kids = [e for e in R['elements'] if e['parent'] == b['id']]
         sat = cv2.cvtColor(np.uint8([[rgb(b['fill'])]]), cv2.COLOR_RGB2HSV)[0, 0, 1] > 90
-        if sat and len(kids) == 1 and kids[0]['kind'] == 'text' and 20 <= b['box'][3] <= 56:
+        if sat and len(kids) == 1 and kids[0]['kind'] == 'text' and 20 <= b['box'][3] <= 64:
             found.append({'component': 'Button', 'props': {'Type': 'Primary', 'Form Factor': 'Cozy' if b['box'][3] >= 32 else 'Compact'},
                           'text': kids[0]['text'], 'box': b['box'], 'ids': [b['id'], kids[0]['id']], 'width': b['box'][2]})
             used |= {b['id'], kids[0]['id']}
@@ -1078,7 +1202,8 @@ def components(R, accent):
     for l in lines:                                  # range slider: a track with a handle at each end
         x0, x1, cy = l['box'][0], l['box'][0] + l['box'][2], l['box'][1] + l['box'][3] / 2
         hs = [i for i in icons if abs(i['box'][1] + i['box'][3] / 2 - cy) <= 8 and (x0 - 40 <= i['box'][0] <= x1 + 20)]
-        if len(hs) >= 2 and l['box'][2] >= 60:
+        dur = [e for e in R['elements'] if e['kind'] == 'text' and re.search(r'\d+\s*h\b|\d+\s*m\b|^[A-Z]{3}$', str(e.get('text', '')).strip()) and abs(e['box'][1] + e['box'][3] / 2 - cy) <= 34 and e['box'][0] < x1 + 40 and e['box'][0] + e['box'][2] > x0 - 40]   # duration (1h 52m) or airport code (EWR) touching the line
+        if len(hs) >= 2 and l['box'][2] >= 60 and not dur:   # a flight route line has its duration (1h 52m) beside it — not a slider
             bx = union([l['box']] + [h['box'] for h in hs])
             found.append({'component': 'Range Slider', 'props': {'Form Factor': 'Compact'}, 'box': bx, 'ids': [l['id']] + [h['id'] for h in hs]})
             used |= {l['id']} | {h['id'] for h in hs}
@@ -1133,7 +1258,7 @@ def cut(items):
 
 def cmd_spec(a):
     os.makedirs(a.out, exist_ok=True)
-    R, img, f = read(a.image, a.lang, a.w, a.out)
+    R, img, f = read(a.image, a.lang, a.w, a.out, regions_=not getattr(a, 'no_regions', False) and os.environ.get('SEE_NO_REGIONS') != '1')
     els = R['elements']
     byid = {e['id']: e for e in els}
     texts = [e for e in els if e['kind'] == 'text']
@@ -1167,6 +1292,8 @@ def cmd_spec(a):
         n = {'type': 'box', 'box': e['box'], 'size': [e['box'][2], e['box'][3]], 'fill': e['token'], 'fill_hex': e['fill'],
              'border': f'{e["border_w"]}px {e["border_token"]}' if e.get('border') else 'none', 'radius': e['radius'],
              'padding': e.get('padding'), 'shadow': bool(e.get('shadow'))}
+        if e.get('region'): n['region'] = e['region']
+        if e.get('synthetic'): n['synthetic'] = e['synthetic']
         if e['dE'] > 8: brand.setdefault(e['fill'], []).append(f'box {e["box"][2]}×{e["box"][3]}')
         kids = [k for k in els if k['parent'] == e['id']]
         n['layout'] = layout_of(kids)

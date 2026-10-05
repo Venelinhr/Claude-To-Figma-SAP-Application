@@ -22,7 +22,7 @@ function planNames(file) {
     const tok = t => { if (typeof t === 'string' && !t.startsWith('RAW')) s.add(t); };
     (function walk(o) {
       if (o.cp) s.add(o.cp); if (o.st) s.add(o.st); if (o.ic) s.add(o.ic);
-      if (o.pr && o.pr.Icon) s.add(o.pr.Icon);
+      if (o.pr && o.pr.Icon && !/^(true|false)$/i.test(String(o.pr.Icon))) s.add(o.pr.Icon);   // "Icon": "True" is a True/False option (Message Strip), not an icon name
       (o.nav || []).forEach(x => x.icon && s.add(x.icon));
       tok(o.bg); tok(o.bc);
       (o.c || []).forEach(walk);
@@ -75,13 +75,13 @@ if (cmd === 'c') {
   for (const [name, key] of Object.entries(kit.effects)) if (re.test(name)) out(`${name}  ${key}`);
 } else if (cmd === 'pack') {
   const allNames = () => [...new Set([...Object.keys(kit.components), ...Object.keys(kit.text), ...Object.keys(kit.vars).map(f => f.split('/').pop()), ...Object.keys(kit.icons).map(f => f.split('/').pop())])];
-  const names = q === '--plan' ? planNames(n) : q === '--all' ? allNames() : process.argv.slice(3), K = { c: {}, v: {}, t: {}, i: {} }, miss = [];
+  const names = q === '--plan' ? planNames(n) : q === '--all' ? allNames() : process.argv.slice(3), K = { c: {}, v: {}, t: {}, i: {}, d: {} }, miss = [];
   const low = o => Object.fromEntries(Object.keys(o).map(k => [k.toLowerCase(), k]));
   const lc = low(kit.components), lt = low(kit.text), li = low(kit.icons);
   const vShort = {}; for (const f of Object.keys(kit.vars)) { const s = f.split('/').pop(); (vShort[s.toLowerCase()] ||= []).push(f); }
   const iShort = {}; for (const f of Object.keys(kit.icons)) { const s = f.split('/').pop().toLowerCase(); (iShort[s] ||= f); }
   for (const nm of names) { const l = nm.toLowerCase();
-    if (lc[l]) K.c[nm] = kit.components[lc[l]].key;
+    if (lc[l]) { K.c[nm] = kit.components[lc[l]].key; K.d[nm] = kit.components[lc[l]].props || {}; }   // d: the kit's own prop definitions — the runtime falls back to them when Figma refuses a live read
     else if (lt[l]) K.t[nm] = kit.text[lt[l]].split('|')[0];
     else if (kit.vars[nm]) K.v[nm] = kit.vars[nm].split('|')[0];
     else if (vShort[l]) { K.v[nm] = kit.vars[vShort[l][0]].split('|')[0]; if (vShort[l].length > 1) miss.push(`${nm}: ${vShort[l].length} vars share this short name, used ${vShort[l][0]}`); }

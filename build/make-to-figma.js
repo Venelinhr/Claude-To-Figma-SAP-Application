@@ -40,7 +40,10 @@ async function pipeline(dump, opt = {}) {
   const t = node(['build/make2tree.js', path.join(job, 'make-dump.json'), path.join(job, 'tree.json')]); say(t.stdout.trim());
   if (t.status) return { ok: false, job, msg: 'make2tree failed: ' + (t.stderr || t.stdout) };
   const dr = node(['build/door.js', path.join(job, 'tree.json')]); say(dr.stdout.split('\n')[0]);
-  if (dr.status) return { ok: false, job, msg: 'DOOR rejected the tree:\n' + dr.stdout };
+  // a 1:1 Make clone keeps Make's measured sizes on purpose: the screenshot pipeline's "responsive" rule only warns here; every other rule still blocks (2026-10-05)
+  const outs = String(dr.stdout).split('\n').filter(l => /^ OUT /.test(l)), hard = outs.filter(l => !/^ OUT\s+responsive/.test(l));
+  if (dr.status && (hard.length || !outs.length)) return { ok: false, job, msg: 'DOOR rejected the tree:\n' + dr.stdout };
+  if (outs.length > hard.length) say(`DOOR  ${outs.length - hard.length} responsive note(s): Make's exact sizes are kept (1:1 clone)`);
   say(`logos: ${await grabImages(job, d.origin || 'http://localhost/')}`);
   const h = await health(), key = opt.file || (h && h.figma && h.figma.fileKey);
   if (!opt.agent && key) {

@@ -6,7 +6,7 @@ const os   = require('os');
 const { execFileSync, spawn } = require('child_process');
 
 const PROJ    = path.resolve(__dirname, '..');
-const PORT    = Number(process.env.SAP_BRIDGE_PORT || 41778);
+const PORT    = Number(process.env.SAP_BRIDGE_PORT || (() => { try { return require('node:fs').readFileSync(require('node:path').join(__dirname, '..', '.claude', '.bridge-port'), 'utf8').trim(); } catch (_) { return 41778; } })());
 const BASE    = `http://localhost:${PORT}`;
 const PART_MAX = 7800; // bytes; >= this triggers a new chunk
 
@@ -120,6 +120,7 @@ const TOKEN_FILE = path.join(PROJ, '.claude', '.bridge-token');
 const PAIR_FILE = path.join(PROJ, '.claude', '.bridge-pair.json');
 const OUT = path.join(PROJ, 'bridge-out');
 const LOG = path.join(OUT, 'bridge.log');
+const AGENT_LOG = path.join(os.homedir(), 'Library', 'Logs', 'sap-v4-bridge.log');   // launchd opens this file itself: ~/Downloads is privacy-protected (exit 78, 2026-10-04)
 const SERVER = path.join(PROJ, 'bridge', 'server.js');
 const USAGE = `node build/mailbox.js <command>
   install                     always-on bridge (macOS LaunchAgent ${LABEL}), starts at login
@@ -204,8 +205,8 @@ const COMMANDS = {
   <key>WorkingDirectory</key><string>${xml(PROJ)}</string>
   <key>RunAtLoad</key><true/>
   <key>KeepAlive</key><true/>
-  <key>StandardOutPath</key><string>${xml(LOG)}</string>
-  <key>StandardErrorPath</key><string>${xml(LOG)}</string>
+  <key>StandardOutPath</key><string>${xml(AGENT_LOG)}</string>
+  <key>StandardErrorPath</key><string>${xml(AGENT_LOG)}</string>
   <key>EnvironmentVariables</key>
   <dict>
 ${envXml}

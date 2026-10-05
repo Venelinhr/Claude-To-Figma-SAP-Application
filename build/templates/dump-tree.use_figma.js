@@ -22,7 +22,8 @@ for (const n of [root, ...root.findAll(() => true)]) {
       font: n.fontName === figma.mixed ? [...new Set(n.getStyledTextSegments(['fontName']).map(g => g.fontName.family))].join('+') : n.fontName.family });
   } else if (n.type === 'INSTANCE') {
     const m = await n.getMainComponentAsync(), s = m && m.parent && m.parent.type === 'COMPONENT_SET' ? m.parent : m;
-    const p = {}; for (const [k, v] of Object.entries(n.componentProperties)) if (v.type === 'VARIANT') p[k] = v.value;
+    const p = {}; let cpr = {}; try { cpr = n.componentProperties; } catch (_) { try { cpr = n.variantProperties || {}; for (const k in cpr) cpr[k] = { type: 'VARIANT', value: cpr[k] }; } catch (__) { cpr = {}; } }   // a kit set with errors throws here (2026-10-04) — the dump must not die
+    for (const [k, v] of Object.entries(cpr)) if (v.type === 'VARIANT') p[k] = v.value;
     out.push({ ...base, component: s ? s.name : '', props: p, h: Math.round(n.height) });
   } else if ('fills' in n) {
     const fill = await tok(n.fills), stroke = 'strokes' in n ? await tok(n.strokes) : '';

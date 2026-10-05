@@ -57,18 +57,19 @@ function collectLogos(jobDir) {
       const f = path.join(jobDir, 'logos', path.basename(String(e.file)));
       if (fs.existsSync(f)) out.push({ name: String(e.element), pngBase64: fs.readFileSync(f).toString('base64') });
     }
-    if (out.length) return out.slice(0, 40);
+    if (out.length) return out.slice(0, 120);
   }
-  const top = fs.readdirSync(jobDir).filter((f) => /^logo.*\.png$/i.test(f)).sort();
+  const num = (f) => Number((f.match(/(\d+)/) || [0, 0])[1]);   // logo2 before logo10 (a text sort put logo10..16 into the wrong slots, 2026-10-03)
+  const top = fs.readdirSync(jobDir).filter((f) => /^logo.*\.png$/i.test(f)).sort((a, b) => num(a) - num(b));
   top.forEach((f, i) => out.push({ name: i === 0 ? 'Logo' : `Logo ${i + 1}`, pngBase64: fs.readFileSync(path.join(jobDir, f)).toString('base64') }));
-  if (out.length) return out.slice(0, 40);
+  if (out.length) return out.slice(0, 120);
   const logosDir = path.join(jobDir, 'logos');
   if (fs.existsSync(logosDir)) {
     for (const f of fs.readdirSync(logosDir).filter((x) => /\.png$/i.test(x)).sort()) {
       out.push({ name: path.basename(f, path.extname(f)), pngBase64: fs.readFileSync(path.join(logosDir, f)).toString('base64') });
     }
   }
-  return out.slice(0, 40);
+  return out.slice(0, 120);
 }
 
 // a diff.json entry as one readable line: MISSING "Най-добро" ref 433,28 84×16 → none

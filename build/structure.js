@@ -15,11 +15,13 @@ function check(rows, spec) {
     out.push(`FRAME  build ${root.w}×${root.h}, the reference is ${spec.frame.w}×${spec.frame.h} — build at the reference size`);
   const has = new Set(); for (const g of G) if (g.type === 'FRAME' || g.type === 'RECTANGLE' || g.type === 'INSTANCE') has.add(g);   // a kit component instance (Radio Button ring, Avatar, Object Status …) is a box too
   if (spec) {
-    const boxes = []; (function w(x, d) { if (x.type === 'box' && x.box) boxes.push({ box: x.box, d }); (x.children || []).forEach(k => w(k, d + (x.type === 'box' ? 1 : 0))); })({ children: spec.sections }, 0);
+    const boxes = []; (function w(x, d) { const real = x.type === 'box' && !x.region; if (real && x.box) boxes.push({ box: x.box, d }); (x.children || []).forEach(k => w(k, d + (real ? 1 : 0))); })({ children: spec.sections }, 0);   // a region (side panel / main area) is an invisible layout frame, not a reference box
     for (const { box: [bx, by, bw, bh] } of boxes) {
       const X = bx * s, Y = by * s, W = bw * s, H = bh * s, tol = Math.max(6, 0.02 * Math.max(W, H));
       const hit = [...has].find(g => Math.abs(g.x - X) <= tol && Math.abs(g.y - Y) <= tol && Math.abs(g.w - W) <= tol && Math.abs(g.h - H) <= tol);
       if (hit) continue;
+      // a kit component that replaced the reference box keeps the KIT's own height (Tag 22, not the 33-px pill): same x, width, vertical centre = SAP look, not a defect
+      if ([...has].some(g => g.type === 'INSTANCE' && Math.abs(g.x - X) <= tol && Math.abs(g.w - W) <= tol && Math.abs((g.y + g.h / 2) - (Y + H / 2)) <= tol)) continue;
       const near = [...has].filter(g => g.w > 8 && g.h > 8).sort((a, b) => (3 * Math.hypot(a.x - X, a.y - Y) + Math.abs(a.w - W) + 0.5 * Math.abs(a.h - H)) - (3 * Math.hypot(b.x - X, b.y - Y) + Math.abs(b.w - W) + 0.5 * Math.abs(b.h - H)))[0];   // place first
       out.push(`BOX  the reference has a box ${bw}×${bh} at ${bx},${by}; the build has none there` + (near ? ` — nearest "${near.name}" ${near.w}×${near.h} at ${near.x},${near.y} (${near.id})` : ''));
     }

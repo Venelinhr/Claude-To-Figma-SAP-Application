@@ -99,7 +99,9 @@ const ef = opt('--expect', null);
 if (ef) {
   const E = JSON.parse(fs.readFileSync(ef, 'utf8')), rows = [];
   for (const o of leaves) {
-    const e = E[o.n] && E[o.n].map(v => v / refScale); if (!e) continue;
+    // a designed tree (DESIGN lane) has its own layer names: match by the measurement id it carries ("m":"T5" / "m":"7") or by its text
+    const e0 = E[o.n] || (o.m != null && o.k !== 'i' && E['m:' + o.m]) || (o.k === 't' && E['text:' + o.t]);
+    const e = e0 && e0.map(v => v / refScale); if (!e) continue;
     const b = boxes.get(o), ta = o.ta;                  // an aligned text keeps its right edge / centre
     const dx = ta === 'R' ? b[0] + b[2] - (e[0] + e[2]) : ta === 'C' ? b[0] + b[2] / 2 - (e[0] + e[2] / 2) : b[0] - e[0];
     rows.push({ n: o.n, dx, dy: b[1] - e[1], e, b });
