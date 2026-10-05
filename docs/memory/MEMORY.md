@@ -5,3 +5,4 @@
 - [Always log + history](always-log-and-history.md) — after every direct Figma change run build/changelog.js so the plugin keeps history and log
 - [Make engine sync](make-engine-sync.md) — Make→Figma has 3 copies (repo, Bridge v2, standalone); keep identical, prove with make-verify
 - [Make full-screen preview](make-read-fullscreen-preview.md) — read Make apps in Preview → full screen, chat closed
+- [Make engine confirmed good](make-engine-confirmed-good.md) — 2026-10-05 user: perfect result; keep the fixed converter, re-sync both plugins after changes
