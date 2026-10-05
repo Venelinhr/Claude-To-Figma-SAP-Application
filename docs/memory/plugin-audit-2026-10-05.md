@@ -14,3 +14,5 @@ Not run in real Figma: makeAudit / makeFix / make-resync (only a vm smoke test a
 
 **Why:** audit asked by the user on 2026-10-05 ("Do all").
 **How to apply:** after plugin edits run the plugin tests; never run build-make.js without a reason. Related: [[make-engine-sync]], [[plugin-default-claude-tab]].
+
+Later the same day (user feedback): the header "copy whole log" icon was REMOVED (the per-history-row log icon stays); the Health section was REMOVED from the info popover (code.js still answers health-get, the UI no longer asks); history got a right-side "Clear history" text button (two clicks: "Sure? Clear all", then code.js `history-clear`) and 10 px space between cards and scroll bar; all tab hero texts fit in 2 lines at 300 px (user wants max 3).
