@@ -238,7 +238,7 @@ function convert(D, KIT, MAP, EXTRA, nameArg) {
   const CONTAINERS = new Set(['sap.f.DynamicPage', 'sap.f.DynamicPageTitle', 'sap.f.DynamicPageHeader', 'sap.tnt.ToolPage', 'sap.tnt.NavigationList', 'sap.m.IconTabHeader', 'sap.m.ScrollContainer', 'sap.m.Page', 'sap.m.Panel', 'sap.m.List', 'sap.m.OverflowToolbar', 'sap.m.Toolbar', 'sap.ui.layout.VerticalLayout', 'sap.ui.layout.HorizontalLayout', 'sap.ui.layout.Grid', 'sap.m.ObjectIdentifier']);   // layout containers: their children are placed by the measured boxes (frame())
   const WIDGET = /(ComboBox|MultiInput|Input|TextArea|Picker|Selection|StepInput|Slider|RangeSlider|RatingIndicator|ProgressIndicator|Tokenizer|Token)$/;   // input-like widgets whose children are internals, not content
   const box = c => c.box.slice();
-  const inst = (c, cp, pr, label, tx) => ({ _src: c.id, _b: cp === 'Switch' && KIT.components[cp] ? [c.box[0], c.box[1] + (c.box[3] - KIT.components[cp].h) / 2, KIT.components[cp].w, KIT.components[cp].h] : box(c), _k: 'inst', _grow: grow(c), _w: px(c.props.width), n: label || cp, k: 'i', cp, pr, w: (cp === 'Switch' || cp === 'Icon Button') && KIT.components[cp] ? KIT.components[cp].w : R(c.box[2]), h: (KIT.components[cp] && KIT.components[cp].h && cp !== 'Shell Bar' && cp !== 'Tab' && cp !== 'Navigation Item' && cp !== 'Object Status' && cp !== 'Text Area' && cp !== 'Message Strip') ? KIT.components[cp].h : R(c.box[3]), _intr: (KIT.components[cp] || {}).h, ...(tx ? { tx } : {}) });
+  const inst = (c, cp, pr, label, tx) => ({ _src: c.id, _b: cp === 'Switch' && KIT.components[cp] ? [c.box[0], c.box[1] + (c.box[3] - KIT.components[cp].h) / 2, KIT.components[cp].w, KIT.components[cp].h] : box(c), _k: 'inst', _grow: grow(c), _w: px(c.props.width), n: label || cp, k: 'i', cp, pr, w: (cp === 'Switch' || cp === 'Icon Button') && KIT.components[cp] ? KIT.components[cp].w : R(c.box[2]), h: (KIT.components[cp] && KIT.components[cp].h && cp !== 'Shell Bar' && cp !== 'Tab' && cp !== 'Navigation Item' && cp !== 'Object Status' && cp !== 'Text Area' && cp !== 'Message Strip' && cp !== 'Drop-Down') ? KIT.components[cp].h : R(c.box[3]), _intr: (KIT.components[cp] || {}).h, ...(tx ? { tx } : {}) });
   // the app's own icon on a status: the kit status keeps its icon as a nested instance, so the plugin swaps it (the user can swap it again)
   const withIco = (n, src) => { const ic = src ? icon(src) : null; if (ic) n.ico = { Icon: ic }; return n; };
   // a DatePicker keeps an ISO value and shows it with its displayFormat (dd MMM yyyy …)
@@ -267,8 +267,17 @@ function convert(D, KIT, MAP, EXTRA, nameArg) {
     if (n && n.c && ab.length) ab.forEach(k => { const m = conv(k); if (m) { m.abs = 1; m.xy = [R(k.box[0] - c.box[0]), R(k.box[1] - c.box[1])]; n.c.push(m); } });
     return n;
   }   // _src = the Make control a node came from (make-verify.js traces it)
+  function selectDrop(c) {                                     // a Select / ComboBox drop-down (a Popover holding only a Select list): the kit's own Drop-Down part — popover frame + one item per option
+    if (c.props.showHeader === true) return null;
+    const deep = (n, f) => { for (const k of kids[n.id] || []) { if (f(k)) return k; const r = deep(k, f); if (r) return r; } return null; };
+    const sl = deep(c, k => k.cls === 'sap.m.SelectList'), its = sl ? (kids[sl.id] || []).filter(k => /^sap\.ui\.core\.(Item|ListItem)$/.test(k.cls) && k.box[2] > 0).sort((a, b) => a.box[1] - b.box[1]) : [];
+    if (!its.length || its.length > 12) return null;
+    const n = inst(c, 'Drop-Down', { 'Form Factor': 'Compact' }, 'Drop-Down ' + (its.find(k => k.props.text) || { props: {} }).props.text);
+    n.h = R(c.box[3]); n.dd = its.map(k => ({ t: k.props.text || '', on: sl.props.selectedKey != null && k.props.key === sl.props.selectedKey })); return n;
+  }
   function conv0(c) {
     const p = c.props;
+    if (/^sap\.m\.(Popover|ResponsivePopover)$/.test(c.cls)) { const dd = selectDrop(c); if (dd) return dd; }
     switch (c.cls) {
       case 'sap.tnt.ToolHeader': return shell(c);
       case 'sap.tnt.SideNavigation': return sidenav(c);
@@ -850,6 +859,7 @@ function convert(D, KIT, MAP, EXTRA, nameArg) {
   (function walk(n, at) { if (n._src) TRACE.push({ p: at, id: n._src, b: n._b, k: n._k, ta: n.ta }); (n.c || []).forEach((k, i) => walk(k, at.concat(i))); })(rootNode, []);
   const clean = (k, v) => (k[0] === '_' || v === undefined) ? undefined : v;
   const extra = ovs.map(o => {
+    if (/^sap\.m\.(Popover|ResponsivePopover)$/.test(o.cls)) { const dd = selectDrop(o); if (dd) { dd.n = 'Popover'; dd.s = 'XX'; dd.w = R(o.box[2]); dd.h = R(o.box[3]); return { name: 'Popover', box: o.box.slice(), tree: JSON.parse(JSON.stringify(dd, clean)) }; } }
     const t = String(o.props.title || '').trim(), n = frame(o, o.cls.split('.').pop(), { geo: true });
     n.n = o.cls.split('.').pop() + (t ? ' — ' + t.slice(0, 40) : ''); n.sz = 'x'; delete n.s; n.clip = 1; n.r = /Dialog/.test(o.cls) ? 16 : 8;
     if (!n.bg) n.bg = tok('#ffffff', 'fill') || 'sapGroup_ContentBackground';

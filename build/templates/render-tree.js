@@ -114,6 +114,17 @@ async function _seg(n, segs) {                                     // the kit Se
   }
   try { slot.layoutSizingHorizontal = 'FILL'; } catch (e) { WARN.push('Segmented Button: ' + String(e.message).slice(0, 50)); }
 }
+async function _dd(n, items, h) {                                  // the kit Drop-Down: its item slot holds 5 options — set text and chosen one, hide the unused, add more when needed
+  const slot = n.findOne(_G(x => x.type === 'SLOT'));
+  if (!slot) { WARN.push('Drop-Down: no item slot'); return; }
+  let its = slot.children.filter(x => x.type === 'INSTANCE');
+  while (its.length && its.length < items.length) { try { const c = its[its.length - 1].clone(); slot.appendChild(c); its = slot.children.filter(x => x.type === 'INSTANCE'); } catch (e) { WARN.push('Drop-Down: could not add an option'); break; } }
+  for (let i = 0; i < its.length; i++) {
+    if (i >= items.length) { its[i].visible = false; continue; }
+    try { await setP(its[i], { '✏️ 1st Column': items[i].t, Selected: items[i].on ? 'True' : 'False' }, 'Drop-Down Item'); } catch (e) { WARN.push('Drop-Down option "' + items[i].t + '": ' + String(e.message).slice(0, 50)); }
+  }
+  if (h) { try { n.resize(n.width, h); } catch (e) {} }
+}
 async function NODE(o, parent, par) {
   let n;
   if (o.k === 't') {
@@ -138,6 +149,7 @@ async function NODE(o, parent, par) {
     for (const nm of (o.fade || [])) { const h = n.findOne(_G(x => x.type === 'INSTANCE' && x.name === nm)); if (h) h.opacity = 0; }   // a glyph Make did not draw: its room stays, nothing shows
     for (const nm of (o.fit || [])) { const t = n.findOne(_G(x => x.type === 'TEXT' && x.name === nm)); if (t) { try { t.textAutoResize = 'WIDTH_AND_HEIGHT'; } catch (e) {} } }   // text that must not wrap in a narrow kit part
     if (o.seg) await _seg(n, o.seg);
+    if (o.dd) await _dd(n, o.dd, o.h);
     for (const a of (o.add || [])) {                               // text put into a kit slot (e.g. the placeholder of an empty Multi Combobox)
       const slot = n.findOne(_G(x => x.name === a.into));
       if (!slot || !('appendChild' in slot)) { WARN.push(`${o.n}: no slot "${a.into}" for the text`); continue; }
