@@ -16,3 +16,5 @@ Not run in real Figma: makeAudit / makeFix / make-resync (only a vm smoke test a
 **How to apply:** after plugin edits run the plugin tests; never run build-make.js without a reason. Related: [[make-engine-sync]], [[plugin-default-claude-tab]].
 
 Later the same day (user feedback): the header "copy whole log" icon was REMOVED (the per-history-row log icon stays); the Health section was REMOVED from the info popover (code.js still answers health-get, the UI no longer asks); history got a right-side "Clear history" text button (two clicks: "Sure? Clear all", then code.js `history-clear`) and 10 px space between cards and scroll bar; all tab hero texts fit in 2 lines at 300 px (user wants max 3).
+
+Later (user feedback 2): the "What next?" card (Fix N differences / Read the link again) was REMOVED — the user does not need it; code.js no longer runs makeAudit after a build (the dormant makeAudit/makeFix/make-resync code and the 'make-fix'/'make-resync' cases are still in code.js). ALL buttons now share one look — the "Open the frame" pill (`.btn`, `.btn.pri`, `.openFrame`, `.planAct .pa`: bg2, 30 px, round, 12 px/500). Do not bring back black primary buttons.
