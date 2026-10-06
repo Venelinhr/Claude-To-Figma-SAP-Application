@@ -269,12 +269,22 @@ function names(T) {                                  // what the model may addre
     const base = fs.existsSync(J('see-ref/spec.json')) ? readJ(J('see-ref/spec.json')) : { frame: { w: 1440, h: 900, fill: 'sapBackgroundColor' } };
     const INK = /Text|Title|Active|Foreground|Marker|Link/;   // a text-colour variable is never a fill
     const KNOWN = {}, known = t => { if (!(t in KNOWN)) { const r = spawnSync(NODE, ['build/kit.js', 'v', '^' + t + '$'], { cwd: PROJ, encoding: 'utf8' }); KNOWN[t] = /\/\S/.test(String(r.stdout)); } return KNOWN[t]; };   // a variable the kit really has
+    // AUTO-REPAIR (2026-10-06): a model may use a prop or an icon the kit does not have ("Icon Right", "arrow-right"). The kit decides — the build never stops for it.
+    const PROPS = {}, propsOf = cp => { if (!(cp in PROPS)) { const r = spawnSync(NODE, ['build/kit.js', 'c', cp], { cwd: PROJ, encoding: 'utf8' }); PROPS[cp] = String(r.stdout).split('\n').slice(1).map(l => (/^\s+"([^"]+)"/.exec(l) || [])[1]).filter(Boolean).map(x => x.replace(/#[\d:]+$/, '')); } return PROPS[cp]; };
+    const ICO = {}, iconOf = w => { w = String(w || '').replace(/^sap-icons\//, ''); if (!w) return w; if (!(w in ICO)) { const r = spawnSync(NODE, ['build/kit.js', 'i', w], { cwd: PROJ, encoding: 'utf8' }); const first = String(r.stdout).split('\n')[0].split(/\s+/)[0]; ICO[w] = new RegExp('^' + w.replace(/[^\w-]/g, '') + '\\s', 'm').test(String(r.stdout)) ? w : (first || w); } return ICO[w]; };   // exact name, else the kit's nearest icon
+    const repair = n => { if (n.type === 'icon' && n.icon) n.icon = iconOf(n.icon);
+      if (n.type === 'component' && n.props) { const ok = propsOf(n.component); if (ok.length) for (const k of Object.keys(n.props)) {
+        if (/^Icon (Right|Trailing)$/.test(k) && ok.includes('Icon')) { n.props['Icon Left'] = true; n.props.Icon = n.props[k]; }   // the kit button has one icon slot
+        if (!ok.includes(k)) delete n.props[k]; }
+        if (n.props.Icon) n.props.Icon = iconOf(n.props.Icon).replace(/^sap-icons\//, ''); }   // a prop value is the plain icon name; resolved AFTER the keys are repaired
+      return n; };
     const fixTok = (t, role) => !t || /^RAW/.test(t) || known(t) ? t : role === 'icon' ? 'sapContent_IconColor' : role === 'line' ? 'sapList_BorderColor' : /Positive|Success|Good/.test(t) ? 'sapContent_Selected_ForegroundColor' : /Label|Secondary/.test(t) ? 'sapContent_LabelColor' : 'sapTextColor';   // an invented variable → the nearest real role
     const norm = n => { n = { ...n }; delete n.comment;
       if (n.props) { const pr = {}; for (const [k, v] of Object.entries(n.props)) pr[k.replace(/#[\d:]+$/, '')] = v; n.props = pr;   // "✏️ Text#154638:49" → "✏️ Text": the kit keys without their Figma id
         if (/^(Check Box|Radio Button|Switch)$/.test(n.component) && pr['✏️ Text'] && pr.Label === undefined) pr.Label = true; }   // a control with a text shows its label
       if (n.type === 'box') { if (n.dark) delete n.dark; if (!n.fill || INK.test(n.fill)) { if (n.fill && INK.test(n.fill)) n.border = '2px sapContent_Selected_ForegroundColor'; n.fill = 'sapBaseColor'; } if (!n.border) n.border = 'none'; }   // a dark tile = the selected card
       if (n.token) n.token = fixTok(n.token, n.type === 'icon' ? 'icon' : n.type === 'divider' ? 'line' : 'ink');
+      repair(n);
       n.children = (n.children || []).map(norm); if (!n.children.length) delete n.children; return n; };
     // an invisible box (same fill as its parent, no border) is only the screenshot's grouping: drop it, keep its children — rows never get a fixed box that cuts them
     const unwrap = (ns, pf) => ns.flatMap(n => { if (n.type !== 'box') return [n]; const kids = unwrap(n.children || [], n.fill);
