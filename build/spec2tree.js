@@ -314,6 +314,9 @@ function conv(o, px, py) {
   const n = { n: name(o.region ? ({ side: 'Side panel', main: 'Main area', list: 'Results', rail: 'Right column' }[o.region] || 'Region') : ZONE[o.box.join(',')] || (o.type === 'box' ? 'Card ' + (label(o) || '') : (label(o) || o.type) + ' ' + o.type)), xy: [R(x - px), R(y - py)], w, h, s: 'XX' };
   if (o.type === 'box' && !o.region) {   // Make's reading: a side panel / main area is a plain layout frame (no colour, no clip)
     n.bg = tok(o.fill, 'fill'); n.r = o.radius || 0;
+    { const m2 = /^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})/i.exec(o.fill || ''); const lm = m2 ? (0.299 * parseInt(m2[1], 16) + 0.587 * parseInt(m2[2], 16) + 0.114 * parseInt(m2[3], 16)) / 255 : 1;
+      if (lm < 0.3) n.dark = 1;                        // a dark card (navy tile): its fill is the measured dark colour, the door allows it — never turn it white (white text on it would vanish)
+      else if (/Title|Text|Active|Foreground|Marker/.test(String(n.bg))) n.bg = 'sapBaseColor'; }   // a light fill can never be a text colour
     const m = /(\d+)px (\S+)/.exec(o.border || ''); if (m) { n.bw = +m[1]; n.bc = tok(m[2], 'border'); }
     n.clip = 1;                                        // a card clips its content — dense content stays inside when the screen narrows
   }

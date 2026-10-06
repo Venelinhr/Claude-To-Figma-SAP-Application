@@ -45,9 +45,9 @@ Then take the `node-id=` from its last lines → `STAGE done Make app converted`
    `AGENT_RESULT {"nodeId":"<id>","mode":"ACT","match":null,"eye":null,"WARN":[],"pass":true,"blocks":[]}` and stop.
 3. **THINK / SPLIT — a new screen (build first, review after).**
    - Image: first save a copy as `{{jobDir}}/ref.png` if the reference is not already a PNG (PIL). Then
-     `node build/run.js {{ref}} --file {{fileKey}}` — the DEFAULT is the free scripted lane (OCR → `spec2tree` → door → build by the plugin): you design nothing and open no picture.
-     Exit 2 asking for icons → name them (`node build/kit.js i <word>`) and run the `NEXT` line. Only when the user asks for a hand design add `--design`
-     (then `NEED  DESIGN 1/3…3/3`: Read `ref-marked.png`, `icons-sheet.png`, `measure.txt`, write `design-spec.json`, run the `NEXT` line); `--look` = names lane (`names.json`).
+     `node build/run.js {{ref}} --file {{fileKey}}` — the DEFAULT is the SAP DESIGN lane: the scripts measure, YOU pick the real SAP kit part for every region (this plugin makes SAP screens, never a pixel copy).
+     Exit 2 asking for icons → name them (`node build/kit.js i <word>`) and run the `NEXT` line. `--copy` = the old 1:1 scripted copy (only when the user asks for an exact copy)
+     (`NEED  DESIGN 1/3…3/3`: Read `ref-marked.png`, `icons-sheet.png`, `measure.txt`, write `design-spec.json`, run the `NEXT` line); `--look` = names lane (`names.json`).
      Fix rounds: correct the tree from the printed lines, `--resume` again.
      The plan is printed ONCE by `run.js` (`PLAN` block at the end): paste that, never run `tree.js plan` yourself, never repeat it.
    - **The user chooses in the prompt**: a request that says *new / from zero / from scratch / do not clone* → NEW lane (below).

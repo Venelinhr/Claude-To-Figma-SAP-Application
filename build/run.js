@@ -42,7 +42,8 @@ if (require.main !== module) return;
 
 const T_START = Date.now(), TRACE = [];
 const _note = require('./note.js');
-process.on('exit', code => { try { require('./note.js').end(code); } catch (_) {} });
+process.on('exit', code => { if (code === 64 || code === 2 || (process.env.SAP_BRIDGE_JOB && code === 1)) return;   // 2 = Claude must decide (design / names): the job goes on, the chat shows only what is current   // inside a Claude job a fix-and-retry stop is not the end: Claude goes on, the job end reports
+  try { require('./note.js').end(code); } catch (_) {} });   // 64 = a wrong command line: the caller retries, the plugin chat is not told
 const say = l => { console.log(l); _note(l); TRACE.push(`${((Date.now() - T_START) / 1000).toFixed(1).padStart(5)} s  ${String(l).replace(/\s+/g, ' ')}`); };   // the whole chat output — kept short on purpose
 process.on('exit', () => {                         // trace.md of a Claude Code run: every printed line with its second (the plugin's log icon makes the same file for plugin jobs)
   try { const j = (process.argv.includes('--job') ? process.argv[process.argv.indexOf('--job') + 1] : ''); if (j && TRACE.length) { const f = path.join(PROJ, j, 'trace.md'), old = fs.existsSync(f) ? fs.readFileSync(f, 'utf8') : `# Claude Code run ${path.basename(j)}\n`; fs.writeFileSync(f, old + `\n## run.js at ${new Date().toISOString().slice(11, 19)} (seconds since this call started)\n\n` + TRACE.join('\n') + `\n\nexit ${process.exitCode == null ? '?' : process.exitCode} · job total ${global.__ST && global.__ST.started ? Math.round((Date.now() - global.__ST.started) / 1000) + ' s' : '?'} since the request\n`); } } catch (_) {}
@@ -111,6 +112,8 @@ const NAMES_HELP = (job, fileKey) => [
 // DESIGN lane (2026-10-04): the script MEASURES, Claude DESIGNS — the way the 95 % screens were made (stored layouts written with real kit parts)
 const DESIGN_HELP = (job, fileKey) => [
   `NEED  DESIGN 1/3 · look ONCE: Read ${job}/ref-marked.png, ${job}/icons-sheet.png and ${job}/measure.txt (every zone, box, text, icon with its measured box, SAP text style and colour token, at the TRUE screen scale). Never open any other picture, never read the build code, never ask for approval.`,
+  `NEED  DESIGN 1c · SAP KIT ALWAYS (user rule): every control, action, status, toggle and glyph in the picture is a SAP Web UI Kit part (Button, Link, Icon Button, Check Box, Radio Button, Switch, Select, Input, Search Field, Segmented Button, Menu Button, Object Status, Message Strip, Range Slider, SAP icons) — plain text only for real text, a box only for a card / panel / strip. READ THE PICTURE, not only the OCR: every word complete (e.g. "Kürzeste Reisedauer", not "Reisedauer"), every STATE as shown (checked, selected, disabled, collapsed), every size from measure.txt; nothing past the frame edge — a long text near the right edge gets a box that ends inside the frame.`,
+  `NEED  DESIGN 1b · Read knowledge/gold/design/flight-results.design-spec.json — a passed SAP redesign (few boxes, real kit parts). Copy its style, not its content. Never edit tree.json: when the door says OUT, fix design-spec.json and run the NEXT line again.`,
   `NEED  DESIGN 2/3 · write ONE short file ${job}/design-spec.json — you choose, the script lays out: {"nodes":[ … ]} where every node has the measured "box":[x,y,w,h] copied from measure.txt:`
     + ` {"type":"text","text":"…exact wording from the PICTURE (fix the OCR)…","style":"<SAP text style from measure.txt>","token":"<colour token from measure.txt>","box":[…]}`
     + ` · {"type":"icon","icon":"<kit icon word>","token":"sapContent_IconColor","box":[…]}`
@@ -167,7 +170,8 @@ function names(T) {                                  // what the model may addre
   const fileKey = opt('--file', '');
   if (!input && !resume) { console.log(fs.readFileSync(__filename, 'utf8').split('\n').slice(1, 18).join('\n')); process.exit(64); }
   if (!flag('--dry') && !flag('--ask') && !/^[A-Za-z0-9]{1,128}$/.test(fileKey)) { console.log('usage: --file <figma file key> is required (or use --dry)'); process.exit(64); }
-  const job = path.relative(PROJ, path.resolve(PROJ, opt('--job') || path.join('bridge-out', 'job-' + new Date().toISOString().slice(5, 16).replace(/[-:T]/g, ''))));
+  const jobArg = opt('--job') && !fs.existsSync(path.join(path.resolve(PROJ, opt('--job')), 'run.json')) && fs.existsSync(path.join(PROJ, 'bridge-out', opt('--job'))) ? path.join('bridge-out', opt('--job')) : opt('--job');   // "--job sap-flight-2" = bridge-out/sap-flight-2
+  const job = path.relative(PROJ, path.resolve(PROJ, jobArg || path.join('bridge-out', 'job-' + new Date().toISOString().slice(5, 16).replace(/[-:T]/g, ''))));
   const J = f => path.join(PROJ, job, f), treeF = J('tree.json'), stF = J('run.json');
   fs.mkdirSync(path.join(PROJ, job), { recursive: true });
   const st = fs.existsSync(stF) ? readJ(stF) : { started: t0, builds: 0, allowRound3: false };
@@ -212,7 +216,7 @@ function names(T) {                                  // what the model may addre
       if (unknown && hasMarks) { const u2 = autoName(job, J, treeF); if (u2 !== null) unknown = u2; }
       front.gold.full = false; fs.writeFileSync(J('front.json'), JSON.stringify(front, null, 1));
       fs.copyFileSync(treeF, J('tree.baseline.json'));
-      if (hasMarks && !opt('--names') && flag('--design')) {     // the DESIGN lane is opt-in (--design): the default is the free scripted path (2026-10-04: model design cost 74k tokens, 13 min)
+      if (hasMarks && !opt('--names') && !flag('--copy')) {     // the DESIGN lane is the DEFAULT (2026-10-05, user: "this plugin must produce SAP screens"): Claude picks the real kit parts; --copy = the old 1:1 scripted copy
         const me = nodeSync(['build/measure.js', path.join(PROJ, job)]); say(String(me.stdout || me.stderr).trim());
         st.design = true; save(); DESIGN_HELP(job, fileKey).forEach(say); process.exit(2);
       }
@@ -263,8 +267,19 @@ function names(T) {                                  // what the model may addre
     try { ds = readJ(sf); } catch (e) { say('STOP  design-spec.json is missing or not valid JSON: ' + short(e.message, 120)); process.exit(1); }
     const nodes = Array.isArray(ds) ? ds : (ds.nodes || ds.children || []);
     const base = fs.existsSync(J('see-ref/spec.json')) ? readJ(J('see-ref/spec.json')) : { frame: { w: 1440, h: 900, fill: 'sapBackgroundColor' } };
-    const norm = n => { n = { ...n }; if (n.type === 'box') { if (n.dark) delete n.dark; if (!n.fill) n.fill = 'sapBaseColor'; if (!n.border) n.border = 'none'; } n.children = (n.children || []).map(norm); if (!n.children.length) delete n.children; return n; };
-    const spec2 = { frame: base.frame, sections: [{ type: 'stack', box: [0, 0, base.frame.w, base.frame.h], children: nodes.map(norm) }], ask: [] };
+    const INK = /Text|Title|Active|Foreground|Marker|Link/;   // a text-colour variable is never a fill
+    const KNOWN = {}, known = t => { if (!(t in KNOWN)) { const r = spawnSync(NODE, ['build/kit.js', 'v', '^' + t + '$'], { cwd: PROJ, encoding: 'utf8' }); KNOWN[t] = /\/\S/.test(String(r.stdout)); } return KNOWN[t]; };   // a variable the kit really has
+    const fixTok = (t, role) => !t || /^RAW/.test(t) || known(t) ? t : role === 'icon' ? 'sapContent_IconColor' : role === 'line' ? 'sapList_BorderColor' : /Positive|Success|Good/.test(t) ? 'sapContent_Selected_ForegroundColor' : /Label|Secondary/.test(t) ? 'sapContent_LabelColor' : 'sapTextColor';   // an invented variable → the nearest real role
+    const norm = n => { n = { ...n }; delete n.comment;
+      if (n.props) { const pr = {}; for (const [k, v] of Object.entries(n.props)) pr[k.replace(/#[\d:]+$/, '')] = v; n.props = pr;   // "✏️ Text#154638:49" → "✏️ Text": the kit keys without their Figma id
+        if (/^(Check Box|Radio Button|Switch)$/.test(n.component) && pr['✏️ Text'] && pr.Label === undefined) pr.Label = true; }   // a control with a text shows its label
+      if (n.type === 'box') { if (n.dark) delete n.dark; if (!n.fill || INK.test(n.fill)) { if (n.fill && INK.test(n.fill)) n.border = '2px sapContent_Selected_ForegroundColor'; n.fill = 'sapBaseColor'; } if (!n.border) n.border = 'none'; }   // a dark tile = the selected card
+      if (n.token) n.token = fixTok(n.token, n.type === 'icon' ? 'icon' : n.type === 'divider' ? 'line' : 'ink');
+      n.children = (n.children || []).map(norm); if (!n.children.length) delete n.children; return n; };
+    // an invisible box (same fill as its parent, no border) is only the screenshot's grouping: drop it, keep its children — rows never get a fixed box that cuts them
+    const unwrap = (ns, pf) => ns.flatMap(n => { if (n.type !== 'box') return [n]; const kids = unwrap(n.children || [], n.fill);
+      if ((n.border || 'none') === 'none' && (n.fill === pf || !n.fill)) return kids; return [{ ...n, children: kids }]; });
+    const spec2 = { frame: base.frame, sections: [{ type: 'stack', box: [0, 0, base.frame.w, base.frame.h], children: unwrap(nodes.map(norm), base.frame.fill || 'sapBackgroundColor') }], ask: [] };
     fs.writeFileSync(J('design-spec.full.json'), JSON.stringify(spec2));
     const z = nodeSync(['build/spec2tree.js', J('design-spec.full.json'), treeF]);
     if (z.status !== 0) { say('STOP  spec2tree failed: ' + short(String(z.stdout || z.stderr).trim().split('\n').slice(-3).join(' | '), 300)); process.exit(1); }
@@ -279,8 +294,9 @@ function names(T) {                                  // what the model may addre
     const sim = (a, b) => { a = a.toLowerCase().replace(/[^a-z0-9]/g, ''); b = b.toLowerCase().replace(/[^a-z0-9]/g, ''); if (!a || !b) return 0; const m = [...Array(a.length + 1)].map((_, i) => [i]); for (let j = 1; j <= b.length; j++) m[0][j] = j; for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++) m[i][j] = Math.min(m[i - 1][j] + 1, m[i][j - 1] + 1, m[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)); return 1 - m[a.length][b.length] / Math.max(a.length, b.length); };
     const refTexts = []; (function w(x) { if (x.type === 'text') refTexts.push(x.text); (x.children || []).forEach(w); })({ children: base.sections || [] });
     const answered = refTexts.filter(t => !placed.some(p => p.includes(t) || t.includes(p)) && placed.some(p => sim(p, t) >= 0.55 || p.toLowerCase().includes(String(t).toLowerCase().slice(0, 8))));
-    R.kit = { icons: 0, texts: answered };
+    R.kit = { src: 'spec2tree', icons: 0, texts: answered };   // src: the door counts these corrected OCR wordings as placed
     fs.writeFileSync(treeF, JSON.stringify(T));
+    { const sp = nodeSync(['build/sap-spacing.js', treeF]); say(String(sp.stdout || sp.stderr).trim()); }   // SAP Horizon spacing scale on every padding / gap
     try { fs.unlinkSync(J('tree.baseline.json')); } catch (_) {}
     st.newScreen = true; st.design = true; save();
     const t0d = R; if (t0d && typeof t0d.n === 'string' && t0d.n.trim()) { st.title = t0d.n.trim().slice(0, 100); save(); }
@@ -355,14 +371,15 @@ function names(T) {                                  // what the model may addre
   const ovs = [0.85, 1.15].map(sc => +(String(nodeSync(['build/layout-sim.js', treeF, '--scale', String(sc)]).stdout).match(/OVERFLOW\s+(\d+)/) || [0, 0])[1]);
   let sim = [];
   try { sim = structure.check(readJ(J('sim.geometry.json')), spec); } catch (_) {}
-  const posBad = hasExp && pos[3] && +pos[2] >= 5 && +pos[3] < 95 && fromZero, ovBad = ov1 > 0 || (explicit && ovs.some(n => n > 0));
+  const posBad = hasExp && pos[3] && +pos[2] >= 5 && +pos[3] < 95 && fromZero && !st.design,   // the SAP design lane re-spaces on purpose (sap-spacing.js): reference pixel places are advisory there
+    ovBad = ov1 > 0 || (explicit && ovs.some(n => n > 0));
   // the simulator has no text wrapping: position is only trusted with enough matched texts and only blocks a from-zero tree
   const posOk = hasExp && pos[3] && +pos[2] >= 5;
   say(`SIM ${posOk ? `position ${pos[3]} % (${pos[1]}/${pos[2]})${fromZero ? '' : ' advisory'}` : 'position —'} · overflow ×1 ${ov1} ×0.85 ${ovs[0]} ×1.15 ${ovs[1]}${explicit ? '' : ' (advisory: legacy tree)'} · STRUCT-SIM ${sim.length} (advisory)`);
   fs.writeFileSync(J('sim.structure.txt'), sim.join('\n'));
   const simBlock = spec ? sim.filter(l => /^(BOX|COLLAPSED)/.test(l)) : sim.filter(l => /^COLLAPSED/.test(l));
   (simBlock.length ? simBlock : fromZero ? sim : []).slice(0, 3).forEach(l => say('  ' + short(l, 170)));
-  const structBad = simBlock.length > 0 && !flag('--allow-structure');
+  const structBad = simBlock.length > 0 && !flag('--allow-structure') && !st.design;   // an SAP redesign differs from the reference boxes on purpose
   // SMASH gate (2026-10-04): what lands ON what — text on text, text on a picture, fake controls. Blocks the build; --allow-smash to pass.
   const sm = spawnSync(NODE, ['build/overlap.js', J('sim.geometry.json'), '--advisory'], { cwd: PROJ, encoding: 'utf8' }), smLines = String(sm.stdout).trim().split('\n').filter(l => /^(TEXT|FAKE)/.test(l));
   fs.writeFileSync(J('sim.smash.txt'), smLines.join('\n'));

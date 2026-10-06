@@ -23,7 +23,7 @@ const handledMailbox = new Set();
 let treePollTimer = null;
 let treeBusy = false;
 // ── GENERATED RUNTIME (node build/plugin-bundle.js) — do not edit by hand ──
-const RUNTIME_VER = '0f382d7d8b';
+const RUNTIME_VER = 'b97009aedc';
 function _createAutoLayout(dir, o) {
   if (typeof figma.createAutoLayout === 'function') return figma.createAutoLayout(dir, o);
   const f = figma.createFrame(); f.layoutMode = dir; f.primaryAxisSizingMode = 'AUTO'; f.counterAxisSizingMode = 'AUTO';
@@ -286,6 +286,35 @@ async function _avatar(sb, initials) {
   const ik = Object.keys(av.componentProperties).find(k => k.startsWith('✏️ Initials#'));
   try { av.setProperties({ Type: 'Initials', Color: '6', ...(ik ? { [ik]: initials } : {}) }); } catch (e) { WARN.push('avatar: ' + e.message); }
 }
+async function _seg(n, segs) {                                     // the kit Segmented Button: one slot of segments (text, icon, toggled), sharing the width
+  const slot = n.findOne(_G(x => x.type === 'SLOT'));
+  if (!slot) { WARN.push('Segmented Button: no segment slot'); return; }
+  const parts = slot.children.filter(x => x.visible);
+  for (let i = 0; i < segs.length && i < parts.length; i++) {
+    const s = segs[i], p = parts[i];
+    await setP(p, { Toggled: s.on ? 'True' : 'False' }, 'Segmented Button Singular');
+    const t = p.findOne(_G(x => x.type === 'TEXT'));
+    if (t && s.t) { for (const g of t.getStyledTextSegments(['fontName'])) await figma.loadFontAsync(g.fontName); t.characters = s.t; }
+    if (s.ic) {
+      if (s.t) await setP(p, { 'Icon Left': true }, 'Segmented Button Singular');
+      const ik = _k('i', s.ic), si = p.findOne(_G(x => x.type === 'INSTANCE' && x.name === 'Icon'));
+      if (ik && si) { try { const ic = await _imp('c', ik); si.swapComponent(ic.type === 'COMPONENT_SET' ? ic.defaultVariant : ic); } catch (e) { WARN.push('segment icon "' + s.ic + '": ' + String(e.message).slice(0, 40)); } }
+    }
+    try { p.layoutGrow = 1; } catch (e) {}
+  }
+  try { slot.layoutSizingHorizontal = 'FILL'; } catch (e) { WARN.push('Segmented Button: ' + String(e.message).slice(0, 50)); }
+}
+async function _dd(n, items, h) {                                  // the kit Drop-Down: its item slot holds 5 options — set text and chosen one, hide the unused, add more when needed
+  const slot = n.findOne(_G(x => x.type === 'SLOT'));
+  if (!slot) { WARN.push('Drop-Down: no item slot'); return; }
+  let its = slot.children.filter(x => x.type === 'INSTANCE');
+  while (its.length && its.length < items.length) { try { const c = its[its.length - 1].clone(); slot.appendChild(c); its = slot.children.filter(x => x.type === 'INSTANCE'); } catch (e) { WARN.push('Drop-Down: could not add an option'); break; } }
+  for (let i = 0; i < its.length; i++) {
+    if (i >= items.length) { its[i].visible = false; continue; }
+    try { await setP(its[i], { '✏️ 1st Column': items[i].t, Selected: items[i].on ? 'True' : 'False' }, 'Drop-Down Item'); } catch (e) { WARN.push('Drop-Down option "' + items[i].t + '": ' + String(e.message).slice(0, 50)); }
+  }
+  if (h) { try { n.resize(n.width, h); } catch (e) {} }
+}
 async function NODE(o, parent, par) {
   let n;
   if (o.k === 't') {
@@ -307,6 +336,10 @@ async function NODE(o, parent, par) {
       const fr = n.findOne(_G(x => x.name === layer)); if (fr && 'paddingLeft' in fr) { try { fr.paddingLeft = fr.paddingLeft + add; } catch (e) { WARN.push(`${o.n}: could not shift "${layer}"`); } } else WARN.push(`${o.n}: no layer "${layer}" to shift`);
     }
     for (const nm of (o.hide || [])) { const h = n.findOne(_G(x => x.name === nm)); if (h) h.visible = false; else WARN.push(`${o.n}: no layer "${nm}" to hide`); }   // e.g. the kit's sample tokens
+    for (const nm of (o.fade || [])) { const h = n.findOne(_G(x => x.type === 'INSTANCE' && x.name === nm)); if (h) h.opacity = 0; }   // a glyph Make did not draw: its room stays, nothing shows
+    for (const nm of (o.fit || [])) { const t = n.findOne(_G(x => x.type === 'TEXT' && x.name === nm)); if (t) { try { t.textAutoResize = 'WIDTH_AND_HEIGHT'; } catch (e) {} } }   // text that must not wrap in a narrow kit part
+    if (o.seg) await _seg(n, o.seg);
+    if (o.dd) await _dd(n, o.dd, o.h);
     for (const a of (o.add || [])) {                               // text put into a kit slot (e.g. the placeholder of an empty Multi Combobox)
       const slot = n.findOne(_G(x => x.name === a.into));
       if (!slot || !('appendChild' in slot)) { WARN.push(`${o.n}: no slot "${a.into}" for the text`); continue; }

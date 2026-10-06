@@ -218,7 +218,7 @@ const chipOf = x => {
 const fieldChip = o => { const [l, c] = kidsOf(o), cc = chipOf(c); return cc[0] === '[' ? '[' + l.t + ': ' + cc.slice(1) : l.t + ' ' + cc; };
 const tokensOf = o => { const out = []; (o.c || []).forEach(k => { if (isSpacer(k)) out.push(null); else if (isFieldN(k)) out.push(fieldChip(k)); else if (k.k) out.push(chipOf(k)); else out.push(...tokensOf(k).filter(Boolean)); }); return out; };
 
-function scene(T, W = 116) {
+function scene(T, W = 132) {
   const zones = []; let nz = 0;
   const letter = () => { const i = nz++; return i < 26 ? String.fromCharCode(65 + i) : String.fromCharCode(64 + Math.floor(i / 26)) + String.fromCharCode(65 + i % 26); };
   const fix = (s, w) => pad(fit(safe(s), w), w);
@@ -286,3 +286,32 @@ function scene(T, W = 116) {
   return { text: ['┌' + '─'.repeat(W + 2) + '┐', ...lines.map(l => '│ ' + fix(l, W) + ' │'), '└' + '─'.repeat(W + 2) + '┘'].join('\n'), zones: zones.map(z => ({ ...z, summary: z.comps })) };
 }
 module.exports = { sketch, scene, layerTree, SAFE_GLYPHS, GLYPH };
+
+// ── CLEAN LAYER TREE (2026-10-05, reference style): wrapper frames (row / cell / column, plain auto-layout with no fill) are folded away,
+//    so the tree shows only what a designer would name: sections, cards, kit parts, texts, icons, pictures.  Every line ends `← L<depth>`.
+function layerTree2(T, maxDepth = 5) {
+  const isWrap = o => !o.k && !o.bg && !o.bc && !o.cp && (/ (row|cell|column)( \d+)?$/i.test(o.n || '') || /^(row|cell|column)( \d+)?$/i.test(o.n || '') || (o.c || []).filter(k => !isSpacer(k)).length === 1);
+  const kidsOf2 = o => (o.c || []).filter(k => !isSpacer(k) && !(k.k === 'r' && (k.w <= 3 || k.h <= 3))).flatMap(k => isWrap(k) ? kidsOf2(k) : [k]);
+  const clean = n => String(n).replace(/ (row|cell|column)( \d+)?$/i, '').replace(/ \d+$/, '').trim() || n;
+  const sig = o => [o.k || 'f', o.cp || '', o.k === 't' ? '' : kidsOf2(o).map(sig).join(',')].join('|');
+  const props = o => { const e = Object.entries(o.pr || {}).filter(([k, v]) => !k.startsWith('✏️') && typeof v !== 'boolean').map(([k, v]) => k + '=' + v); return e.length ? ', ' + e.join(', ') : ''; };
+  const what = (o, root) => root ? `${o.n}  ${o.w}×${o.h}` : o.k === 't' ? `"${clip(o.t, 30)}"` : o.k === 'i' ? clean(o.n) : o.k === 'ic' ? `icon ${o.ic}` : o.k === 'r' ? `Picture ${o.w}×${o.h}` : clean(o.n) + (o.bg ? `  [${o.bg}]` : '');
+  const note = (o, d) => '← L' + Math.min(d + 1, 5) + (o.k === 'i' ? ` (SAP ${o.cp}${props(o)})` : o.k === 't' ? ' (text)' : o.k === 'ic' ? ' (icon)' : o.k === 'r' ? ' (image)' : '');
+  const rows = [];
+  (function walk(o, pre, last, d, root) {
+    rows.push({ t: (root ? '' : pre + (last ? '└── ' : '├── ')) + what(o, root), a: note(o, d) });
+    const np = root ? '' : pre + (last ? '    ' : '│   '), kids = kidsOf2(o);
+    if (!kids.length) return;
+    if (d >= maxDepth - 1) { rows.push({ t: np + '└── … ' + kids.length + ' inside', a: '' }); return; }
+    const groups = [];
+    for (let i = 0; i < kids.length; i++) { let j = i; while (j + 1 < kids.length && kids[i].k && sig(kids[j + 1]) === sig(kids[i])) j++; groups.push(kids.slice(i, j + 1)); i = j; }
+    groups.forEach((g, gi) => {
+      const isLast = gi === groups.length - 1;
+      if (g.length > 2) rows.push({ t: np + (isLast ? '└── ' : '├── ') + `${g[0].k === 'i' ? clean(g[0].n) : g[0].k === 'ic' ? 'icon' : 'text'} ×${g.length}`, a: note(g[0], d + 1) });
+      else g.forEach((x, xi) => walk(x, np, isLast && xi === g.length - 1, d + 1, false));
+    });
+  })(T, '', true, 0, true);
+  const col = Math.min(60, Math.max(...rows.map(r => len(r.t))) + 3);
+  return rows.map(r => r.a ? (len(r.t) + 2 > col ? r.t + '  ' : pad(r.t, col)) + r.a : r.t).join('\n');
+}
+module.exports.layerTree = layerTree2;

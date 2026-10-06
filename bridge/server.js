@@ -846,6 +846,9 @@ You are Claude Code in this repo. node build/run.js stopped with exit 2 while ma
 <<<
 ${out.replace(/>>>|<<</g, '> > >')}
 >>>
+THIS PLUGIN MAKES SAP SCREENS. The result must be a real SAP Fiori (Horizon) screen built from the SAP Web UI Kit — never a pixel copy of frames and cut-out pictures.
+When the NEED lines say DESIGN: act as a senior SAP Fiori product designer. Map EVERY region to the real kit part (node build/kit.js list · c "<name>" · i <word>): a page/side filter → Panel / Check Box / Radio Button / Range Slider / Switch; a call to action → Button (one Emphasized per area, others Default/Transparent); an underlined/blue text action → Link; a status / price tag → Object Status; a heart, info, arrow, bell, filter, sort glyph → its SAP kit ICON (never a cut picture); a result card → a box "fill":"sapTile_Background" or "sapBaseColor" with "border":"1px sapList_BorderColor","radius":12; a tab strip / segmented sort → Segmented Button or Icon Tab Bar; a search → Search Field; a date → Date Picker. Text styles and colour tokens only from measure.txt. "image" ONLY for airline/brand logos, photos and illustrations — never for text, controls or UI glyphs. Keep the reference layout and every text (fix the OCR from the picture).
+HARD RULES for the design step: (0) SAP KIT ALWAYS: every control / action / status / glyph is a SAP Web UI Kit part; read every word and every state from the PICTURE (OCR can cut words); sizes from measure.txt; nothing past the frame edge. (1) Read knowledge/gold/design/flight-results.design-spec.json FIRST — it is a passed SAP redesign of a flight-results screen; copy its STYLE (few boxes, real kit parts, props), never its content. (2) Never copy the screenshot's boxes: a box only for a real card, panel or strip; NO box per row, NO box around a single text, NO box standing in for a control. A dark tile = the SELECTED card (fill sapBaseColor, border "2px sapContent_Selected_ForegroundColor", title in sapContent_Selected_ForegroundColor). A dark button = Button Type Primary. (3) Props keys WITHOUT "#id" (write "✏️ Text", "Label", never "✏️ Text#154638:49"); a Check Box / Radio Button / Switch with text needs "Label": true. (4) NEVER edit tree.json or any file except design-spec.json — when the door says OUT, fix design-spec.json and run the --design-spec command again. (5) Fill tokens are background variables (sapBaseColor, sapBackgroundColor, sapGroup_ContentBackground); text tokens sapTextColor / sapContent_LabelColor / sapContent_Selected_ForegroundColor only.
 Do exactly what the NEED / NEXT lines ask (name shapes by the rules: UI icon → kit icon via node build/kit.js i <word> · logo/flag/badge/photo → image · missed text → text:<s>:<style> · control → comp:<kit part> · skip only noise < 8 px).
 Then run the NEXT command again WITH --ask added (never --approved). Exit 5 = the plan is in the plugin. One plain command per call, no pipes.
 Last line, exactly: AGENT_REPLY {"text":"The plan is ready above. Approve, Reject or Modify."}`, false);
@@ -1090,6 +1093,15 @@ async function handleV4(req, res, url) {
       cache, jobDir: rel(run.jobDir), routed: routed || 'not routed — run node build/route.js yourself',
     });
     // TYPED DECISION (2026-10-04): "approve" / "reject" under a plan runs the same path as the buttons — no model, 0 tokens
+    // "run again" / "try again" / "rebuild": rebuild the screen of the attached job — or, with none attached, the newest screen job that has a tree (0 tokens, no guessing)
+    if (!img && /^\s*(run|try|build) (it )?again|^\s*rebuild\b|^\s*again\s*[.!]?\s*$/i.test(said)) {
+      const last = cj && fs.existsSync(path.join(PROJ, cj, 'tree.json')) ? cj : (() => { try { return fs.readdirSync(path.join(PROJ, 'bridge-out')).map(d => 'bridge-out/' + d)
+        .filter(d => fs.existsSync(path.join(PROJ, d, 'tree.json')) && fs.existsSync(path.join(PROJ, d, 'run.json'))).sort((a, b) => fs.statSync(path.join(PROJ, b, 'tree.json')).mtimeMs - fs.statSync(path.join(PROJ, a, 'tree.json')).mtimeMs)[0]; } catch (_) { return null; } })();
+      if (last) { run.scripted = true; emit(run, 'progress', { text: 'Building the last screen again: ' + last });
+        try { const sf = path.join(PROJ, last, 'run.json'), st = JSON.parse(fs.readFileSync(sf, 'utf8')); st.builds = 0; fs.writeFileSync(sf, JSON.stringify(st)); } catch (_) {}   // a new request = fresh fix rounds
+        runScripted(run, ['build/run.js', '--job', last, '--file', fileKey, '--resume', '--approved', '--allow-structure']);
+        send(res, 200, { jobId: run.id, scripted: true }); return true; }
+    }
     if (!img && cj && /^\s*(approve[d]?|yes|go|ok|build( it)?)\s*[.!]?\s*$/i.test(said)) {
       run.scripted = true; emit(run, 'progress', { text: 'Approved — building the plan in Figma' });
       runScripted(run, ['build/run.js', '--job', cj, '--file', fileKey, '--resume', '--approved', '--allow-structure']);
