@@ -275,7 +275,7 @@ function names(T) {                                  // what the model may addre
     const repair = n => { if (n.type === 'icon' && n.icon) n.icon = iconOf(n.icon);
       if (n.type === 'component' && n.props) { const ok = propsOf(n.component); if (ok.length) for (const k of Object.keys(n.props)) {
         if (/^Icon (Right|Trailing)$/.test(k) && ok.includes('Icon')) { n.props['Icon Left'] = true; n.props.Icon = n.props[k]; }   // the kit button has one icon slot
-        if (!ok.includes(k)) delete n.props[k]; }
+        if (!ok.includes(k) && !/^✏️/.test(k)) delete n.props[k]; }   // "✏️ Text" is never dropped: the script moves it into the part's text (Object Status, Link)
         if (n.props.Icon) n.props.Icon = iconOf(n.props.Icon).replace(/^sap-icons\//, ''); }   // a prop value is the plain icon name; resolved AFTER the keys are repaired
       return n; };
     const fixTok = (t, role) => !t || /^RAW/.test(t) || known(t) ? t : role === 'icon' ? 'sapContent_IconColor' : role === 'line' ? 'sapList_BorderColor' : /Positive|Success|Good/.test(t) ? 'sapContent_Selected_ForegroundColor' : /Label|Secondary/.test(t) ? 'sapContent_LabelColor' : 'sapTextColor';   // an invented variable → the nearest real role
