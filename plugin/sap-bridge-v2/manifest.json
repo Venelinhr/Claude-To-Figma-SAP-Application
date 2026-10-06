@@ -1,0 +1,43 @@
+{
+  "name": "SAP Bridge v2",
+  "id": "sap-bridge-v2",
+  "api": "1.0.0",
+  "main": "code.js",
+  "ui": "ui.html",
+  "editorType": [
+    "figma"
+  ],
+  "documentAccess": "dynamic-page",
+  "enablePrivatePluginApi": true,
+  "networkAccess": {
+    "allowedDomains": [
+      "none"
+    ],
+    "devAllowedDomains": [
+      "http://localhost:41778",
+      "http://localhost:41779",
+      "http://localhost:41780",
+      "http://localhost:41781",
+      "http://localhost:41782",
+      "http://localhost:41783",
+      "http://localhost:41784",
+      "http://localhost:41785",
+      "http://localhost:41786",
+      "http://localhost:41787",
+      "http://localhost:41788",
+      "http://localhost:41789",
+      "http://localhost:41790",
+      "http://localhost:41791",
+      "http://localhost:41792",
+      "http://localhost:41793",
+      "http://localhost:41794",
+      "http://localhost:41795"
+    ]
+  },
+  "relaunchButtons": [
+    {
+      "command": "open",
+      "name": "SAP Bridge v2"
+    }
+  ]
+}

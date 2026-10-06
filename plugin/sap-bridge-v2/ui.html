@@ -1,0 +1,1226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SAP Bridge v2</title>
+<style>
+/* ───────── motion tokens (transitions.dev: Thinking states / Text states swap + Reasoning stream) ───────── */
+:root{
+  --think-hold:2000ms;--think-swap:150ms;--think-gap:50ms;--think-distance:8px;--think-blur:2px;--think-shimmer:2000ms;
+  --think-base:#7c7c7c;--think-highlight:#0d0d0d;--think-ease:ease-in-out;
+  --reason-hold:840ms;--reason-step:500ms;--reason-lines:2;--reason-fade:14px;--reason-ease:cubic-bezier(0.22,1,0.36,1);
+  --tabs-dur:250ms;--tabs-ease:cubic-bezier(0.22,1,0.36,1);--tabs-text-muted:var(--tx2);--tabs-text-active:var(--tx);--tabs-bar-bg:var(--bg2);--tabs-pill-bg:var(--bg);
+  --hero-hold:7000ms;--stagger-dur:500ms;--stagger-distance:12px;--stagger-stagger:40ms;--stagger-blur:3px;--stagger-ease:cubic-bezier(0.22,1,0.36,1);
+}
+/* ───────── app tokens (follow the Figma light / dark theme) ───────── */
+:root{
+  --line:var(--figma-color-border,#e2e4e8);
+  --tx:var(--figma-color-text,#0d0d0d);
+  --tx2:var(--figma-color-text-secondary,rgba(0,0,0,.62));
+  --tx3:var(--figma-color-text-tertiary,rgba(0,0,0,.45));
+  --bg:var(--figma-color-bg,#fff);
+  --bg2:var(--figma-color-bg-secondary,#f3f4f6);
+  --bg3:var(--figma-color-bg-tertiary,#e9ebee);
+  --acc:#0070f2;--ok:#188918;--bad:#d20a0a;--warn:#e76500;
+  --shadow:0 8px 24px rgba(40,56,72,.12),0 1px 2px rgba(40,56,72,.14);
+  --ease:cubic-bezier(.22,1,.36,1);
+  --think-base:var(--tx3);--think-highlight:var(--tx);
+}
+.figma-dark{--shadow:0 8px 24px rgba(0,0,0,.5),0 1px 2px rgba(0,0,0,.5)}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:12.5px;line-height:1.5;color:var(--tx);background:var(--bg);overflow:hidden}
+button{font-family:inherit;color:inherit}
+.app{height:100vh;display:flex;flex-direction:column;position:relative}
+
+/* ── header ── */
+.hdr{display:flex;align-items:center;gap:4px;padding:8px 10px 6px;flex:none;position:relative;z-index:20;background:var(--bg)}
+.sp{flex:1}
+.conn{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--tx3);white-space:nowrap}
+.infoBtn{width:22px;height:22px;margin-right:-1px}.infoBtn svg{width:14px;height:14px}.infoBtn[aria-expanded=true]{background:var(--bg2);color:var(--tx)}
+.hdr{position:relative}
+.infoPop{position:absolute;top:calc(100% + 2px);right:10px;width:min(300px,calc(100% - 20px));max-height:calc(100vh - 64px);overflow-y:auto;z-index:30;background:var(--bg);color:var(--tx);border-radius:14px;padding:14px 14px 12px;font-size:12px;line-height:1.45;box-shadow:var(--shadow);border:0;animation:rise .22s var(--ease) both}
+.infoPop[hidden]{display:none}
+.infoPop p{margin:0 0 8px;color:var(--tx2)}
+.ip-h{display:flex;align-items:center;justify-content:space-between;font-size:13px;font-weight:600;margin-bottom:6px}
+.ip-st{font-size:11px;font-weight:500;color:var(--tx3)}.ip-st.ok{color:var(--ok)}
+.ip-k{font-size:11px;font-weight:600;color:var(--tx);margin:2px 0 2px}
+.ip-row{display:flex;flex-direction:column;align-items:flex-start;gap:6px;margin:2px 0 8px}
+.ip-btn{appearance:none;border:0;height:28px;padding:0 12px;border-radius:999px;font-size:12px;font-weight:500;cursor:pointer;background:var(--bg2);color:var(--tx);transition:background .15s,opacity .15s}
+.ip-btn:hover{background:var(--bg3)}.ip-btn.pri{background:var(--tx);color:var(--bg)}.ip-btn.pri:hover{opacity:.85;background:var(--tx)}.ip-btn:disabled{opacity:.4;cursor:default}
+.ip-f{font-size:10.5px;color:var(--tx3)}
+.dot{width:6px;height:6px;border-radius:50%;background:#888;flex:none}
+.dot.looking{animation:pulse 1.4s ease-in-out infinite}
+.dot.connected,.dot.paired{background:#1bc47d}
+.dot.pair-locked,.dot.wrong-bridge{background:#f6a623}
+.dot.restarting{background:#f6a623;animation:pulse .9s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:.35}50%{opacity:1}}
+.hb{border:none;background:none;width:32px;height:32px;border-radius:9px;display:grid;place-items:center;cursor:pointer;color:var(--tx2);transition:background .15s,color .15s}
+.hb:hover,.hb.on{background:var(--bg2);color:var(--tx)}
+.hb svg{width:19px;height:19px;stroke-width:1.1}   /* the same line weight as the "+" (14 px at 1.5 = 1.3 px): 19 px at 1.1 */
+
+/* ── history sheet ── */
+.hview{display:none;flex:1;min-height:0;flex-direction:column;gap:8px;padding:4px 14px 26px;animation:rise .32s var(--ease) both}
+.hi{animation:rise .32s var(--ease) both}.hlist.still .hi{animation:none}
+.hi:nth-child(2){animation-delay:40ms}.hi:nth-child(3){animation-delay:80ms}.hi:nth-child(4){animation-delay:120ms}
+.app.hist .hview{display:flex}
+.app.hist .thread{display:none}
+.hhead{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:11px;font-weight:600;color:var(--tx2)}
+.hclear{border:0;background:none;font:inherit;font-weight:500;color:var(--tx3);padding:2px 4px;border-radius:6px;cursor:pointer}.hclear:hover{color:var(--tx);background:var(--bg3)}.hclear.sure{color:#c0391b;font-weight:600}.hclear[hidden]{display:none}
+.hlist{display:flex;flex-direction:column;gap:6px;overflow-y:auto;min-height:0;padding-right:10px}
+.hlist::-webkit-scrollbar{width:6px}.hlist::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:6px}
+.hi{display:flex;flex-direction:column;gap:2px;padding:9px 11px;border:1px solid var(--line);border-radius:12px;cursor:pointer;flex:none;transition:background .12s}
+.hi:hover{background:var(--bg2)}
+.hi .t{display:flex;align-items:center;gap:1px}
+.hi .nm{flex:1;font-size:12px;font-weight:650;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hi.warn .nm::after{content:'';display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--warn);margin-left:6px;vertical-align:1px}
+.meta{font-size:10.5px;color:var(--tx2);line-height:1.4}
+.meta.hint{display:flex;align-items:flex-start;gap:6px;font-size:11.5px;margin-bottom:8px}.meta.hint svg{width:14px;height:14px;flex:none;margin-top:1px}
+.hi .q{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ib{border:none;background:none;padding:4px;cursor:pointer;color:var(--tx2);display:inline-flex;border-radius:7px}
+.ib:hover{background:var(--bg3);color:var(--acc)}
+.ib svg{width:14px;height:14px}
+.empty{text-align:center;color:var(--tx3);font-size:11px;padding:12px}
+
+/* ── thread ── */
+.thread{flex:1;min-height:0;overflow-y:auto;scroll-behavior:smooth}
+#tc{padding:12px 14px 16px;display:flex;flex-direction:column;gap:16px}   /* ONE rhythm: 16 px between everything in the chat, 12 px inside a turn */
+.thread::-webkit-scrollbar{width:8px}.thread::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:8px;border:2px solid var(--bg)}
+.hero{margin:0 auto;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;padding:4px 10px 0;animation:rise .5s var(--ease) both}
+.hero h1{font-size:16px;font-weight:650;letter-spacing:-.01em;margin:0;line-height:22px;min-height:22px}   /* fixed height: swapping the text never moves the layout */
+.hero p{font-size:11.5px;line-height:16.5px;min-height:33px;color:var(--tx3);max-width:300px;margin:0}   /* measured: every hint is exactly 2 lines (2 × 16.5 px) */
+/* Texts reveal (transitions.dev): the lines rise in with staggered blur; the exit is one quiet fade */
+.t-stagger{display:flex;flex-direction:column;align-items:center;gap:6px}
+.t-stagger-line{display:block;opacity:0;transform:translateY(var(--stagger-distance));filter:blur(var(--stagger-blur));
+  transition:opacity var(--stagger-dur) var(--stagger-ease),transform var(--stagger-dur) var(--stagger-ease),filter var(--stagger-dur) var(--stagger-ease);will-change:transform,opacity,filter}
+.t-stagger-line--2{transition-delay:var(--stagger-stagger)}
+.t-stagger.is-shown .t-stagger-line{opacity:1;transform:translateY(0);filter:blur(0)}
+.t-stagger.is-hiding .t-stagger-line{opacity:0;transform:translateY(0);filter:blur(0);transition:opacity 200ms ease,transform 0s linear,filter 0s linear;transition-delay:0s}
+/* hero tuning: a longer, softer rise with a clear beat between title and line; the exit lifts away with a touch of blur */
+.hero .t-stagger{--stagger-dur:680ms;--stagger-distance:18px;--stagger-stagger:140ms;--stagger-blur:6px}
+.hero .t-stagger-line{transform:translateY(var(--stagger-distance)) scale(.98)}
+.hero .t-stagger.is-shown .t-stagger-line{transform:translateY(0) scale(1)}
+.hero .t-stagger.is-hiding .t-stagger-line{opacity:0;transform:translateY(-10px) scale(1);filter:blur(3px);transition:opacity 260ms var(--stagger-ease),transform 260ms var(--stagger-ease),filter 260ms var(--stagger-ease)}
+.hero .t-stagger.is-hiding .t-stagger-line--2{transition-delay:50ms}
+/* the supporting line reveals word by word on top of the rise */
+.hero .t-stagger.is-shown .t-stagger-line--2 .w{animation-delay:calc(var(--i) * 28ms + 180ms)}
+@keyframes rise{from{opacity:0;transform:translateY(var(--think-distance));filter:blur(var(--think-blur))}to{opacity:1;transform:none;filter:none}}
+
+.user{align-self:flex-end;max-width:86%;background:var(--bg2);border-radius:18px 18px 6px 18px;padding:8px 14px;word-break:break-word;white-space:pre-wrap;animation:rise .35s var(--ease) both}
+.user img{display:block;max-width:100%;max-height:120px;border-radius:10px;margin:2px 0 6px}
+.turn{display:flex;flex-direction:column;gap:12px;animation:rise .35s var(--ease) both}
+
+/* status row: icon + swapping label + time */
+.trow{display:flex;align-items:center;gap:8px;min-height:20px}
+.ico-slot{position:relative;width:18px;height:18px;flex:none;color:var(--tx2)}
+.t-think-ico{position:absolute;inset:0;display:grid;place-items:center;transform:translateY(0);filter:blur(0);opacity:1;
+  transition:transform var(--think-swap) var(--think-ease),filter var(--think-swap) var(--think-ease),opacity var(--think-swap) var(--think-ease)}
+.t-think-ico svg{width:15px;height:15px;display:block;overflow:visible}
+.t-think-ico.goo svg{width:15px;height:15px;color:var(--tx3)}
+.t-think-ico.is-exit{transform:translateY(calc(var(--think-distance)*-1));filter:blur(var(--think-blur));opacity:0}
+.t-think-ico.is-enter-start{transition:none;transform:translateY(var(--think-distance));filter:blur(var(--think-blur));opacity:0}
+.t-think{position:relative;display:inline-block;text-align:left;font-size:12.5px;font-weight:500;line-height:20px}
+.t-think-sizer{display:block;visibility:hidden;white-space:nowrap}
+.t-think-text{position:absolute;top:0;left:0;right:0;display:block;color:var(--think-base);white-space:nowrap;transform:translateY(0);filter:blur(0);opacity:1;
+  transition:transform var(--think-swap) var(--think-ease),filter var(--think-swap) var(--think-ease),opacity var(--think-swap) var(--think-ease);will-change:transform,filter,opacity}
+.t-think-text::before{content:attr(data-text);position:absolute;inset:0;pointer-events:none;
+  background-image:linear-gradient(90deg,transparent 0%,transparent 40%,var(--think-highlight) 50%,transparent 60%,transparent 100%);
+  background-size:400% 100%;background-repeat:no-repeat;-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;
+  animation:t-think-shimmer var(--think-shimmer) linear infinite}
+@keyframes t-think-shimmer{0%{background-position:100% 0}100%{background-position:0% 0}}
+.t-think-text.is-exit{transform:translateY(calc(var(--think-distance)*-1));filter:blur(var(--think-blur));opacity:0}
+.t-think-text.is-enter-start{transition:none;transform:translateY(var(--think-distance));filter:blur(var(--think-blur));opacity:0}
+.t-think.calm .t-think-text{color:var(--tx2)}
+.t-think.calm .t-think-text::before{display:none}
+.ttime{font-size:12px;color:var(--tx3);font-variant-numeric:tabular-nums;white-space:nowrap}
+.ttime:empty{display:none}
+.tchev,.tcopy{display:none;border:none;background:none;width:24px;height:24px;border-radius:7px;cursor:pointer;color:var(--tx3);place-items:center;padding:0}
+.trow .tcopy,.trow .tchev{margin-left:-6px}   /* the three icons sit 2 px apart, centres 26 px — equal gaps */
+.tchev:hover,.tcopy:hover{background:var(--bg2);color:var(--tx)}
+.tcopy svg{width:14px;height:14px;display:block}
+.tchev svg{width:12px;height:12px;display:block}
+.turn .tcopy{display:grid}
+.tchev svg{transition:transform .35s var(--ease)}
+.turn.finished .tchev{display:grid}
+.tdel svg{width:12px;height:12px}
+/* Agent hand-off turns: no steps to show or hide — no chevron; copy and × only while the Agent works (× = Stop), nothing after */
+.turn.agent .tchev:not(.tdel){display:none!important}
+.turn.agent .tdel{display:none}
+.turn.agent.running .tdel{display:grid}
+.turn.agent.finished .tcopy,.turn.agent.finished .tdel{display:none!important}
+.turn.closed .tchev:not(.tdel) svg{transform:rotate(-90deg)}   /* only the arrow turns — never the × */
+.turn:has(.tl:empty) .tchev:not(.tdel){display:none!important}   /* nothing to show or hide (no steps): no arrow */
+
+/* collapsible body: timeline + reasoning stream */
+.tbody{display:grid;grid-template-rows:1fr;transition:grid-template-rows .4s var(--ease),opacity .3s var(--ease);margin-left:0}   /* steps start right under the thinking icon */
+.turn.closed .tbody{grid-template-rows:0fr;opacity:0;margin-bottom:-12px}   /* a closed timeline keeps no gap */
+.tmsgs:empty{display:none}
+.tbody:has(.tl:empty){display:none}   /* a hand-off turn has no steps: no empty row, no extra gap */
+.tin{min-height:0;overflow:hidden;display:flex;flex-direction:column;gap:10px}
+
+/* timeline */
+.tl{display:flex;flex-direction:column;padding-left:0}
+.tli{position:relative;display:flex;flex-direction:column;font-size:12px;color:var(--tx3)}
+.tli.new{animation:rise .3s var(--ease) both}
+.turn.running .tli .tn{display:none}   /* while it runs the header already shows the step icon: the step row is text only */
+.turn.running .tli.done{display:none}.turn.running .tli::after{display:none}   /* while it runs: only the CURRENT step shows; the full list is back when the turn ends */
+.tli:not(:last-child)::after{content:'';position:absolute;left:8px;top:21.5px;bottom:-4.5px;width:1.5px;background:var(--line)}
+.tlr{display:flex;align-items:center;gap:10px;min-height:26px}
+.tlc{display:none;border:none;background:none;width:20px;height:20px;border-radius:6px;cursor:pointer;color:var(--tx3);place-items:center;margin-left:-2px}
+.tlc:hover{background:var(--bg2);color:var(--tx)}
+.tlc svg{width:10px;height:10px;transition:transform .35s var(--ease)}
+.tli.has .tlc{display:grid}
+.tli.closed .tlc svg{transform:rotate(-90deg)}
+.tlb{display:grid;grid-template-rows:1fr;transition:grid-template-rows .38s var(--ease),opacity .28s var(--ease),transform .38s var(--ease);margin-left:27px;transform:translateY(0)}
+.tli.closed .tlb{grid-template-rows:0fr;opacity:0;transform:translateY(-4px)}
+.tlb>div{min-height:0;overflow:hidden}
+.sl{max-height:132px;overflow-y:auto;-webkit-mask-image:linear-gradient(transparent 0,black 10px,black calc(100% - 10px),transparent 100%);mask-image:linear-gradient(transparent 0,black 10px,black calc(100% - 10px),transparent 100%);overscroll-behavior:contain;scroll-behavior:smooth;user-select:text;-webkit-user-select:text;cursor:text;padding:2px 6px 6px 0;font-size:12px;line-height:18px;color:var(--tx2)}
+.sl::-webkit-scrollbar{width:6px}.sl::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:6px}
+.sl p{margin:0 0 6px;word-break:break-word}
+.sl p:last-child{margin-bottom:0;color:var(--tx)}
+.tn{position:relative;z-index:1;width:17px;height:17px;border-radius:50%;background:none;border:none;display:grid;place-items:center;flex:none;color:var(--tx3);transition:all .25s var(--ease)}
+.tn svg{width:14px;height:14px}
+.tli.done .tn{color:var(--tx3)}
+.tli.active .tn{color:var(--tx);animation:softpulse 1.6s ease-in-out infinite}
+@keyframes softpulse{0%,100%{opacity:1}50%{opacity:.6}}
+.tli.active .tlr{color:var(--tx);font-weight:500}.tli.done .tlr{color:var(--tx2)}
+.tt{flex:1}
+.tm{font-size:10.5px;font-variant-numeric:tabular-nums;color:var(--tx3)}
+
+/* assistant messages */
+.tmsgs{display:flex;flex-direction:column;gap:12px;user-select:text;-webkit-user-select:text}
+.thread{user-select:text;-webkit-user-select:text}
+.am{word-break:break-word;white-space:pre-wrap}
+.am.bad{color:var(--bad)}
+.w{opacity:0;filter:blur(2px);animation:wIn .4s var(--ease) forwards}
+@keyframes wIn{to{opacity:1;filter:none}}
+.ocard{display:flex;flex-direction:column;padding:0;animation:rise .4s var(--ease) both}
+.rcard{position:relative;border:1px solid var(--line);border-radius:14px;padding:11px 28px 11px 12px;display:flex;flex-direction:column;gap:7px;animation:rise .4s var(--ease) both}
+.rcard .cx{position:absolute;top:6px;right:6px;border:none;background:none;width:20px;height:20px;border-radius:6px;cursor:pointer;color:var(--tx3);font-size:14px;line-height:1}
+.rcard .cx:hover{background:var(--bg2);color:var(--tx)}
+.rtop{display:flex;align-items:center;gap:8px}
+.rname{font-size:12.5px;font-weight:650;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.rstate{font-size:10px;font-weight:650;border-radius:999px;padding:1px 8px;color:var(--ok);background:rgba(24,137,24,.12)}
+.rcard.warn .rstate{color:var(--warn);background:rgba(231,101,0,.13)}
+.note{font-size:11px;color:var(--warn)}
+.row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.btn{appearance:none;border:0;height:30px;padding:0 14px;border-radius:999px;font-size:12px;font-weight:500;cursor:pointer;background:var(--bg2);color:var(--tx);transition:background .15s,opacity .15s,transform .1s}   /* one look for every button: the "Open the frame" pill */
+.btn:hover,.btn.pri:hover{background:var(--bg3)}.btn:active{transform:scale(.97)}
+.btn.pri{background:var(--bg2);color:var(--tx)}
+.btn:disabled{opacity:.35;cursor:default;transform:none}
+.btn.play{display:inline-flex;align-items:center;gap:6px;padding:0 14px 0 12px}
+.btn.play svg{width:11px;height:11px}
+
+/* scroll-to-bottom */
+.down{position:absolute;left:50%;bottom:112px;transform:translateX(-50%) translateY(6px);width:30px;height:30px;border-radius:50%;border:1px solid var(--line);background:var(--bg);box-shadow:var(--shadow);display:grid;place-items:center;cursor:pointer;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s var(--ease);z-index:10}
+.down.on{opacity:1;pointer-events:auto;transform:translateX(-50%)}
+.down svg{width:13px;height:13px}
+
+/* ── composer ── */
+.dock{flex:none;padding:2px 12px 12px;position:relative;background:linear-gradient(transparent,var(--bg) 14px)}
+.comp{position:relative;z-index:1;border:1px solid var(--line);border-radius:20px;background:var(--bg);box-shadow:var(--shadow);padding:12px 10px 10px 14px;display:flex;flex-direction:column;gap:6px;transition:border-color .15s}
+.comp.over{border-color:var(--acc)}
+/* soft 3-colour glow under the field (a blurred gradient layer behind it, slowly drifting) */
+.dock::before{content:'';position:absolute;left:14px;right:14px;top:14px;bottom:8px;border-radius:22px;z-index:0;filter:blur(16px);opacity:.45;pointer-events:none;
+  background:linear-gradient(110deg,#0070f2 0%,#8b5cf6 30%,#ff7a59 55%,#1ec8a5 80%,#0070f2 100%);background-size:200% 200%;animation:glow 9s ease-in-out infinite}
+.dock:focus-within::before{opacity:.65}
+.app.running .dock::before{animation-duration:2.4s;opacity:.65}
+.figma-dark .dock::before{opacity:.5}
+@keyframes glow{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+.comp textarea{width:100%;resize:none;border:none;outline:none;background:transparent;color:var(--tx);font:inherit;font-size:13px;line-height:20px;height:40px;min-height:40px;max-height:160px;padding:1px 0}
+.comp textarea::placeholder{color:var(--tx3);transition:opacity .12s ease}
+.comp textarea{transition:opacity .09s ease}.comp textarea.swap{opacity:0}
+button:focus{outline:none}
+:focus-visible{outline:2px solid var(--acc);outline-offset:1px}   /* keyboard focus ring (mouse clicks show none) */
+.t-tab:focus-visible{outline-offset:-2px}
+.comp textarea:focus-visible{outline:none}
+.comp textarea.phx::placeholder{opacity:0}
+.cbar{display:flex;align-items:center;gap:6px}
+.cbtn{border:none;background:var(--bg2);height:28px;min-width:28px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;gap:5px;font-size:11px;font-weight:500;color:var(--tx2);cursor:pointer;position:relative;padding:0 8px;transition:background .15s,color .15s}
+.cbtn:hover{background:var(--bg3);color:var(--tx)}
+.t-tabs{position:relative;display:inline-flex;align-items:center;gap:2px;padding:2px;border-radius:48px;background:var(--tabs-bar-bg);height:28px}
+.t-tab{position:relative;appearance:none;border:0;background:transparent;height:24px;padding:0 10px;font-size:11px;font-weight:500;color:var(--tabs-text-muted);cursor:pointer;border-radius:48px;z-index:1;transition:color var(--tabs-dur) var(--tabs-ease)}
+.t-tab:not([aria-selected="true"]):hover,.t-tab[aria-selected="true"]{color:var(--tabs-text-active)}
+.t-tab[aria-selected="true"]{font-weight:600}
+.t-tabs-pill{position:absolute;top:2px;left:0;height:24px;width:0;background:var(--tabs-pill-bg);border-radius:48px;box-shadow:0 1px 2px rgba(0,0,0,.12);transform:translateX(0);transition:transform var(--tabs-dur) var(--tabs-ease),width var(--tabs-dur) var(--tabs-ease);will-change:transform,width;z-index:0;pointer-events:none}
+.cbtn svg{width:14px;height:14px}
+.cbtn input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%}
+.send{width:30px;height:30px;border-radius:50%;border:none;background:var(--tx);color:var(--bg);display:grid;place-items:center;cursor:pointer;flex:none;transition:transform .15s var(--ease),opacity .15s}
+.send:hover:not(:disabled){transform:scale(1.06)}
+.send:disabled{opacity:.25;cursor:not-allowed}
+.send svg{width:14px;height:14px}
+.send .stop{display:none;width:11px;height:11px;border-radius:3px;background:var(--bg)}
+.app.running:not(.asking) .send .arrow{display:none}.app.running:not(.asking) .send .stop{display:block}
+.thumb{display:none;align-items:center;gap:8px;padding:4px;border:1px solid var(--line);border-radius:12px;align-self:flex-start;max-width:100%;animation:rise .25s var(--ease) both}
+.thumb.on{display:flex}
+.thumb img{width:34px;height:34px;object-fit:cover;border-radius:8px}
+.thumb .nm{font-size:10.5px;color:var(--tx2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px}
+.x{border:none;background:none;cursor:pointer;font-size:15px;line-height:1;color:var(--tx3);padding:2px 7px;border-radius:6px}
+.x:hover{color:var(--bad)}
+.recent{position:absolute;left:12px;right:12px;bottom:calc(100% - 6px);background:var(--bg);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow:hidden;
+  opacity:0;transform:translateY(6px);pointer-events:none;transition:opacity .18s var(--ease),transform .18s var(--ease);z-index:25}
+.recent.on{opacity:1;transform:none;pointer-events:auto}
+.rec{display:block;width:100%;background:none;border:none;border-bottom:1px solid var(--line);text-align:left;padding:8px 12px;font-size:11.5px;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rec:last-child{border-bottom:none}.rec:hover{background:var(--bg2)}
+
+#grip{position:fixed;right:3px;bottom:3px;width:16px;height:16px;cursor:nwse-resize;color:var(--tx3);touch-action:none;z-index:50}
+#grip svg{width:16px;height:16px}
+#toast{position:fixed;left:50%;bottom:92px;transform:translateX(-50%);z-index:200;padding:6px 12px;border-radius:9px;font-size:11px;font-weight:600;color:#fff;box-shadow:none;pointer-events:none;display:none}
+
+@media (prefers-reduced-motion:reduce){
+  .t-tabs-pill,.t-tab{transition:none!important}
+  *{animation-duration:.01ms!important;animation-iteration-count:1!important}
+  .t-think-text,.t-think-ico{transition:none!important;transform:none!important;filter:none!important}
+  .t-think-text::before{display:none!important}
+  .thread{scroll-behavior:auto}
+}
+.planBlock{margin:2px 0;border:0;padding:0;background:transparent}
+.planBlock summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:6px;font-weight:600;font-size:12px;color:var(--tx);padding:6px 2px;border-radius:8px;user-select:none}
+.planBlock summary::-webkit-details-marker{display:none}
+.planBlock summary::before{content:'';width:12px;height:12px;flex:none;background:currentColor;opacity:.55;transform:rotate(-90deg);transition:transform .2s var(--ease);
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m2 3.5 3 3 3-3'/%3E%3C/svg%3E") center/contain no-repeat}
+.planBlock[open] summary::before{transform:none}
+.planBlock summary:hover{color:var(--tx)}.planBlock summary:hover::before{opacity:.9}
+.planBlock pre{font:10.5px/1.4 ui-monospace,Menlo,monospace;white-space:pre;overflow:auto;max-height:340px;margin:2px 0 6px;padding:10px 12px;background:var(--bg2);border:0;border-radius:10px;color:var(--tx)}
+.planAct{display:flex;gap:6px;margin:10px 0 2px;flex-wrap:wrap}
+.planAct .pa,.openFrame{appearance:none;border:0;height:30px;padding:0 14px;border-radius:999px;font-size:12px;font-weight:500;cursor:pointer;background:var(--bg2);color:var(--tx);transition:background .15s,opacity .15s,transform .1s}
+.planAct .pa:hover,.openFrame:hover{background:var(--bg3)}.planAct .pa:active,.openFrame:active{transform:scale(.97)}
+.planAct .pa.approve{background:var(--tx);color:var(--bg)}.planAct .pa.approve:hover{opacity:.85;background:var(--tx)}
+.planAct .pa:disabled{opacity:.35;cursor:default;transform:none}.planAct .pa.chosen{opacity:1}
+.openFrame{display:inline-flex;align-items:center;gap:6px;margin-top:8px}
+.am.hint{color:var(--tx2);font-size:11.5px;margin-top:6px}
+.hi[hidden],.hnone[hidden]
+.hsearch{width:100%;height:28px;border:1px solid var(--line);border-radius:999px;background:var(--bg);color:var(--tx);font:inherit;font-size:12px;padding:0 12px;flex:none}
+.hsearch::placeholder{color:var(--tx3)}
+.hsearch:focus-visible{outline:2px solid var(--acc);outline-offset:1px}
+.dot.ok{background:#1bc47d}.dot.warn{background:#f6a623}.dot.bad{background:var(--bad)}.dot.off{background:#888}
+.hl{display:flex;flex-direction:column;gap:6px;margin:2px 0 10px}
+.hl-n{font-size:11px;color:var(--tx3)}
+.hl-r{display:flex;align-items:flex-start;gap:7px}.hl-r .dot{margin-top:6px}
+.hl-b{flex:1;min-width:0}.hl-l{font-size:12px;font-weight:600}.hl-d{font-size:11px;color:var(--tx3);overflow-wrap:anywhere}
+.hl-r .ip-btn{height:24px;padding:0 10px;font-size:11px;flex:none}
+@media (prefers-reduced-motion:reduce){
+  .t-stagger-line,.t-stagger-line .w,.hero,.hview,.hi,.infoPop,.ocard,.rcard{transition:none!important;animation:none!important;transform:none!important;filter:none!important}
+  .w{opacity:1;filter:none;animation:none!important}
+  .dock::before,.dot.looking,.dot.restarting{animation:none!important}
+}
+</style>
+</head>
+<body>
+
+<div class="app" id="app">
+  <div class="hdr">
+    <button class="hb" id="newBtn" title="New chat" aria-label="New chat"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2.5H4.5a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h7a2 2 0 0 0 2-2V7"/><path d="M13.2 2.3a1.1 1.1 0 0 1 1.5 1.5L8.6 9.9 6 10.5l.6-2.6z"/></svg></button>
+    <button class="hb" id="histBtn" title="History" aria-label="History"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6"/><path d="M8 4.5V8l2.4 1.4"/></svg></button>
+    <div class="sp"></div>
+    <div class="conn"><button class="hb infoBtn" id="infoBtn" title="About SAP Bridge" aria-label="About SAP Bridge" aria-expanded="false" aria-controls="infoPop"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6.3"/><path d="M8 7.2v4M8 5v.2"/></svg></button><span id="statusText" role="status" aria-live="polite">Looking for Claude</span><i class="dot looking" id="dot"></i></div>
+    <div class="infoPop" id="infoPop" role="dialog" aria-label="About SAP Bridge" hidden>
+      <div class="ip-h">SAP Bridge <span class="ip-st" id="ipState">Looking for Claude</span></div>
+      <p>Connects Figma to Claude on this Mac, so Claude builds and edits SAP screens here.</p>
+      <div class="ip-k">Connect</div>
+      <p>Nothing to do. Open Claude desktop or Hyperspace. The bridge starts at login and this plugin finds it on its own.</p>
+      <div class="ip-k">Not connected?</div>
+      <p>Restart the server. It restarts the Make bridge too and takes a few seconds.</p>
+      <div class="ip-row"><button class="ip-btn pri" id="ipRestart">Restart server</button><button class="ip-btn" id="ipCopy">Copy Terminal command</button></div>
+      <div class="ip-f" id="ipPort">Port: looking…</div>
+    </div>
+  </div>
+
+  <div class="hview" id="hview"><div class="hhead"><span>History · this file</span><button class="hclear" id="hClear" type="button">Clear history</button></div><input class="hsearch" id="hSearch" type="search" placeholder="Search the history…" aria-label="Search the history…" autocomplete="off"><div class="hlist" id="hlist"></div></div>
+
+  <div class="thread" id="thread"><div id="tc">
+    <div class="hero" id="hero">
+      <div class="t-stagger is-shown" id="heroText">
+        <h1 class="t-stagger-line t-stagger-line--1" id="heroH">What do you want to build?</h1>
+        <p class="t-stagger-line t-stagger-line--2" id="heroP">Describe a screen or drop a reference image. I plan it, build it in Figma and check it.</p>
+      </div>
+    </div>
+  </div></div>
+  <button class="down" id="down" title="Scroll to latest" aria-label="Scroll to latest"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 6 8 10.5 12.5 6"/></svg></button>
+
+  <div class="dock">
+    <div class="comp" id="comp">
+      <div class="thumb" id="thumb"><img id="thumbImg" alt="ref"><span class="nm" id="thumbName"></span><button class="x" id="thumbX" title="Remove" aria-label="Remove the image">×</button></div>
+      <textarea id="prompt" rows="1" placeholder="Ask anything" aria-label="Message"></textarea>
+      <div class="cbar">
+        <span class="cbtn" title="Add a reference image"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M8 3v10M3 8h10"/></svg><input type="file" id="file" accept="image/*" aria-label="Add a reference image"></span>
+        <div class="t-tabs" id="modeTabs" role="tablist" aria-label="Mode">
+          <span class="t-tabs-pill" aria-hidden="true"></span>
+          <button class="t-tab" role="tab" data-mode="claude" aria-selected="true" tabindex="0">Claude</button>
+          <button class="t-tab" role="tab" data-mode="agent" aria-selected="false" tabindex="-1">Agent</button>
+          <button class="t-tab" role="tab" data-mode="make" aria-selected="false" tabindex="-1">Make</button>
+        </div>
+        <div class="sp"></div>
+        <button class="send" id="go" disabled title="Send (Enter)" aria-label="Send">
+          <svg class="arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 13V3M3.5 7.5 8 3l4.5 4.5"/></svg>
+          <span class="stop"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="grip" title="Drag to resize · double-click to reset"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M14 6 6 14M14 10l-4 4M14 2 2 14"/></svg></div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var STAGES = {
+    route:   ['Routing',       'route',   'Route'],
+    plan:    ['Planning',      'plan',    'Plan'],
+    analyse: ['Analysing',     'analyse', 'Analyse'],
+    execute: ['Executing',     'execute', 'Execute'],
+    logos:   ['Placing logos', 'logos',   'Logos'],
+    check:   ['Checking',      'check',   'Check'],
+    fix:     ['Fixing',        'fix',     'Fix']
+  };
+  var MODE = { claude: 'Claude built', agent: 'Built, Figma Agent edits', script: 'Built by the plugin' };
+  var DEFAULT_W = 400, MIN_H = 200, MAX_H = 760;   // the window hugs its content: empty chat and a long prompt get the same gaps
+  var S = { connected:false, running:false, asking:null, nodeId:null, last:null, img:null, mime:null, imgUrl:null, recent:[], hist:[], manual:false, buildMode:'claude', lastReq:null };
+  var T = null;            // the turn that is running now
+  var stick = true;        // thread follows the newest content until the user scrolls up
+
+  function postMsg(m) { parent.postMessage({ pluginMessage: m }, '*'); }
+  function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+  function trunc(s, n) { s = String(s); return s.length > n ? s.slice(0, n) + '…' : s; }
+  function cls(el, c, v) { el.classList[v ? 'add' : 'remove'](c); }
+  function toast(msg, ok) { var t = $('toast'); t.textContent = msg; t.style.background = ok === false ? '#c0391b' : '#2563eb'; t.style.display = 'block'; clearTimeout(t._h); t._h = setTimeout(function () { t.style.display = 'none'; }, 2200); }
+  function save(k, v) { postMsg({ type:'store-set', key:k, value:v }); }
+  function ms(name, fb) { var v = parseFloat(getComputedStyle(document.documentElement).getPropertyValue(name)); return isFinite(v) ? v : fb; }
+  function fmt(v) { var s = Math.max(0, Math.round(v / 1000)), m = Math.floor(s / 60); s %= 60; return m ? m + 'm ' + (s < 10 ? '0' : '') + s + 's' : s + 's'; }
+  function when(t) { if (!t) return ''; var d = new Date(t); return d.toLocaleDateString(undefined, { day:'numeric', month:'short' }) + ' ' + d.toLocaleTimeString(undefined, { hour:'2-digit', minute:'2-digit' }); }
+  function metaLine(h) { return [when(h.at || Date.now()), MODE[h.mode] || '', h.elapsedMs != null ? 'Done in ' + fmt(h.elapsedMs) : ''].filter(Boolean).join(' • '); }
+
+  /* ───────── thread helpers ───────── */
+  var thread = $('thread'), tc = $('tc'), heroEl = $('hero');
+  /* rotating welcome lines — Texts reveal in, quiet fade out, next pair in */
+  var HEROES = {   // each tab greets with its own lines (what it does and how to use it)
+    claude: [
+      ['What do you want to build?', 'Describe a screen or drop a reference image. I plan it, build it in Figma and check it.'],
+      ['Start from a screenshot', 'Paste any UI image. I rebuild it with real SAP components, tokens and text styles.'],
+      ['Try a floorplan', '“A List Report for purchase orders with a filter bar”, “An Object Page for a supplier”…'],
+      ['Change what is built', '“Make the Save button primary”, “Add a Delivery Date column”, “Switch to Compact”.'],
+      ['Nothing leaves your machine', 'Claude runs locally through the SAP Bridge. History stays in this file.']
+    ],
+    agent: [
+      ['Work with the Figma Agent', 'Type what you want. A new Figma Agent chat opens and builds it in this file with its own tools.'],
+      ['Ask for changes', '“Make the header Compact”, “Add a Status column”. Your next messages go to the same Agent chat.'],
+      ['Start fresh', 'Press the pencil (New chat) and your next request opens a new Agent chat.'],
+      ['Claude plans, the Agent builds', 'Use this tab when you want the Figma Agent to draw. Use the Claude tab for plans and checks.']
+    ],
+    make: [
+      ['Turn a Make app into Figma screens', 'Paste a Figma Make link. I rebuild its screens in this file with real SAP components.'],
+      ['Or start from a prompt', 'Describe a screen. I open Figma Make and send your prompt. Paste its link back here.'],
+      ['You choose first', 'I ask: rebuild it as SAP screens, or keep the Make design as a reference. It takes about a minute.'],
+      ['Needs a Make link', 'Open your Make file, press Share, copy the link, and paste it in the box below.']
+    ]
+  };
+  var HERO = HEROES.claude, heroI = 0;
+  function heroWords(text) {                                  // each word of the line carries its own small delay
+    var el = $('heroP'); el.innerHTML = '';
+    text.split(/(\s+)/).forEach(function (w) { if (!w.trim()) { el.appendChild(document.createTextNode(w)); return; } var s = document.createElement('span'); s.className = 'w'; s.textContent = w; s.style.setProperty('--i', el.querySelectorAll('.w').length); el.appendChild(s); });
+  }
+  heroWords(HERO[0][1]);
+  function heroReset(mode) {   /* a tab switch can catch the greeting mid-fade (is-hiding = invisible): show it again, whole — with the lines of that tab */
+    var b = $('heroText'); if (!b) return; b.classList.remove('is-hiding'); b.classList.add('is-shown');
+    HERO = HEROES[mode || S.buildMode] || HEROES.claude; heroI = 0;
+    $('heroH').textContent = HERO[heroI][0]; heroWords(HERO[heroI][1]);
+    heroEl.style.animation = 'none'; void heroEl.offsetWidth; heroEl.style.animation = 'rise .45s var(--ease) both';
+  }
+  function heroNext() {
+    if (document.hidden) return;                                // nothing to animate while the window is hidden
+    if (!heroEl.parentNode || $('app').classList.contains('hist')) return;
+    var b = $('heroText'); b.classList.add('is-hiding'); b.classList.remove('is-shown');
+    setTimeout(function () {
+      HERO = HEROES[S.buildMode] || HEROES.claude; heroI = (heroI + 1) % HERO.length; $('heroH').textContent = HERO[heroI][0]; heroWords(HERO[heroI][1]);
+      b.classList.remove('is-hiding'); void b.offsetHeight; b.classList.add('is-shown');
+    }, 320);
+  }
+  setInterval(heroNext, ms('--hero-hold', 4200));
+  function nearEnd() { return thread.scrollHeight - thread.scrollTop - thread.clientHeight < 40; }
+  function toEnd() { if (stick) thread.scrollTop = thread.scrollHeight; }
+  thread.addEventListener('scroll', function () { stick = nearEnd(); cls($('down'), 'on', !stick); });
+  $('down').addEventListener('click', function () { stick = true; thread.scrollTop = thread.scrollHeight; });
+  var endRaf = 0;
+  function toEndSoon() { if (endRaf) return; endRaf = requestAnimationFrame(function () { endRaf = 0; toEnd(); }); }
+  new MutationObserver(toEndSoon).observe(thread, { childList:true, subtree:true, characterData:true });
+  new ResizeObserver(toEndSoon).observe(tc);                    // heights animate: the observer follows every frame
+  setInterval(function () { if (stick) toEnd(); }, 3000);       // slow safety net
+  function hideHero() { if (heroEl.parentNode) heroEl.remove(); }
+  function holdView() { stick = false; setTimeout(function () { cls($('down'), 'on', !nearEnd()); }, 400); }   // a user toggle: no auto-scroll
+  function addUser(text, imgUrl, parent) {
+    hideHero(); stick = true;
+    var u = document.createElement('div'); u.className = 'user';
+    if (imgUrl) { var im = document.createElement('img'); im.src = imgUrl; u.appendChild(im); }
+    if (text) u.appendChild(document.createTextNode(text));
+    (parent || tc).appendChild(u); toEnd();
+  }
+  /* word-by-word reveal, like a streaming answer */
+  function reveal(el, text) {
+    var parts = String(text).split(/(\s+)/), words = parts.filter(function (p) { return p.trim(); }).length, i = 0;
+    var step = words > 90 ? 0 : Math.min(26, 700 / Math.max(1, words));
+    parts.forEach(function (p) {
+      if (!p.trim() || !step) { el.appendChild(document.createTextNode(p)); return; }
+      var s = document.createElement('span'); s.className = 'w'; s.textContent = p; s.style.animationDelay = (i++ * step) + 'ms'; el.appendChild(s);
+    });
+  }
+  function plain(t) {   /* the script's short codes → what is going on, in plain words (the raw line follows) */
+    var R = [[/^RUN .* image/, 'Starting: a screenshot → an SAP screen'], [/^ANALYZE (\d+) texts · (\S+)/, 'Read $1 texts · screen $2'], [/^GOLD .*FROM ZERO/, 'No saved layout fits — building from zero'],
+      [/^PHOTOS (\d+)/, 'Found $1 photos / maps — they are cut 1:1'], [/^AUTONAME/, 'Named every icon and shape (kit icons, pictures, check boxes)'], [/^DOOR ✓/, 'Every part is a real SAP kit part ✓'],
+      [/^DOOR ✗ (\d+)/, '$1 parts are not SAP yet — fixing'], [/^SIM position (\d+) %/, 'Layout check: $1 % of the parts sit where the screenshot has them'], [/^SMASH ✓/, 'Nothing overlaps or is cut ✓'],
+      [/^SMASH ✗ (\d+)/, '$1 parts overlap or are fake controls'], [/^LOGOS (\d+)/, 'Cut $1 logos and pictures'], [/^MATCH (\S+) · HYGIENE (\S+) · STRUCTURE (\S+) · SMASH (\S+) · EYE (\S+)/, 'Result: SAP parts $1 · hygiene $2 · structure $3 · overlaps $4 · looks like the screenshot $5'],
+      [/^STATUS DRAFT/, 'Saved as a DRAFT'], [/^STOP/, 'Stopped for your decision']];
+    for (var i = 0; i < R.length; i++) if (R[i][0].test(t)) return t.replace(/^.*$/, function (x) { return x.replace(R[i][0], R[i][1]); }).split(' · ').slice(0, 3).join(' · ') + '\n' + t;
+    return t;
+  }
+  function say(turn, text, bad) {
+    var last = turn.msgs.lastElementChild; if (last && last.classList.contains('am') && last.textContent === String(text)) return last;
+    var d = document.createElement('div'); d.className = 'am' + (bad ? ' bad' : ''); reveal(d, text); turn.msgs.appendChild(d); return d;
+  }
+
+  /* ───────── icons ───────── */
+  function si(inner) { return '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' + inner + '</svg>'; }
+  var GOO = (function () { var d = '', k = 0; for (var y = 0; y < 3; y++) for (var x = 0; x < 3; x++) d += '<circle cx="' + (4 + x * 8) + '" cy="' + (4 + y * 8) + '" r="2"><animate attributeName="opacity" dur="1.4s" values="1;.25;1" begin="' + ((x + y) * 0.15).toFixed(2) + 's" repeatCount="indefinite"/></circle>'; return '<svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">' + d + '</svg>'; })();
+  var ICONS = {
+    goo: GOO, gooIdle: GOO,
+    route: si('<circle cx="4" cy="12.5" r="1.6"/><circle cx="12" cy="3.5" r="1.6"/><path d="M4 10.9V9a3 3 0 0 1 3-3h2a3 3 0 0 0 3-2.4"/>'),
+    plan: si('<path d="M3 4h10M3 8h10M3 12h6"/>'),
+    analyse: si('<circle cx="7" cy="7" r="4"/><path d="m10 10 3.5 3.5"/>'),
+    execute: si('<path d="M9 1.5 3.5 9h4l-1 5.5L12.5 7h-4z"/>'),
+    logos: si('<rect x="2" y="3" width="12" height="10" rx="2"/><circle cx="5.6" cy="6.6" r="1"/><path d="m2.5 12 3.5-3.5 3 3 2-2 2.5 2.5"/>'),
+    check: si('<path d="M1.5 8S4 3.5 8 3.5 14.5 8 14.5 8 12 12.5 8 12.5 1.5 8 1.5 8z"/><circle cx="8" cy="8" r="2"/>'),
+    fix: si('<path d="M10.5 2.5a3.5 3.5 0 0 0-3.2 4.8l-4.8 4.8a1.2 1.2 0 0 0 1.7 1.7l4.8-4.8a3.5 3.5 0 0 0 4.8-3.2l-2.1 2.1-2-.5-.5-2z"/>'),
+    done: si('<path d="m3 8.5 3.2 3.2L13 4.8"/>'),
+    error: si('<path d="M8 2 14.5 13.5h-13z"/><path d="M8 6.5v3M8 11.6v.2"/>'),
+    wait: si('<circle cx="8" cy="8" r="6"/><path d="M8 4.5V8l2.5 1.5"/>'),
+    stopped: si('<rect x="4" y="4" width="8" height="8" rx="2"/>')
+  };
+  var CHEV = '<svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m2 3.5 3 3 3-3"/></svg>';
+  var ICON_LOC = si('<circle cx="8" cy="8" r="3.5"/><path d="M8 1.5v3M8 11.5v3M1.5 8h3M11.5 8h3"/>');
+  /* Lucide "copy": two rounded squares, scaled from its 24-grid to our 16-grid */
+  var ICON_LOG = si('<rect x="6" y="6" width="8.5" height="8.5" rx="1.6"/><path d="M3.3 10.3A1.3 1.3 0 0 1 2 9V3.3A1.3 1.3 0 0 1 3.3 2H9a1.3 1.3 0 0 1 1.3 1.3"/>');
+  var ICON_INFO = si('<circle cx="8" cy="8" r="6.3"/><path d="M8 7.2v4M8 5v.2"/>');
+  var ICON_AGAIN = si('<path d="M13 8a5 5 0 1 1-1.5-3.5M13 2.5v2.6h-2.6"/>');
+  function iconBtn(svg, title, fn) { var b = document.createElement('button'); b.className = 'ib'; b.title = title; b.setAttribute('aria-label', title); b.innerHTML = svg; b.addEventListener('click', function (e) { e.stopPropagation(); fn(b); }); return b; }
+
+  /* ───────── a turn = one assistant answer: status row, timeline, live reasoning, messages ───────── */
+  var XICON = si('<path d="M4 4l8 8M12 4l-8 8"/>');
+  var TURN_HTML =
+    '<div class="trow"><span class="ico-slot"></span><span class="t-think calm" role="status"><span class="t-think-sizer" aria-hidden="true"></span></span><span class="ttime"></span>' +
+    '<span class="sp"></span><button class="tcopy" title="Copy everything Claude wrote in this turn" aria-label="Copy everything Claude wrote in this turn">' + ICON_LOG + '</button><button class="tchev" title="Show / hide the steps" aria-label="Show or hide the steps">' + CHEV + '</button><button class="tchev tdel" title="Remove this from the chat" aria-label="Remove this from the chat">' + XICON + '</button></div>' +
+    '<div class="tbody"><div class="tin"><div class="tl"></div></div></div>' +
+    '<div class="tmsgs"></div>';
+
+  function prune() {   /* one task log: keep the last finished turn (collapsed) + the new request; older turns and bubbles go */
+    var turns = [].slice.call(tc.querySelectorAll(':scope > .turn')), keep = turns[turns.length - 1];
+    if (keep && !keep.classList.contains('finished')) return;   // the open run stays as it is
+    [].slice.call(tc.children).forEach(function (el) {
+      if (el === heroEl || el === keep || el === tc.lastElementChild) return;
+      if (keep && el === keep.previousElementSibling && el.classList.contains('user')) return;
+      el.remove();
+    });
+    if (keep && !keep.querySelector('.planAct .pa:not(:disabled)')) cls(keep, 'closed', true);   // a plan that waits for Approve stays open
+  }
+  function newTurn() {
+    hideHero(); prune();
+    var el = document.createElement('div'); el.className = 'turn running'; el.innerHTML = TURN_HTML; tc.appendChild(el);
+    var t = {
+      el: el, slot: el.querySelector('.ico-slot'), think: el.querySelector('.t-think'), sizer: el.querySelector('.t-think-sizer'),
+      time: el.querySelector('.ttime'), chev: el.querySelector('.tchev'), copyBtn: el.querySelector('.tcopy'),
+      tl: el.querySelector('.tl'), msgs: el.querySelector('.tmsgs'),
+      iconKey: null, iconLive: null, label: null, labelLive: null,
+      accum: 0, since: Date.now(), cur: null, items: {}, lastLine: '', finished: false
+    };
+    t.chev.addEventListener('click', function () { holdView(); el.classList.toggle('closed'); });
+    el.querySelector('.tdel').addEventListener('click', function () { if ((S.agentTurn === t || S.makeTurn === t) && !t.finished) { stopNow(); return; } var u = el.previousElementSibling; el.remove(); if (u && u.classList.contains('user')) u.remove(); if (T === t) T = null; if (!tc.children.length) tc.appendChild(heroEl); });
+    t.copyBtn.addEventListener('click', function () { var lines = [].map.call(t.tl.querySelectorAll('.tli'), function (it) { return [it.querySelector('.tt').textContent].concat([].map.call(it.querySelectorAll('.sl p'), function (p) { return '  ' + p.textContent; })).join('\n'); }); var msgs = [].map.call(t.msgs.querySelectorAll('.am,.user'), function (m) { return (m.classList.contains('user') ? 'You: ' : 'Claude: ') + m.textContent; }); var ok = copyNow(lines.concat(msgs).join('\n')); toast(ok ? 'Copied ✓' : 'Copy blocked — select the text and press Cmd+C', ok); });
+    swapIcon(t, 'goo'); swapLabel(t, 'Working on it', true);
+    T = t; S.runMode = S.buildMode; return t;
+  }
+  function ensureTurn() { if (T && !T.finished) return T; var t = newTurn(); if (!S.running) { S.running = true; upd(); } return t; }
+
+  /* Thinking states: icon swap */
+  function swapIcon(t, key) {
+    if (key === t.iconKey) return; t.iconKey = key;
+    var leaving = t.iconLive, next = document.createElement('span');
+    next.className = 't-think-ico' + (key.indexOf('goo') === 0 ? ' goo' : '') + (leaving ? ' is-enter-start' : '');
+    next.innerHTML = ICONS[key]; t.slot.appendChild(next); t.iconLive = next;
+    if (key === 'gooIdle') { var sv = next.querySelector('svg'); if (sv && sv.pauseAnimations) sv.pauseAnimations(); }
+    if (leaving) {
+      leaving.classList.add('is-exit');
+      var gap = ms('--think-gap', 50), rel = function () { void next.offsetWidth; next.classList.remove('is-enter-start'); };
+      if (gap > 0) setTimeout(rel, gap); else rel();
+      setTimeout(function () { leaving.remove(); }, ms('--think-swap', 150) + gap + 30);
+    }
+  }
+  /* Thinking states / text swap: label — the box hugs the current text so the time sits right next to it */
+  function swapLabel(t, text, shimmer) {
+    cls(t.think, 'calm', !shimmer);
+    if (text === t.label) return; t.label = text; t.sizer.textContent = text;
+    var leaving = t.labelLive, next = document.createElement('span');
+    next.className = 't-think-text' + (leaving ? ' is-enter-start' : ''); next.textContent = text; next.setAttribute('data-text', text);
+    t.think.appendChild(next); t.labelLive = next;
+    if (leaving) {
+      leaving.classList.add('is-exit');
+      var gap = ms('--think-gap', 50), rel = function () { void next.offsetWidth; next.classList.remove('is-enter-start'); };
+      if (gap > 0) setTimeout(rel, gap); else rel();
+      setTimeout(function () { leaving.remove(); }, ms('--think-swap', 150) + gap + 30);
+    }
+  }
+  function phase(t, label, icon, shimmer) { swapLabel(t, label, shimmer); swapIcon(t, icon); }
+
+  /* lines Claude writes during a stage live inside that stage's item; the item folds when the stage ends */
+  function pushLine(t, text) {
+    text = String(text || '').trim(); if (!text || text === t.lastLine) return; t.lastLine = text;
+    if (!t.cur) stageOpen(t, 'start');
+    var it = t.items[t.cur], p = document.createElement('p');
+    var follow = it.sl.scrollHeight - it.sl.scrollTop - it.sl.clientHeight < 40;      // measured BEFORE the new line is added; the user scrolled up → leave it there
+    p.textContent = text; it.sl.appendChild(p);
+    cls(it.el, 'has', true);
+    if (follow) [0, 90, 260, 520].forEach(function (d) { setTimeout(function () { it.sl.scrollTop = it.sl.scrollHeight; }, d); });   // again while the new line settles — the newest text is always in view, the old scrolls up
+  }
+
+  /* timeline */
+  function stageClose(t) {
+    var c = t.cur && t.items[t.cur]; if (!c) return;
+    if (c.since) { c.ms += Date.now() - c.since; c.since = null; }
+    cls(c.el, 'active', false); cls(c.el, 'done', true); cls(c.el, 'closed', true); c.tm.textContent = fmt(c.ms); t.cur = null;
+  }
+  function stageOpen(t, name) {
+    if (t.cur === name) return; stageClose(t);
+    var meta = STAGES[name] || (name === 'start' ? ['Starting', 'wait', 'Start'] : [name, 'plan', name.charAt(0).toUpperCase() + name.slice(1)]);
+    var it = t.items[name];
+    if (!it) {
+      var el = document.createElement('div'); el.className = 'tli active new'; setTimeout(function () { el.classList.remove('new'); }, 400);
+      el.innerHTML = '<div class="tlr"><span class="tn">' + (ICONS[meta[1]] || ICONS.plan) + '</span><span class="tt">' + esc(meta[2]) + '</span><span class="tm"></span><button class="tlc" title="Show / hide what Claude wrote here" aria-label="Show or hide what Claude wrote here">' + CHEV + '</button></div><div class="tlb"><div><div class="sl"></div></div></div>';
+      t.tl.appendChild(el); it = t.items[name] = { el: el, tm: el.querySelector('.tm'), sl: el.querySelector('.sl'), ms: 0, since: null };
+      el.querySelector('.tlc').addEventListener('click', function () { holdView(); el.classList.toggle('closed'); });
+    } else { cls(it.el, 'active', true); cls(it.el, 'done', false); cls(it.el, 'closed', false); }
+    it.since = t.since ? Date.now() : null; t.cur = name;
+  }
+  function elapsed(t) { return t.accum + (t.since ? Date.now() - t.since : 0); }
+  function pause(t) {
+    if (!t || !t.since) return; t.accum += Date.now() - t.since; t.since = null;
+    var c = t.cur && t.items[t.cur]; if (c && c.since) { c.ms += Date.now() - c.since; c.since = null; }
+  }
+  function resume(t) { if (!t || t.since || t.finished) return; t.since = Date.now(); var c = t.cur && t.items[t.cur]; if (c && !c.since) c.since = Date.now(); }
+  setInterval(function () {
+    if (!T || T.finished) return;
+    T.time.textContent = '• ' + (T.since ? '' : 'waiting ') + fmt(elapsed(T));
+    var c = T.cur && T.items[T.cur]; if (c) c.tm.textContent = fmt(c.ms + (c.since ? Date.now() - c.since : 0));
+  }, 1000);
+
+  function finish(t, label, icon) {
+    var total = elapsed(t); pause(t); stageClose(t); t.finished = true;
+    cls(t.el, 'running', false); cls(t.el, 'finished', true); t.time.textContent = '';
+    phase(t, label.replace('%T', fmt(total)), icon, false);
+    if (Object.keys(t.items).length && !t.keepOpen) setTimeout(function () { cls(t.el, 'closed', true); }, 900);
+    setRunning(false); return total;
+  }
+
+  /* ───────── composer ───────── */
+  function setRunning(v) { S.running = v; if (!v) { S.asking = null; S.hasPluginJob = false; } upd(); }
+  function grow() { var p = $('prompt'); p.style.height = '40px'; var need = p.value ? p.scrollHeight : 40; p.style.height = Math.min(160, Math.max(40, need)) + 'px'; }
+  var hintT = null;
+  function setHint(txt) {   /* the hint text fades out, changes, fades in — no hard cut when the tab or the state changes */
+    var p = $('prompt'); if (p.placeholder === txt) return; clearTimeout(hintT);
+    p.classList.add('phx'); hintT = setTimeout(function () { p.placeholder = txt; p.classList.remove('phx'); }, 120);
+  }
+  function upd() {
+    var has = $('prompt').value.trim().length > 0 || !!S.img, g = $('go');
+    cls($('app'), 'running', S.running); cls($('app'), 'asking', !!S.asking);
+    g.disabled = S.running && !S.asking ? false : (!S.connected || !has);
+    g.title = S.running && !S.asking ? 'Stop (Esc)' : 'Send (Enter)'; g.setAttribute('aria-label', S.running && !S.asking ? 'Stop' : 'Send');
+    setHint(S.asking ? 'Reply to Claude…' : S.running ? 'Claude is working…' : S.buildMode === 'make' ? 'Paste a Figma Make link, or describe a screen' : S.buildMode === 'agent' ? 'Work with Figma Agent' : 'Ask anything');
+    grow();
+  }
+  $('prompt').addEventListener('input', upd);
+  $('prompt').addEventListener('keydown', function (e) {
+    if (e.key === 'ArrowUp' && !$('prompt').value && S.recent[0]) { $('prompt').value = S.recent[0]; upd(); e.preventDefault(); return; }
+    if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); if (!S.running || S.asking) submit(); else toast('Claude is working — press Stop first', false); }
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') { if ($('app').classList.contains('hist')) { toggleHist(false); return; } if (S.running) stopNow(); }
+  });
+  function stopNow() {
+    if (S.makeTurn) { toast('A Make conversion cannot be stopped once it started', false); return; }
+    if (!S.agentTurn) { postMsg({ type:'cancel' }); return; }
+    if (S.agentSending) { S.stopAfterSend = true; phase(S.agentTurn, 'Stopping…', 'goo', true); return; }   // the Agent has not started yet: the Stop is pressed the moment it does
+    postMsg({ type:'agent-stop' });
+  }
+  $('go').addEventListener('click', function () { if (S.running && !S.asking) stopNow(); else submit(); });
+
+  function readImg(f) {
+    var r = new FileReader();
+    r.onload = function (ev) { var u = ev.target.result, i = u.indexOf(','); S.img = i >= 0 ? u.slice(i + 1) : u; S.mime = f.type || 'image/png'; S.imgUrl = u; $('thumbImg').src = u; $('thumbName').textContent = f.name || 'pasted image'; cls($('thumb'), 'on', true); upd(); };
+    r.readAsDataURL(f);
+  }
+  $('file').addEventListener('change', function () { if (this.files[0]) readImg(this.files[0]); this.value = ''; });
+  $('thumbX').addEventListener('click', function () { S.img = null; S.mime = null; S.imgUrl = null; cls($('thumb'), 'on', false); upd(); });
+  var comp = $('comp');
+  comp.addEventListener('dragover', function (e) { e.preventDefault(); comp.classList.add('over'); });
+  comp.addEventListener('dragleave', function () { comp.classList.remove('over'); });
+  comp.addEventListener('drop', function (e) { e.preventDefault(); comp.classList.remove('over'); var f = e.dataTransfer && e.dataTransfer.files[0]; if (f && f.type.indexOf('image') === 0) readImg(f); });
+  document.addEventListener('paste', function (e) { var it = (e.clipboardData && e.clipboardData.items) || []; for (var i = 0; i < it.length; i++) if (it[i].type.indexOf('image') === 0) { readImg(it[i].getAsFile()); e.preventDefault(); toast('Image pasted ✓'); return; } });
+
+  /* Tabs sliding (transitions.dev): the pill slides between Claude · Agent · Make */
+  var bar = $('modeTabs'), pill = bar.querySelector('.t-tabs-pill'), tabs = [].slice.call(bar.querySelectorAll('.t-tab'));
+  function moveTo(tab, animate) {
+    if (!animate) { var prev = pill.style.transition; pill.style.transition = 'none'; pill.style.transform = 'translateX(' + tab.offsetLeft + 'px)'; pill.style.width = tab.offsetWidth + 'px'; void pill.offsetWidth; pill.style.transition = prev; }
+    else { pill.style.transform = 'translateX(' + tab.offsetLeft + 'px)'; pill.style.width = tab.offsetWidth + 'px'; }
+  }
+  var MODE_HINT = { claude:'Claude builds in Figma', agent:'Figma Agent builds: Claude plans into this file, you type “go” in the Agent', make:'Figma Make: paste a Make link to rebuild it in SAP, or describe a screen to get a Make prompt' };
+  var drafts = {};
+  function swapDraft(from, to) {
+    drafts[from] = { text:$('prompt').value, img:S.img, mime:S.mime, url:S.imgUrl, name:$('thumbName').textContent };
+    var d = drafts[to] || { text:'', img:null, mime:null, url:null, name:'' };
+    var p = $('prompt'), dock0 = dockEl.offsetHeight, h0 = p.offsetHeight;
+    p.classList.add('swap');                                            // the old text fades out…
+    setTimeout(function () {
+      p.value = d.text; S.img = d.img; S.mime = d.mime; S.imgUrl = d.url;
+      $('thumbImg').src = d.url || ''; $('thumbName').textContent = d.name || ''; cls($('thumb'), 'on', !!d.img);
+      grow(); var h1 = p.offsetHeight, dock1 = dockEl.offsetHeight; p.style.height = h0 + 'px';
+      p.classList.remove('swap');                                       // …the new one fades in while field and window glide to the new height
+      morph(p, h0, h1, dock0, dock1); upd();
+    }, 90);
+  }
+  /* one eased motion for the field AND the window (≈260 ms) — the window never jumps when the tabs hold texts of different length */
+  var morphing = false;
+  function morph(p, h0, h1, dock0, dock1) {
+    if (h0 === h1 && dock0 === dock1) { p.style.height = h1 + 'px'; return; }
+    morphing = true;
+    var winFrom = window.innerHeight, empty = !tc.querySelector('.turn,.user');
+    var winTo = S.manual ? winFrom : Math.max(MIN_H, Math.min(MAX_H, Math.round(hdrEl.offsetHeight + (empty ? tc.offsetHeight : thread.offsetHeight) + dock1)));
+    if (!empty && !S.manual) winTo = winFrom + (dock1 - dock0) > MAX_H ? MAX_H : Math.max(MIN_H, winFrom + (dock1 - dock0));
+    var t0 = performance.now(), dur = 260, w = window.innerWidth || DEFAULT_W;
+    (function step(now) {
+      var k = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - k, 3);
+      p.style.height = Math.round(h0 + (h1 - h0) * e) + 'px';
+      if (winTo !== winFrom) postMsg({ type:'resize', width:w, height:Math.round(winFrom + (winTo - winFrom) * e), manual:true });
+      if (k < 1) requestAnimationFrame(step); else { morphing = false; lastWanted = winTo; }
+    })(t0);
+  }
+  function setMode(mode, animate, quiet) {
+    var tab = tabs.filter(function (t) { return t.dataset.mode === mode; })[0] || tabs[0]; mode = tab.dataset.mode;
+    tabs.forEach(function (t) { t.setAttribute('aria-selected', t === tab ? 'true' : 'false'); t.tabIndex = t === tab ? 0 : -1; });
+    if (mode !== S.buildMode) { var from = S.buildMode; if (S.running && !S.runMode) S.runMode = from; parkTab(from); unparkTab(mode); swapDraft(from, mode); }   // each tab keeps its own text and image: leave one, come back, and it is exactly as you left it
+    moveTo(tab, animate); S.buildMode = mode; save('buildMode', mode); upd();
+  }
+  tabs.forEach(function (tab) { tab.addEventListener('click', function () { setMode(tab.dataset.mode, true); }); });
+  bar.addEventListener('keydown', function (e) {                       // arrows, Home and End move between the tabs and switch to the one reached
+    var i = tabs.indexOf(document.activeElement); if (i < 0) return;
+    var n = e.key === 'ArrowRight' ? (i + 1) % tabs.length : e.key === 'ArrowLeft' ? (i + tabs.length - 1) % tabs.length : e.key === 'Home' ? 0 : e.key === 'End' ? tabs.length - 1 : -1;
+    if (n < 0) return; e.preventDefault(); setMode(tabs[n].dataset.mode, true); tabs[n].focus();
+  });
+  requestAnimationFrame(function () { moveTo(tabs[0], false); });
+  window.addEventListener('resize', function () { moveTo(tabs.filter(function (t) { return t.getAttribute('aria-selected') === 'true'; })[0] || tabs[0], false); });
+
+  /* ───────── send / answer ───────── */
+  function submit() {
+    var text = $('prompt').value.trim();
+    if (S.asking) {                               // the composer answers Claude's question
+      if (!text) return;
+      postMsg({ type:'answer', jobId:S.asking, text:text }); addUser(text, null, T ? T.msgs : null);   // the reply sits inside the turn, under the question
+      $('prompt').value = ''; S.asking = null; resume(T);
+      if (T) phase(T, 'Working on it', 'goo', true);
+      upd(); return;
+    }
+    var isMakeLink = /^https:\/\/(?:[a-z0-9-]+\.)*figma\.site\b|^https:\/\/(?:www\.)?figma\.com\/make\//i.test(text);
+    if (text && isMakeLink && !S.img) { if (S.buildMode !== 'make') setMode('make', true); makeLinkAsk(text); return; }   // a Make link in ANY tab: the plugin's own Make engine (the same as the Make → Figma plugin), never a Claude job (2026-10-05)   // a Make link in the Make tab: ask first — SAP screens or keep as reference
+    if (S.buildMode === 'make' && text && !isMakeLink) { makeHandoff(text); return; }
+    if (S.buildMode === 'agent' && text && !isMakeLink) { agentSend(text); return; }
+    if (!S.connected || (!text && !S.img)) return;
+    addUser(text, S.imgUrl);
+    if (text) { S.recent = [text].concat(S.recent.filter(function (x) { return x !== text; })).slice(0, 8); save('recent', S.recent); }
+    var img = S.img, mime = S.mime;
+    $('prompt').value = ''; S.img = null; S.mime = null; S.imgUrl = null; cls($('thumb'), 'on', false);
+    var job = { text:isMakeLink ? 'Figma Make link — rebuild it as an SAP screen in this file: ' + text : text, shown:text, mode:S.buildMode === 'agent' ? 'agent' : 'claude', imageBase64:img, imageMime:mime, imageUrl:null };
+    S.lastReq = job; startJob(job);
+  }
+
+  /* Agent tab: no work here — the bridge opens a NEW Figma Agent chat and types the request; the Figma Agent builds with its own resources */
+  function agentSend(text) {
+    if (!S.connected) return;
+    addUser(text);
+    S.recent = [text].concat(S.recent.filter(function (x) { return x !== text; })).slice(0, 8); save('recent', S.recent);
+    $('prompt').value = ''; grow();
+    S.lastReq = { text:text, shown:text, mode:'agent' };
+    var t = newTurn(); t.el.classList.add('agent'); S.running = true; S.agentTurn = t; S.agentSending = true; S.stopAfterSend = false; upd();
+    phase(t, 'Opening Figma Agent', 'goo', true);   // only the label + the timer — no step list for a hand-off
+    postMsg({ type:'agent-send', text:text, threadId:S.agentThread || null });   // same chat until "New chat" (pencil icon); the Agent asks "build or adjust?" itself (skill rule 00)
+  }
+  function startJob(job) {
+    newTurn(); pushLine(T, 'Starting Claude…'); S.running = true; S.hasPluginJob = true; upd();
+    postMsg({ type:'go', text:job.text, mode:job.mode, imageBase64:job.imageBase64, imageMime:job.imageMime, imageNodeId:null, contextJob: (!job.imageBase64 && S.noteJobs) ? (Object.keys(S.noteJobs)[0] || '') : '' });   // a reply after a screen job is ABOUT that job: Claude gets its plan, log and frame
+  }
+  /* a stopped task keeps its request: Resume runs it again, Edit puts it back in the field */
+  function closeBtn(c) { var x = document.createElement('button'); x.className = 'cx'; x.title = 'Dismiss'; x.setAttribute('aria-label', 'Dismiss'); x.textContent = '×'; x.addEventListener('click', function () { c.remove(); }); c.appendChild(x); return c; }
+  function stoppedCard(t) {
+    var job = S.lastReq; if (!job) return;
+    var c = closeBtn(document.createElement('div')); c.className = 'rcard';
+    var q = document.createElement('div'); q.className = 'meta'; q.textContent = 'Your request is saved: “' + trunc(job.shown || job.text, 90) + '”'; c.appendChild(q);
+    var row = document.createElement('div'); row.className = 'row';
+    var rs = document.createElement('button'); rs.className = 'btn pri play'; rs.innerHTML = '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M5 3.2v9.6a.6.6 0 0 0 .9.5l7.6-4.8a.6.6 0 0 0 0-1L5.9 2.7a.6.6 0 0 0-.9.5z"/></svg>Resume';
+    rs.addEventListener('click', function () { if (S.running) return; c.remove(); if (job.mode === 'agent') agentSend(job.text); else startJob(job); });
+    var ed = document.createElement('button'); ed.className = 'btn'; ed.textContent = 'Edit request';
+    ed.addEventListener('click', function () { $('prompt').value = job.shown || job.text; upd(); $('prompt').focus(); });
+    row.appendChild(rs); row.appendChild(ed); c.appendChild(row); t.msgs.appendChild(c);
+  }
+  function stopped(t) {
+    if (!t || t.finished) { setRunning(false); return; }
+    // a second "Stopped" right under a "Stopped" says nothing new (a late tree-job line opened a turn, then the stop arrived again): keep ONE
+    var prev = t.el.previousElementSibling;
+    if (prev && prev.classList && prev.classList.contains('wasStopped')) { t.finished = true; if (T === t) T = null; t.el.remove(); setRunning(false); return; }
+    finish(t, 'Stopped', 'stopped'); t.el.classList.add('wasStopped'); say(t, 'Stopped. Nothing else will run.'); stoppedCard(t);
+  }
+
+  /* ───────── connection ───────── */
+  /* info popover: what this is, how it connects, restart */
+  var pop = $('infoPop'), infoBtn = $('infoBtn'), RESTART_CMD = 'launchctl kickstart -k gui/$(id -u)/com.sap.v4-bridge';
+  function popOpen(v) {
+    pop.hidden = !v; infoBtn.setAttribute('aria-expanded', v ? 'true' : 'false'); infoBtn.title = v ? '' : 'About SAP Bridge'; lastWanted = 0; fitSoon();
+  }
+  infoBtn.addEventListener('click', function (e) { e.stopPropagation(); popOpen(pop.hidden); });
+  document.addEventListener('click', function (e) { if (!pop.hidden && !pop.contains(e.target) && e.target !== infoBtn) popOpen(false); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !pop.hidden) { popOpen(false); e.stopPropagation(); } }, true);
+  $('ipRestart').addEventListener('click', function () { var b = $('ipRestart'); b.disabled = true; b.textContent = 'Restarting…'; S.restarting = true; S.restartHold = Date.now() + 2800; S.restartUntil = Date.now() + 25000; showRestarting(); postMsg({ type: 'restart-bridge' }); });
+  $('ipCopy').addEventListener('click', function () { var ok = copyNow(RESTART_CMD); toast(ok ? 'Copied ✓ — paste it in Terminal' : 'Copy blocked', ok); });
+  /* restart: "Restarting…" with a yellow dot until the bridge answers again (the old one still answers for ~2 s, so "connected" is ignored at first) */
+  function showRestarting() {
+    $('dot').className = 'dot restarting'; $('statusText').textContent = 'Restarting…'; S.connected = false;
+    var rb = $('ipRestart'); rb.disabled = true; rb.textContent = 'Restarting…';                 // inactive until the bridge answers again
+    var ps = $('ipState'); ps.textContent = 'Restarting…'; ps.className = 'ip-st'; $('ipPort').textContent = 'Restarting the server and the Make bridge…'; upd();
+  }
+  function setStatus(v, info) {
+    if (S.restarting) {
+      if (v === 'connected' && Date.now() > S.restartHold) S.restarting = false;              // the new bridge is up
+      else if (Date.now() < S.restartUntil) { showRestarting(); return; }                    // still restarting: keep the yellow state
+      else S.restarting = false;                                                              // gave up after 25 s: show what is real
+    }
+    if (!S.restarting) { var rb2 = $('ipRestart'); if (rb2.disabled) { rb2.disabled = false; rb2.textContent = 'Restart server'; } }
+    $('dot').className = 'dot ' + v; var t = $('statusText');
+    if (v === 'looking') { t.textContent = 'Looking for Claude'; S.connected = false; }
+    else if (v === 'connected') { t.textContent = 'Connected Claude' + (info && info.busy ? ' · busy' : ''); S.connected = true; }
+    else if (v === 'wrong-bridge') { t.textContent = 'Port 41778 in use'; S.connected = false; }
+    else if (v === 'pair-locked') { t.textContent = 'Paired with another Figma'; t.title = 'Ask Claude: node build/mailbox.js unpair'; S.connected = false; }
+    else if (v === 'paired') { t.textContent = 'Paired ✓'; S.connected = true; }
+    else t.textContent = v;
+    var ps = $('ipState'); ps.textContent = t.textContent; ps.className = 'ip-st' + (v === 'connected' || v === 'paired' ? ' ok' : '');
+    $('ipPort').textContent = (v === 'connected' || v === 'paired') && info && info.port ? 'Port ' + info.port + (info.repo ? ' · ' + info.repo : '') : v === 'looking' ? 'Looking on ports 41778–41788…' : t.textContent;
+    upd();
+  }
+
+  /* ───────── result card (no scores) ───────── */
+  var logFull = {}, pendingCopy = {}, prefetched = {};
+  function copyNow(text) { var ta = document.createElement('textarea'); ta.value = text; ta.style.cssText = 'position:fixed;left:0;top:0;width:1px;height:1px;opacity:0'; document.body.appendChild(ta); ta.focus(); ta.select(); var ok = false; try { ok = document.execCommand('copy'); } catch (e) {} document.body.removeChild(ta); return ok; }
+  function logBtn(jobId) {
+    return iconBtn(ICON_LOG, 'Copy the job log', function () {
+      if (!jobId) { toast('No log for this item', false); return; }
+      if (logFull[jobId]) { var ok = copyNow(logFull[jobId]); toast(ok ? 'Log copied ✓' : 'Copy blocked — try again', ok); return; }
+      pendingCopy[jobId] = true; toast('Loading the log…'); postMsg({ type:'open-log', jobId:jobId, copy:false });
+    });
+  }
+  function prefetch(items) { (items || []).slice(0, 4).forEach(function (h, i) { if (h.jobId && !logFull[h.jobId] && !prefetched[h.jobId]) { prefetched[h.jobId] = 1; setTimeout(function () { postMsg({ type:'open-log', jobId:h.jobId, copy:false }); }, 300 * i); } }); }
+  function resultCard(d, parent) {
+    var warn = d.pass === false, c = closeBtn(document.createElement('div')); c.className = 'rcard' + (warn ? ' warn' : '');
+    var top = document.createElement('div'); top.className = 'rtop';
+    var nm = document.createElement('span'); nm.className = 'rname'; nm.textContent = d.name || 'Screen';
+    var st = document.createElement('span'); st.className = 'rstate'; st.textContent = warn ? 'Needs a look' : 'In canvas';
+    top.appendChild(nm); top.appendChild(st); c.appendChild(top);
+    var m = document.createElement('div'); m.className = 'meta'; m.textContent = metaLine(d); c.appendChild(m);
+    if (d.blocks && d.blocks.length) { var n = document.createElement('div'); n.className = 'note'; n.textContent = d.blocks.join(' · '); c.appendChild(n); }
+    var row = document.createElement('div'); row.className = 'row';
+    var show = document.createElement('button'); show.className = 'btn pri'; show.textContent = 'Show in canvas';
+    show.addEventListener('click', function () { if (d.nodeId) postMsg({ type:'show-node', nodeId:d.nodeId }); else toast('No frame saved for this one', false); });
+    var cp = document.createElement('button'); cp.className = 'btn'; cp.textContent = 'Copy node id';
+    cp.addEventListener('click', function () { if (!d.nodeId) return; var ok = copyNow('node-id=' + d.nodeId.replace(':', '-')); toast(ok ? 'Copied ✓ (add it after your file URL ?)' : 'Copy blocked — try again', ok); });
+    var again = document.createElement('button'); again.className = 'btn'; again.textContent = 'Run again';
+    again.addEventListener('click', function () { if (d.request) { $('prompt').value = d.request; upd(); $('prompt').focus(); } else toast('No saved prompt for this one', false); });
+    row.appendChild(show); row.appendChild(cp); row.appendChild(again); row.appendChild(logBtn(d.jobId)); c.appendChild(row);
+    parent.appendChild(c); return c;
+  }
+
+  /* Figma Agent handoff: a plugin cannot open the Agent chat — the user pastes one line */
+  function handoffCard(t, line) {
+    say(t, line === 'build plan' ? 'The plan is saved in this file. Open the Figma Agent and type one word: go' : 'The fix list is saved in this file. Open the Figma Agent and type: go');
+    var c = document.createElement('div'); c.className = 'rcard';
+    c.innerHTML = '<div class="meta">Figma gives plugins no way to open the Agent chat, so this one step is yours:<br>1. Click ✦ in Figma\'s toolbar.<br>2. Type <b>go</b> and press Enter. The Agent reads your request and the plan from this file, builds, and the result comes back here.</div>';
+    var row = document.createElement('div'); row.className = 'row';
+    var code = document.createElement('code'); code.textContent = 'go'; code.style.cssText = 'font:12px/1 ui-monospace,Menlo,monospace;background:var(--bg2);padding:5px 8px;border-radius:7px';
+    var cp = document.createElement('button'); cp.className = 'btn pri'; cp.textContent = 'Copy “go”';
+    cp.addEventListener('click', function () { var ok = copyNow('go'); toast(ok ? 'Copied ✓ — paste it in the Figma Agent' : 'Copy blocked — select the text and press ⌘C', ok); });
+    row.appendChild(code); row.appendChild(cp); c.appendChild(row); t.msgs.appendChild(c);
+    var ok = copyNow('go'); if (ok) toast('“go” copied — paste it in the Figma Agent');
+  }
+
+  /* Make handoff: a plugin cannot open Figma Make — we write a Make-ready prompt and put it on the clipboard */
+  function makeLinkAsk(url) {
+    if (!S.connected) return;
+    addUser(url); $('prompt').value = ''; grow(); upd();
+    var t = newTurn(); t.el.classList.add('agent'); pause(t); phase(t, 'Waiting for you', 'wait', false);
+    say(t, 'What should I do with this Figma Make link?');
+    var c = document.createElement('div'); c.className = 'ocard'; var row = document.createElement('div'); row.className = 'row';
+    var go = document.createElement('button'); go.className = 'openFrame'; go.innerHTML = 'Convert to SAP screens'+' <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h7v7M13 3 4 12"/></svg>';
+    go.addEventListener('click', function () {   // the full Make → SAP pipeline (extension + Claude build), screens land in this file
+      c.remove(); finish(t, 'Link accepted', 'done');
+      var t2 = newTurn(); t2.el.classList.add('agent'); S.running = true; S.makeTurn = t2; S.makeFocused = false; S.makeUrl = url; upd();
+      phase(t2, 'Reading the Make app', 'goo', true);
+      say(t2, 'The Chrome extension opens the app, clicks through its popups, tabs and screens and reads them. Keep Chrome open and in front (about 1–2 minutes).');
+      postMsg({ type:'make-link', url:url });
+    });
+    var ref = document.createElement('button'); ref.className = 'openFrame'; ref.textContent = 'Keep as reference link';
+    ref.addEventListener('click', function () {
+      c.remove(); finish(t, 'Saved as reference', 'done'); copyNow(url);
+      say(t, 'Nothing is built. The link is copied — paste it into any request as a reference.');
+    });
+    row.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap'; row.appendChild(go); row.appendChild(ref); c.appendChild(row); t.msgs.appendChild(c);
+  }
+  function makeHandoff(req) {
+    addUser(req); $('prompt').value = ''; upd();
+    if (req) { S.recent = [req].concat(S.recent.filter(function (x) { return x !== req; })).slice(0, 8); save('recent', S.recent); }
+    var prompt = 'Build this as a real SAP Fiori app (SAP Horizon theme, light, desktop 1280 wide, Compact density) — it must look and behave like a genuine SAP S/4HANA screen.\n' +
+      'Use SAP Fiori / UI5 Web Components patterns only: Shell Bar, Side Navigation, Dynamic Page header, Filter Bar, Panel, Responsive Table, List, Card, Object Page sections, Buttons (one Emphasized action per area), Link, Input, Select, Search Field, Date Picker, Check Box, Radio Button, Switch, Range Slider, Segmented Button, Icon Tab Bar, Object Status, Message Strip, SAP icons (ui5 icon font). No custom or brand styling.\n' +
+      'Colours from SAP Fiori Horizon tokens (text #1d2d3e, link #0064d9, primary #0070f2, border #bcc3ca, background #f5f6f7). Font 72/Inter, 14px body.\n\n' +
+      'Screen: ' + req;
+    var t = newTurn(); S.running = true; upd(); S.makePrompt = prompt;
+    phase(t, 'Opening Figma Make', 'goo', true); pushLine(t, 'Opening Figma Make with your request…');
+    if (S.connected) { postMsg({ type:'make-send', text:prompt }); return; }   // the bridge types it into Make; fallback below on failure
+    makeFallback(t, prompt);
+  }
+  /* fallback when the linked Chrome is not up: copy the prompt and open Make — the user pastes it */
+  function makeFallback(t, prompt) {
+    finish(t, 'Make prompt ready', 'done');
+    say(t, 'Opening Figma Make. The prompt is on your clipboard — paste it there and press Enter.');
+    var c = document.createElement('div'); c.className = 'rcard';
+    c.innerHTML = '<div class="meta">In Make: paste (⌘V), press Enter. When it is done, publish it and paste the link back here — I rebuild it with real SAP components.</div>';
+    var pre = document.createElement('div'); pre.className = 'sl'; pre.style.cssText = 'max-height:96px;font-size:11px'; pre.textContent = prompt; c.appendChild(pre);
+    var row = document.createElement('div'); row.className = 'row';
+    var cp = document.createElement('button'); cp.className = 'btn pri'; cp.textContent = 'Copy prompt';
+    cp.addEventListener('click', function () { var ok = copyNow(prompt); toast(ok ? 'Prompt copied ✓ — paste it in Figma Make' : 'Copy blocked — select the text and press ⌘C', ok); });
+    var op = document.createElement('button'); op.className = 'btn'; op.textContent = 'Open Figma Make';
+    op.addEventListener('click', function () { postMsg({ type:'open-url', url:'https://www.figma.com/make' }); });
+    row.appendChild(cp); row.appendChild(op); c.appendChild(row); t.msgs.appendChild(c);
+    if (copyNow(prompt)) toast('Make prompt copied — paste it in Figma Make');
+    postMsg({ type:'open-url', url:'https://www.figma.com/make' });
+  }
+
+
+
+  /* ───────── history sheet: 4 cards, the rest scrolls ───────── */
+  function toggleHist(v) { var o = v === undefined ? !$('app').classList.contains('hist') : v; cls($('app'), 'hist', o); cls($('histBtn'), 'on', o); lastWanted = 0; if (o) capHist(); fitSoon(); }
+  $('histBtn').addEventListener('click', function (e) { e.stopPropagation(); toggleHist(); });
+  var histSig = '';
+  function visKids(box) { return [].filter.call(box.children, function (k) { return !k.hidden && !k.classList.contains('hnone'); }); }
+  function filterHist() {
+    var q = $('hSearch').value.trim().toLowerCase(), box = $('hlist'), n = 0;
+    [].forEach.call(box.querySelectorAll('.hi'), function (r) { var hit = !q || (r.dataset.q || '').indexOf(q) > -1; r.hidden = !hit; if (hit) n++; });
+    var none = box.querySelector('.hnone'); if (none) none.hidden = !(q && !n);
+    box.scrollTop = 0; capHist(); lastWanted = 0; fitSoon();
+  }
+  $('hSearch').addEventListener('input', filterHist);
+  var clearT = null;
+  function resetClear() { var b = $('hClear'); clearTimeout(clearT); b.classList.remove('sure'); b.textContent = 'Clear history'; }
+  $('hClear').addEventListener('click', function () {                       // two steps: the first click asks, the second clears
+    var b = $('hClear');
+    if (!b.classList.contains('sure')) { b.classList.add('sure'); b.textContent = 'Sure? Clear all'; clearTimeout(clearT); clearT = setTimeout(resetClear, 4000); return; }
+    resetClear(); S.hist = []; histSig = ''; postMsg({ type:'history-clear' }); renderHist();
+  });
+  function renderHist() {
+    var box = $('hlist');
+    var sig = JSON.stringify(S.hist.map(function (h) { return [h.jobId, h.nodeId, h.name, h.at, h.request, h.pass]; }));
+    if (sig === histSig && box.children.length) return;           // nothing new: keep the list (and the scroll position) as it is
+    var keep = box.scrollTop, again = !!histSig; histSig = sig; box.innerHTML = '';
+    $('hSearch').hidden = !S.hist.length; $('hClear').hidden = !S.hist.length; resetClear();
+    if (!S.hist.length) { box.innerHTML = '<div class="empty">Nothing built in this file yet</div>'; return; }
+    S.hist.forEach(function (h) {
+      var row = document.createElement('div'); row.className = 'hi' + (h.pass === false ? ' warn' : ''); row.title = 'Show in canvas';
+      var t = document.createElement('div'); t.className = 't';
+      var nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = h.name || 'Screen'; t.appendChild(nm);
+      t.appendChild(iconBtn(ICON_LOC, 'Find on canvas', function () { if (h.nodeId) postMsg({ type:'show-node', nodeId:h.nodeId }); else toast('No frame saved for this one', false); }));
+      t.appendChild(logBtn(h.jobId));
+      t.appendChild(iconBtn(ICON_AGAIN, 'Reuse this prompt', function () { if (h.request) { $('prompt').value = h.request; upd(); toggleHist(false); $('prompt').focus(); } else toast('No saved prompt', false); }));
+      var m = document.createElement('div'); m.className = 'meta'; m.textContent = metaLine(h);
+      row.appendChild(t); row.appendChild(m);
+      if (h.request) { var q = document.createElement('div'); q.className = 'meta q'; q.textContent = '“' + h.request + '”'; row.appendChild(q); }
+      var go = function () { if (h.nodeId) postMsg({ type:'show-node', nodeId:h.nodeId }); toggleHist(false); };
+      row.addEventListener('click', go);
+      row.tabIndex = 0; row.setAttribute('role', 'button'); row.setAttribute('aria-label', (h.name || 'Screen') + ' · show in canvas');
+      row.addEventListener('keydown', function (e) { if (e.target === row && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); go(); } });
+      row.dataset.q = row.textContent.toLowerCase();
+      box.appendChild(row);
+    });
+    var none = document.createElement('div'); none.className = 'empty hnone'; none.hidden = true; none.textContent = 'Nothing found'; box.appendChild(none);
+    if ($('hSearch').value.trim()) filterHist();
+    if (again) { box.classList.add('still'); box.scrollTop = keep; }   // a refresh: no entrance animation, same scroll position
+    capHist();
+  }
+  function histHeight() {                                   // header + up to 4 cards + gaps + padding
+    var kids = visKids($('hlist')), hh = 0, n = Math.min(4, kids.length), so = $('hSearch'), sh = so.hidden ? 0 : so.offsetHeight + 8, nn = $('hlist').querySelector('.hnone');
+    for (var i = 0; i < n; i++) hh += kids[i].offsetHeight;
+    return $('hview').querySelector('.hhead').offsetHeight + 8 + sh + hh + Math.max(0, n - 1) * 6 + 30 + (kids.length ? 0 : 40);
+  }
+  function capHist() {   // never clear the height first: that made the list full-height for a moment and the scroll position jumped (2026-10-05)
+    var box = $('hlist'), kids = visKids(box), want = '';
+    if (kids.length > 4 && kids[0].offsetHeight) { var hh = 0; for (var i = 0; i < 4; i++) hh += kids[i].offsetHeight; want = (hh + 3 * 6) + 'px'; }
+    if (box.style.maxHeight !== want) { var st = box.scrollTop; box.style.maxHeight = want; box.scrollTop = st; }
+  }
+  $('newBtn').addEventListener('click', function () {
+    if (S.running) { toast('Stop the build first', false); return; }
+    drafts = {};
+    var hadThread = !!S.agentThread;
+    S.agentTurn = null;
+    S.agentThread = null;   // the next Agent-tab request opens a NEW Figma Agent chat
+    toast(hadThread ? 'New chat — your next request opens a new Figma Agent chat' : 'New chat started');
+    toggleHist(false); tc.innerHTML = ''; T = null; tc.appendChild(heroEl); heroReset(S.buildMode); $('prompt').value = ''; S.img = null; S.mime = null; S.imgUrl = null; cls($('thumb'), 'on', false); upd(); lastWanted = 0; setTimeout(fitSoon, 60);
+  });
+
+  /* ───────── messages from code.js ───────── */
+  function handleMsg(ev) {
+    var m = ev.data && ev.data.pluginMessage; if (!m) return;
+    switch (m.type) {
+      case 'status': setStatus(m.value, m); break;
+      case 'bridge-restart': if (!m.ok) { S.restarting = false; setStatus('looking'); } if (!m.ok) toast('The server did not answer. Paste the Terminal command (Copy Terminal command).', false); break;
+      case 'toast': toast(m.text, m.ok !== false); break;
+      case 'job-started': break;
+      case 'make-status': {
+        var tm2 = S.makeTurn || ensureTurn(); S.makeTurn = tm2;
+        if (m.ok === true) {
+          S.makeTurn = null; finish(tm2, 'Worked for %T', 'done');
+          say(tm2, 'Done. ' + (m.made || 0) + ' layers built. The main screen and every popup / screen the app showed are in the canvas, side by side.');
+          var mc2 = document.createElement('div'); mc2.className = 'ocard'; var mr2 = document.createElement('div'); mr2.className = 'row';
+          if (m.nodeId) { var b1 = document.createElement('button'); b1.className = 'btn pri'; b1.textContent = 'Show in canvas'; b1.addEventListener('click', function () { postMsg({ type:'show-node', nodeId:m.nodeId }); }); mr2.appendChild(b1); }
+          var wl = (m.warn || []);
+          if (wl.length) { var b2 = document.createElement('button'); b2.className = 'btn'; b2.textContent = 'Copy ' + wl.length + ' warnings'; b2.addEventListener('click', function () { var ok = copyNow(wl.join('\n')); toast(ok ? 'Warnings copied ✓' : 'Copy blocked — try again', ok); }); mr2.appendChild(b2); }
+          if (mr2.children.length) { mc2.appendChild(mr2); tm2.msgs.appendChild(mc2); }
+        } else if (m.ok === false) {
+          S.makeTurn = null; finish(tm2, 'Failed', 'error'); say(tm2, m.text || 'The Make conversion failed.', true);
+          if (m.down) {   // the Make bridge is off: one button starts it and goes on with the same link
+            var db = document.createElement('button'); db.className = 'openFrame'; db.textContent = 'Start Make bridge';
+            db.addEventListener('click', function () {
+              db.disabled = true; db.textContent = 'Starting…';
+              var t3 = newTurn(); t3.el.classList.add('agent'); S.running = true; S.makeTurn = t3; S.makeFocused = false; upd();
+              phase(t3, 'Starting the Make bridge', 'goo', true);
+              postMsg({ type:'make-bridge-start', url:S.makeUrl || '' });
+            });
+            var dr = document.createElement('div'); dr.style.marginTop = '4px'; dr.appendChild(db); tm2.msgs.appendChild(dr);
+          }
+        } else {
+          // live steps of the engine are not listed (no Start / Starting… rows): label + timer only, like the Agent; Make handles the job
+          if (/^Read the app in/.test(String(m.text || '')) && !S.makeFocused) { S.makeFocused = true; postMsg({ type:'focus-figma' }); phase(tm2, 'Building SAP screens', 'goo', true); }
+        }
+        break;
+      }
+      case 'make-sent': {
+        var tk = ensureTurn();
+        if (m.ok) { finish(tk, 'Sent to Figma Make', 'done');
+          say(tk, m.makeUrl ? 'Figma Make opens by itself in a few seconds. If it does not, use the button.' : 'Figma Make is building your request in the linked Chrome.');
+          if (m.makeUrl) { var mc = document.createElement('div'); mc.className = 'ocard'; var mr = document.createElement('div'); mr.className = 'row'; var mb = document.createElement('button'); mb.className = 'btn pri'; mb.textContent = 'Open in Figma Make';
+            mb.addEventListener('click', function () { postMsg({ type:'open-url', url:m.makeUrl }); }); mr.appendChild(mb); mc.appendChild(mr); tk.msgs.appendChild(mc); }
+          break; }
+        pushLine(tk, m.error || 'Could not open Figma Make'); makeFallback(tk, S.makePrompt || ''); break;
+      }
+      case 'agent-finished': { var af = S.agentTurn; S.agentTurn = null; if (af && !af.finished) finish(af, 'Worked for %T', 'done'); break; }
+      case 'agent-stopped': { var as = S.agentTurn; S.agentTurn = null; if (as && !as.finished) { finish(as, 'Stopped', 'stopped'); if (!m.ok) say(as, 'The Figma Agent had already finished.'); } break; }
+      case 'agent-sent': {
+        var tg = ensureTurn();
+        if (m.ok) { var same = !!(S.agentThread && m.threadId === S.agentThread); S.agentThread = m.threadId || S.agentThread;
+          S.agentTurn = tg; S.agentSending = false;
+          if (S.stopAfterSend) { S.stopAfterSend = false; postMsg({ type:'agent-stop', wait:true }); break; }   // Stop was pressed during the hand-off
+          phase(tg, 'Figma Agent is working', 'goo', true);   // the turn stays "working" (timer runs) until the Agent finishes; Stop presses the Agent's own Stop
+          if (same) break;                                                      // a follow-up in the same chat: just the status row, no hint, no button
+          say(tg, 'The chat opens in Figma by itself in a few seconds. If it does not, use the button.');
+          if (m.threadUrl && !same) { var oc = document.createElement('div'); oc.className = 'ocard';
+            var orow = document.createElement('div'); orow.className = 'row'; var ob = document.createElement('button'); ob.className = 'btn pri'; ob.textContent = 'Open chat in Figma';
+            ob.addEventListener('click', function () { postMsg({ type:'open-url', url:m.threadUrl }); }); orow.appendChild(ob); oc.appendChild(orow); tg.msgs.appendChild(oc); }
+          break; }
+        S.agentTurn = null; S.agentSending = false; S.stopAfterSend = false;
+        finish(tg, 'Not sent', 'error'); say(tg, m.error || 'Could not reach the Figma Agent chat.', true);
+        if (m.launch) {
+          var lc = document.createElement('div'); lc.className = 'rcard'; var cmd = 'node ~/Downloads/Claude-To-Figma-SAP-Application/build/agent-drive.js --launch ' + m.launch;   // the project folder in Downloads (the usual place); no user name is fixed in the plugin
+          lc.innerHTML = '<div class="meta">Start the linked Chrome once with this file, then send again:</div>';
+          var lr = document.createElement('div'); lr.className = 'row'; var lb = document.createElement('button'); lb.className = 'btn pri'; lb.textContent = 'Copy command';
+          lb.addEventListener('click', function () { var ok = copyNow(cmd); toast(ok ? 'Copied ✓ — paste it in Terminal' : 'Copy blocked', ok); });
+          lr.appendChild(lb); lc.appendChild(lr); tg.msgs.appendChild(lc);
+        }
+        stoppedCard(tg); break;
+      }
+      case 'job-resumed': { if (!T || T.finished) { addUser('Build started from Claude Code'); newTurn(); } S.running = true; upd(); break; }
+      case 'note': {   // a scripted build (run.js): ONE live turn per job — older runs are removed, the end shows the job's TOTAL time and a clear result
+        // a note about a change made directly in Figma only lands in the history: it never pulls you out of the tab you work in (2026-10-05)
+        if (S.buildMode !== 'claude' && /^(RUN change|EXECUTE|Done — change)/.test(m.text || '')) break;
+        if (S.buildMode !== 'claude' && (m.block || /^RUN /.test(m.text || ''))) setMode('claude', true);   // a build's plan and steps belong to the Claude tab, never to the Agent / Make tab that happens to be open (2026-10-04)
+        if (S.running && T && !T.finished && !T.isNote && S.hasPluginJob) { T.isNote = true; T.keepOpen = true; T.job = m.job; T.el.classList.add('noteTurn'); S.noteJobs = {}; S.noteJobs[m.job] = T; }   // the request's own turn becomes the run's turn
+        if (S.running && !(T && T.isNote)) break;                                   // a real Claude job is running: its own timeline wins
+        var tn = (T && T.isNote && !T.finished) ? T : null;
+        if (!tn || /^RUN /.test(m.text)) {
+          var prev = S.noteJobs && S.noteJobs[m.job];
+          if (tn && /^RUN /.test(m.text) && tn.job === m.job) { /* same job resumed: keep the open turn */ }
+          else if (prev && prev.el.isConnected) {                                   // the same job continues (approved): reopen ITS turn, under the plan
+            tn = prev; tn.finished = false; cls(tn.el, 'finished', false); cls(tn.el, 'running', true); T = tn; tn.since = Date.now(); S.running = true; upd();
+          }
+          else {
+            [].slice.call(tc.querySelectorAll('.turn.noteTurn')).forEach(function (el) { var u = el.previousElementSibling; el.remove(); if (u && u.classList.contains('user')) u.remove(); });
+            if (T && T.isNote) T = null;
+            tn = ensureTurn(); tn.isNote = true; tn.keepOpen = true; tn.job = m.job; tn.el.classList.add('noteTurn'); S.hasPluginJob = false; S.noteJobs = {}; S.noteJobs[m.job] = tn;
+          }
+        }
+        if (m.name === 'end') {
+          clearTimeout(tn.noteT);
+          var ok = /^Done/.test(m.text), wait = /^The plan is ready|^Waiting/.test(m.text);
+          finish(tn, (ok ? 'Worked for ' : wait ? 'Waiting for you · ' : 'Needs a look · ') + fmt(m.total || elapsed(tn)), ok ? 'done' : wait ? 'wait' : 'error');
+          var fm = say(tn, m.text, !ok && !wait && !/DRAFT|draft/.test(m.text)); cls(tn.el, 'closed', !wait);
+          var nx = ok ? 'The frame is selected in Figma. Type a change here, or drop a new image.'
+            : wait ? '' : /DRAFT|draft/.test(m.text) ? ''
+            : 'Type what went wrong or say try again. The full log is under the copy icon.';
+          if (nx) { var hn = document.createElement('div'); hn.className = 'am hint'; hn.textContent = nx; tn.msgs.appendChild(hn); }
+          if (m.url) { var ob = document.createElement('button'); ob.className = 'openFrame'; ob.innerHTML = 'Open the frame <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h7v7M13 3 4 12"/></svg>'; ob.addEventListener('click', function () { postMsg({ type: 'open-url', url: m.url }); }); fm.appendChild(document.createElement('br')); fm.appendChild(ob); }
+          break;
+        }
+        if (m.block) {                                                              // the plan, in parts: structure · wireframe · layers · SAP parts · open questions
+          var parts = [['Structure', /^FRAME/], ['Wireframe (ASCII)', /^WIREFRAME/], ['Layers tree', /^L1-L5 LAYER TREE/], ['SAP components', /^SAP COMPONENTS/], ['Lists', /^LISTS/], ['Checks and open questions', /^(DOOR|ASK THE USER)/]];
+          var secs = [], cur = null;
+          m.block.split('\n').forEach(function (ln) { var hit = parts.filter(function (p) { return p[1].test(ln); })[0]; if (hit && (!cur || cur.t !== hit[0])) { cur = { t: hit[0], l: [] }; secs.push(cur); } if (!cur) { cur = { t: 'Structure', l: [] }; secs.push(cur); } cur.l.push(ln); });
+          var head = document.createElement('div'); head.className = 'am'; head.textContent = 'Here is the plan. Nothing is built yet — check it, then approve.'; tn.msgs.appendChild(head);
+          secs.forEach(function (sc, i) { var pb = document.createElement('details'); pb.className = 'planBlock'; pb.open = sc.t !== 'Lists';
+            var sm = document.createElement('summary'); sm.textContent = sc.t; pb.appendChild(sm); var pre = document.createElement('pre'); pre.textContent = sc.l.join('\n').trim(); pb.appendChild(pre); tn.msgs.appendChild(pb); });
+          var row = document.createElement('div'); row.className = 'planAct', planTurn = tn;
+          [['Approve', 'approve'], ['Reject', 'reject'], ['Modify', 'modify']].forEach(function (b) { var bt = document.createElement('button'); bt.textContent = b[0]; bt.className = 'pa ' + b[1];
+            bt.addEventListener('click', function () { [].forEach.call(row.querySelectorAll('button'), function (x) { x.disabled = true; }); bt.classList.add('chosen');
+              if (b[1] === 'modify') { var pr = $('prompt'); pr.value = 'Modify the plan of ' + (m.job || 'this job') + ': '; pr.focus(); grow(); upd(); return; }
+              postMsg({ type: 'plan-action', job: m.job, action: b[1] });
+              if (b[1] === 'approve') { planTurn.finished = false; cls(planTurn.el, 'finished', false); cls(planTurn.el, 'running', true); cls(planTurn.el, 'closed', false); T = planTurn; planTurn.since = Date.now(); S.running = true; phase(planTurn, 'Building in Figma', 'goo', true); upd(); } });
+            row.appendChild(bt); });
+          tn.msgs.appendChild(row);
+        }
+        var THINK = { analyse: 'Reading the screenshot', plan: 'Planning with SAP parts', execute: 'Building in Figma', check: 'Checking against the reference' };
+        var nsf = STAGES[m.name] || [m.name.charAt(0).toUpperCase() + m.name.slice(1), 'goo'];
+        resume(tn); stageOpen(tn, m.name); phase(tn, THINK[m.name] || nsf[0], nsf[1], true); if (!m.block) pushLine(tn, plain(m.text));
+        clearTimeout(tn.noteT); tn.noteT = setTimeout(function () { if (!tn.finished) finish(tn, 'Stopped · no news for 20 min', 'error'); }, 1200000);   // the SAP design lane (Claude picks the kit parts) can take ~13 min
+        break; }
+      case 'stage': { var t = ensureTurn(); resume(t); var sf = STAGES[m.name] || [m.name.charAt(0).toUpperCase() + m.name.slice(1), 'goo'];
+        if (m.name !== 'done') { stageOpen(t, m.name); phase(t, sf[0], sf[1], true); } if (m.text) pushLine(t, m.text); break; }
+      case 'progress': { var tp = ensureTurn(); pushLine(tp, m.text); break; }
+      case 'tree-status': {
+        if (T && T.isNote && !T.finished) { pushLine(T, m.text); break; }   // the plugin's own build lines join the run's turn
+        var lastT = tc.querySelector('.turn:last-of-type');
+        if ((!T || T.finished) && lastT && lastT.classList.contains('wasStopped')) break;      // the run was stopped here: its late builder lines are not a new run
+        var tt = ensureTurn(); tt.keepOpen = true; pushLine(tt, m.text);
+        var live = !/^(Done|Build failed|Build error)/.test(m.text);
+        if (live) { resume(tt); phase(tt, /^Note/.test(m.text) ? 'Checking the build' : m.text.replace(/ ·.*$/, '').replace(/…$/, ''), 'goo', true); }
+        else { say(tt, /^Done/.test(m.text) ? 'Built in Figma. Select the new frame on the canvas — the notes above list anything that needs a look.' : 'The build did not finish: ' + m.text); cls(tt.el, 'closed', false); }
+        if (!S.hasPluginJob && /^(Done|Build failed|Build error)/.test(m.text)) finish(tt, /^Done/.test(m.text) ? 'Worked for %T' : 'Failed', /^Done/.test(m.text) ? 'done' : 'error');   // a build started from the terminal has no job end: close it here
+        break;
+      }
+      case 'ask': { var ta = ensureTurn(); pause(ta); S.asking = m.jobId; phase(ta, 'Waiting for you', 'wait', false); say(ta, m.question); upd(); $('prompt').focus(); break; }
+      case 'mailbox': { var tm = ensureTurn(); pause(tm); phase(tm, 'Waiting for you', 'wait', false); handoffCard(tm, m.kind === 'plan' ? 'build plan' : 'apply fixes'); break; }
+      case 'logos-placed': { var tl = ensureTurn(); pushLine(tl, 'Logos placed'); break; }
+      case 'done': {
+        if (m.data && m.data.scripted) { S.hasPluginJob = false; setRunning(false); if (T && T.isNote && !T.finished) { /* the run's end note closes it */ } break; }
+        var d = m.data || {};
+        if (d.mode === 'CHAT' && T && T.finished && T.isNote) {   // Claude made the plan: its reply joins the plan's turn (no new turn under it)
+          setRunning(false); if (!/plan is ready/i.test(d.reply || '')) say(T, d.reply); break; }
+        var td = ensureTurn(); if (d.jobId) { delete logFull[d.jobId]; delete prefetched[d.jobId]; }
+        if (d.mode === 'CHAT') { finish(td, 'Worked for %T', 'done'); cls(td.el, 'closed', true); var rp = say(td, d.reply || 'Done.');
+          if (d.nodeId) { var sb = document.createElement('button'); sb.className = 'openFrame'; sb.textContent = 'Show it in Figma'; sb.addEventListener('click', function () { postMsg({ type:'show-node', nodeId:d.nodeId }); }); rp.appendChild(document.createElement('br')); rp.appendChild(sb); }
+          break; }
+        var warn = d.pass === false;
+        if (!warn && !d.nodeId && !d.url) { finish(td, 'Worked for %T', 'done'); if (d.reply && !/plan is ready/i.test(d.reply)) say(td, d.reply); S.last = d; break; }   // nothing was built (only a plan): no "Done" and no canvas card
+        finish(td, warn ? 'Finished • %T' : 'Worked for %T', warn ? 'error' : 'done');
+        say(td, warn ? 'I finished, but a few things need a look.' : 'Done. Your screen is in the canvas.');
+        resultCard(d, td.msgs); S.last = d; S.nodeId = d.nodeId || null; break;
+      }
+      case 'log-opened':
+        if (m.ok && m.text) logFull[m.jobId] = m.text;
+        if (pendingCopy[m.jobId]) { delete pendingCopy[m.jobId]; if (m.ok && m.text) { var ok = copyNow(m.text); toast(ok ? 'Log copied ✓' : 'Log ready — press the icon again', ok); } else toast('No log: ' + (m.error || 'unknown error'), false); }
+        break;
+      case 'history': S.hist = m.items || []; renderHist(); prefetch(m.items); break;   // history lives only behind the clock icon
+      case 'cancelled': { stopped(T && !T.finished ? T : null); break; }
+      case 'error': {
+        var em = String(m.message || '');
+        if (/cancel|stopp?ed|abort/i.test(em)) { stopped(T && !T.finished ? T : null); break; }
+        if (/^(File link saved|Nothing to do)/i.test(em)) { var ti = ensureTurn(); finish(ti, 'Noted', 'done'); say(ti, em); S.lastReq = null; break; }   // info from the bridge, not a failure
+        var te = ensureTurn(); finish(te, 'Failed', 'error'); say(te, em, true); stoppedCard(te); break; }
+      case 'store':
+        if (m.key === 'recent' && m.value) S.recent = m.value;
+        else if (m.key === 'buildMode') { /* the plugin always opens on the Claude tab (user rule 2026-10-05): the saved tab is not restored */ }
+        break;
+      default: break;
+    }
+  }
+  /* one chat view PER TAB (2026-10-04): a running job belongs to the tab it was started in. Switching tabs parks that tab's thread and state and shows
+     the other tab's own; messages for the running job are handled inside its own view, never in the tab you look at. */
+  var tabViews = {}, tabState = {};
+  function parkTab(mode) {
+    if (heroEl.parentNode === tc) heroEl.remove();   /* the greeting belongs to no tab: it is shown again when a tab has no turns */
+    var f = document.createDocumentFragment(); while (tc.firstChild) f.appendChild(tc.firstChild);
+    tabViews[mode] = f; tabState[mode] = { running:S.running, asking:S.asking, T:T, agentTurn:S.agentTurn, makeTurn:S.makeTurn, agentSending:S.agentSending };
+  }
+  function unparkTab(mode) {
+    var st = tabState[mode] || { running:false, asking:null, T:null, agentTurn:null, makeTurn:null, agentSending:false };
+    tc.innerHTML = ''; if (tabViews[mode] && tabViews[mode].querySelector('.turn, .user')) tc.appendChild(tabViews[mode]); else { tc.appendChild(heroEl); heroReset(mode); }
+    S.running = st.running; S.asking = st.asking; T = st.T; S.agentTurn = st.agentTurn; S.makeTurn = st.makeTurn; S.agentSending = st.agentSending;
+  }
+  window.onmessage = function (ev) {
+    var m = ev.data && ev.data.pluginMessage;
+    var owner = S.runMode, here = S.buildMode;
+    if (m && owner && owner !== here && tabState[owner] && tabState[owner].running && !/^(status|history|hist|conn|connected|health-|log-data)/.test(m.type)) {
+      parkTab(here); unparkTab(owner); try { handleMsg(ev); } finally { S.runMode = (S.running ? owner : null); parkTab(owner); unparkTab(here); upd(); }
+      return;
+    }
+    handleMsg(ev);
+  };
+
+  /* ───────── window size: fixed chat window, drag the corner to resize ───────── */
+  var grip = $('grip'), drag = null;
+  grip.addEventListener('pointerdown', function (e) { drag = { x:e.screenX, y:e.screenY, w:window.innerWidth, h:window.innerHeight }; S.manual = true; grip.setPointerCapture(e.pointerId); e.preventDefault(); });
+  grip.addEventListener('pointermove', function (e) { if (!drag) return; postMsg({ type:'resize', width:drag.w + (e.screenX - drag.x), height:drag.h + (e.screenY - drag.y), manual:true }); });
+  grip.addEventListener('pointerup', function () { drag = null; });
+  grip.addEventListener('dblclick', function () { S.manual = false; lastWanted = 0; postMsg({ type:'resize', width:DEFAULT_W, height:MIN_H, manual:true }); setTimeout(fit, 80); });
+  window.addEventListener('resize', function () { capHist(); });
+
+  /* auto height: the window fits what is on screen (header + chat + composer), between MIN_H and MAX_H;
+     past MAX_H the chat scrolls. Dragging the corner switches to a manual size; double-click returns to auto. */
+  var hdrEl = document.querySelector('.hdr'), dockEl = document.querySelector('.dock'), lastWanted = 0;
+  function fit() {
+    var empty = !tc.querySelector('.turn,.user');               // nothing in the chat yet: the window is always small, a manual size is ignored
+    if (empty && !drag && !$('app').classList.contains('hist') && S.manual) { S.manual = false; lastWanted = 0; }
+    if (S.manual || drag || morphing) return;
+    var body = $('app').classList.contains('hist') ? histHeight() : tc.offsetHeight;        // history: up to 4 cards, then it scrolls
+    var wanted = Math.round(hdrEl.offsetHeight + body + dockEl.offsetHeight);          // real content, not the (window-filling) scroll box
+    if (!$('infoPop').hidden) wanted = Math.max(wanted, hdrEl.offsetHeight + $('infoPop').scrollHeight + 22);   // the info popover is never cropped
+    wanted = Math.max(MIN_H, Math.min(MAX_H, wanted));
+    wanted = Math.round(wanted / 2) * 2;
+    if (Math.abs(wanted - window.innerHeight) < 6 && wanted !== MIN_H) return;        // tiny changes: leave the window alone
+    if (wanted === lastWanted) return;
+    lastWanted = wanted; glide(wanted);
+  }
+  /* Figma resizes in one jump — so we send a short run of sizes on an ease-out curve instead (≈240ms) */
+  var glideRaf = null;
+  function glide(to) {
+    if (glideRaf) cancelAnimationFrame(glideRaf);
+    var from = window.innerHeight, w = window.innerWidth || DEFAULT_W, t0 = performance.now(), dur = Math.min(320, Math.max(160, Math.abs(to - from) * 1.2));
+    if (Math.abs(to - from) < 8) { postMsg({ type:'resize', width:w, height:to, manual:true }); return; }
+    (function step(now) {
+      var k = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - k, 3);                 // ease-out cubic
+      postMsg({ type:'resize', width:w, height:Math.round(from + (to - from) * e), manual:true });
+      glideRaf = k < 1 ? requestAnimationFrame(step) : null;
+    })(t0);
+  }
+  var fitTimer = null;
+  function fitSoon() { clearTimeout(fitTimer); fitTimer = setTimeout(function () { fitTimer = 0; fit(); }, 140); }   // let the content settle, then move once
+  var fitRaf = 0;
+  function fitObs() { if (fitRaf) return; fitRaf = requestAnimationFrame(function () { fitRaf = 0; if (!fitTimer) fitSoon(); }); }   // an animation keeps calling: fit runs at most every 140 ms, never starved
+  new ResizeObserver(fitSoon).observe(dockEl);
+  new ResizeObserver(fitObs).observe(tc);
+  new MutationObserver(fitObs).observe(thread, { childList:true, subtree:true, characterData:true });
+  setInterval(fitSoon, 3000);                                // slow safety net
+
+  postMsg({ type:'store-get', key:'recent' }); save('size', null);
+  postMsg({ type:'reopen' });
+  upd();
+})();
+</script>
+</body>
+</html>
