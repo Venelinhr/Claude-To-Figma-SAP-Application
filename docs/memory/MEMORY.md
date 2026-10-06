@@ -8,3 +8,4 @@
 - [Make engine confirmed good](make-engine-confirmed-good.md) — 2026-10-05 user: perfect result; keep the fixed converter, re-sync both plugins after changes
 - [Plugin opens on Claude tab](plugin-default-claude-tab.md) — always start on Claude; do not restore the last tab
 - [Plugin audit 2026-10-05](plugin-audit-2026-10-05.md) — what changed, what is blocked (bridge edits), what is untested in real Figma
+- [SAP design lane default](sap-design-lane-default.md) — every route must give a real SAP screen; images use the design lane, never a pixel copy
