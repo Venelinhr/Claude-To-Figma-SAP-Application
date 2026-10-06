@@ -8,12 +8,16 @@ const fs = require('fs');
 const f = process.argv[2];
 if (!f) { console.log('usage: node build/sap-spacing.js <tree.json>'); process.exit(64); }
 const T = JSON.parse(fs.readFileSync(f, 'utf8')), R = T.tree || T;
-const snap = v => v <= 1 ? 0 : v <= 5 ? 4 : v <= 11 ? 8 : v <= 19 ? 16 : v <= 27 ? 24 : v <= 39 ? 32 : v <= 55 ? 48 : Math.round(v / 8) * 8;
+// the SAME scale as spec2tree.js SNAP (0 4 8 12 16 24 32 48 64, then the 8 grid) — two different scales moved items twice
+const snap = v => { v = Math.max(0, v); return v <= 3 ? 0 : v <= 6 ? 4 : v <= 10 ? 8 : v <= 14 ? 12 : v <= 20 ? 16 : v <= 28 ? 24 : v <= 40 ? 32 : v <= 56 ? 48 : v <= 72 ? 64 : Math.round(v / 8) * 8; };
 let n = 0;
 (function walk(o) {
   if (Array.isArray(o.p)) o.p = o.p.map(v => { const s = snap(v); if (s !== v) n++; return s; });
   if (typeof o.g === 'number') { const s = snap(o.g); if (s !== o.g) n++; o.g = s; }
-  if (!o.k && o.d === 'H' && (o.c || []).length >= 2 && !o.g) { o.g = 8; n++; }          // items in a row never touch: sapContent_Space_Tiny
+  // items in a row never touch: sapContent_Space_Tiny — but ONLY when no child already carries its gap as leading padding, the row is not
+  // space-between and nothing is pinned: adding a gap on top of baked padding counted the spacing twice (2026-10-06 audit: drift, overflow)
+  const fl = (o.c || []).filter(c => !c.abs), lead = c => (Array.isArray(c.p) ? c.p[3] : 0) || 0;
+  if (!o.k && o.d === 'H' && fl.length >= 2 && !o.g && (o.a || 'M')[0] !== 'S' && fl.length === (o.c || []).length && fl.slice(1).every(c => !lead(c))) { o.g = 8; n++; }
   if (o.k === 'i' && /^(Button|Range Slider|Slider|Input|Select|Search Field|Combo Box|Date Picker|Text Area)$/.test(o.cp) && (o.w || 0) >= 200) o.s = 'F' + String(o.s || 'HH').slice(1);   // a wide call-to-action / input control fills its column (never wider than it)
   (o.c || []).forEach(walk);
 })(R);

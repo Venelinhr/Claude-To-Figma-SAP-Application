@@ -220,6 +220,15 @@ const ROLES = require('./router-table.json').colour_roles;
 const KIT_TEXT = require('../knowledge/live/kit.json').text || {};
 const KIT_COMP = require('../knowledge/live/kit.json').components || {};   // kit component intrinsic w/h (a slider is 20 tall, not the 4-px measured track)
 const R = v => Math.round(v * 10) / 10, used = {}, unknown = [], WARNS = [];
+// DESIGN INTENT, not pixels (2026-10-06 layout audit: 117 offset-only "cell" wrappers in one screen, 256 off-grid values). A measured
+// gap or padding is the SAP spacing step plus OCR noise: it snaps to the Horizon scale (0 2 4 8 12 16 24 32 48 64, then the 8 grid).
+// 3 px or less is noise (a glyph box is never pixel-exact) → 0.
+const GRID = v => { v = Math.max(0, v); return v <= 3 ? 0 : v <= 6 ? 4 : v <= 10 ? 8 : v <= 14 ? 12 : v <= 20 ? 16 : v <= 28 ? 24 : v <= 40 ? 32 : v <= 56 ? 48 : v <= 72 ? 64 : Math.round(v / 8) * 8; };
+// only NOISE snaps: a value within 3 px of a scale step takes the step; a value further away is real (1:1 rule) and stays measured —
+// snapping every nested level by 4 px moved the bottom of a screen 15-20 px (2026-10-06 A/B on 7 screens).
+const TOL = Number(process.env.S2T_TOL || 2);   // 2 px: the A/B on 7 screens (3 px moved two screens 30 %)
+const SNAP = v => { v = Math.max(0, v); if (v <= TOL) return 0; const s = GRID(v); return Math.abs(s - v) <= TOL ? s : Math.round(v); };
+const median = a => { const s = a.slice().sort((x, y) => x - y); return s.length ? s[s.length >> 1] : 0; };
                 // reference icons / texts that Claude marked skip or that a real kit part (Shell Bar) draws itself — the door must not ask for them
 const EXPECT = {};                                     // layer name → measured box [x, y, w, h] — build/layout-sim.js compares the layout against it
 const name = (b, fb) => { const n = String(b || fb).replace(/\s+/g, ' ').trim().slice(0, 40); used[n] = (used[n] || 0) + 1; return used[n] > 1 ? `${n} ${used[n]}` : n; };
@@ -362,17 +371,20 @@ function crossAlign(items, ci, lo, hi) {
   if (items.every(c => Math.abs(hi - B(c)[ci + 2]) <= 3)) return 'X';
   const mids = items.map(c => (B(c)[ci] + B(c)[ci + 2]) / 2), mc = (lo + hi) / 2;   // Figma centres in the FRAME, not in the parts' span: a row 'centred' in its parts moved 10 px in a wider frame
   const narrow = items.filter(c => B(c)[ci + 2] - B(c)[ci] < 0.9 * (hi - lo)).length;   // in a COLUMN one narrow row among full-width cards: its hug width changes with SAP text and centring moves it ~10 px — keep its offset (heights in a row do not change: rows keep centring)
-  if ((ci === 1 || narrow >= 2) && items.every((c, i) => Math.abs(mids[i] - mc) <= 2)) return 'C';   // 4 px called a 10-px offset 'centred' and moved a price column 10 px (2026-10-05); else MIN + each item's exact offset
+  // a ROW (ci 1) of mixed-height parts (icon 16, text 19, button 26) is centred by design: ±4 px is glyph-box noise
+  if (ci === 1 && items.every(c => B(c)[3] - B(c)[1] <= 64) && items.every((c, i) => Math.abs(mids[i] - mc) <= 4)) return 'C';   // only a CONTROL row: tall page columns align to the top
+  if (narrow >= 2 && items.every((c, i) => Math.abs(mids[i] - mc) <= 2)) return 'C';   // 4 px called a 10-px offset 'centred' and moved a price column 10 px (2026-10-05); else MIN + each item's exact offset
   return 'M';
 }
 // cut a set of placed items inside the box [x0,y0,x1,y1] into ONE auto-layout node (recursively). Returns a node with
 // d/g/p/a/c and its children stripped of xy — OR, when there is a single item flush to the box, that item itself.
 function cut(items, x0, y0, x1, y1, warns) {
+  if (items._run) return flowAxis(items._axis, items._run, x0, y0, x1, y1, warns);   // a proximity block: its items flow at their own (smaller) gap
   if (items.length === 1) {                                    // a lone item: it becomes the node, padded to its offset
     const c = items[0], bx = B(c);
-    const p = [R(bx[1] - y0), R(x1 - bx[2]), R(y1 - bx[3]), R(bx[0] - x0)].map(v => Math.max(0, v));
+    const p = [R(bx[1] - y0), R(x1 - bx[2]), R(y1 - bx[3]), R(bx[0] - x0)].map(SNAP);
     delete c.xy; delete c._b;
-    if (p.every(v => v <= 0.5)) return c;                      // flush: no wrapper needed
+    if (p.every(v => v === 0)) return c;                       // flush (≤ 3 px is noise): no wrapper needed
     const boxed = c.bg != null || c.bc != null || c.r;
     if ((c.d || !c.k) && !boxed) { c.p = mergePad(c.p, p); c.w = R((c.w || 0) + p[1] + p[3]); c.h = R((c.h || 0) + p[0] + p[2]);
       (c.c || []).forEach(g => { if (g.abs && g.xy) g.xy = [R(g.xy[0] + p[3]), R(g.xy[1] + p[0])]; }); return c; }
@@ -436,36 +448,91 @@ function padItem(it, pad, acr, main) {
 // every leaf back where it was measured, and the layout still resizes (widths are FILL/HUG per size()).
 function flowAxis(axis, groups, x0, y0, x1, y1, warns) {
   const H = axis === 0, ci = H ? 1 : 0, mi = H ? 0 : 1;
+  // SPACE-BETWEEN (designer intent): a row with ONE gap far wider than the others is "start group … end group" (title left, actions
+  // right; airline left, price right). Two groups + primary alignment SPACE_BETWEEN: the end group stays on the right edge at every
+  // width, instead of a fixed 300-px padding that overflows or leaves a hole when the screen or a text changes.
+  if (groups.length >= 2 && !groups._sb) {
+    const ms = groups.map(g => Math.min(...g.map(c => B(c)[mi]))), me = groups.map(g => Math.max(...g.map(c => B(c)[mi + 2])));
+    const gg = []; for (let j = 1; j < groups.length; j++) gg.push(ms[j] - me[j - 1]);
+    const k = gg.indexOf(Math.max(...gg)), rest = gg.filter((_, j) => j !== k), big = gg[k];
+    const trail = (H ? x1 : y1) - me[me.length - 1];
+    // exactly ONE big gap: every other gap is small next to it (a toolbar with left / middle / right clusters is NOT start…end — the
+    // middle went with one side and the search field moved 390 px, 2026-10-06)
+    if (H && big >= 48 && big >= 3 * Math.max(8, Math.max(0, ...rest)) && trail <= Math.max(24, big / 3)) {
+      const two = [groups.slice(0, k + 1).flat(), groups.slice(k + 1).flat()]; two._sb = 1;
+      return flowAxis(axis, two, x0, y0, x1, y1, warns);
+    }
+  }
+  // PROXIMITY GROUPS (designer intent): items 8 px apart, then a 24 px break, then items 8 px apart are TWO blocks (gap 8 inside, 24
+  // between) — not one flat list where each item after the break carries 16 px of extra padding in its own wrapper.
+  if (groups.length >= 3 && !groups._nested && !groups._sb) {
+    const ms = groups.map(g => Math.min(...g.map(c => B(c)[mi]))), me = groups.map(g => Math.max(...g.map(c => B(c)[mi + 2])));
+    const sg0 = []; for (let j = 1; j < groups.length; j++) sg0.push(SNAP(ms[j] - me[j - 1]));
+    const gmin = Math.min(...sg0), raw0 = sg0.map((_, j) => ms[j + 1] - me[j]);
+    if (raw0.every(v => v >= -1) && sg0.some(v => v > gmin) && sg0.some(v => v === gmin)) {
+      const runs = [[groups[0]]]; sg0.forEach((v, j) => { if (v > gmin) runs.push([groups[j + 1]]); else runs[runs.length - 1].push(groups[j + 1]); });
+      if (runs.length >= 2 && runs.some(r => r.length > 1)) {
+        const outer = runs.map(r => { const a = r.flat(); if (r.length > 1) { r._nested = 1; a._run = r; a._axis = axis; } return a; });
+        outer._nested = 1;
+        return flowAxis(axis, outer, x0, y0, x1, y1, warns);
+      }
+    }
+  }
+  const sb = !!groups._sb;
   const flat = groups.flat();
   // measure geometry BEFORE cutting sub-groups (cut() deletes each child's xy/_b as it consumes it)
   const mStart = groups.map(g => Math.min(...g.map(c => B(c)[mi]))), mEnd = groups.map(g => Math.max(...g.map(c => B(c)[mi + 2])));
   const cStart = groups.map(g => Math.min(...g.map(c => B(c)[ci])));      // each group's leading cross edge
+  const cEnd = groups.map(g => Math.max(...g.map(c => B(c)[ci + 2])));
   const gaps = []; for (let j = 1; j < groups.length; j++) gaps.push(R(mStart[j] - mEnd[j - 1]));
-  const lead = Math.max(0, R(mStart[0] - (H ? x0 : y0))), trail = Math.max(0, R((H ? x1 : y1) - mEnd[mEnd.length - 1]));
-  const crossLo = H ? y0 : x0;
-  const acr = crossAlign(flat, ci, H ? y0 : x0, H ? y1 : x1);
-  const spans = groups.map(g => span(g, x0, y0, x1, y1)), nm = bandName(flat) + (H ? ' row' : ' column');
+  const lead = SNAP(mStart[0] - (H ? x0 : y0)), trail = sb ? 0 : SNAP((H ? x1 : y1) - mEnd[mEnd.length - 1]);
+  const crossLo = H ? y0 : x0, crossHi = H ? y1 : x1;
+  const acr = crossAlign(flat, ci, crossLo, crossHi);
+  const nm = bandName(flat) + (H ? ' row' : ' column');
   const gStart = groups.map(g => [Math.min(...g.map(c => B(c)[0])), Math.min(...g.map(c => B(c)[1]))]);   // group origin, before cut
-  const raw = groups.map((g, j) => cut(g, ...spans[j], warns));          // consume children into sub-nodes
-  // frame padding: main lead/trail; cross lead is folded per-item so a uniform MIN alignment holds
+  // frame padding: main lead/trail (on the SAP scale); cross lead is folded per-item only when an item really sits lower/further in
   const p = H ? [0, trail, 0, lead] : [lead, 0, trail, 0];
-  // FAST PATH: gaps are uniform and every item shares the leading cross edge (no per-item offset) and none overlaps →
-  // one frame gap `g` and no wrapper cells at all. Keeps the tree small (fewer layers/chars) for a regular row/column.
-  const crossOff = j => acr === 'M' ? R(cStart[j] - crossLo) : 0;
-  const uniform = gaps.length > 0 && Math.max(...gaps) - Math.min(...gaps) <= 1 && gaps.every(g => g >= -1)
-    && groups.every((g, j) => Math.abs(crossOff(j)) <= 1);
-  if (uniform) return { n: nm, d: H ? 'H' : 'V', g: Math.max(0, R(gaps[0])), p, a: 'M' + acr, s: 'FH', w: R(x1 - x0), h: R(y1 - y0), c: raw };
-  // else g=0; each item padded by its measured gap-before (main axis) and its cross offset (when MIN aligned). Positions
-  // are exact and drift-free. An item that OVERLAPS the previous one (a price sub-label over its component) cannot sit
-  // before it in a flow, so it is pinned ABSOLUTE at its measured offset (door-exempt, exact).
+  const crossOff = j => acr === 'M' ? SNAP(cStart[j] - crossLo) : 0;
+  const ov = gaps.some(g => g < -1);
+  // ONE REAL GAP (designer intent): the shared gap is the MEAN measured gap (on the SAP step when within 1.5 px); rounding each gap
+  // separately drifted 15-20 px over a column of cards. One shared gap is used only while the running drift stays ≤ 4 px; else each item
+  // carries its exact extra space over the smallest gap (a section break in a column). Uniform rows/columns get no wrapper at all.
+  const SG = v => { const q = GRID(v); return Math.abs(q - v) <= 1.5 ? q : Math.round(v); };
+  const sg = gaps.map(v => Math.max(0, Math.round(v))), mean = sg.length ? sg.reduce((a, v) => a + v, 0) / sg.length : 0;
+  let drift = 0, maxDrift = 0; const gU = SG(mean); sg.forEach(v => { drift += v - gU; maxDrift = Math.max(maxDrift, Math.abs(drift)); });
+  const gMin = SG(Math.min(...sg.filter(v => v > 0).concat([mean || 0])));
+  const mode = sb ? 'S' : 'M';
+  const g0 = sb || ov ? 0 : maxDrift <= 4 ? gU : gMin;
+  const uniform = !ov && !sb && maxDrift <= 4 && groups.every((g, j) => crossOff(j) === 0);
+  const pinned = j => j > 0 && gaps[j - 1] < -1;
+  const extraOf = j => j === 0 || sb || pinned(j) || (!ov && maxDrift <= 4) ? 0 : Math.max(0, sg[j - 1] - g0);
+  // ERROR CARRY (2026-10-06): every child is cut inside the box where THIS frame really places it (lead, gap, extra, alignment), not
+  // where it was measured. Its own offsets are then taken from the placed edge, so a 2-px rounding here is corrected one level down
+  // instead of adding up — 8 nested levels of rounding moved the bottom of a screen 15-20 px.
+  const placed = []; let pos = (H ? x0 : y0) + lead, prev = -1;
+  groups.forEach((g, j) => {
+    const msz = mEnd[j] - mStart[j], csz = cEnd[j] - cStart[j];
+    let mp;
+    if (pinned(j)) mp = mStart[j];
+    else if (sb && j === groups.length - 1 && j > 0) mp = (H ? x1 : y1) - trail - msz;
+    else { if (prev >= 0) pos += g0 + extraOf(j); mp = pos; pos += msz; prev = j; }
+    const cp = pinned(j) ? cStart[j] : acr === 'C' ? (crossLo + crossHi) / 2 - csz / 2 : acr === 'X' ? crossHi - csz : crossLo + crossOff(j);
+    // only an EARLIER landing is carried (the child adds that much lead padding); a later one cannot be undone by padding and, carried,
+    // came back as extra trailing padding on every nested level (+31 px on the Events shell bar icons)
+    const m0 = Math.min(mp, mStart[j]), c0 = Math.min(cp, cStart[j]);
+    placed.push(H ? [m0, c0, mEnd[j], cEnd[j]] : [c0, m0, cEnd[j], mEnd[j]]);
+  });
+  const raw = groups.map((g, j) => cut(g, ...placed[j], warns));        // consume children into sub-nodes
+  if (uniform) return { n: nm, d: H ? 'H' : 'V', g: g0, p, a: mode + acr, s: 'FH', w: R(x1 - x0), h: R(y1 - y0), c: raw };
+  // An item that OVERLAPS the previous one (a price sub-label over its component) cannot sit before it in a flow, so it is pinned
+  // ABSOLUTE at its measured offset (door-exempt, exact; size() keeps it FIXED: an abs child never fills or hugs).
   const items = raw.map((it, j) => {
-    if (j > 0 && gaps[j - 1] < -1) { it.abs = 1; it.xy = [R(gStart[j][0] - x0), R(gStart[j][1] - y0)]; return it; }
-    const gapBefore = j === 0 ? 0 : Math.max(0, gaps[j - 1]);
-    const crossPad = Math.max(0, crossOff(j));               // MIN alignment → fold the cross offset in
-    const pad = H ? [crossPad, 0, 0, gapBefore] : [gapBefore, 0, 0, crossPad];
+    if (pinned(j)) { it.abs = 1; it.xy = [R(gStart[j][0] - x0), R(gStart[j][1] - y0)]; return it; }
+    const extra = ov && j > 0 ? Math.max(0, sg[j - 1]) : extraOf(j), crossPad = crossOff(j);
+    const pad = H ? [crossPad, 0, 0, extra] : [extra, 0, 0, crossPad];
     return padItem(it, pad, acr, mi);
   });
-  return { n: nm, d: H ? 'H' : 'V', g: 0, p, a: 'M' + acr, s: 'FH', w: R(x1 - x0), h: R(y1 - y0), c: items };
+  return { n: nm, d: H ? 'H' : 'V', g: g0, p, a: mode + acr, s: 'FH', w: R(x1 - x0), h: R(y1 - y0), c: items };
 }
 // a child that becomes FILL width in a COLUMN loses the offset its alignment gave it (Figma stretches it edge to edge; the
 // 2026-10-03 build put the toolbar and the table at x=0 instead of 32). Keep the measured offset as the child's own side padding.
@@ -474,7 +541,7 @@ function keepOffset(c, par) {
   const pp = Array.isArray(par.p) ? par.p : [par.p || 0, par.p || 0, par.p || 0, par.p || 0], inner = par.w - pp[1] - pp[3], extra = R(inner - c.w);
   if (extra <= 1) return;
   const ca = (par.a || 'MM')[1], left = ca === 'X' ? extra : ca === 'C' ? extra / 2 : 0;
-  c.p = mergePad(c.p, [0, R(extra - left), 0, R(left)]); c.w = R(inner);
+  c.p = mergePad(c.p, [0, SNAP(extra - left), 0, SNAP(left)]); c.w = R(inner);
 }
 // the LAST item of a full-width row sits on the right edge (Actions, the last toolbar icon): its baked gap becomes free space,
 // so the few px of extra SAP text width before it is absorbed instead of pushing it past the edge (2026-10-03: "Acti" clipped)
@@ -495,11 +562,14 @@ function flow(n) {
   const x0 = Math.min(...kids.map(c => B(c)[0])), y0 = Math.min(...kids.map(c => B(c)[1]));
   const x1 = Math.max(...kids.map(c => B(c)[2])), y1 = Math.max(...kids.map(c => B(c)[3]));
   const kidSet = new Set(kids);
-  const node = cut(kids.slice(), x0, y0, x1, y1, warns);
+  const sx = SNAP(x0), sy = SNAP(y0);                          // where the content really starts once the padding is on the scale
+  const node = cut(kids.slice(), sx, sy, sx + (x1 - x0), sy + (y1 - y0), warns);
   // the container adopts the top-level cut, plus the padding from its own box edges to the content bounds. But when cut
   // returned one of n's OWN existing children (a single card/element that flush-fills n), adopting its children would drop
   // that child's own frame (its border/fill) — so keep it as n's single child instead.
-  const pad = [Math.max(0, R(y0)), Math.max(0, R(n.w - x1)), Math.max(0, R(n.h - y1)), Math.max(0, R(x0))];
+  const pad = [sy, SNAP(n.w - x1), SNAP(n.h - y1), sx];   // the container's own padding, on the SAP scale
+  // a card's content sits in it with EQUAL side padding (and equal top/bottom): a 16/24 split is the right edge of a text, not intent
+  if (n !== root && (n.bg != null || n.bc != null || n.r)) { if (Math.abs(pad[1] - pad[3]) <= 8) pad[1] = pad[3]; if (Math.abs(pad[0] - pad[2]) <= 8) pad[2] = pad[0]; }
   const isOwnChild = kidSet.has(node);
   if (isOwnChild) { n.d = 'V'; n.g = 0; n.p = mergePad(pad, [0, 0, 0, 0]); n.a = 'MM'; n.c = [node]; }
   else if (node.d) { n.d = node.d; n.g = node.g; n.p = mergePad(pad, Array.isArray(node.p) ? node.p : [0, 0, 0, 0]); n.a = node.a; n.c = node.c; }
@@ -521,6 +591,7 @@ function size(o, root, par) {
   (o.c || []).forEach(c => size(c, false, o));
   const kids = (o.c || []).filter(c => !c.abs);
   if (root || o.k) return;
+  if (o.abs) { o.s = 'XX'; return; }                            // a pinned child keeps its measured box: Figma ignores FILL on it, the sim hugged it 172 px short
   // WIDTH of a container: FILL when it spans its parent's inner width (a column, a full-width band), else HUG so a row's
   // children keep their measured x. HEIGHT: always HUG (gaps are baked, so HUG reconstructs the measured height exactly).
   // FIXED width to the measured extent unless the container spans its parent (then FILL). HUG would inflate a container
@@ -546,7 +617,9 @@ function size(o, root, par) {
   // frame. That is what keeps STRUCTURE matching the reference box sizes and the filter column inside 616. A frame pinning an
   // abs child also stays FIXED height (an abs child does not add to HUG).
   const boxed = o.bg != null || o.bc != null || o.r;
-  o.s = (wFill ? 'F' : 'H') + (hAbs || boxed ? 'X' : 'H');
+  // a card HUGS its content height (designer intent: it grows with real data instead of clipping it); only a frame that pins an abs child
+  // keeps a FIXED height. A SPACE-BETWEEN row never hugs its width (hugged, the end group would slide next to the start group).
+  o.s = (wFill ? 'F' : (o.a || 'MM')[0] === 'S' ? 'X' : 'H') + (hAbs ? 'X' : 'H');
   if (wFill) keepOffset(o, par);
   // Propagate FILL down the responsive path: a COLUMN's spanning child FILLs (so the column's width reaches its content),
   // but a ROW's child only FILLs when the ROW itself is FILL-width — otherwise a FILL child in a HUG row just eats the
@@ -666,8 +739,8 @@ const setS = (o, ax, v) => { const s = (o.s || 'XX').split(''); s[ax] = v; o.s =
 (function down(o) {
   const cs = (o.c || []).filter(c => !LEAF(c) && !c.abs);
   const padX = Array.isArray(o.p) ? (o.p[1] || 0) + (o.p[3] || 0) : 2 * (o.p || 0), inner = (o.w || 0) - padX;
-  if (o.d === 'V') cs.forEach(c => { if ((c.w || 0) > 120) setS(c, 0, (c.w || 0) >= inner - 24 ? 'F' : 'H'); });   // spans the column → FILL, else HUG (never stretch a 485-px row to 965)
-  if (o.d === 'H' && (o.s || 'X')[0] !== 'H' && (o.c || []).some(c => !c.abs && c.k !== 'i' && (c.s || '')[0] === 'X' && (c.w || 0) > 120) && cs.length && !(o.c || []).some(c => !c.abs && (c.s || '')[0] === 'F')) {
+  if (o.d === 'V') cs.forEach(c => { if ((c.w || 0) > 120) setS(c, 0, (c.w || 0) >= inner - 24 ? 'F' : (c.a || 'M')[0] === 'S' ? 'X' : 'H'); });   // a space-between row never hugs (it would collapse)   // spans the column → FILL, else HUG (never stretch a 485-px row to 965)
+  if (o.d === 'H' && (o.a || 'M')[0] !== 'S' && (o.s || 'X')[0] !== 'H' && (o.c || []).some(c => !c.abs && c.k !== 'i' && (c.s || '')[0] === 'X' && (c.w || 0) > 120) && cs.length && !(o.c || []).some(c => !c.abs && (c.s || '')[0] === 'F')) {
     const flow = (o.c || []).filter(c => !c.abs), pad = Array.isArray(o.p) ? (o.p[1] || 0) + (o.p[3] || 0) : 2 * (o.p || 0);
     const slack = (o.w || 0) - pad - flow.reduce((a, c) => a + (c.w || 0), 0) - (o.g || 0) * Math.max(0, flow.length - 1);
     if (slack > 16) o.c.push({ n: name('Spacer'), w: Math.round(slack), h: 1, s: 'FX' });      // the row does not span: a FILL spacer flexes, the cards keep their size
@@ -696,11 +769,15 @@ const setS = (o, ax, v) => { const s = (o.s || 'XX').split(''); s[ax] = v; o.s =
   const cw = o.d === 'H' ? fl.reduce((a, c) => a + (c.w || 0), 0) + g * Math.max(0, fl.length - 1) : Math.max(0, ...fl.map(c => c.w || 0));
   const ch = o.d === 'V' ? fl.reduce((a, c) => a + (c.h || 0), 0) + g * Math.max(0, fl.length - 1) : Math.max(0, ...fl.map(c => c.h || 0));
   if (o.s[0] === 'H' && o.w && cw + (P[1] || 0) + (P[3] || 0) < o.w - 16) setS(o, 0, par && par.d === 'V' && o.w > 120 ? 'F' : 'X');   // in a column a wide part follows the column (responsive rule)
-  if (o.s[1] === 'H' && o.h && ch + (P[0] || 0) + (P[2] || 0) < o.h - 16) setS(o, 1, 'X');
+  // too short by > 16 px: the reference card has more room below its content → that room becomes SAP bottom padding, the card still HUGS
+  // (a FIXED height clips or leaves a hole as soon as a text or a row of data changes)
+  if (o.s[1] === 'H' && o.h && ch + (P[0] || 0) + (P[2] || 0) < o.h - 2) { const q = P.slice(); q[2] = Math.round(o.h - ch - (P[0] || 0)); o.p = q; }
   // 8 text line height (Figma box = 1.17 × font, the measure saw the glyph) makes a hugging row a few px taller than measured; 3 rows drifted the
   //   time cards 12 px down. Up to 10 px over: the row keeps its MEASURED height (the spare line space below the glyph overlaps, nothing clips).
   const over = ch + (P[0] || 0) + (P[2] || 0) - (o.h || 0);
-  if (o.s[1] === 'H' && o.h && over > 1 && over <= 10 && (function hasT(x) { return x.k === 't' || (x.c || []).some(hasT); })(o)) setS(o, 1, 'X');
+  if (o.s[1] === 'H' && o.h && over > 1 && over <= 10 && (function hasT(x) { return x.k === 't' || (x.c || []).some(hasT); })(o)) {
+    const q = P.slice(); if ((q[2] || 0) >= over) { q[2] = Math.round(q[2] - over); o.p = q; } else setS(o, 1, 'X');   // take the line-height surplus from the bottom padding (the frame still hugs); none → keep the measured height (nothing clips: no clip)
+  }
 })(root);
 // 7 inside a card a headline is at most H3: H1/H2 are page titles; the OCR reads them only where two texts overlap ("11:50am+" over "(MSY)").
 (function cap(o, inCard) {
@@ -735,7 +812,7 @@ const setS = (o, ax, v) => { const s = (o.s || 'XX').split(''); s[ax] = v; o.s =
 (function colFill(o) { (o.c || []).forEach(c => { if (o.d === 'V' && !LEAF(c) && !c.abs && (c.w || 0) > 120 && (c.s || '')[0] === 'X') setS(c, 0, 'F'); colFill(c); }); })(root);
 // final check of rule 3 (earlier passes can turn a HUG row into FIXED): every non-hug row has one flexible part.
 (function flex(o) {
-  if (o.d === 'H' && (o.s || 'X')[0] !== 'H' && (o.c || []).some(c => !c.abs && c.k !== 'i' && (c.s || '')[0] === 'X' && (c.w || 0) > 120) && !(o.c || []).some(c => !c.abs && (c.s || '')[0] === 'F')) {
+  if (o.d === 'H' && (o.a || 'M')[0] !== 'S' && (o.s || 'X')[0] !== 'H' && (o.c || []).some(c => !c.abs && c.k !== 'i' && (c.s || '')[0] === 'X' && (c.w || 0) > 120) && !(o.c || []).some(c => !c.abs && (c.s || '')[0] === 'F')) {
     const fl = (o.c || []).filter(c => !c.abs), P = Array.isArray(o.p) ? o.p : [o.p || 0, o.p || 0, o.p || 0, o.p || 0];
     const slack = (o.w || 0) - (P[1] || 0) - (P[3] || 0) - fl.reduce((a, c) => a + (c.w || 0), 0) - (o.g || 0) * Math.max(0, fl.length - 1);
     const box = fl.filter(c => !LEAF(c)).sort((a, b) => (b.w || 0) - (a.w || 0))[0];
@@ -743,11 +820,22 @@ const setS = (o, ax, v) => { const s = (o.s || 'XX').split(''); s[ax] = v; o.s =
   }
   (o.c || []).forEach(flex);
 })(root);
+(function pin(o) {
+  (o.c || []).forEach(c => {
+    if (c.abs && !c.k) c.s = 'XX';
+    // a SPACE-BETWEEN row spreads its groups itself: a FILL group would take all the free room and push the end group 100 px (2026-10-06)
+    else if (o.d === 'H' && (o.a || 'M')[0] === 'S' && (c.s || 'XX')[0] === 'F') setS(c, 0, LEAF(c) ? 'H' : 'X');
+    pin(c);
+  });
+})(root);   // pinned frames stay FIXED whatever a pass above decided
 fs.writeFileSync(outF, JSON.stringify(root));
 // EXPECT = where a leaf will ACTUALLY land in Figma (the simulated auto-layout of this very tree — line-height text boxes,
 // kit component heights, baked gaps and all), not the raw measured glyph box. So layout-sim --expect verifies the tree
 // round-trips to its predicted Figma layout, and --geometry (sim vs a REAL dump) stays the external truth check. A leaf
 // whose predicted spot differs from the measured glyph is the SAP line-height drift, which real Figma has too.
+// the MEASURED reference boxes (set in conv before the simulation below overwrites EXPECT): layout-sim --expect tree.measured.json scores a
+// tree against the reference itself, not against its own simulation (2026-10-06: the old baseline hid the old engine's own errors)
+fs.writeFileSync(outF.replace(/\.json$/, '') + '.measured.json', JSON.stringify(EXPECT));
 (function writeExpect() {
   const P = o => (Array.isArray(o.p) ? o.p : [o.p || 0, o.p || 0, o.p || 0, o.p || 0]);
   const leaf = o => !o.c || !!o.k, EX = root.sz === 'x';

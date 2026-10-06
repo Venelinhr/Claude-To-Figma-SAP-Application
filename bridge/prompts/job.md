@@ -57,7 +57,9 @@ Then take the `node-id=` from its last lines → `STAGE done Make app converted`
      `node build/run.js "<the request, one line, in its language>" --file {{fileKey}} --new`. It exits 2 with `NEW` lines: write
      `{{jobDir}}/new-tree.json` from the request alone (every filter, card, column, status, step the request names; kit components,
      props, states, variables and icons read with `node build/kit.js`, never guessed; real business content, no placeholders), then
-     `--resume --tree-new {{jobDir}}/new-tree.json`. Ignore the skeleton / `ops.json` / `--spec-json` rules below — they belong to the
+     `--resume --tree-new {{jobDir}}/new-tree.json`. **Layout like a senior designer:** one real gap `g` per row/column (never a wrapper
+     frame that only holds an offset), a "title left … actions right" row is `a:"SC"` (space-between), cards HUG their height, every `p`/`g`
+     on the SAP steps 4 8 12 16 24 32 48, page edge 32 (48 at ≥ 1440). `run.js` prints `LAYOUT n/100` — below 75 means fix the layout. Ignore the skeleton / `ops.json` / `--spec-json` rules below — they belong to the
      old clone lane. The door, layout simulation and build checks still run on your tree.
    - Give the Bash call a timeout of 240000 ms. Read only the lines it prints. Follow `docs/v6/screen.md` step 3 for the exit code
      (1 fix the tree → `--resume` · `CONTENT ✗` = the audit found old content or a column mismatch: write ops2.json for exactly those lines and `--resume --spec-json` again · 2 icons / ops.json for a text job · 3 plugin closed → `AGENT_ASK` · 6 DRAFT → fix once or twice).

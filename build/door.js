@@ -77,7 +77,8 @@ function door(T, file, ref) {
       if (!p.d && !o.k) O('responsive', `${at} sits in a frame without auto-layout (free-placed) — it will not resize; put it in an auto-layout row/column`);
       else if (p.d === 'V' && W === 'X' && big && o.k !== 'i') O('responsive', `${at} has a fixed width ${o.w} in a column — set width to FILL (F) so it follows the screen`);
       else if (p.d === 'V' && W === 'X' && o.k === 't' && o.wrap) O('responsive', `${at} is wrapping text with a fixed width — set width to FILL`);
-      else if (p.d === 'H' && W === 'X' && big && o.k !== 'i' && !(p.c || []).some(x => x !== o && !x.abs && (x.s || '')[0] === 'F') && (p.s || '')[0] !== 'H')
+      // (a SPACE-BETWEEN row flexes by itself: its start and end groups keep their width and the free room goes between them)
+      else if (p.d === 'H' && W === 'X' && big && o.k !== 'i' && (p.a || 'M')[0] !== 'S' && !(p.c || []).some(x => x !== o && !x.abs && (x.s || '')[0] === 'F') && (p.s || '')[0] !== 'H')
         O('responsive', `${at} has a fixed width ${o.w} and no sibling in the row is FILL — one part of the row must flex`);
     }
   }

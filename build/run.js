@@ -350,8 +350,13 @@ function names(T) {                                  // what the model may addre
 
   // ── 1. the front door again on every path (a cached or edited tree is never ungated) + the geometry guard
   const raw = readJ(treeF), T = raw.tree || raw;
-  const dr = door(T, treeF, spec);
   const baseF = J('tree.baseline.json');
+  // LAYOUT (2026-10-06): the senior-designer auto-layout review on every path. A tree with no baseline (from zero, design lane, a model's
+  // own tree) first gets the same intent rules spec2tree uses (SAP steps within 2 px, space-between rows, pinned = FIXED, no empty wrappers).
+  { const LA = require('./layout-audit.js');
+    if (!fs.existsSync(baseF)) { const nf = LA.normalize(T); if (nf) { fs.writeFileSync(treeF, JSON.stringify(raw)); say(`LAYOUT fixed ${nf} padding / gap / sizing values to the SAP layout rules`); } }
+    const la = LA.audit(T); say(LA.line(la).replace(/^LAYOUT/, la.score >= 75 ? 'LAYOUT ✓' : 'LAYOUT ⚠')); }
+  const dr = door(T, treeF, spec);
   if (fs.existsSync(baseF)) { const B = readJ(baseF); dr.out.push(...baselineDiff(T, B.tree || B, (opt('--allow') || '').split(',').map(x => x.trim()).filter(Boolean))); }
   const ledger = fs.existsSync(J('assumed.json')) ? readJ(J('assumed.json')) : { assumed: [], asks: [] };
   if (dr.out.length) {
